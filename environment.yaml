@@ -1,0 +1,15 @@
+name: mol-view-spec-dev
+channels:
+  - https://conda.anaconda.org/conda-forge
+dependencies:
+  - python >=3.10
+  - pip
+  - fastapi==0.93.0
+  - uvicorn==0.21.0
+
+  - nodejs >=18
+  
+  - autoflake
+  - isort
+  - black
+  - mypy==1.1.1
