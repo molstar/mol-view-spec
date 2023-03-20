@@ -1,5 +1,16 @@
-from molviewspec.nodes import ColorT, ComponentNode, ComponentSelectorT, DownloadNode, ParentNodeBase, ParseFormatT,\
-    ParseNode, RepresentationNode, RepresentationTypeT, RootNode, StructureNode
+from molviewspec.nodes import (
+    ColorT,
+    ComponentNode,
+    ComponentSelectorT,
+    DownloadNode,
+    ParentNodeBase,
+    ParseFormatT,
+    ParseNode,
+    RepresentationNode,
+    RepresentationTypeT,
+    RootNode,
+    StructureNode,
+)
 
 
 def create_builder() -> "Root":
@@ -30,8 +41,12 @@ class Download(_Base):
 
 class Parse(_Base):
     def structure(self, *, assembly_id: str = "1", model_index: int = 1) -> "Structure":
-        node: StructureNode = {"kind": "structure", "assembly_id": assembly_id, "model_index": model_index,
-                               "children": []}
+        node: StructureNode = {
+            "kind": "structure",
+            "assembly_id": assembly_id,
+            "model_index": model_index,
+            "children": [],
+        }
         self.node["children"].append(node)
         return Structure(node=node, root=self.root)
 
