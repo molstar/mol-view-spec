@@ -21,5 +21,20 @@ will run the server on `localhost:9000` with reload mode on.
 - Example: `http://localhost:9000/api/v1/examples/load/1tqn` returns 
 
 ```json
-{"kind":"root","children":[{"kind":"download","children":[{"kind":"parse","children":[],"format":"mmcif"}],"url":"https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif"}]}
+{
+  "kind": "root",
+  "children": [
+    {
+      "kind": "download",
+      "children": [
+        {
+          "kind": "parse",
+          "children": [],
+          "format": "mmcif"
+        }
+      ],
+      "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif"
+    }
+  ]
+}
 ```
