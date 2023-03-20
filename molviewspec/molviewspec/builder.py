@@ -1,4 +1,4 @@
-from molviewspec.nodes import ColorT, ComponentNode, ComponentSelectorT, DownloadNode, NodeBase, ParseFormatT,\
+from molviewspec.nodes import ColorT, ComponentNode, ComponentSelectorT, DownloadNode, ParentNodeBase, ParseFormatT,\
     ParseNode, RepresentationNode, RepresentationTypeT, RootNode, StructureNode
 
 
@@ -16,7 +16,7 @@ class Root:
 
 
 class _Base:
-    def __init__(self, *, root: Root, node: NodeBase) -> None:
+    def __init__(self, *, root: Root, node: ParentNodeBase) -> None:
         self.root = root
         self.node = node
 
@@ -45,6 +45,5 @@ class Structure(_Base):
 
 class Component(_Base):
     def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT = "red"):
-        # TODO should there be terminal nodes without children?
-        node: RepresentationNode = {"kind": "representation", "type": type, "color": color, "children": []}
+        node: RepresentationNode = {"kind": "representation", "type": type, "color": color}
         self.node["children"].append(node)

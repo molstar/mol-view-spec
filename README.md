@@ -45,8 +45,7 @@ will run the server on `localhost:9000` with reload mode on.
                     {
                       "kind": "representation",
                       "type": "cartoon",
-                      "color": "red",
-                      "children": []
+                      "color": "red"
                     }
                   ]
                 }

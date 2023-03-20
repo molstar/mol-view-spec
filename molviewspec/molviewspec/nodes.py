@@ -2,14 +2,22 @@ from typing import Literal, NotRequired, TypedDict
 
 
 class NodeBase(TypedDict):
+    pass
+
+
+class ParentNodeBase(NodeBase):
     children: list["NodeBase"]
 
 
-class RootNode(NodeBase):
+class TerminalNodeBase(NodeBase):
+    pass
+
+
+class RootNode(ParentNodeBase):
     kind: Literal["root"]
 
 
-class DownloadNode(NodeBase):
+class DownloadNode(ParentNodeBase):
     kind: Literal["download"]
     url: str
 
@@ -17,13 +25,13 @@ class DownloadNode(NodeBase):
 ParseFormatT = Literal["mmcif", "pdb"]
 
 
-class ParseNode(NodeBase):
+class ParseNode(ParentNodeBase):
     kind: Literal["parse"]
     format: ParseFormatT
     is_binary: NotRequired[bool]
 
 
-class StructureNode(NodeBase):
+class StructureNode(ParentNodeBase):
     kind: Literal["structure"]
     assembly_id: NotRequired[str]
     model_index: NotRequired[int]
@@ -32,7 +40,7 @@ class StructureNode(NodeBase):
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "ligand", "ion", "water"]
 
 
-class ComponentNode(NodeBase):
+class ComponentNode(ParentNodeBase):
     kind: Literal["component"]
     selector: ComponentSelectorT
 
@@ -42,7 +50,7 @@ ColorT = Literal["red", "white", "blue"]  # presumably this is a general type an
 # TODO possible to type for hex color strings here?
 
 
-class RepresentationNode(NodeBase):
+class RepresentationNode(TerminalNodeBase):
     kind: Literal["representation"]
     type: RepresentationTypeT
     color: NotRequired[ColorT]
