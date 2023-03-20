@@ -1,4 +1,5 @@
-from molviewspec.nodes import DownloadNode, NodeBase, ParseFormatT, ParseNode, RootNode
+from molviewspec.nodes import ColorT, ComponentNode, ComponentSelectorT, DownloadNode, NodeBase, ParseFormatT,\
+    ParseNode, RepresentationNode, RepresentationTypeT, RootNode, StructureNode
 
 
 def create_builder() -> "Root":
@@ -21,16 +22,29 @@ class _Base:
 
 
 class Download(_Base):
-    def parse(self, *, format: ParseFormatT) -> "Parse":
-        node: ParseNode = {"kind": "parse", "children": [], "format": format}
+    def parse(self, *, format: ParseFormatT, is_binary: bool = False) -> "Parse":
+        node: ParseNode = {"kind": "parse", "children": [], "format": format, "is_binary": is_binary}
         self.node["children"].append(node)
         return Parse(node=node, root=self.root)
 
 
 class Parse(_Base):
-    def structure(self, *, kind) -> "Structure":
-        raise NotImplementedError()
+    def structure(self, *, assembly_id: str = "1", model_index: int = 1) -> "Structure":
+        node: StructureNode = {"kind": "structure", "children": [], "assembly_id": assembly_id,
+                               "model_index": model_index}
+        self.node["children"].append(node)
+        return Structure(node=node, root=self.root)
 
 
 class Structure(_Base):
-    pass
+    def component(self, *, selector: ComponentSelectorT) -> "Component":
+        node: ComponentNode = {"kind": "component", "children": [], "selector": selector}
+        self.node["children"].append(node)
+        return Component(node=node, root=self.root)
+
+
+class Component(_Base):
+    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT = "red"):
+        # TODO should there be terminal nodes without children?
+        node: RepresentationNode = {"kind": "representation", "children": [], "type": type, "color": color}
+        self.node["children"].append(node)

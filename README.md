@@ -29,11 +29,32 @@ will run the server on `localhost:9000` with reload mode on.
       "children": [
         {
           "kind": "parse",
-          "children": [],
-          "format": "mmcif"
+          "children": [
+            {
+              "kind": "structure",
+              "children": [
+                {
+                  "kind": "component",
+                  "children": [
+                    {
+                      "kind": "representation",
+                      "children": [],
+                      "type": "cartoon",
+                      "color": "red"
+                    }
+                  ],
+                  "selector": "all"
+                }
+              ],
+              "assembly_id": "1",
+              "model_index": 1
+            }
+          ],
+          "format": "mmcif",
+          "is_binary": false
         }
       ],
-      "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif"
+      "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1abc_updated.cif"
     }
   ]
 }
