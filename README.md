@@ -26,7 +26,7 @@ will run the server on `localhost:9000` with reload mode on.
   "children": [
     {
       "kind": "download",
-      "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1abc_updated.cif",
+      "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif",
       "children": [
         {
           "kind": "parse",
