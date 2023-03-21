@@ -3,7 +3,7 @@ from molviewspec.nodes import (
     ComponentNode,
     ComponentSelectorT,
     DownloadNode,
-    ParentNodeBase,
+    NodeBase,
     ParseFormatT,
     ParseNode,
     RepresentationNode,
@@ -27,7 +27,7 @@ class Root:
 
 
 class _Base:
-    def __init__(self, *, root: Root, node: ParentNodeBase) -> None:
+    def __init__(self, *, root: Root, node: NodeBase) -> None:
         self.root = root
         self.node = node
 

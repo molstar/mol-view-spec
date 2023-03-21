@@ -2,7 +2,7 @@ from typing import Literal, NotRequired, TypedDict
 
 
 class NodeBase(TypedDict):
-    children: list["NodeBase"]
+    children: NotRequired[list["NodeBase"]]
 
 
 class RootNode(NodeBase):
