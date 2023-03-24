@@ -12,7 +12,6 @@ from molviewspec.nodes import (
     ParseNode,
     RepresentationNode,
     RepresentationTypeT,
-    RootNode,
     StructureNode,
 )
 
@@ -22,7 +21,8 @@ def create_builder() -> "Root":
 
 
 class Root:
-    node: RootNode = {"kind": "root", "children": []}
+    def __init__(self) -> None:
+        self.node = {"kind": "root", "children": []}
 
     def download(self, *, url: str) -> "Download":
         node: DownloadNode = {"kind": "download", "url": url, "children": []}
