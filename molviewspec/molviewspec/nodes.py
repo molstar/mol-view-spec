@@ -46,3 +46,15 @@ class RepresentationNode(NodeBase):
     kind: Literal["representation"]
     type: RepresentationTypeT
     color: NotRequired[ColorT]
+
+
+class LabelNode(NodeBase):
+    kind: Literal["label"]
+    label_asym_id: str
+    label_seq_id: int
+    text: str
+
+
+class LabelCifCategoryNode(NodeBase):
+    kind: Literal["label-from-cif"]
+    category_name: str

@@ -3,6 +3,8 @@ from molviewspec.nodes import (
     ComponentNode,
     ComponentSelectorT,
     DownloadNode,
+    LabelCifCategoryNode,
+    LabelNode,
     NodeBase,
     ParseFormatT,
     ParseNode,
@@ -57,6 +59,17 @@ class Structure(_Base):
         node: ComponentNode = {"kind": "component", "selector": selector, "children": []}
         self.node["children"].append(node)
         return Component(node=node, root=self.root)
+
+    def label(self, *, label_asym_id: str, label_seq_id: int, text: str):
+        # TODO at which level of the hierarchy do these make most sense?
+        node: LabelNode = {"kind": "label", "label_asym_id": label_asym_id, "label_seq_id": label_seq_id, "text": text}
+        self.node["children"].append(node)
+        return self
+
+    def label_from_cif(self, *, cif_category_name: str):
+        node: LabelCifCategoryNode = {"kind": "label-from-cif", "category_name": cif_category_name}
+        self.node["children"].append(node)
+        return self
 
 
 class Component(_Base):
