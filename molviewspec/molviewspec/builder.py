@@ -1,4 +1,6 @@
 from molviewspec.nodes import (
+    ColorCifCategoryNode,
+    ColorNode,
     ColorT,
     ComponentNode,
     ComponentSelectorT,
@@ -73,8 +75,26 @@ class Structure(_Base):
 
 
 class Component(_Base):
-    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT = None):
-        node: RepresentationNode = {"kind": "representation", "type": type}
+    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT = None) -> "Representation":
+        node: RepresentationNode = {"kind": "representation", "type": type, "children": []}
         if color is not None:
             node["color"] = color
         self.node["children"].append(node)
+        return Representation(node=node, root=self.root)
+
+
+class Representation(_Base):
+    def color(self, *, label_asym_id: str, label_seq_id: int, color: ColorT):
+        node: ColorNode = {
+            "kind": "color",
+            "label_asym_id": label_asym_id,
+            "label_seq_id": label_seq_id,
+            "color": color
+        }
+        self.node["children"].append(node)
+        return self
+
+    def color_from_cif(self, *, cif_category_name: str):
+        node: ColorCifCategoryNode = {"kind": "color-from-cif", "category_name": cif_category_name}
+        self.node["children"].append(node)
+        return self

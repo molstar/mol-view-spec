@@ -58,3 +58,15 @@ class LabelNode(NodeBase):
 class LabelCifCategoryNode(NodeBase):
     kind: Literal["label-from-cif"]
     category_name: str
+
+
+class ColorNode(NodeBase):
+    kind: Literal["color"]
+    label_asym_id: str
+    label_seq_id: int
+    color: ColorT
+
+
+class ColorCifCategoryNode(NodeBase):
+    kind: Literal["color-from-cif"]
+    category_name: str
