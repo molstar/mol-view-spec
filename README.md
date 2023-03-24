@@ -31,12 +31,9 @@ will run the server on `localhost:9000` with reload mode on.
         {
           "kind": "parse",
           "format": "mmcif",
-          "is_binary": false,
           "children": [
             {
               "kind": "structure",
-              "assembly_id": "1",
-              "model_index": 1,
               "children": [
                 {
                   "kind": "component",
@@ -44,8 +41,7 @@ will run the server on `localhost:9000` with reload mode on.
                   "children": [
                     {
                       "kind": "representation",
-                      "type": "cartoon",
-                      "color": "red"
+                      "type": "cartoon"
                     }
                   ]
                 }

@@ -33,32 +33,35 @@ class _Base:
 
 
 class Download(_Base):
-    def parse(self, *, format: ParseFormatT, is_binary: bool = False) -> "Parse":
-        node: ParseNode = {"kind": "parse", "format": format, "is_binary": is_binary, "children": []}
+    def parse(self, *, format: ParseFormatT, is_binary: bool = None) -> "Parse":
+        node: ParseNode = {"kind": "parse", "format": format, "children": []}
+        if is_binary is not None:
+            node["is_binary"] = is_binary
         self.node["children"].append(node)
         return Parse(node=node, root=self.root)
 
 
 class Parse(_Base):
-    def structure(self, *, assembly_id: str = "1", model_index: int = 1) -> "Structure":
-        node: StructureNode = {
-            "kind": "structure",
-            "assembly_id": assembly_id,
-            "model_index": model_index,
-            "children": [],
-        }
+    def structure(self, *, assembly_id: str = None, model_index: int = None) -> "Structure":
+        node: StructureNode = {"kind": "structure", "children": []}
+        if assembly_id is not None:
+            node["assembly_id"] = assembly_id
+        if model_index is not None:
+            node["model_index"] = model_index
         self.node["children"].append(node)
         return Structure(node=node, root=self.root)
 
 
 class Structure(_Base):
-    def component(self, *, selector: ComponentSelectorT) -> "Component":
+    def component(self, *, selector: ComponentSelectorT = "all") -> "Component":
         node: ComponentNode = {"kind": "component", "selector": selector, "children": []}
         self.node["children"].append(node)
         return Component(node=node, root=self.root)
 
 
 class Component(_Base):
-    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT = "red"):
-        node: RepresentationNode = {"kind": "representation", "type": type, "color": color}
+    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT = None):
+        node: RepresentationNode = {"kind": "representation", "type": type}
+        if color is not None:
+            node["color"] = color
         self.node["children"].append(node)
