@@ -1,0 +1,7 @@
+{
+    "auth_asym_id": ["A", "B"],
+    "beg_auth_seq_id": [1, 200],
+    "end_auth_seq_id": [137, 200],
+    "tooltip": ["polymer", "ligand"],
+    "color": ["#121212", "#FF0000"]
+}
