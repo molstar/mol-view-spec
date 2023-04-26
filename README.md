@@ -41,7 +41,8 @@ will run the server on `localhost:9000` with reload mode on.
                   "children": [
                     {
                       "kind": "representation",
-                      "type": "cartoon"
+                      "type": "cartoon",
+                      "children": []
                     }
                   ]
                 }
