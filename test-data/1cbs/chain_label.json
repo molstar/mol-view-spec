@@ -1,0 +1,4 @@
+[
+    { "label_asym_id": "A", "label_entity_id": null, "tooltip": "polymer", "color": "#121212" },
+    { "label_asym_id": "B", "label_entity_id": null, "tooltip": "ligand", "color": "#FF0000" }
+]
