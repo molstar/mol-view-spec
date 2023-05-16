@@ -1,11 +1,10 @@
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 
-from molviewspec.builder import Root
 from app.config import settings
+from molviewspec.builder import Root
 
 router = APIRouter()
-
 
 
 @router.get("/load/{id}")
@@ -38,32 +37,34 @@ async def label_example(id: str):
 @router.get("/color/{id}")
 async def color_example(id: str):
     builder = Root()
-    structure = builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")\
-        .parse(format="mmcif")\
+    structure = (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
+        .parse(format="mmcif")
         .structure()
-    structure.component(selector="protein")\
-        .representation(type="cartoon", color="white")\
-        .color(label_asym_id="A", label_seq_id=64, color="red")
-    structure.component(selector="ligand")\
-        .representation(type="ball-and-stick")\
-        .color_from_cif(cif_category_name="my_custom_cif_category")
+    )
+    structure.component(selector="protein").representation(type="cartoon", color="white").color(
+        label_asym_id="A", label_seq_id=64, color="red"
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick").color_from_cif(
+        cif_category_name="my_custom_cif_category"
+    )
     return JSONResponse(builder.node)
 
 
 @router.get("/data/{id}/molecule")
-async def cif_data(id: str):
+async def cif_data_molecule(id: str):
     path = settings.TEST_DATA_DIR / id / "molecule.cif"
     return FileResponse(path)
 
 
 @router.get("/data/{id}/cif-annotations")
-async def cif_data(id: str):
+async def cif_data_annotation(id: str):
     annotations = (settings.TEST_DATA_DIR / id / "annotations.cif").read_text()
     return PlainTextResponse(f"data_{id}_annotations\n{annotations}")
 
 
 @router.get("/data/{id}/molecule-and-cif-annotations")
-async def cif_data(id: str):
+async def cif_data_molecule_and_annotation(id: str):
     mol = (settings.TEST_DATA_DIR / id / "molecule.cif").read_text()
     annotations = (settings.TEST_DATA_DIR / id / "annotations.cif").read_text()
     return PlainTextResponse(f"{mol}\n\n{annotations}")

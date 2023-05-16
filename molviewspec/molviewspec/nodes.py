@@ -1,30 +1,38 @@
-from typing import Literal, NotRequired, TypedDict
+from typing import Any, Literal, Mapping, NotRequired, TypedDict
+
+KindT = Literal[
+    "root",
+    "download",
+    "parse",
+    "structure",
+    "component",
+    "representation",
+    "label",
+    "label-from-cif",
+    "color",
+    "color-from-cif",
+]
 
 
-class NodeBase(TypedDict):
-    children: NotRequired[list["NodeBase"]]
+class Node(TypedDict):
+    kind: KindT
+    children: NotRequired[list["Node"]]
+    params: NotRequired[Mapping[str, Any]]  # TODO try to make more exact
 
 
-class RootNode(NodeBase):
-    kind: Literal["root"]
-
-
-class DownloadNode(NodeBase):
-    kind: Literal["download"]
+class DownloadParams(TypedDict):
     url: str
 
 
 ParseFormatT = Literal["mmcif", "pdb"]
 
 
-class ParseNode(NodeBase):
-    kind: Literal["parse"]
+class ParseParams(TypedDict):
     format: ParseFormatT
     is_binary: NotRequired[bool]
 
 
-class StructureNode(NodeBase):
-    kind: Literal["structure"]
+class StructureParams(TypedDict):
     assembly_id: NotRequired[str]
     model_index: NotRequired[int]
 
@@ -32,8 +40,7 @@ class StructureNode(NodeBase):
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "ligand", "ion", "water"]
 
 
-class ComponentNode(NodeBase):
-    kind: Literal["component"]
+class ComponentParams(TypedDict):
     selector: ComponentSelectorT
 
 
@@ -42,31 +49,26 @@ ColorT = Literal["red", "white", "blue"]  # presumably this is a general type an
 # TODO possible to type for hex color strings here?
 
 
-class RepresentationNode(NodeBase):
-    kind: Literal["representation"]
+class RepresentationParams(TypedDict):
     type: RepresentationTypeT
     color: NotRequired[ColorT]
 
 
-class LabelNode(NodeBase):
-    kind: Literal["label"]
+class LabelParams(TypedDict):
     label_asym_id: str
     label_seq_id: int
     text: str
 
 
-class LabelCifCategoryNode(NodeBase):
-    kind: Literal["label-from-cif"]
+class LabelCifCategoryParams(TypedDict):
     category_name: str
 
 
-class ColorNode(NodeBase):
-    kind: Literal["color"]
+class ColorParams(TypedDict):
     label_asym_id: str
     label_seq_id: int
     color: ColorT
 
 
-class ColorCifCategoryNode(NodeBase):
-    kind: Literal["color-from-cif"]
+class ColorCifCategoryParams(TypedDict):
     category_name: str

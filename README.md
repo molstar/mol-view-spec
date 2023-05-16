@@ -26,23 +26,31 @@ will run the server on `localhost:9000` with reload mode on.
   "children": [
     {
       "kind": "download",
-      "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif",
+      "params": {
+        "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif"
+      },
       "children": [
         {
           "kind": "parse",
-          "format": "mmcif",
+          "params": {
+            "format": "mmcif"
+          },
           "children": [
             {
               "kind": "structure",
+              "params": {},
               "children": [
                 {
                   "kind": "component",
-                  "selector": "all",
+                  "params": {
+                    "selector": "all"
+                  },
                   "children": [
                     {
-                      "kind": "representation",
-                      "type": "cartoon",
-                      "children": []
+                      "kind": "label-from-cif",
+                      "params": {
+                        "type": "cartoon"
+                      }
                     }
                   ]
                 }
