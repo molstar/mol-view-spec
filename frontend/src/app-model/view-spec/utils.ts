@@ -16,7 +16,7 @@ export function dfs<TTree extends NodeTypes>(root: Node<TTree>, visit?: (node: N
 export function prettyString<TTree extends NodeTypes>(node: Node<TTree>) {
     let level = 0;
     const lines: string[] = [];
-    dfs(node, node => lines.push('  '.repeat(level++) + `- ${node.kind} ${formatObject(node.params ?? {})}`), node => level--);
+    dfs(node, node => lines.push('   '.repeat(level++) + `- ${node.kind} ${formatObject(node.params ?? {})}`), node => level--);
     return lines.join('\n');
 }
 

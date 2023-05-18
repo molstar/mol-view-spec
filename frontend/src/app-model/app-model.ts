@@ -6,7 +6,7 @@ import * as GeneralTree from './view-spec/general-nodes';
 import { type Node, NodeTypes } from './view-spec/nodes';
 import { dfs, omitObjectKeys, pickObjectKeys, prettyString } from './view-spec/utils';
 import { Download } from 'molstar/lib/mol-plugin-state/transforms/data';
-import { convert } from './view-spec/node-conversions';
+import { condense, convert } from './view-spec/node-conversions';
 import { copyNodeWithoutChildren } from './view-spec/general-nodes';
 
 
@@ -76,9 +76,10 @@ export class AppModel {
         });
         console.log(m);
 
-        console.log(TEST_DATA);
         console.log(prettyString(TEST_DATA));
-        const converted = convert<NodeTypes, any>(TEST_DATA, {
+        
+        // First stage of conversion: expand nodes
+        const converted1 = convert<NodeTypes, any>(TEST_DATA, {
             'parse': node => [
                 { kind: 'preParse', params: node.params && pickObjectKeys(node.params, ['is_binary']) },
                 { kind: 'parse', params: node.params && omitObjectKeys(node.params, ['is_binary']) }],
@@ -87,19 +88,24 @@ export class AppModel {
                 { kind: 'structure', params: node.params && omitObjectKeys(node.params, ['model_index']) },
             ],
         });
-        console.log(converted);
-        console.log(prettyString(converted));
+        // console.log(converted1);
+        // console.log(prettyString(converted1));
 
-        const converted2 = convert<GeneralTree.NodeTypes, GeneralTree.NodeTypes>(converted, {
+        // Second stage of conversion: collapse nodes
+        const converted2 = convert<GeneralTree.NodeTypes, GeneralTree.NodeTypes>(converted1, {
             'download': node => [],
             'preParse': (node, parent) => parent?.kind === 'download' ? [
-                { kind: 'download2', params: { ...parent.params, ...node.params } },
+                { kind: 'download', params: { ...parent.params, ...node.params } },
             ] : [
                 copyNodeWithoutChildren(node)
             ],
         });
-        console.log(converted2);
-        console.log(prettyString(converted2));
+        // console.log(converted2);
+        // console.log(prettyString(converted2));
+
+        // Third stage of conversion: condense nodes
+        const converted3 = condense(converted2);
+        console.log(prettyString(converted3));
     }
 }
 
@@ -145,7 +151,11 @@ const TEST_DATA: Node<'root'> = {
                         },
                         { "kind": "structure", "params": { "model_index": 1, "assembly_id": "2" } },
                         { "kind": "structure", "params": { "model_index": 2, "assembly_id": "1" } },
-                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "2" } }
+                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "2" } },
+                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "3" } },
+                        { "kind": "structure", "params": { "model_index": 3, "assembly_id": "1" } },
+                        { "kind": "structure", "params": { "model_index": 3, "assembly_id": "2" } },
+                        { "kind": "structure", "params": { "model_index": 3, "assembly_id": "3" } }
                     ]
                 }
             ]

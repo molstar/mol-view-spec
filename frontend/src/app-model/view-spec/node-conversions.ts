@@ -1,3 +1,4 @@
+import { deepEqual } from 'molstar/lib/mol-util';
 import { copyNodeWithoutChildren, Kind, Node, NodeTypes } from './general-nodes';
 import { dfs } from './utils';
 
@@ -30,4 +31,25 @@ export function convert<TTree1 extends NodeTypes, TTree2 extends NodeTypes>(root
         }
     });
     return convertedRoot!;
+}
+
+export function copy<TTree1 extends NodeTypes>(root: Node<TTree1>): Node<TTree1> {
+    return convert(root, {});
+}
+
+export function condense<TTree1 extends NodeTypes>(root: Node<TTree1>): Node<TTree1> {
+    const result = copy(root);
+    dfs<TTree1>(result, (node, parent) => {
+        const newChildren: Node<TTree1>[] = [];
+        for (const child of node.children ?? []) {
+            const twin = newChildren.find(sibling => sibling.kind === child.kind && deepEqual(sibling.params, child.params));
+            if (twin) {
+                (twin.children ??= []).push(...child.children ?? [])
+            } else {
+                newChildren.push(child as Node<TTree1>);
+            }
+        }
+        node.children = newChildren;
+    });
+    return result;
 }
