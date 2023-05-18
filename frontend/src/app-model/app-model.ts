@@ -2,9 +2,12 @@ import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context'
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
 import { PluginConfig } from 'molstar/lib/mol-plugin/config';
-import { Node, ParseNode, RootNode } from './view-spec/nodes';
-import { dfs } from './view-spec/utils';
+import * as GeneralTree from './view-spec/general-nodes';
+import { type Node, NodeTypes } from './view-spec/nodes';
+import { dfs, omitObjectKeys, pickObjectKeys, prettyString } from './view-spec/utils';
 import { Download } from 'molstar/lib/mol-plugin-state/transforms/data';
+import { convert } from './view-spec/node-conversions';
+import { copyNodeWithoutChildren } from './view-spec/general-nodes';
 
 
 
@@ -44,19 +47,17 @@ export class AppModel {
         console.log('foo', this.plugin);
         if (!this.plugin) return;
         this.plugin.behaviors.layout.leftPanelTabName.next('data');
-        const raw = await this.plugin.build().toRoot().apply(Download, { isBinary: true, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif' }).commit();
-        // await this.plugin.build().to(raw).apply();
+        await this.plugin.build().toRoot().apply(Download, { isBinary: true, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif' }).commit();
 
-        const x: ParseNode = undefined as any;
         const exampleUrl = 'http://localhost:9000/api/v1/examples/load/1tqn';
         const response = await fetch(exampleUrl);
-        const data = await response.json() as RootNode;
+        const data = await response.json() as Node<'root'>;
         if (data.kind !== 'root') throw new Error('FormatError');
         console.log(data);
         const update = this.plugin.build();
         const m = new Map<Node, any>();
-        dfs(data, (node, parent) => {
-            console.log('Visit', node, '<-', parent);
+        dfs<NodeTypes>(data, (node, parent) => {
+            // console.log('Visit', node, '<-', parent);
             if (node.kind === 'root') {
                 const msRoot = update.toRoot().selector;
                 update.delete(msRoot);
@@ -74,5 +75,80 @@ export class AppModel {
             }
         });
         console.log(m);
+
+        console.log(TEST_DATA);
+        console.log(prettyString(TEST_DATA));
+        const converted = convert<NodeTypes, any>(TEST_DATA, {
+            'parse': node => [
+                { kind: 'preParse', params: node.params && pickObjectKeys(node.params, ['is_binary']) },
+                { kind: 'parse', params: node.params && omitObjectKeys(node.params, ['is_binary']) }],
+            'structure': node => [
+                { kind: 'model', params: node.params && pickObjectKeys(node.params, ['model_index']) },
+                { kind: 'structure', params: node.params && omitObjectKeys(node.params, ['model_index']) },
+            ],
+        });
+        console.log(converted);
+        console.log(prettyString(converted));
+
+        const converted2 = convert<GeneralTree.NodeTypes, GeneralTree.NodeTypes>(converted, {
+            'download': node => [],
+            'preParse': (node, parent) => parent?.kind === 'download' ? [
+                { kind: 'download2', params: { ...parent.params, ...node.params } },
+            ] : [
+                copyNodeWithoutChildren(node)
+            ],
+        });
+        console.log(converted2);
+        console.log(prettyString(converted2));
     }
 }
+
+const TEST_DATA: Node<'root'> = {
+    "kind": "root",
+    "children": [
+        {
+            "kind": "download", "params": { "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif" },
+            "children": [
+                {
+                    "kind": "parse", "params": { "format": "mmcif", "is_binary": false },
+                    "children": [
+                        {
+                            "kind": "structure", "params": { "model_index": 1, "assembly_id": "1" },
+                            "children": [
+                                {
+                                    "kind": "component", "params": { "selector": "protein" },
+                                    "children": [
+                                        {
+                                            "kind": "representation", "params": { "type": "cartoon", "color": "white" },
+                                            "children": [
+                                                {
+                                                    "kind": "color", "params": { "label_asym_id": "A", "label_seq_id": 64, "color": "red" }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "kind": "component", "params": { "selector": "ligand" },
+                                    "children": [
+                                        {
+                                            "kind": "representation", "params": { "type": "ball-and-stick" },
+                                            "children": [
+                                                {
+                                                    "kind": "color-from-cif", "params": { "category_name": "my_custom_cif_category" }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        { "kind": "structure", "params": { "model_index": 1, "assembly_id": "2" } },
+                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "1" } },
+                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "2" } }
+                    ]
+                }
+            ]
+        }
+    ]
+};

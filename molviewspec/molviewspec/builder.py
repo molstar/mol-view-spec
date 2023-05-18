@@ -83,6 +83,8 @@ class Structure(_Base):
 
     def label_from_cif(self, *, cif_category_name: str) -> "Structure":
         params: LabelCifCategoryParams = {"category_name": cif_category_name}
+        node: Node = {"kind": "label-from-cif", "params": params}
+        self.add_child(node)
         return self
 
 
@@ -91,7 +93,7 @@ class Component(_Base):
         params: RepresentationParams = {"type": type}
         if color is not None:
             params["color"] = color
-        node: Node = {"kind": "label-from-cif", "params": params}
+        node: Node = {"kind": "representation", "params": params}
         self.add_child(node)
         return Representation(node=node, root=self.root)
 

@@ -16,8 +16,8 @@ KindT = Literal[
 
 class Node(TypedDict):
     kind: KindT
+    params: NotRequired[Mapping[str, Any]]
     children: NotRequired[list["Node"]]
-    params: NotRequired[Mapping[str, Any]]  # TODO try to make more exact
 
 
 class DownloadParams(TypedDict):
