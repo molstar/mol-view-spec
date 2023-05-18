@@ -1,12 +1,12 @@
 import { deepEqual } from 'molstar/lib/mol-util';
-import { copyNodeWithoutChildren, Kind, Node, NodeTypes } from './general-nodes';
+import { copyNodeWithoutChildren, Kind, NodeOfKind, SubTree, Tree } from './nodes-generic';
 import { dfs } from './utils';
 
-export function convert<TTree1 extends NodeTypes, TTree2 extends NodeTypes>(root: Node<TTree1>, conversions: { [kind in Kind<TTree1>]?: (node: Node<TTree1, kind>, parent?: Node<TTree1, any>) => Node<TTree2>[] }) {
-    const mapping = new Map<Node<TTree1>, Node<TTree1> | Node<TTree2>>();
-    let convertedRoot: Node<TTree1> | Node<TTree2>;
+export function convert<TTree1 extends Tree, TTree2 extends Tree>(root: TTree1, conversions: { [kind in Kind<SubTree<TTree1>>]?: (node: NodeOfKind<TTree1, kind>, parent?: SubTree<TTree1>) => SubTree<TTree2>[] }): TTree1 | SubTree<TTree2> {
+    const mapping = new Map<SubTree<TTree1>, SubTree<TTree1> | SubTree<TTree2>>();  // TODO try SubTree<TTree1> | SubTree<TTree2> -> SubTree<TTree1|TTree2>
+    let convertedRoot: TTree1 | SubTree<TTree2>;
     dfs<TTree1>(root, (node, parent) => {
-        const conversion = conversions[node.kind as keyof typeof conversions];
+        const conversion = conversions[node.kind as keyof typeof conversions] as ((n: typeof node, p?: SubTree<TTree1>) => SubTree<TTree2>[]) | undefined;
         if (conversion) {
             const convertidos = conversion(node, parent);
             if (!parent && convertidos.length === 0) throw new Error('Cannot convert root to empty path');
@@ -33,20 +33,20 @@ export function convert<TTree1 extends NodeTypes, TTree2 extends NodeTypes>(root
     return convertedRoot!;
 }
 
-export function copy<TTree1 extends NodeTypes>(root: Node<TTree1>): Node<TTree1> {
-    return convert(root, {});
+export function copy<TTree extends Tree>(root: TTree): TTree {
+    return convert(root, {}) as TTree;
 }
 
-export function condense<TTree1 extends NodeTypes>(root: Node<TTree1>): Node<TTree1> {
+export function condense<TTree extends Tree>(root: TTree): TTree {
     const result = copy(root);
-    dfs<TTree1>(result, (node, parent) => {
-        const newChildren: Node<TTree1>[] = [];
+    dfs<TTree>(result, (node, parent) => {
+        const newChildren: SubTree<TTree>[] = [];
         for (const child of node.children ?? []) {
             const twin = newChildren.find(sibling => sibling.kind === child.kind && deepEqual(sibling.params, child.params));
             if (twin) {
                 (twin.children ??= []).push(...child.children ?? [])
             } else {
-                newChildren.push(child as Node<TTree1>);
+                newChildren.push(child as SubTree<TTree>);
             }
         }
         node.children = newChildren;

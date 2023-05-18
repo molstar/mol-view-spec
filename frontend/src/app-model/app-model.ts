@@ -2,14 +2,18 @@ import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context'
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
 import { PluginConfig } from 'molstar/lib/mol-plugin/config';
-import * as GeneralTree from './view-spec/general-nodes';
-import { type Node, NodeTypes } from './view-spec/nodes';
+import * as GeneralTree from './view-spec/nodes-generic';
 import { dfs, omitObjectKeys, pickObjectKeys, prettyString } from './view-spec/utils';
 import { Download } from 'molstar/lib/mol-plugin-state/transforms/data';
 import { condense, convert } from './view-spec/node-conversions';
-import { copyNodeWithoutChildren } from './view-spec/general-nodes';
+import { copyNodeWithoutChildren } from './view-spec/nodes-generic';
+import { MVSTree } from './view-spec/nodes-mvs';
+import { StateObjectSelector } from 'molstar/lib/mol-state';
+import { IntermediateNode, IntermediateTree1, MolstarTree } from './view-spec/nodes-molstar';
 
 
+/** This is because although `url` is required, `params` in general are optional */
+const DEFAULT_URL = 'DEFAULT_URL';
 
 export class AppModel {
     plugin?: PluginUIContext;
@@ -51,12 +55,12 @@ export class AppModel {
 
         const exampleUrl = 'http://localhost:9000/api/v1/examples/load/1tqn';
         const response = await fetch(exampleUrl);
-        const data = await response.json() as Node<'root'>;
+        const data = await response.json() as GeneralTree.NodeOfKind<MVSTree, 'root'>;
         if (data.kind !== 'root') throw new Error('FormatError');
         console.log(data);
         const update = this.plugin.build();
-        const m = new Map<Node, any>();
-        dfs<NodeTypes>(data, (node, parent) => {
+        const m = new Map<MVSTree, any>();
+        dfs<MVSTree>(data, (node, parent) => {
             // console.log('Visit', node, '<-', parent);
             if (node.kind === 'root') {
                 const msRoot = update.toRoot().selector;
@@ -77,12 +81,13 @@ export class AppModel {
         console.log(m);
 
         console.log(prettyString(TEST_DATA));
-        
+
         // First stage of conversion: expand nodes
-        const converted1 = convert<NodeTypes, any>(TEST_DATA, {
+        const converted1 = convert<MVSTree, IntermediateTree1>(TEST_DATA, {
             'parse': node => [
-                { kind: 'preParse', params: node.params && pickObjectKeys(node.params, ['is_binary']) },
-                { kind: 'parse', params: node.params && omitObjectKeys(node.params, ['is_binary']) }],
+                { kind: 'pre-parse', params: node.params && pickObjectKeys(node.params, ['is_binary']) },
+                { kind: 'parse', params: node.params && omitObjectKeys(node.params, ['is_binary']) }
+            ],
             'structure': node => [
                 { kind: 'model', params: node.params && pickObjectKeys(node.params, ['model_index']) },
                 { kind: 'structure', params: node.params && omitObjectKeys(node.params, ['model_index']) },
@@ -92,24 +97,27 @@ export class AppModel {
         // console.log(prettyString(converted1));
 
         // Second stage of conversion: collapse nodes
-        const converted2 = convert<GeneralTree.NodeTypes, GeneralTree.NodeTypes>(converted1, {
+        const converted2 = convert<IntermediateTree1, MolstarTree>(converted1, {
             'download': node => [],
-            'preParse': (node, parent) => parent?.kind === 'download' ? [
-                { kind: 'download', params: { ...parent.params, ...node.params } },
+            'raw': node => [],
+            'pre-parse': (node, parent) => parent?.kind === 'download' ? [
+                { kind: 'download', params: { url: DEFAULT_URL, ...parent.params, ...node.params } },
+            ] : parent?.kind === 'raw' ? [
+                { kind: 'raw', params: { ...parent.params, ...node.params } },
             ] : [
-                copyNodeWithoutChildren(node)
+                copyNodeWithoutChildren(node),
             ],
         });
         // console.log(converted2);
         // console.log(prettyString(converted2));
 
         // Third stage of conversion: condense nodes
-        const converted3 = condense(converted2);
+        const converted3 = condense<MolstarTree>(converted2);
         console.log(prettyString(converted3));
     }
 }
 
-const TEST_DATA: Node<'root'> = {
+const TEST_DATA: GeneralTree.NodeOfKind<MVSTree, 'root'> = {
     "kind": "root",
     "children": [
         {
@@ -159,6 +167,17 @@ const TEST_DATA: Node<'root'> = {
                     ]
                 }
             ]
+        },
+        {
+            "kind": "raw", "params": { "data": "hello" }, "children": [
+                { "kind": "parse", "params": { "format": "pdb", "is_binary": false } },
+                { "kind": "parse", "params": { "format": "mmcif", "is_binary": true } },
+                { "kind": "parse", "params": { "format": "mmcif", "is_binary": false } }
+            ]
+        },
+        {
+            "kind": "raw", "params": { "data": "ciao" }
         }
+
     ]
 };

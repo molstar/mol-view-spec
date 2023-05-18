@@ -1,19 +1,19 @@
-import { Node, NodeTypes } from './general-nodes';
+import { SubTree, Tree } from './nodes-generic';
 
 
-function _dfs<TTree extends NodeTypes>(root: Node<TTree>, parent: Node<TTree> | undefined, visit?: (node: Node<TTree>, parent?: Node<TTree>) => any, postVisit?: (node: Node<TTree>, parent?: Node<TTree>) => any) {
+function _dfs<TTree extends Tree>(root: TTree, parent: SubTree<TTree> | undefined, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
     if (visit) visit(root, parent);
     for (const child of root.children ?? []) {
-        _dfs(child as Node<TTree>, root, visit, postVisit);
+        _dfs<SubTree<TTree>>(child, root, visit, postVisit);
     }
     if (postVisit) postVisit(root, parent);
 }
 
-export function dfs<TTree extends NodeTypes>(root: Node<TTree>, visit?: (node: Node<TTree>, parent?: Node<TTree>) => any, postVisit?: (node: Node<TTree>, parent?: Node<TTree>) => any) {
-    return _dfs(root, undefined, visit, postVisit)
+export function dfs<TTree extends Tree>(root: TTree, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
+    return _dfs<SubTree<TTree>>(root, undefined, visit, postVisit);
 }
 
-export function prettyString<TTree extends NodeTypes>(node: Node<TTree>) {
+export function prettyString(node: Tree) {
     let level = 0;
     const lines: string[] = [];
     dfs(node, node => lines.push('   '.repeat(level++) + `- ${node.kind} ${formatObject(node.params ?? {})}`), node => level--);
