@@ -1,12 +1,28 @@
 
-export interface Node_<TKind extends string, TParams extends {}> {
+export interface Node_<TKind extends string = string, TParams extends {} = {}> {
     kind: TKind,
     params?: TParams,
-    children?: Node_<any, any>[],
-    // parent?: _Node<any, any>, // ?
+    children?: Node_[],
 }
 
-export type NodeTypes = Node_<string, any>[]
+export type ChildlessNode<TKind extends string = string, TParams extends {} = {}> = {
+    kind: TKind,
+    params?: TParams,
+}
+export type ChildfulNode<TTree extends ChildlessNode<string, {}> = ChildlessNode<string, {}>, TNode extends ChildlessNode<string, {}> = TTree> =
+    TNode & {
+        children?: ChildfulNode<TTree, TTree>[],
+    }
+
+const x: ChildfulNode<ChildlessNode<'download', { url: string }> | ChildlessNode<'parse', { format: string }>, ChildlessNode<'download', { url: string }>> = {} as any;
+const c1 = x.children![0];
+if (c1.kind === 'download') c1.params?.url;
+if (c1.kind === 'download') {
+    const gc1 = c1.children![0];
+    if (gc1.kind === 'parse') gc1.params?.format;
+}
+
+export type NodeTypes = Node_[]
 export type Kind<TTree extends NodeTypes> = TTree[number]['kind'];
 export type Node<TTree extends NodeTypes, T extends Kind<TTree> = Kind<TTree>> = Extract<TTree[number], Node_<T, {}>>
 export type Params<TTree extends NodeTypes, T extends Kind<TTree> = Kind<TTree>> = NonNullable<Node<TTree, T>['params']>
