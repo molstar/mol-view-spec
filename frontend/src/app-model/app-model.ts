@@ -1,19 +1,13 @@
-import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context'
-import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
-import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
-import { PluginConfig } from 'molstar/lib/mol-plugin/config';
-import * as GeneralTree from './view-spec/nodes-generic';
-import { dfs, omitObjectKeys, pickObjectKeys, prettyString } from './view-spec/utils';
 import { Download } from 'molstar/lib/mol-plugin-state/transforms/data';
-import { condense, convert } from './view-spec/node-conversions';
-import { copyNodeWithoutChildren } from './view-spec/nodes-generic';
-import { MVSTree } from './view-spec/nodes-mvs';
-import { StateObjectSelector } from 'molstar/lib/mol-state';
-import { IntermediateNode, IntermediateTree1, MolstarTree } from './view-spec/nodes-molstar';
+import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
+import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
+import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
+import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 
+import { SubTreeOfKind } from './tree/generic';
+import { MVSTree } from './tree/mvs';
+import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 
-/** This is because although `url` is required, `params` in general are optional */
-const DEFAULT_URL = 'DEFAULT_URL';
 
 export class AppModel {
     plugin?: PluginUIContext;
@@ -55,7 +49,7 @@ export class AppModel {
 
         const exampleUrl = 'http://localhost:9000/api/v1/examples/load/1tqn';
         const response = await fetch(exampleUrl);
-        const data = await response.json() as GeneralTree.NodeOfKind<MVSTree, 'root'>;
+        const data = await response.json() as SubTreeOfKind<MVSTree, 'root'>;
         if (data.kind !== 'root') throw new Error('FormatError');
         console.log(data);
         const update = this.plugin.build();
@@ -80,44 +74,16 @@ export class AppModel {
         });
         console.log(m);
 
-        console.log(prettyString(TEST_DATA));
+        console.log('MVS tree:');
+        console.log(treeToString(TEST_DATA));
 
-        // First stage of conversion: expand nodes
-        const converted1 = convert<MVSTree, IntermediateTree1>(TEST_DATA, {
-            'parse': node => [
-                { kind: 'pre-parse', params: node.params && pickObjectKeys(node.params, ['is_binary']) },
-                { kind: 'parse', params: node.params && omitObjectKeys(node.params, ['is_binary']) }
-            ],
-            'structure': node => [
-                { kind: 'model', params: node.params && pickObjectKeys(node.params, ['model_index']) },
-                { kind: 'structure', params: node.params && omitObjectKeys(node.params, ['model_index']) },
-            ],
-        });
-        // console.log(converted1);
-        // console.log(prettyString(converted1));
-
-        // Second stage of conversion: collapse nodes
-        const converted2 = convert<IntermediateTree1, MolstarTree>(converted1, {
-            'download': node => [],
-            'raw': node => [],
-            'pre-parse': (node, parent) => parent?.kind === 'download' ? [
-                { kind: 'download', params: { url: DEFAULT_URL, ...parent.params, ...node.params } },
-            ] : parent?.kind === 'raw' ? [
-                { kind: 'raw', params: { ...parent.params, ...node.params } },
-            ] : [
-                copyNodeWithoutChildren(node),
-            ],
-        });
-        // console.log(converted2);
-        // console.log(prettyString(converted2));
-
-        // Third stage of conversion: condense nodes
-        const converted3 = condense<MolstarTree>(converted2);
-        console.log(prettyString(converted3));
+        const converted = convertMvsToMolstar(TEST_DATA);
+        console.log('Converted MolStar tree:');
+        console.log(treeToString(converted));
     }
 }
 
-const TEST_DATA: GeneralTree.NodeOfKind<MVSTree, 'root'> = {
+const TEST_DATA: SubTreeOfKind<MVSTree, 'root'> = {
     "kind": "root",
     "children": [
         {

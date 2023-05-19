@@ -1,4 +1,4 @@
-import { Node, NodeOfKind, Tree } from './nodes-generic';
+import { Node, Tree } from './generic';
 
 
 export namespace MVSNode {
@@ -41,13 +41,13 @@ export namespace MVSNode {
     export type ColorFromCif = Node<'color-from-cif', {
         category_name: string,
     }>
-    export type Any = Root | Download | Raw | Parse | Structure | Component | Representation | Label | LabelFromCif | Color | ColorFromCif;
+
+    export type Any = Root | Download | Raw | Parse | Structure | Component | Representation | Label | LabelFromCif | Color | ColorFromCif
 }
 
-export type MVSNode = MVSNode.Any;
+export type MVSNode = MVSNode.Any
 
 export type MVSTree = Tree<MVSNode>
-// export type MVSRootedTree = Tree<MVSNode, NodeOfKind<MVSTree, 'root'>>
 
 export type ParseFormatT = 'mmcif' | 'pdb'
 export type ComponentSelectorT = 'all' | 'polymer' | 'protein' | 'nucleic' | 'ligand' | 'ion' | 'water'
