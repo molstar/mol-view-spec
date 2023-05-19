@@ -7,7 +7,10 @@ from molviewspec.builder import Root
 router = APIRouter()
 
 
-@router.get("/load/{id}")
+@router.get("/load/{id}",
+            description="""
+Download a minimal example that visualizes a given PDB entry in cartoon representation.
+            """)
 async def download_example(id: str):
     builder = Root()
     (
