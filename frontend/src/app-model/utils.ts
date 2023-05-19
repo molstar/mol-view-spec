@@ -1,5 +1,6 @@
 
-export function formatObject(obj: {}) {
+export function formatObject(obj: {} | undefined) {
+    if (!obj) return 'undefined';
     return JSON.stringify(obj).replace(/,("\w+":)/g, ', $1').replace(/"(\w+)":/g, '$1: ');
 }
 

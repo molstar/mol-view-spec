@@ -4,6 +4,7 @@ import { Kind, SubTree, SubTreeOfKind, Tree } from './generic';
 import { MolstarTree } from './molstar';
 import { MVSTree } from './mvs';
 import { formatObject, omitObjectKeys, pickObjectKeys } from '../utils';
+import { Defaults } from '../param-defaults';
 
 
 function _dfs<TTree extends Tree>(root: TTree, parent: SubTree<TTree> | undefined, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
@@ -80,7 +81,7 @@ export function condenseTree<T extends Tree>(root: T): T {
         const newChildren: SubTree<T>[] = [];
         for (const child of node.children ?? []) {
             const twin = newChildren.find(sibling => sibling.kind === child.kind && deepEqual(sibling.params, child.params));
-            // Using .find could be inefficient when their are too many children. TODO implement using a set, if we expect big numbers of children.
+            // Using .find could be inefficient when their are too many children. TODO implement using a set, if we expect big numbers of children (e.g. one label per each residue?)
             if (twin) {
                 (twin.children ??= []).push(...child.children ?? [])
             } else {
@@ -92,8 +93,6 @@ export function condenseTree<T extends Tree>(root: T): T {
     return result;
 }
 
-/** This is because although `url` is required, `params` in general are optional */
-const DEFAULT_URL = 'DEFAULT_URL';
 
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
@@ -104,7 +103,7 @@ export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
             const moveParams = node.params && pickObjectKeys(node.params, ['is_binary']);
             const keepParams = node.params && omitObjectKeys(node.params, ['is_binary']);
             if (parent?.kind === 'download') return [
-                { kind: 'download', params: { url: DEFAULT_URL, ...parent.params, ...moveParams } },
+                { kind: 'download', params: { url: Defaults.download.url, ...parent.params, ...moveParams } },
                 { kind: 'parse', params: keepParams }
             ];
             if (parent?.kind === 'raw') return [
