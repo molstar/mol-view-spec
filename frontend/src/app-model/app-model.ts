@@ -1,3 +1,4 @@
+import { BehaviorSubject } from 'rxjs';
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
@@ -11,6 +12,9 @@ import { convertMvsToMolstar, treeToString } from './tree/tree-utils';
 
 export class AppModel {
     plugin?: PluginUIContext;
+    status = new BehaviorSubject<'ready' | 'loading' | 'error'>('ready');
+    url = new BehaviorSubject<string | undefined>(undefined);
+    tree = new BehaviorSubject<string | undefined>(undefined);
 
     async initPlugin(target: HTMLDivElement) {
         const defaultSpec = DefaultPluginUISpec();
@@ -41,41 +45,34 @@ export class AppModel {
         });
     }
 
-    public async foo() {
-        console.log('foo', this.plugin);
-        if (!this.plugin) return;
-        this.plugin.behaviors.layout.leftPanelTabName.next('data');
+    public async loadMvsFromUrl(url: string = 'http://localhost:9000/api/v1/examples/load/1cbs') {
+        this.status.next('loading');
+        try {
+            console.log('foo', this.plugin);
+            if (!this.plugin) return;
+            this.plugin.behaviors.layout.leftPanelTabName.next('data');
 
-        // const download = await this.plugin.build().toRoot().apply(Download, { isBinary: false, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent' }).commit();
-        // await this.plugin.build().to(download).apply(TrajectoryFromPDB, {}).commit();
+            // const download = await this.plugin.build().toRoot().apply(Download, { isBinary: false, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent' }).commit();
+            // await this.plugin.build().to(download).apply(TrajectoryFromPDB, {}).commit();
 
-        // const download2 = await this.plugin.build().toRoot().apply(Download, { isBinary: true, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.bcif' }).commit();
-        // const cif = await this.plugin.build().to(download2).apply(ParseCif, {}).commit();
-        // const traj = await this.plugin.build().to(cif).apply(TrajectoryFromMmCif, {}).commit();
-        // const model = await this.plugin.build().to(traj).apply(ModelFromTrajectory, {modelIndex: 0}).commit();
-        // const struct = await this.plugin.build().to(model).apply(StructureFromModel, {}).commit();
-        // const repr = await this.plugin.build().to(struct).apply(StructureRepresentation3D, {}).commit();
+            // const download2 = await this.plugin.build().toRoot().apply(Download, { isBinary: true, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.bcif' }).commit();
+            // const cif = await this.plugin.build().to(download2).apply(ParseCif, {}).commit();
+            // const traj = await this.plugin.build().to(cif).apply(TrajectoryFromMmCif, {}).commit();
+            // const model = await this.plugin.build().to(traj).apply(ModelFromTrajectory, {modelIndex: 0}).commit();
+            // const struct = await this.plugin.build().to(model).apply(StructureFromModel, {}).commit();
+            // const repr = await this.plugin.build().to(struct).apply(StructureRepresentation3D, {}).commit();
 
-        const exampleUrls = {
-            load: 'http://localhost:9000/api/v1/examples/load/1cbs',
-            label: 'http://localhost:9000/api/v1/examples/label/1cbs',
-            color: 'http://localhost:9000/api/v1/examples/color/1cbs',
-        };
-
-        // const data = await getTreeFromUrl(exampleUrls.load);
-        const data = TEST_DATA;
-
-        const DELETE_PREVIOUS = true;
-        await loadMVSTree(this.plugin, data, DELETE_PREVIOUS);
-
-        for (const url of Object.values(exampleUrls)) {
             const data = await getTreeFromUrl(url);
-            console.log('MVS tree:');
-            console.log(treeToString(data));
+            // const data = TEST_DATA;
 
-            const converted = convertMvsToMolstar(data);
-            console.log('Converted MolStar tree:');
-            console.log(treeToString(converted));
+            const DELETE_PREVIOUS = true;
+            await loadMVSTree(this.plugin, data, DELETE_PREVIOUS);
+
+            this.url.next(url);
+            this.tree.next(treeToString(data));
+            this.status.next('ready');
+        } catch {
+            this.status.next('error');
         }
     }
 }

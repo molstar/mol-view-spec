@@ -22,7 +22,7 @@ export function dfs<TTree extends Tree>(root: TTree, visit?: (node: SubTree<TTre
 export function treeToString(tree: Tree) {
     let level = 0;
     const lines: string[] = [];
-    dfs(tree, node => lines.push('   '.repeat(level++) + `- ${node.kind} ${formatObject(node.params ?? {})}`), node => level--);
+    dfs(tree, node => lines.push('  '.repeat(level++) + `- ${node.kind} ${formatObject(node.params ?? {})}`), node => level--);
     return lines.join('\n');
 }
 
