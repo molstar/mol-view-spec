@@ -37,7 +37,9 @@ class StructureParams(TypedDict):
     model_index: NotRequired[int]
 
 
-ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "ligand", "ion", "water"]
+ComponentSelectorT = Literal[
+    "all", "polymer", "protein", "nucleic", "ligand", "ion", "water"
+]
 
 
 class ComponentParams(TypedDict):
@@ -45,7 +47,9 @@ class ComponentParams(TypedDict):
 
 
 RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
-ColorT = Literal["red", "white", "blue"]  # presumably this is a general type and will be useful elsewhere
+ColorT = Literal[
+    "red", "white", "blue"
+]  # presumably this is a general type and will be useful elsewhere
 # TODO possible to type for hex color strings here?
 
 

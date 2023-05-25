@@ -56,7 +56,9 @@ class Download(_Base):
 
 
 class Parse(_Base):
-    def structure(self, *, assembly_id: str | None = None, model_index: int | None = None) -> "Structure":
+    def structure(
+        self, *, assembly_id: str | None = None, model_index: int | None = None
+    ) -> "Structure":
         params: StructureParams = {}
         if assembly_id is not None:
             params["assembly_id"] = assembly_id
@@ -74,12 +76,21 @@ class Structure(_Base):
         self.add_child(node)
         return Component(node=node, root=self.root)
 
-    def label(self, *,
-              label_entity_id: str | None = None, label_asym_id: str | None = None, label_seq_id: int | None = None,
-              auth_asym_id: str | None = None, auth_seq_id: int | None = None, pdbx_pdb_ins_code: str | None = None,
-              beg_label_seq_id: int | None = None, end_label_seq_id: int | None = None,
-              beg_auth_seq_id: int | None = None, end_auth_seq_id: int | None = None,
-              text: str) -> "Structure":
+    def label(
+        self,
+        *,
+        label_entity_id: str | None = None,
+        label_asym_id: str | None = None,
+        label_seq_id: int | None = None,
+        auth_asym_id: str | None = None,
+        auth_seq_id: int | None = None,
+        pdbx_pdb_ins_code: str | None = None,
+        beg_label_seq_id: int | None = None,
+        end_label_seq_id: int | None = None,
+        beg_auth_seq_id: int | None = None,
+        end_auth_seq_id: int | None = None,
+        text: str
+    ) -> "Structure":
         # TODO at which level of the hierarchy do these make most sense?
         params: LabelParams = {"text": text}
         if label_entity_id is not None:
@@ -115,7 +126,9 @@ class Structure(_Base):
 
 
 class Component(_Base):
-    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> "Representation":
+    def representation(
+        self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None
+    ) -> "Representation":
         params: RepresentationParams = {"type": type}
         if color is not None:
             params["color"] = color
@@ -125,12 +138,22 @@ class Component(_Base):
 
 
 class Representation(_Base):
-    def color(self, *,
-              label_entity_id: str | None = None, label_asym_id: str | None = None, label_seq_id: int | None = None,
-              auth_asym_id: str | None = None, auth_seq_id: int | None = None, pdbx_pdb_ins_code: str | None = None,
-              beg_label_seq_id: int | None = None, end_label_seq_id: int | None = None,
-              beg_auth_seq_id: int | None = None, end_auth_seq_id: int | None = None,
-              color: ColorT, tooltip: str | None = None) -> "Representation":
+    def color(
+        self,
+        *,
+        label_entity_id: str | None = None,
+        label_asym_id: str | None = None,
+        label_seq_id: int | None = None,
+        auth_asym_id: str | None = None,
+        auth_seq_id: int | None = None,
+        pdbx_pdb_ins_code: str | None = None,
+        beg_label_seq_id: int | None = None,
+        end_label_seq_id: int | None = None,
+        beg_auth_seq_id: int | None = None,
+        end_auth_seq_id: int | None = None,
+        color: ColorT,
+        tooltip: str | None = None
+    ) -> "Representation":
         params: ColorParams = {"color": color}
         if label_entity_id is not None:
             params["label_entity_id"] = label_entity_id

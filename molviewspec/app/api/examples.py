@@ -1,7 +1,7 @@
+from app.config import settings
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 
-from app.config import settings
 from molviewspec.builder import Root
 
 router = APIRouter()
@@ -14,7 +14,9 @@ async def download_example(id: str):
     """
     builder = Root()
     (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
+        builder.download(
+            url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif"
+        )
         .parse(format="mmcif")
         .structure()
         .component()
@@ -30,14 +32,16 @@ async def label_example(id: str):
     """
     builder = Root()
     structure = (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
+        builder.download(
+            url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif"
+        )
         .parse(format="mmcif")
         .structure()
     )
     structure.component().representation()
-    structure.label(label_asym_id="A", label_seq_id=120, text="Residue 1")\
-        .label(label_asym_id="C", label_seq_id=271, text="Residue 2")\
-        .label_from_cif(cif_category_name="my_custom_cif_category")
+    structure.label(label_asym_id="A", label_seq_id=120, text="Residue 1").label(
+        label_asym_id="C", label_seq_id=271, text="Residue 2"
+    ).label_from_cif(cif_category_name="my_custom_cif_category")
     return JSONResponse(builder.node)
 
 
@@ -48,16 +52,18 @@ async def color_example(id: str):
     """
     builder = Root()
     structure = (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
+        builder.download(
+            url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif"
+        )
         .parse(format="mmcif")
         .structure()
     )
-    structure.component(selector="protein").representation(type="cartoon", color="white").color(
-        label_asym_id="A", label_seq_id=64, color="red", tooltip="Active Site"
-    )
-    structure.component(selector="ligand").representation(type="ball-and-stick").color_from_cif(
-        cif_category_name="my_custom_cif_category"
-    )
+    structure.component(selector="protein").representation(
+        type="cartoon", color="white"
+    ).color(label_asym_id="A", label_seq_id=64, color="red", tooltip="Active Site")
+    structure.component(selector="ligand").representation(
+        type="ball-and-stick"
+    ).color_from_cif(cif_category_name="my_custom_cif_category")
     return JSONResponse(builder.node)
 
 
