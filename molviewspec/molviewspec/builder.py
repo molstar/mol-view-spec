@@ -74,9 +74,35 @@ class Structure(_Base):
         self.add_child(node)
         return Component(node=node, root=self.root)
 
-    def label(self, *, label_asym_id: str, label_seq_id: int, text: str) -> "Structure":
+    def label(self, *,
+              label_entity_id: str | None = None, label_asym_id: str | None = None, label_seq_id: int | None = None,
+              auth_asym_id: str | None = None, auth_seq_id: int | None = None, pdbx_pdb_ins_code: str | None = None,
+              beg_label_seq_id: int | None = None, end_label_seq_id: int | None = None,
+              beg_auth_seq_id: int | None = None, end_auth_seq_id: int | None = None,
+              text: str) -> "Structure":
         # TODO at which level of the hierarchy do these make most sense?
-        params: LabelParams = {"label_asym_id": label_asym_id, "label_seq_id": label_seq_id, "text": text}
+        params: LabelParams = {"text": text}
+        if label_entity_id is not None:
+            params["label_entity_id"] = label_entity_id
+        if label_asym_id is not None:
+            params["label_asym_id"] = label_asym_id
+        if label_seq_id is not None:
+            params["label_seq_id"] = label_seq_id
+        if auth_asym_id is not None:
+            params["auth_asym_id"] = auth_asym_id
+        if auth_seq_id is not None:
+            params["auth_seq_id"] = auth_seq_id
+        if pdbx_pdb_ins_code is not None:
+            params["pdbx_PDB_ins_code"] = pdbx_pdb_ins_code
+        if beg_label_seq_id is not None:
+            params["beg_label_seq_id"] = beg_label_seq_id
+        if end_label_seq_id is not None:
+            params["end_label_seq_id"] = end_label_seq_id
+        if beg_auth_seq_id is not None:
+            params["beg_auth_seq_id"] = beg_auth_seq_id
+        if end_auth_seq_id is not None:
+            params["end_auth_seq_id"] = end_auth_seq_id
+        # TODO could validate here against "too few params"
         node = Node(kind="label", params=params)
         self.add_child(node)
         return self
@@ -99,8 +125,35 @@ class Component(_Base):
 
 
 class Representation(_Base):
-    def color(self, *, label_asym_id: str, label_seq_id: int, color: ColorT) -> "Representation":
-        params: ColorParams = {"label_asym_id": label_asym_id, "label_seq_id": label_seq_id, "color": color}
+    def color(self, *,
+              label_entity_id: str | None = None, label_asym_id: str | None = None, label_seq_id: int | None = None,
+              auth_asym_id: str | None = None, auth_seq_id: int | None = None, pdbx_pdb_ins_code: str | None = None,
+              beg_label_seq_id: int | None = None, end_label_seq_id: int | None = None,
+              beg_auth_seq_id: int | None = None, end_auth_seq_id: int | None = None,
+              color: ColorT, tooltip: str | None = None) -> "Representation":
+        params: ColorParams = {"color": color}
+        if label_entity_id is not None:
+            params["label_entity_id"] = label_entity_id
+        if label_asym_id is not None:
+            params["label_asym_id"] = label_asym_id
+        if label_seq_id is not None:
+            params["label_seq_id"] = label_seq_id
+        if auth_asym_id is not None:
+            params["auth_asym_id"] = auth_asym_id
+        if auth_seq_id is not None:
+            params["auth_seq_id"] = auth_seq_id
+        if pdbx_pdb_ins_code is not None:
+            params["pdbx_PDB_ins_code"] = pdbx_pdb_ins_code
+        if beg_label_seq_id is not None:
+            params["beg_label_seq_id"] = beg_label_seq_id
+        if end_label_seq_id is not None:
+            params["end_label_seq_id"] = end_label_seq_id
+        if beg_auth_seq_id is not None:
+            params["beg_auth_seq_id"] = beg_auth_seq_id
+        if end_auth_seq_id is not None:
+            params["end_auth_seq_id"] = end_auth_seq_id
+        if tooltip is not None:
+            params["tooltip"] = tooltip
         node = Node(kind="color", params=params)
         self.add_child(node)
         return self

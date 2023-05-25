@@ -12,7 +12,7 @@ app = FastAPI(title="Mol View Spec Server",
               description="""
 Compose Mol* views using a simple Python library, which allows you to compose complex scenes in a step-wise manner.
 
-This API demonstrates the capabilities of that library and provides a range of examples to load:
+This API demonstrates the capabilities of that library and provides a range of examples to:
 * load structure data
 * create representations such as cartoon, ball-and-stick etc for different polymer chains, ligands etc
 * adjust coloring for parts of the structure

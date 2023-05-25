@@ -53,7 +53,7 @@ async def color_example(id: str):
         .structure()
     )
     structure.component(selector="protein").representation(type="cartoon", color="white").color(
-        label_asym_id="A", label_seq_id=64, color="red"
+        label_asym_id="A", label_seq_id=64, color="red", tooltip="Active Site"
     )
     structure.component(selector="ligand").representation(type="ball-and-stick").color_from_cif(
         cif_category_name="my_custom_cif_category"

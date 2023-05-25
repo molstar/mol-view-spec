@@ -55,8 +55,16 @@ class RepresentationParams(TypedDict):
 
 
 class LabelParams(TypedDict):
-    label_asym_id: str
-    label_seq_id: int
+    label_asym_id: NotRequired[str]
+    label_entity_id: NotRequired[str]
+    label_seq_id: NotRequired[int]
+    auth_asym_id: NotRequired[str]
+    auth_seq_id: NotRequired[int]
+    pdbx_PDB_ins_code: NotRequired[str]
+    beg_label_seq_id: NotRequired[int]
+    end_label_seq_id: NotRequired[int]
+    beg_auth_seq_id: NotRequired[int]
+    end_auth_seq_id: NotRequired[int]
     text: str
 
 
@@ -65,8 +73,19 @@ class LabelCifCategoryParams(TypedDict):
 
 
 class ColorParams(TypedDict):
-    label_asym_id: str
-    label_seq_id: int
+    label_asym_id: NotRequired[str]  # TODO how are we feelin'?
+    label_entity_id: NotRequired[str]
+    label_seq_id: NotRequired[int]
+    auth_asym_id: NotRequired[str]
+    auth_seq_id: NotRequired[int]
+    pdbx_PDB_ins_code: NotRequired[str]
+    # TODO all of these could be broken into subclasses: ColorLabelParams, ColorAuthParams, ColorLabelRangeParams, ...
+    # TODO on top of that, both label and color basically extend the same "Identifier" class
+    beg_label_seq_id: NotRequired[int]
+    end_label_seq_id: NotRequired[int]
+    beg_auth_seq_id: NotRequired[int]
+    end_auth_seq_id: NotRequired[int]
+    tooltip: NotRequired[str]
     color: ColorT
 
 
