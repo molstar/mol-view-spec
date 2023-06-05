@@ -27,7 +27,7 @@ export const Defaults = {
     },
     representation: {
         type: 'cartoon',
-        color: 'blue',
+        color: undefined,
     },
     color: {
         color: 'red',

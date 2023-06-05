@@ -119,5 +119,7 @@ export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
         ],
     });
     const condensed = condenseTree<MolstarTree>(converted);
+    // TODO think if for all node kinds it makes sense to condense? 
+    // (e.g. how would we make 2 structures from same cif, one of them rotated)
     return condensed;
 }

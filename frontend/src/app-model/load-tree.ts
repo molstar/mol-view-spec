@@ -10,6 +10,8 @@ import { MolstarNode, MolstarTree } from './tree/molstar';
 import { MVSTree } from './tree/mvs';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { formatObject } from './utils';
+import { ColorNames } from 'molstar/lib/mol-util/color/names';
+import { Color } from 'molstar/lib/mol-util/color';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -56,8 +58,10 @@ export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTr
     },
     representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode.Representation): StateObjectSelector {
         const type = node.params?.type ?? Defaults.representation.type;
+        const color = node.params?.color ?? Defaults.representation.color;
         return update.to(msTarget).apply(StructureRepresentation3D, {
-            type: { name: type, params: {} }
+            type: { name: type, params: {} },
+            colorTheme: color ? { name: 'uniform', params: { value: Color(ColorNames[color as keyof ColorNames] ?? ColorNames.white )} } : undefined,
         }).selector;
     },
 };
