@@ -21,7 +21,7 @@ def create_builder() -> "Root":
     return Root()
 
 
-def assign_params(params: dict, type: TypeVar, lcs: dict):
+def _assign_params(params: dict, type: TypeVar, lcs: dict):
     for k in type.__annotations__.keys():
         if k in lcs and lcs.get(k) is not None:
             params[k] = lcs.get(k)
@@ -56,7 +56,7 @@ class Download(_Base):
     def parse(self, *, format: ParseFormatT, is_binary: bool | None = None) -> "Parse":
         lcs = locals()
         params: ParseParams = {}
-        assign_params(params, ParseParams, lcs)
+        _assign_params(params, ParseParams, lcs)
         node = Node(kind="parse", params=params)
         self.add_child(node)
         return Parse(node=node, root=self.root)
@@ -68,7 +68,7 @@ class Parse(_Base):
     ) -> "Structure":
         lcs = locals()
         params: StructureParams = {"kind": "model"}
-        assign_params(params, StructureParams, lcs)
+        _assign_params(params, StructureParams, lcs)
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
@@ -79,7 +79,7 @@ class Parse(_Base):
     ) -> "Structure":
         lcs = locals()
         params: StructureParams = {"kind": "assembly"}
-        assign_params(params, StructureParams, lcs)
+        _assign_params(params, StructureParams, lcs)
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
@@ -91,7 +91,7 @@ class Parse(_Base):
     ) -> "Structure":
         lcs = locals()
         params: StructureParams = {"kind": "symmetry-mates"}
-        assign_params(params, StructureParams, lcs)
+        _assign_params(params, StructureParams, lcs)
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
@@ -122,7 +122,7 @@ class Structure(_Base):
         # TODO at which level of the hierarchy do these make most sense?
         lcs = locals()
         params: LabelParams = {}
-        assign_params(params, LabelParams, lcs)
+        _assign_params(params, LabelParams, lcs)
         # TODO could validate here against "too few params"
         node = Node(kind="label", params=params)
         self.add_child(node)
@@ -131,7 +131,7 @@ class Structure(_Base):
     def label_from_cif(self, *, category_name: str) -> "Structure":
         lcs = locals()
         params: LabelCifCategoryParams = {}
-        assign_params(params, LabelCifCategoryParams, lcs)
+        _assign_params(params, LabelCifCategoryParams, lcs)
         node = Node(kind="label-from-cif", params=params)
         self.add_child(node)
         return self
@@ -143,7 +143,7 @@ class Component(_Base):
     ) -> "Representation":
         lcs = locals()
         params: RepresentationParams = {}
-        assign_params(params, RepresentationParams, lcs)
+        _assign_params(params, RepresentationParams, lcs)
         node = Node(kind="representation", params=params)
         self.add_child(node)
         return Representation(node=node, root=self.root)
@@ -168,7 +168,7 @@ class Representation(_Base):
     ) -> "Representation":
         lcs = locals()
         params: ColorParams = {}
-        assign_params(params, ColorParams, lcs)
+        _assign_params(params, ColorParams, lcs)
         node = Node(kind="color", params=params)
         self.add_child(node)
         return self
@@ -176,7 +176,7 @@ class Representation(_Base):
     def color_from_cif(self, *, category_name: str) -> "Representation":
         lcs = locals()
         params: ColorCifCategoryParams = {}
-        assign_params(params, ColorCifCategoryParams, lcs)
+        _assign_params(params, ColorCifCategoryParams, lcs)
         node = Node(kind="color-from-cif", params=params)
         self.add_child(node)
         return self
