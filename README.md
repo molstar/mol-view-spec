@@ -38,7 +38,9 @@ will run the server on `localhost:9000` with reload mode on.
           "children": [
             {
               "kind": "structure",
-              "params": {},
+              "params": {
+                "kind": "model"
+              },
               "children": [
                 {
                   "kind": "component",

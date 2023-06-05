@@ -36,11 +36,11 @@ class StructureParams(TypedDict):
     kind: Literal["model", "assembly", "crystal-symmetry"]
     assembly_id: NotRequired[str]
     model_index: NotRequired[int]
-    """0-based"""
+    """0-based model index in case multiple NMR frames are present"""
     block_index: NotRequired[int]
-    """TODO description"""
+    """0-based block index in case multiple mmCIF or SDF data blocks are present"""
     block_header: NotRequired[str]
-    """TODO description"""
+    """Reference a specific mmCIF or SDF data block by its block header"""
 
 
 ComponentSelectorT = Literal[
