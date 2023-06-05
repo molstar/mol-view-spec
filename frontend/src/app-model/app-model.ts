@@ -1,15 +1,20 @@
-import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context'
-import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
+import { BehaviorSubject } from 'rxjs';
+import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
+import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { PluginConfig } from 'molstar/lib/mol-plugin/config';
-import { Node, ParseNode, RootNode } from './view-spec/nodes';
-import { dfs } from './view-spec/utils';
-import { Download } from 'molstar/lib/mol-plugin-state/transforms/data';
 
+import { loadMVSTree } from './load-tree';
+import { SubTreeOfKind } from './tree/generic';
+import { MVSTree } from './tree/mvs';
+import { convertMvsToMolstar, treeToString } from './tree/tree-utils';
 
 
 export class AppModel {
     plugin?: PluginUIContext;
+    status = new BehaviorSubject<'ready' | 'loading' | 'error'>('ready');
+    url = new BehaviorSubject<string | undefined>(undefined);
+    tree = new BehaviorSubject<string | undefined>(undefined);
 
     async initPlugin(target: HTMLDivElement) {
         const defaultSpec = DefaultPluginUISpec();
@@ -40,39 +45,110 @@ export class AppModel {
         });
     }
 
-    public async foo() {
-        console.log('foo', this.plugin);
-        if (!this.plugin) return;
-        this.plugin.behaviors.layout.leftPanelTabName.next('data');
-        const raw = await this.plugin.build().toRoot().apply(Download, { isBinary: true, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif' }).commit();
-        // await this.plugin.build().to(raw).apply();
+    public async loadMvsFromUrl(url: string = 'http://localhost:9000/api/v1/examples/load/1cbs') {
+        this.status.next('loading');
+        try {
+            console.log('foo', this.plugin);
+            if (!this.plugin) return;
+            this.plugin.behaviors.layout.leftPanelTabName.next('data');
 
-        const x: ParseNode = undefined as any;
-        const exampleUrl = 'http://localhost:9000/api/v1/examples/load/1tqn';
-        const response = await fetch(exampleUrl);
-        const data = await response.json() as RootNode;
-        if (data.kind !== 'root') throw new Error('FormatError');
-        console.log(data);
-        const update = this.plugin.build();
-        const m = new Map<Node, any>();
-        dfs(data, (node, parent) => {
-            console.log('Visit', node, '<-', parent);
-            if (node.kind === 'root') {
-                const msRoot = update.toRoot().selector;
-                update.delete(msRoot);
-                m.set(node, msRoot);
-            } else {
-                if (!parent) throw new Error('FormatError');;
-                const msTarget = m.get(parent);
-                let msNode;
-                switch (node.kind) {
-                    // case 'download':
-                    //     node.url;
-                }
-                // update.to(msTarget).apply(Download)
-                m.set(node, parent);
-            }
-        });
-        console.log(m);
+            // const download = await this.plugin.build().toRoot().apply(Download, { isBinary: false, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent' }).commit();
+            // await this.plugin.build().to(download).apply(TrajectoryFromPDB, {}).commit();
+
+            // const download2 = await this.plugin.build().toRoot().apply(Download, { isBinary: true, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.bcif' }).commit();
+            // const cif = await this.plugin.build().to(download2).apply(ParseCif, {}).commit();
+            // const traj = await this.plugin.build().to(cif).apply(TrajectoryFromMmCif, {}).commit();
+            // const model = await this.plugin.build().to(traj).apply(ModelFromTrajectory, {modelIndex: 0}).commit();
+            // const struct = await this.plugin.build().to(model).apply(StructureFromModel, {}).commit();
+            // const repr = await this.plugin.build().to(struct).apply(StructureRepresentation3D, {}).commit();
+
+            const data = await getTreeFromUrl(url);
+            // const data = TEST_DATA;
+
+            const DELETE_PREVIOUS = true;
+            await loadMVSTree(this.plugin, data, DELETE_PREVIOUS);
+
+            this.url.next(url);
+            this.tree.next(treeToString(data));
+            this.status.next('ready');
+        } catch {
+            this.status.next('error');
+        }
     }
 }
+
+async function getTreeFromUrl(url: string): Promise<SubTreeOfKind<MVSTree, 'root'>> {
+    console.log(url);
+    const response = await fetch(url);
+    const data = await response.json() as SubTreeOfKind<MVSTree, 'root'>;
+    if (data.kind !== 'root') throw new Error('FormatError');
+    return data;
+}
+
+const TEST_DATA: SubTreeOfKind<MVSTree, 'root'> = {
+    "kind": "root",
+    "children": [
+        {
+            "kind": "download", "params": { "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif" },
+            // "kind": "download", "params": { "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent" },
+            "children": [
+                {
+                    "kind": "parse", "params": { "format": "mmcif", "is_binary": true },
+                    // "kind": "parse", "params": { "format": "pdb", "is_binary": false },
+                    "children": [
+                        {
+                            "kind": "structure", "params": { "model_index": 0, "assembly_id": "1" },
+                            "children": [
+                                {
+                                    "kind": "component", "params": { "selector": "protein" },
+                                    "children": [
+                                        {
+                                            "kind": "representation", "params": { "type": "cartoon", "color": "white" },
+                                            "children": [
+                                                {
+                                                    "kind": "color", "params": { "label_asym_id": "A", "label_seq_id": 64, "color": "red" }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "kind": "component", "params": { "selector": "ligand" },
+                                    "children": [
+                                        {
+                                            "kind": "representation", "params": { "type": "ball-and-stick" },
+                                            "children": [
+                                                {
+                                                    "kind": "color-from-cif", "params": { "category_name": "my_custom_cif_category" }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        { "kind": "structure", "params": { "model_index": 0, "assembly_id": "2" } },
+                        { "kind": "structure", "params": { "model_index": 1, "assembly_id": "1" } },
+                        { "kind": "structure", "params": { "model_index": 1, "assembly_id": "2" } },
+                        { "kind": "structure", "params": { "model_index": 1, "assembly_id": "3" } },
+                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "1" } },
+                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "2" } },
+                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "3" } },
+                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": undefined } }
+                    ]
+                }
+            ]
+        },
+        {
+            "kind": "raw", "params": { "data": "hello" }, "children": [
+                { "kind": "parse", "params": { "format": "pdb", "is_binary": false } },
+                { "kind": "parse", "params": { "format": "mmcif", "is_binary": true } },
+                { "kind": "parse", "params": { "format": "mmcif", "is_binary": false } }
+            ]
+        },
+        {
+            "kind": "raw", "params": { "data": "ciao" }
+        }
+
+    ]
+};
