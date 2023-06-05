@@ -14,10 +14,17 @@ from molviewspec.nodes import (
     RepresentationTypeT,
     StructureParams,
 )
+from typing import TypeVar
 
 
 def create_builder() -> "Root":
     return Root()
+
+
+def assign_params(params: dict, type: TypeVar, lcs: dict):
+    for k in type.__annotations__.keys():
+        if k in lcs and lcs.get(k) is not None:
+            params[k] = lcs.get(k)
 
 
 class Root:
@@ -47,9 +54,9 @@ class _Base:
 
 class Download(_Base):
     def parse(self, *, format: ParseFormatT, is_binary: bool | None = None) -> "Parse":
-        params: ParseParams = {"format": format}
-        if is_binary is not None:
-            params["is_binary"] = is_binary
+        lcs = locals()
+        params: ParseParams = {}
+        assign_params(params, ParseParams, lcs)
         node = Node(kind="parse", params=params)
         self.add_child(node)
         return Parse(node=node, root=self.root)
@@ -59,43 +66,32 @@ class Parse(_Base):
     def model_structure(
         self, *, model_index: int | None = None, block_index: int | None = None, block_header: str | None = None,
     ) -> "Structure":
+        lcs = locals()
         params: StructureParams = {"kind": "model"}
-        if model_index is not None:
-            params["model_index"] = model_index
-        if block_index is not None:
-            params["block_index"] = block_index
-        if block_header is not None:
-            params["block_header"] = block_header
+        assign_params(params, StructureParams, lcs)
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
 
     def assembly_structure(
         # TODO made this optional again, where do we draw the line between
-        self, *, assembly_id: str | None, block_index: int | None = None, block_header: str | None = None,
+        self, *, assembly_id: str | None = None, block_index: int | None = None, block_header: str | None = None,
     ) -> "Structure":
+        lcs = locals()
         params: StructureParams = {"kind": "assembly"}
-        if assembly_id is not None:
-            params["assembly_id"] = assembly_id
-        if block_index is not None:
-            params["block_index"] = block_index
-        if block_header is not None:
-            params["block_header"] = block_header
+        assign_params(params, StructureParams, lcs)
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
 
     def symmetry_mate_structure(
             # TODO symmetry by index? unit cell?
+            # TODO is radius too Mol* specific, how do other viewers do this?
             self, *, radius: float | None = None, block_index: int | None = None, block_header: str | None = None,
     ) -> "Structure":
+        lcs = locals()
         params: StructureParams = {"kind": "symmetry-mates"}
-        if radius is not None:  # TODO is this too Mol* specific, how do other viewers do this
-            params["radius"] = radius
-        if block_index is not None:
-            params["block_index"] = block_index
-        if block_header is not None:
-            params["block_header"] = block_header
+        assign_params(params, StructureParams, lcs)
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
@@ -116,7 +112,7 @@ class Structure(_Base):
         label_seq_id: int | None = None,
         auth_asym_id: str | None = None,
         auth_seq_id: int | None = None,
-        pdbx_pdb_ins_code: str | None = None,
+        pdbx_PDB_ins_code: str | None = None,
         beg_label_seq_id: int | None = None,
         end_label_seq_id: int | None = None,
         beg_auth_seq_id: int | None = None,
@@ -124,34 +120,18 @@ class Structure(_Base):
         text: str
     ) -> "Structure":
         # TODO at which level of the hierarchy do these make most sense?
-        params: LabelParams = {"text": text}
-        if label_entity_id is not None:
-            params["label_entity_id"] = label_entity_id
-        if label_asym_id is not None:
-            params["label_asym_id"] = label_asym_id
-        if label_seq_id is not None:
-            params["label_seq_id"] = label_seq_id
-        if auth_asym_id is not None:
-            params["auth_asym_id"] = auth_asym_id
-        if auth_seq_id is not None:
-            params["auth_seq_id"] = auth_seq_id
-        if pdbx_pdb_ins_code is not None:
-            params["pdbx_PDB_ins_code"] = pdbx_pdb_ins_code
-        if beg_label_seq_id is not None:
-            params["beg_label_seq_id"] = beg_label_seq_id
-        if end_label_seq_id is not None:
-            params["end_label_seq_id"] = end_label_seq_id
-        if beg_auth_seq_id is not None:
-            params["beg_auth_seq_id"] = beg_auth_seq_id
-        if end_auth_seq_id is not None:
-            params["end_auth_seq_id"] = end_auth_seq_id
+        lcs = locals()
+        params: LabelParams = {}
+        assign_params(params, LabelParams, lcs)
         # TODO could validate here against "too few params"
         node = Node(kind="label", params=params)
         self.add_child(node)
         return self
 
-    def label_from_cif(self, *, cif_category_name: str) -> "Structure":
-        params: LabelCifCategoryParams = {"category_name": cif_category_name}
+    def label_from_cif(self, *, category_name: str) -> "Structure":
+        lcs = locals()
+        params: LabelCifCategoryParams = {}
+        assign_params(params, LabelCifCategoryParams, lcs)
         node = Node(kind="label_from_cif", params=params)
         self.add_child(node)
         return self
@@ -161,9 +141,9 @@ class Component(_Base):
     def representation(
         self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None
     ) -> "Representation":
-        params: RepresentationParams = {"type": type}
-        if color is not None:
-            params["color"] = color
+        lcs = locals()
+        params: RepresentationParams = {}
+        assign_params(params, RepresentationParams, lcs)
         node = Node(kind="representation", params=params)
         self.add_child(node)
         return Representation(node=node, root=self.root)
@@ -178,7 +158,7 @@ class Representation(_Base):
         label_seq_id: int | None = None,
         auth_asym_id: str | None = None,
         auth_seq_id: int | None = None,
-        pdbx_pdb_ins_code: str | None = None,
+        pdbx_PDB_ins_code: str | None = None,
         beg_label_seq_id: int | None = None,
         end_label_seq_id: int | None = None,
         beg_auth_seq_id: int | None = None,
@@ -186,35 +166,17 @@ class Representation(_Base):
         color: ColorT,
         tooltip: str | None = None
     ) -> "Representation":
-        params: ColorParams = {"color": color}
-        if label_entity_id is not None:
-            params["label_entity_id"] = label_entity_id
-        if label_asym_id is not None:
-            params["label_asym_id"] = label_asym_id
-        if label_seq_id is not None:
-            params["label_seq_id"] = label_seq_id
-        if auth_asym_id is not None:
-            params["auth_asym_id"] = auth_asym_id
-        if auth_seq_id is not None:
-            params["auth_seq_id"] = auth_seq_id
-        if pdbx_pdb_ins_code is not None:
-            params["pdbx_PDB_ins_code"] = pdbx_pdb_ins_code
-        if beg_label_seq_id is not None:
-            params["beg_label_seq_id"] = beg_label_seq_id
-        if end_label_seq_id is not None:
-            params["end_label_seq_id"] = end_label_seq_id
-        if beg_auth_seq_id is not None:
-            params["beg_auth_seq_id"] = beg_auth_seq_id
-        if end_auth_seq_id is not None:
-            params["end_auth_seq_id"] = end_auth_seq_id
-        if tooltip is not None:
-            params["tooltip"] = tooltip
+        lcs = locals()
+        params: ColorParams = {}
+        assign_params(params, ColorParams, lcs)
         node = Node(kind="color", params=params)
         self.add_child(node)
         return self
 
-    def color_from_cif(self, *, cif_category_name: str) -> "Representation":
-        params: ColorCifCategoryParams = {"category_name": cif_category_name}
+    def color_from_cif(self, *, category_name: str) -> "Representation":
+        lcs = locals()
+        params: ColorCifCategoryParams = {}
+        assign_params(params, ColorCifCategoryParams, lcs)
         node = Node(kind="color-from-cif", params=params)
         self.add_child(node)
         return self
