@@ -69,15 +69,29 @@ class Parse(_Base):
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
-    
+
     def assembly_structure(
-        self, *, assembly_id: str, model_index: int | None = None, block_index: int | None = None, block_header: str | None = None,
+        # TODO made this optional again, where do we draw the line between
+        self, *, assembly_id: str | None, block_index: int | None = None, block_header: str | None = None,
     ) -> "Structure":
         params: StructureParams = {"kind": "assembly"}
         if assembly_id is not None:
             params["assembly_id"] = assembly_id
-        if model_index is not None:
-            params["model_index"] = model_index
+        if block_index is not None:
+            params["block_index"] = block_index
+        if block_header is not None:
+            params["block_header"] = block_header
+        node = Node(kind="structure", params=params)
+        self.add_child(node)
+        return Structure(node=node, root=self.root)
+
+    def symmetry_mate_structure(
+            # TODO symmetry by index? unit cell?
+            self, *, radius: float | None = None, block_index: int | None = None, block_header: str | None = None,
+    ) -> "Structure":
+        params: StructureParams = {"kind": "symmetry-mates"}
+        if radius is not None:  # TODO is this too Mol* specific, how do other viewers do this
+            params["radius"] = radius
         if block_index is not None:
             params["block_index"] = block_index
         if block_header is not None:
