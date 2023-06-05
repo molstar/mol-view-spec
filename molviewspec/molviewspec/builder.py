@@ -132,7 +132,7 @@ class Structure(_Base):
         lcs = locals()
         params: LabelCifCategoryParams = {}
         assign_params(params, LabelCifCategoryParams, lcs)
-        node = Node(kind="label_from_cif", params=params)
+        node = Node(kind="label-from-cif", params=params)
         self.add_child(node)
         return self
 
