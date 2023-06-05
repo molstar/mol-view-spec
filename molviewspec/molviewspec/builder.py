@@ -31,7 +31,7 @@ class Root:
         self.node["children"].append(node)
         return Download(node=node, root=self)
 
-    # TODO Root inherit from _Base and have special __init__ with `self.root = self`?
+    # TODO Root inherit from _Base and have special __init__ with `self.root = self`? (to be able to use `add_child` in `download`)
 
 
 class _Base:
@@ -56,14 +56,32 @@ class Download(_Base):
 
 
 class Parse(_Base):
-    def structure(
-        self, *, assembly_id: str | None = None, model_index: int | None = None
+    def model_structure(
+        self, *, model_index: int | None = None, block_index: int | None = None, block_header: str | None = None,
     ) -> "Structure":
-        params: StructureParams = {}
+        params: StructureParams = {"kind": "model"}
+        if model_index is not None:
+            params["model_index"] = model_index
+        if block_index is not None:
+            params["block_index"] = block_index
+        if block_header is not None:
+            params["block_header"] = block_header
+        node = Node(kind="structure", params=params)
+        self.add_child(node)
+        return Structure(node=node, root=self.root)
+    
+    def assembly_structure(
+        self, *, assembly_id: str, model_index: int | None = None, block_index: int | None = None, block_header: str | None = None,
+    ) -> "Structure":
+        params: StructureParams = {"kind": "assembly"}
         if assembly_id is not None:
             params["assembly_id"] = assembly_id
         if model_index is not None:
             params["model_index"] = model_index
+        if block_index is not None:
+            params["block_index"] = block_index
+        if block_header is not None:
+            params["block_header"] = block_header
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
@@ -120,7 +138,7 @@ class Structure(_Base):
 
     def label_from_cif(self, *, cif_category_name: str) -> "Structure":
         params: LabelCifCategoryParams = {"category_name": cif_category_name}
-        node = Node(kind="label_from_cif", params=params)
+        node = Node(kind="label-from-cif", params=params)
         self.add_child(node)
         return self
 

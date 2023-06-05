@@ -16,8 +16,8 @@ KindT = Literal[
 
 class Node(TypedDict):
     kind: KindT
+    params: NotRequired[Mapping[str, Any]]
     children: NotRequired[list["Node"]]
-    params: NotRequired[Mapping[str, Any]]  # TODO try to make more exact
 
 
 class DownloadParams(TypedDict):
@@ -33,18 +33,29 @@ class ParseParams(TypedDict):
 
 
 class StructureParams(TypedDict):
+    kind: Literal["model", "assembly", "crystal-symmetry"]
     assembly_id: NotRequired[str]
     model_index: NotRequired[int]
+    """0-based"""
+    block_index: NotRequired[int]
+    """TODO description"""
+    block_header: NotRequired[str]
+    """TODO description"""
 
 
 ComponentSelectorT = Literal[
-    "all", "polymer", "protein", "nucleic", "ligand", "ion", "water"
+    "all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"
 ]
 
 
 class ComponentParams(TypedDict):
     selector: ComponentSelectorT
 
+# TODO add possibility to define custom selections
+#     - category name | URL | data
+#     - schema: chain, ... residue-ranges, auth-residue-ranges, atom...
+#     - is_binary
+#     - format
 
 RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
 ColorT = Literal[
