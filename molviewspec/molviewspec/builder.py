@@ -138,7 +138,7 @@ class Structure(_Base):
 
     def label_from_cif(self, *, cif_category_name: str) -> "Structure":
         params: LabelCifCategoryParams = {"category_name": cif_category_name}
-        node = Node(kind="label_from_cif", params=params)
+        node = Node(kind="label-from-cif", params=params)
         self.add_child(node)
         return self
 
