@@ -1,3 +1,5 @@
+from typing import TypeVar
+
 from molviewspec.nodes import (
     ColorCifCategoryParams,
     ColorParams,
@@ -14,7 +16,6 @@ from molviewspec.nodes import (
     RepresentationTypeT,
     StructureParams,
 )
-from typing import TypeVar
 
 
 def create_builder() -> "Root":
@@ -64,7 +65,11 @@ class Download(_Base):
 
 class Parse(_Base):
     def model_structure(
-        self, *, model_index: int | None = None, block_index: int | None = None, block_header: str | None = None,
+        self,
+        *,
+        model_index: int | None = None,
+        block_index: int | None = None,
+        block_header: str | None = None,
     ) -> "Structure":
         lcs = locals()
         params: StructureParams = {"kind": "model"}
@@ -75,7 +80,11 @@ class Parse(_Base):
 
     def assembly_structure(
         # TODO made this optional again, where do we draw the line between
-        self, *, assembly_id: str | None = None, block_index: int | None = None, block_header: str | None = None,
+        self,
+        *,
+        assembly_id: str | None = None,
+        block_index: int | None = None,
+        block_header: str | None = None,
     ) -> "Structure":
         lcs = locals()
         params: StructureParams = {"kind": "assembly"}
@@ -85,9 +94,13 @@ class Parse(_Base):
         return Structure(node=node, root=self.root)
 
     def symmetry_mate_structure(
-            # TODO symmetry by index? unit cell?
-            # TODO is radius too Mol* specific, how do other viewers do this?
-            self, *, radius: float | None = None, block_index: int | None = None, block_header: str | None = None,
+        # TODO symmetry by index? unit cell?
+        # TODO is radius too Mol* specific, how do other viewers do this?
+        self,
+        *,
+        radius: float | None = None,
+        block_index: int | None = None,
+        block_header: str | None = None,
     ) -> "Structure":
         lcs = locals()
         params: StructureParams = {"kind": "symmetry-mates"}
@@ -117,7 +130,7 @@ class Structure(_Base):
         end_label_seq_id: int | None = None,
         beg_auth_seq_id: int | None = None,
         end_auth_seq_id: int | None = None,
-        text: str
+        text: str,
     ) -> "Structure":
         # TODO at which level of the hierarchy do these make most sense?
         lcs = locals()
@@ -138,9 +151,7 @@ class Structure(_Base):
 
 
 class Component(_Base):
-    def representation(
-        self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None
-    ) -> "Representation":
+    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> "Representation":
         lcs = locals()
         params: RepresentationParams = {}
         _assign_params(params, RepresentationParams, lcs)
@@ -164,7 +175,7 @@ class Representation(_Base):
         beg_auth_seq_id: int | None = None,
         end_auth_seq_id: int | None = None,
         color: ColorT,
-        tooltip: str | None = None
+        tooltip: str | None = None,
     ) -> "Representation":
         lcs = locals()
         params: ColorParams = {}

@@ -43,13 +43,12 @@ class StructureParams(TypedDict):
     """Reference a specific mmCIF or SDF data block by its block header"""
 
 
-ComponentSelectorT = Literal[
-    "all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"
-]
+ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]
 
 
 class ComponentParams(TypedDict):
     selector: ComponentSelectorT
+
 
 # TODO add possibility to define custom selections
 #     - category name | URL | data
@@ -58,9 +57,7 @@ class ComponentParams(TypedDict):
 #     - format
 
 RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
-ColorT = Literal[
-    "red", "white", "blue"
-]  # presumably this is a general type and will be useful elsewhere
+ColorT = Literal["red", "white", "blue"]  # presumably this is a general type and will be useful elsewhere
 # TODO possible to type for hex color strings here?
 
 

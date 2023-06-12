@@ -1,7 +1,7 @@
-from app.config import settings
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 
+from app.config import settings
 from molviewspec.builder import Root
 
 router = APIRouter()
@@ -14,9 +14,7 @@ async def download_example(id: str):
     """
     builder = Root()
     (
-        builder.download(
-            url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif"
-        )
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
         .parse(format="mmcif")
         .model_structure()
         .component()
@@ -32,9 +30,7 @@ async def label_example(id: str):
     """
     builder = Root()
     structure = (
-        builder.download(
-            url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif"
-        )
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
         .parse(format="mmcif")
         .model_structure()
     )
@@ -52,18 +48,16 @@ async def color_example(id: str):
     """
     builder = Root()
     structure = (
-        builder.download(
-            url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif"
-        )
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
         .parse(format="mmcif")
         .model_structure()
     )
-    structure.component(selector="protein").representation(
-        type="cartoon", color="white"
-    ).color(label_asym_id="A", label_seq_id=64, color="red", tooltip="Active Site")
-    structure.component(selector="ligand").representation(
-        type="ball-and-stick"
-    ).color_from_cif(category_name="my_custom_cif_category")
+    structure.component(selector="protein").representation(type="cartoon", color="white").color(
+        label_asym_id="A", label_seq_id=64, color="red", tooltip="Active Site"
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick").color_from_cif(
+        category_name="my_custom_cif_category"
+    )
     return JSONResponse(builder.node)
 
 
@@ -112,7 +106,6 @@ async def json_data(id: str, name: str):
     """
     path = settings.TEST_DATA_DIR / id / f"{name}.json"
     return FileResponse(path)
-
 
 
 @router.get("/testing/formats")
@@ -170,28 +163,12 @@ async def testing_structures_example():
         .component()
         .representation(color="blue")
     )
-    cif_1wrf = (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1wrf_updated.cif")
-        .parse(format="mmcif")
+    cif_1wrf = builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1wrf_updated.cif").parse(
+        format="mmcif"
     )
-    model_0 = (
-        cif_1wrf
-        .model_structure(model_index=0)
-        .component()
-        .representation(color="white")
-    )
-    model_1 = (
-        cif_1wrf
-        .model_structure(model_index=1)
-        .component()
-        .representation(color="red")
-    )
-    model_2 = (
-        cif_1wrf
-        .model_structure(model_index=2)
-        .component()
-        .representation(color="blue")
-    )
+    model_0 = cif_1wrf.model_structure(model_index=0).component().representation(color="white")
+    model_1 = cif_1wrf.model_structure(model_index=1).component().representation(color="red")
+    model_2 = cif_1wrf.model_structure(model_index=2).component().representation(color="blue")
     # TODO check model indexing convention (0- or 1-based)
     return JSONResponse(builder.node)
 
@@ -200,26 +177,22 @@ async def testing_structures_example():
 async def testing_components_example():
     builder = Root()
     structure = (
-        builder
-        .download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/8h0v_updated.cif")
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/8h0v_updated.cif")
         .parse(format="mmcif")
         .model_structure()
     )
     (
-        structure
-        .component(selector="protein")
+        structure.component(selector="protein")
         .representation(type="surface", color="white")
         .color(label_asym_id="A", label_seq_id=64, color="red")
     )
     (
-        structure
-        .component(selector="nucleic")
+        structure.component(selector="nucleic")
         .representation(type="cartoon", color="red")
         .color_from_cif(category_name="my_custom_cif_category")
     )
     structure2 = (
-        builder
-        .download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
         .parse(format="mmcif")
         .model_structure()
     )
