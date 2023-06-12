@@ -6,8 +6,7 @@ import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 
 import { loadMVSTree } from './load-tree';
 import { SubTreeOfKind } from './tree/generic';
-import { MVSTree } from './tree/mvs';
-import { convertMvsToMolstar, treeToString } from './tree/tree-utils';
+import { MVSTree, treeToString } from './tree/tree-utils';
 
 
 export class AppModel {

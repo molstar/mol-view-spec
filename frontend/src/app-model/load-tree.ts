@@ -3,28 +3,27 @@ import { ModelFromTrajectory, StructureComponent, StructureFromModel, Trajectory
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
+import { Color } from 'molstar/lib/mol-util/color';
+import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 import { Defaults } from './param-defaults';
 import { Kind, SubTreeOfKind, Tree } from './tree/generic';
-import { MolstarNode, MolstarTree } from './tree/molstar';
-import { MVSTree } from './tree/mvs';
-import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
+import * as MolstarNodes from './tree/molstar-nodes';
+import { MVSTree, MolstarTree, convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { formatObject } from './utils';
-import { ColorNames } from 'molstar/lib/mol-util/color/names';
-import { Color } from 'molstar/lib/mol-util/color';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
 export type LoadingAction<TNode extends Tree> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode) => StateObjectSelector | undefined
 
-export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTreeOfKind<MolstarNode, kind>> } = {
-    download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode.Download): StateObjectSelector {
+export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTreeOfKind<MolstarNodes.Any, kind>> } = {
+    download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Download): StateObjectSelector {
         return update.to(msTarget).apply(Download, {
             url: node.params?.url ?? Defaults.download.url,
             isBinary: node.params?.is_binary ?? Defaults.download.is_binary, // TODO here we should force MVS defaults, not rely on consumer-specific (MolStar) defaults
         }).selector;
     },
-    parse(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode.Parse): StateObjectSelector | undefined {
+    parse(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Parse): StateObjectSelector | undefined {
         const format = node.params?.format ?? Defaults.parse.format;
         if (format === 'mmcif') {
             const cif = update.to(msTarget).apply(ParseCif, {}).selector;
@@ -35,12 +34,12 @@ export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTr
             return undefined;
         }
     },
-    model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode.Model): StateObjectSelector {
+    model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Model): StateObjectSelector {
         return update.to(msTarget).apply(ModelFromTrajectory, {
             modelIndex: node.params?.model_index ?? Defaults.model.model_index,
         }).selector;
     },
-    structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode.Structure): StateObjectSelector {
+    structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Structure): StateObjectSelector {
         const assembly = node.params?.assembly_id ?? Defaults.structure.assembly_id;
         return update.to(msTarget).apply(StructureFromModel, {
             type: assembly
@@ -48,7 +47,7 @@ export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTr
                 : { name: 'model', params: {} },
         }).selector;
     },
-    component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode.Component): StateObjectSelector {
+    component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Component): StateObjectSelector {
         const selector = node.params?.selector ?? Defaults.component.selector;
         return update.to(msTarget).apply(StructureComponent, {
             type: { name: 'static', params: selector },
@@ -56,7 +55,7 @@ export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTr
         }).selector;
         // TODO check with 'all' and other other selectors
     },
-    representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode.Representation): StateObjectSelector {
+    representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Representation): StateObjectSelector {
         const type = node.params?.type ?? Defaults.representation.type;
         const color = node.params?.color ?? Defaults.representation.color;
         return update.to(msTarget).apply(StructureRepresentation3D, {

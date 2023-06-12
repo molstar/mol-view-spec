@@ -1,10 +1,13 @@
 import { deepEqual } from 'molstar/lib/mol-util';
 
 import { Kind, SubTree, SubTreeOfKind, Tree } from './generic';
-import { MolstarTree } from './molstar';
-import { MVSTree } from './mvs';
+import * as MolstarNodes from './molstar-nodes';
+import * as MVSNodes from './mvs-nodes';
 import { formatObject, omitObjectKeys, pickObjectKeys } from '../utils';
-import { Defaults } from '../param-defaults';
+
+
+export type MolstarTree = Tree<MolstarNodes.Any>
+export type MVSTree = Tree<MVSNodes.Any>
 
 
 function _dfs<TTree extends Tree>(root: TTree, parent: SubTree<TTree> | undefined, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
@@ -103,7 +106,7 @@ export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
             const moveParams = node.params && pickObjectKeys(node.params, ['is_binary']);
             const keepParams = node.params && omitObjectKeys(node.params, ['is_binary']);
             if (parent?.kind === 'download') return [
-                { kind: 'download', params: { url: Defaults.download.url, ...parent.params, ...moveParams } },
+                { kind: 'download', params: { ...parent.params, ...moveParams } },
                 { kind: 'parse', params: keepParams }
             ];
             if (parent?.kind === 'raw') return [

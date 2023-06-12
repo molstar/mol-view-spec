@@ -1,8 +1,15 @@
 
-export type Node<TKind extends string = string, TParams extends {} = {}> = {
-    kind: TKind,
-    params?: TParams,
-}
+export type Node<TKind extends string = string, TParams extends {} = {}> =
+    {} extends TParams ?
+    {
+        kind: TKind,
+        params?: TParams,
+    } : {
+        kind: TKind,
+        params: TParams,
+    }
+    // params can be dropped if {} is valid value for params
+
 export type Kind<TTree extends Node> = TTree['kind']
 export type Params<TTree extends Node> = NonNullable<TTree['params']>
 

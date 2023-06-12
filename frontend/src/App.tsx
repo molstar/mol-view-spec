@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Button, Divider, Typography, Link, LinearProgress } from '@mui/material';
+import { Button, Typography, Link } from '@mui/material';
 
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { useBehavior } from 'molstar/lib/mol-plugin-ui/hooks/use-behavior';

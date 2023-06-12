@@ -1,5 +1,5 @@
 import { Kind, ParamsOfKind } from './tree/generic';
-import { MolstarTree } from './tree/molstar';
+import { MolstarTree } from './tree/tree-utils';
 
 
 export const Defaults = {
