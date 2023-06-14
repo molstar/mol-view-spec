@@ -35,3 +35,4 @@ export const Defaults = {
         label_seq_id: 0,
     },
 } satisfies { [kind in Kind<MolstarTree>]?: ParamsOfKind<MolstarTree, kind> };
+// TODO mandatory params don't need to be here
