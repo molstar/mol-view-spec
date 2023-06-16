@@ -61,6 +61,34 @@ async def color_example(id: str):
     return JSONResponse(builder.node)
 
 
+@router.get("/symmetry-mates/{id}")
+async def symmetry_example(id: str):
+    """
+    Add symmetry mates within a distance threshold.
+    """
+    builder = Root()
+    (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
+        .parse(format="mmcif")
+        .symmetry_mate_structure(radius=5.0)
+    )
+    return JSONResponse(builder.node)
+
+
+@router.get("/symmetry/{id}")
+async def symmetry_example(id: str):
+    """
+    Create symmetry mates by specifying Miller indices.
+    """
+    builder = Root()
+    (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
+        .parse(format="mmcif")
+        .symmetry_structure(ijk_min=[-1, -1, -1], ijk_max=[1, 1, 1])
+    )
+    return JSONResponse(builder.node)
+
+
 @router.get("/data/{id}/molecule")
 async def cif_data_molecule(id: str):
     """

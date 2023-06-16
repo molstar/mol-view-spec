@@ -4,6 +4,9 @@
     },
     "structure": {
         "assembly_id": "1",
-        "model_index": 1
+        "model_index": 1,
+        "radius": 5.0,
+        "ijk_min": [-1, -1, -1],
+        "ijk_max": [1, 1, 1]
     }
 }

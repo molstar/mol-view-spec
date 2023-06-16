@@ -33,7 +33,7 @@ class ParseParams(TypedDict):
 
 
 class StructureParams(TypedDict):
-    kind: Literal["model", "assembly", "crystal-symmetry"]
+    kind: Literal["model", "assembly", "symmetry", "crystal-symmetry"]
     assembly_id: NotRequired[str]
     model_index: NotRequired[int]
     """0-based model index in case multiple NMR frames are present"""
@@ -41,6 +41,9 @@ class StructureParams(TypedDict):
     """0-based block index in case multiple mmCIF or SDF data blocks are present"""
     block_header: NotRequired[str]
     """Reference a specific mmCIF or SDF data block by its block header"""
+    radius: NotRequired[float]
+    ijk_min: NotRequired[list[int]]  # TODO dedicated Vec3 or namedtuple?
+    ijk_max: NotRequired[list[int]]
 
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]

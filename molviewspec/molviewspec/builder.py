@@ -94,9 +94,20 @@ class Parse(_Base):
         self.add_child(node)
         return Structure(node=node, root=self.root)
 
+    def symmetry_structure(
+        self,
+        *,
+        ijk_min: list[int] | None = None,
+        ijk_max: list[int] | None = None
+    ) -> "Structure":
+        lcs = locals()
+        params: StructureParams = {"kind": "symmetry"}
+        _assign_params(params, StructureParams, lcs)
+        node = Node(kind="structure", params=params)
+        self.add_child(node)
+        return Structure(node=node, root=self.root)
+
     def symmetry_mate_structure(
-        # TODO symmetry by index? unit cell?
-        # TODO is radius too Mol* specific, how do other viewers do this?
         self,
         *,
         radius: float | None = None,
