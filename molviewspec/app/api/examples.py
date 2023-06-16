@@ -89,6 +89,25 @@ async def cif_data_molecule_and_annotation(id: str):
     return PlainTextResponse(f"{mol}\n\n{annotations}")
 
 
+@router.get("/defaults/viewers")
+async def viewer_defaults():
+    """
+    List all available viewer defaults.
+    """
+    path = settings.VIEWER_DEFAULTS_DIR
+    names = [f.name[:-5] for f in path.glob("*.json")]
+    return JSONResponse(names)
+
+
+@router.get("/defaults/{viewer}")
+async def viewer_defaults(viewer: str):
+    """
+    Get opinionated default values for a specific viewer in JSON.
+    """
+    path = settings.VIEWER_DEFAULTS_DIR / f"{viewer}.json"
+    return FileResponse(path)
+
+
 @router.get("/data/{id}/json-annotations")
 async def json_list(id: str):
     """
