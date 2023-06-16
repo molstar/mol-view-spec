@@ -83,6 +83,7 @@ class Parse(_Base):
         self,
         *,
         assembly_id: str | None = None,
+        model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> "Structure":
