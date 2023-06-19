@@ -13,15 +13,16 @@ KindT = Literal[
     "color-from-cif",
 ]
 
-class State(TypedDict):
-    version: int
-    root: "Node"
-
 
 class Node(TypedDict):
     kind: KindT
     params: NotRequired[Mapping[str, Any]]
     children: NotRequired[list["Node"]]
+
+
+class State(TypedDict):
+    version: int
+    root: Node
 
 
 class DownloadParams(TypedDict):
@@ -39,6 +40,9 @@ class ParseParams(TypedDict):
 class StructureParams(TypedDict):
     kind: Literal["model", "assembly", "symmetry", "crystal-symmetry"]
     assembly_id: NotRequired[str]
+    """Use the name to specify which assembly to load"""
+    assembly_index: NotRequired[int]
+    """0-based assembly index, use this to load the 1st assembly"""
     model_index: NotRequired[int]
     """0-based model index in case multiple NMR frames are present"""
     block_index: NotRequired[int]
@@ -46,8 +50,11 @@ class StructureParams(TypedDict):
     block_header: NotRequired[str]
     """Reference a specific mmCIF or SDF data block by its block header"""
     radius: NotRequired[float]
-    ijk_min: NotRequired[list[int]]  # TODO dedicated Vec3 or namedtuple?
-    ijk_max: NotRequired[list[int]]
+    """Radius around model coordinates when loading symmetry mates"""
+    ijk_min: NotRequired[tuple[int, int, int]]
+    """Bottom-left Miller indices"""
+    ijk_max: NotRequired[tuple[int, int, int]]
+    """Top-right Miller indices"""
 
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]

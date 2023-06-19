@@ -1,5 +1,4 @@
 from typing import TypeVar
-from molviewspec.molviewspec.nodes import State
 
 from molviewspec.nodes import (
     ColorCifCategoryParams,
@@ -16,6 +15,7 @@ from molviewspec.nodes import (
     RepresentationParams,
     RepresentationTypeT,
     StructureParams,
+    State
 )
 
 
@@ -35,7 +35,7 @@ class Root:
 
     def get_state(self) -> State:
         return State(version=1, root=self.node)
-        
+
     def download(self, *, url: str) -> "Download":
         node = Node(kind="download", params=DownloadParams(url=url))
         if "children" not in self.node:
@@ -75,6 +75,12 @@ class Parse(_Base):
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> "Structure":
+        """
+        Create a structure for the deposited coordinates.
+        :param model_index: 0-based model index in case multiple NMR frames are present
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        """
         lcs = locals()
         params: StructureParams = {"kind": "model"}
         _assign_params(params, StructureParams, lcs)
@@ -83,14 +89,22 @@ class Parse(_Base):
         return Structure(node=node, root=self.root)
 
     def assembly_structure(
-        # TODO made this optional again, where do we draw the line between
         self,
         *,
         assembly_id: str | None = None,
+        assembly_index: int | None = None,
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> "Structure":
+        """
+        Create an assembly structure.
+        :param assembly_id: Use the name to specify which assembly to load
+        :param assembly_index: 0-based assembly index, use this to load the 1st assembly
+        :param model_index: 0-based model index in case multiple NMR frames are present
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        """
         lcs = locals()
         params: StructureParams = {"kind": "assembly"}
         _assign_params(params, StructureParams, lcs)
@@ -102,14 +116,16 @@ class Parse(_Base):
         self,
         *,
         ijk_min: tuple[int, int, int] | None = None,
-        ijk_max: tuple[int, int, int] | None = None
+        ijk_max: tuple[int, int, int] | None = None,
+        block_index: int | None = None,
+        block_header: str | None = None,
     ) -> "Structure":
         """
-        Parameters:
-            ijk_min: Bottom left Miller indices
-            ijk_max: Top right Miller indices
-        Returns:
-            A builder for the symmetry generated structure
+        Create symmetry structure for a given range of Miller indices.
+        :param ijk_min: Bottom-left Miller indices
+        :param ijk_max: Top-right Miller indices
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
         lcs = locals()
         params: StructureParams = {"kind": "symmetry"}
@@ -125,6 +141,12 @@ class Parse(_Base):
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> "Structure":
+        """
+        Create structure of symmetry mates.
+        :param radius: Radius of symmetry partners to include
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        """
         lcs = locals()
         params: StructureParams = {"kind": "symmetry-mates"}
         _assign_params(params, StructureParams, lcs)
