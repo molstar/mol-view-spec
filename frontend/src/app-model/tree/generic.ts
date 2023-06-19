@@ -1,34 +1,7 @@
 import * as t from 'io-ts';
 
-import { RequiredField, ParamsSchema, choice, OptionalField } from './params-schema';
-
-
-interface NodeSchema<TKind extends string = string, TParamsSchema extends ParamsSchema = ParamsSchema> {
-    kind: TKind,
-    paramsSchema: TParamsSchema,
-}
-function NodeSchema<TKind extends string, TParamsSchema extends ParamsSchema>(kind: TKind, paramsSchema: TParamsSchema): NodeSchema<TKind, TParamsSchema> {
-    return { kind, paramsSchema };
-}
-
-type NodeFor<TNodeSchema extends NodeSchema> =
-    TNodeSchema extends NodeSchema<infer K, infer P>
-    ? Node<K, { [key in keyof P as P[key] extends RequiredField<any> ? key : never]: P[key] extends RequiredField<infer V> ? V : never }
-        & { [key in keyof P as P[key] extends OptionalField<any> ? key : never]?: P[key] extends OptionalField<infer V> ? V : never }>
-    : never
-// Inlining this crazy stuff to get better type display :/ Equivalent nicer formululation here:
-// type NodeFor_ReferenceImplementation<TNodeSchema extends NodeSchema> = TNodeSchema extends NodeSchema<infer K, infer P> ? Node<K, ValuesFor<P>> : never
-
-const n = NodeSchema('parse', {
-    format: RequiredField(choice('pdb', 'mmcif')),
-    is_binary: OptionalField(t.boolean),
-});
-const c = NodeSchema('color', {
-    color: OptionalField(choice('red', 'green')),
-    chain: OptionalField(t.string),
-});
-const nn: NodeFor<typeof n> = { kind: 'parse', params: { format: 'mmcif', is_binary: false } }
-const cc: NodeFor<typeof c> = { kind: 'color', params: { 'chain': 'mmcif' } }
+import { RequiredField, ParamsSchema, choice, OptionalField, ValuesFor } from './params-schema';
+import { MVSTreeSchema, Root } from './mvs-nodes';
 
 
 export type Node<TKind extends string = string, TParams extends {} = {}> =
@@ -59,3 +32,41 @@ export type SubTree<TTree extends Tree> = NonNullable<TTree['children']>[number]
 type RootOfKind<TTree extends Tree, TKind extends Kind<TTree>> = Extract<TTree, Tree<any, Node<TKind>>>
 export type SubTreeOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>>> = RootOfKind<SubTree<TTree>, TKind>
 export type ParamsOfKind<TTree extends Tree, TKind extends Kind<TTree> = Kind<TTree>> = NonNullable<SubTreeOfKind<TTree, TKind>['params']>
+
+
+export function getParams<TKind extends string, TParams extends {}>(node: Node<TKind, TParams>) {
+    return node.params ?? {} as TParams;
+}
+export function getChildren<TTree extends Tree>(tree: TTree): SubTree<TTree>[] {
+    return tree.children ?? [];
+}
+
+
+export interface NodeSchema<TKind extends string = string, TParamsSchema extends ParamsSchema = ParamsSchema> {
+    kind: TKind,
+    paramsSchema: TParamsSchema,
+}
+export function NodeSchema<TKind extends string, TParamsSchema extends ParamsSchema>(kind: TKind, paramsSchema: TParamsSchema): NodeSchema<TKind, TParamsSchema> {
+    return { kind, paramsSchema };
+}
+
+export type NodeFor<TNodeSchema extends NodeSchema> = TNodeSchema extends NodeSchema<infer K, infer P> ? Node<K, ValuesFor<P>> : never
+
+
+export interface TreeSchema<TSchemas extends { [kind: string]: ParamsSchema } = { [kind: string]: ParamsSchema }, TRootKind extends string & keyof TSchemas = string> {
+    rootKind: TRootKind,
+    paramsSchemas: TSchemas,
+}
+export function TreeSchema<TSchemas extends { [kind: string]: ParamsSchema }, TRootKind extends string & keyof TSchemas>(rootKind: TRootKind, paramsSchemas: TSchemas): TreeSchema<TSchemas, TRootKind> {
+    return { rootKind, paramsSchemas };
+}
+
+export type RootForTree<TTreeSchema extends TreeSchema> = TTreeSchema extends TreeSchema<infer TSchemas, infer TRoot>
+    ? Node<TRoot, ValuesFor<TSchemas[TRoot]>>
+    : never
+
+export type NodeForTree<TTreeSchema extends TreeSchema> = TTreeSchema extends TreeSchema<infer TSchemas, any>
+    ? { [key in keyof TSchemas]: Node<key & string, TSchemas[key]> }[keyof TSchemas]
+    : never
+
+export type TreeFor<TTreeSchema extends TreeSchema> = Tree<NodeForTree<TTreeSchema>, RootForTree<TTreeSchema> & NodeForTree<TTreeSchema>>
