@@ -20,7 +20,7 @@ async def download_example(id: str):
         .component()
         .representation()
     )
-    return JSONResponse(builder.node)
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/label/{id}")
@@ -38,7 +38,7 @@ async def label_example(id: str):
     structure.label(label_asym_id="A", label_seq_id=120, text="Residue 1").label(
         label_asym_id="C", label_seq_id=271, text="Residue 2"
     ).label_from_cif(category_name="my_custom_cif_category")
-    return JSONResponse(builder.node)
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/color/{id}")
@@ -58,7 +58,7 @@ async def color_example(id: str):
     structure.component(selector="ligand").representation(type="ball-and-stick").color_from_cif(
         category_name="my_custom_cif_category"
     )
-    return JSONResponse(builder.node)
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/symmetry-mates/{id}")
@@ -72,7 +72,7 @@ async def symmetry_example(id: str):
         .parse(format="mmcif")
         .symmetry_mate_structure(radius=5.0)
     )
-    return JSONResponse(builder.node)
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/symmetry/{id}")
@@ -86,7 +86,7 @@ async def symmetry_example(id: str):
         .parse(format="mmcif")
         .symmetry_structure(ijk_min=[-1, -1, -1], ijk_max=[1, 1, 1])
     )
-    return JSONResponse(builder.node)
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/data/{id}/molecule")
@@ -180,7 +180,7 @@ async def testing_formats_example():
         .component()
         .representation(color="red")
     )
-    return JSONResponse(builder.node)
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/structures")
@@ -217,7 +217,7 @@ async def testing_structures_example():
     model_1 = cif_1wrf.model_structure(model_index=1).component().representation(color="red")
     model_2 = cif_1wrf.model_structure(model_index=2).component().representation(color="blue")
     # TODO check model indexing convention (0- or 1-based)
-    return JSONResponse(builder.node)
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/components")
@@ -244,4 +244,4 @@ async def testing_components_example():
         .model_structure()
     )
     # TODO add all component types to this example
-    return JSONResponse(builder.node)
+    return JSONResponse(builder.get_state())

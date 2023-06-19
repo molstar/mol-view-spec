@@ -13,6 +13,10 @@ KindT = Literal[
     "color-from-cif",
 ]
 
+class State(TypedDict):
+    version: int
+    root: "Node"
+
 
 class Node(TypedDict):
     kind: KindT

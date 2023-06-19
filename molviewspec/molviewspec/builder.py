@@ -1,4 +1,5 @@
 from typing import TypeVar
+from molviewspec.molviewspec.nodes import State
 
 from molviewspec.nodes import (
     ColorCifCategoryParams,
@@ -32,6 +33,9 @@ class Root:
     def __init__(self) -> None:
         self.node = Node(kind="root")
 
+    def get_state(self) -> State:
+        return State(version=1, root=self.node)
+        
     def download(self, *, url: str) -> "Download":
         node = Node(kind="download", params=DownloadParams(url=url))
         if "children" not in self.node:
@@ -97,9 +101,16 @@ class Parse(_Base):
     def symmetry_structure(
         self,
         *,
-        ijk_min: list[int] | None = None,
-        ijk_max: list[int] | None = None
+        ijk_min: tuple[int, int, int] | None = None,
+        ijk_max: tuple[int, int, int] | None = None
     ) -> "Structure":
+        """
+        Parameters:
+            ijk_min: Bottom left Miller indices
+            ijk_max: Top right Miller indices
+        Returns:
+            A builder for the symmetry generated structure
+        """
         lcs = locals()
         params: StructureParams = {"kind": "symmetry"}
         _assign_params(params, StructureParams, lcs)
