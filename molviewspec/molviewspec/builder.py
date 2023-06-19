@@ -62,6 +62,8 @@ class Download(_Base):
         lcs = locals()
         params: ParseParams = {}
         _assign_params(params, ParseParams, lcs)
+        if is_binary is None:
+            params["is_binary"] = False
         node = Node(kind="parse", params=params)
         self.add_child(node)
         return Parse(node=node, root=self.root)
@@ -71,8 +73,8 @@ class Parse(_Base):
     def model_structure(
         self,
         *,
-        model_index: int | None = None,
-        block_index: int | None = None,
+        model_index: int | None = None,  # TODO default candidate
+        block_index: int | None = None,  # TODO default candidate
         block_header: str | None = None,
     ) -> "Structure":
         """
@@ -108,6 +110,8 @@ class Parse(_Base):
         lcs = locals()
         params: StructureParams = {"kind": "assembly"}
         _assign_params(params, StructureParams, lcs)
+        if assembly_id is None and assembly_index is None:
+            params["assembly_index"] = 0
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
@@ -130,6 +134,10 @@ class Parse(_Base):
         lcs = locals()
         params: StructureParams = {"kind": "symmetry"}
         _assign_params(params, StructureParams, lcs)
+        if ijk_min is None:
+            params["ijk_min"] = [-1, -1, -1]
+        if ijk_max is None:
+            params["ijk_max"] = [1, 1, 1]
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
@@ -150,6 +158,8 @@ class Parse(_Base):
         lcs = locals()
         params: StructureParams = {"kind": "symmetry-mates"}
         _assign_params(params, StructureParams, lcs)
+        if radius is None:
+            params["radius"] = 5.0
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
