@@ -22,8 +22,8 @@ export class AppModel {
             layout: {
                 initial: {
                     isExpanded: false,
-                    showControls: true,  // original: false
-                    controlsDisplay: 'landscape',  // original: not given
+                    showControls: true, // original: false
+                    controlsDisplay: 'landscape', // original: not given
                 },
             },
             components: {
@@ -36,8 +36,8 @@ export class AppModel {
                 }
             },
             config: [
-                [PluginConfig.Viewport.ShowExpand, true],  // original: false
-                [PluginConfig.Viewport.ShowControls, true],  // original: false
+                [PluginConfig.Viewport.ShowExpand, true], // original: false
+                [PluginConfig.Viewport.ShowControls, true], // original: false
                 [PluginConfig.Viewport.ShowSelectionMode, false],
                 [PluginConfig.Viewport.ShowAnimation, false],
             ],
@@ -85,40 +85,40 @@ async function getTreeFromUrl(url: string): Promise<SubTreeOfKind<MVSTree, 'root
 }
 
 const TEST_DATA: SubTreeOfKind<MVSTree, 'root'> = {
-    "kind": "root",
-    "children": [
+    'kind': 'root',
+    'children': [
         {
-            "kind": "download", "params": { "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif" },
-            // "kind": "download", "params": { "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent" },
-            "children": [
+            'kind': 'download', 'params': { 'url': 'https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif' },
+            // 'kind': 'download', 'params': { 'url': 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent' },
+            'children': [
                 {
-                    "kind": "parse", "params": { "format": "mmcif", "is_binary": true },
-                    // "kind": "parse", "params": { "format": "pdb", "is_binary": false },
-                    "children": [
+                    'kind': 'parse', 'params': { 'format': 'mmcif', 'is_binary': true },
+                    // 'kind': 'parse', 'params': { 'format': 'pdb', 'is_binary': false },
+                    'children': [
                         {
-                            "kind": "structure", "params": { "model_index": 0, "assembly_id": "1" },
-                            "children": [
+                            'kind': 'structure', 'params': { 'model_index': 0, 'assembly_id': '1' },
+                            'children': [
                                 {
-                                    "kind": "component", "params": { "selector": "protein" },
-                                    "children": [
+                                    'kind': 'component', 'params': { 'selector': 'protein' },
+                                    'children': [
                                         {
-                                            "kind": "representation", "params": { "type": "cartoon", "color": "white" },
-                                            "children": [
+                                            'kind': 'representation', 'params': { 'type': 'cartoon', 'color': 'white' },
+                                            'children': [
                                                 {
-                                                    "kind": "color", "params": { "label_asym_id": "A", "label_seq_id": 64, "color": "red" }
+                                                    'kind': 'color', 'params': { 'label_asym_id': 'A', 'label_seq_id': 64, 'color': 'red' }
                                                 }
                                             ]
                                         }
                                     ]
                                 },
                                 {
-                                    "kind": "component", "params": { "selector": "ligand" },
-                                    "children": [
+                                    'kind': 'component', 'params': { 'selector': 'ligand' },
+                                    'children': [
                                         {
-                                            "kind": "representation", "params": { "type": "ball-and-stick" },
-                                            "children": [
+                                            'kind': 'representation', 'params': { 'type': 'ball-and-stick' },
+                                            'children': [
                                                 {
-                                                    "kind": "color-from-cif", "params": { "category_name": "my_custom_cif_category" }
+                                                    'kind': 'color-from-cif', 'params': { 'category_name': 'my_custom_cif_category' }
                                                 }
                                             ]
                                         }
@@ -126,27 +126,27 @@ const TEST_DATA: SubTreeOfKind<MVSTree, 'root'> = {
                                 }
                             ]
                         },
-                        { "kind": "structure", "params": { "model_index": 0, "assembly_id": "2" } },
-                        { "kind": "structure", "params": { "model_index": 1, "assembly_id": "1" } },
-                        { "kind": "structure", "params": { "model_index": 1, "assembly_id": "2" } },
-                        { "kind": "structure", "params": { "model_index": 1, "assembly_id": "3" } },
-                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "1" } },
-                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "2" } },
-                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": "3" } },
-                        { "kind": "structure", "params": { "model_index": 2, "assembly_id": undefined } }
+                        { 'kind': 'structure', 'params': { 'model_index': 0, 'assembly_id': '2' } },
+                        { 'kind': 'structure', 'params': { 'model_index': 1, 'assembly_id': '1' } },
+                        { 'kind': 'structure', 'params': { 'model_index': 1, 'assembly_id': '2' } },
+                        { 'kind': 'structure', 'params': { 'model_index': 1, 'assembly_id': '3' } },
+                        { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': '1' } },
+                        { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': '2' } },
+                        { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': '3' } },
+                        { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': undefined } }
                     ]
                 }
             ]
         },
         {
-            "kind": "raw", "params": { "data": "hello" }, "children": [
-                { "kind": "parse", "params": { "format": "pdb", "is_binary": false } },
-                { "kind": "parse", "params": { "format": "mmcif", "is_binary": true } },
-                { "kind": "parse", "params": { "format": "mmcif", "is_binary": false } }
+            'kind': 'raw', 'params': { 'data': 'hello' }, 'children': [
+                { 'kind': 'parse', 'params': { 'format': 'pdb', 'is_binary': false } },
+                { 'kind': 'parse', 'params': { 'format': 'mmcif', 'is_binary': true } },
+                { 'kind': 'parse', 'params': { 'format': 'mmcif', 'is_binary': false } }
             ]
         },
         {
-            "kind": "raw", "params": { "data": "ciao" }
+            'kind': 'raw', 'params': { 'data': 'ciao' }
         }
 
     ]

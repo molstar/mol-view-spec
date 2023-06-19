@@ -86,7 +86,7 @@ export function condenseTree<T extends Tree>(root: T): T {
             const twin = newChildren.find(sibling => sibling.kind === child.kind && deepEqual(sibling.params, child.params));
             // Using .find could be inefficient when their are too many children. TODO implement using a set, if we expect big numbers of children (e.g. one label per each residue?)
             if (twin) {
-                (twin.children ??= []).push(...child.children ?? [])
+                (twin.children ??= []).push(...child.children ?? []);
             } else {
                 newChildren.push(child as SubTree<T>);
             }
@@ -122,7 +122,7 @@ export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
         ],
     });
     const condensed = condenseTree<MolstarTree>(converted);
-    // TODO think if for all node kinds it makes sense to condense? 
+    // TODO think if for all node kinds it makes sense to condense?
     // (e.g. how would we make 2 structures from same cif, one of them rotated)
     return condensed;
 }

@@ -60,7 +60,7 @@ export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTr
         const color = node.params?.color ?? Defaults.representation.color;
         return update.to(msTarget).apply(StructureRepresentation3D, {
             type: { name: type, params: {} },
-            colorTheme: color ? { name: 'uniform', params: { value: Color(ColorNames[color as keyof ColorNames] ?? ColorNames.white )} } : undefined,
+            colorTheme: color ? { name: 'uniform', params: { value: Color(ColorNames[color as keyof ColorNames] ?? ColorNames.white) } } : undefined,
         }).selector;
     },
 };

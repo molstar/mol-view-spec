@@ -1,66 +1,66 @@
 import * as t from 'io-ts';
 
-import { validateField, RequiredField, choice, nullable, validateParams, validateParamsNoExtra, validateFullParamsNoExtra, validateFullParams, OptionalField } from '../params-schema';
+import { fieldValidationIssues, RequiredField, choice, nullable, paramsValidationIssues, OptionalField } from '../params-schema';
 
 
-describe('validateField', () => {
-    it('validateField string', async () => {
+describe('fieldValidationIssues', () => {
+    it('fieldValidationIssues string', async () => {
         const stringField = RequiredField(t.string);
-        expect(validateField(stringField, 'hello')).toBeTruthy();
-        expect(validateField(stringField, '')).toBeTruthy();
-        expect(validateField(stringField, 5)).toBeFalsy();
-        expect(validateField(stringField, null)).toBeFalsy();
-        expect(validateField(stringField, undefined)).toBeFalsy();
+        expect(fieldValidationIssues(stringField, 'hello')).toBeUndefined();
+        expect(fieldValidationIssues(stringField, '')).toBeUndefined();
+        expect(fieldValidationIssues(stringField, 5)).toBeTruthy();
+        expect(fieldValidationIssues(stringField, null)).toBeTruthy();
+        expect(fieldValidationIssues(stringField, undefined)).toBeTruthy();
     });
-    it('validateField string choice', async () => {
+    it('fieldValidationIssues string choice', async () => {
         const colorParam = RequiredField(choice('red', 'green', 'blue', 'yellow'));
-        expect(validateField(colorParam, 'red')).toBeTruthy();
-        expect(validateField(colorParam, 'green')).toBeTruthy();
-        expect(validateField(colorParam, 'blue')).toBeTruthy();
-        expect(validateField(colorParam, 'yellow')).toBeTruthy();
-        expect(validateField(colorParam, 'banana')).toBeFalsy();
-        expect(validateField(colorParam, 5)).toBeFalsy();
-        expect(validateField(colorParam, null)).toBeFalsy();
-        expect(validateField(colorParam, undefined)).toBeFalsy();
+        expect(fieldValidationIssues(colorParam, 'red')).toBeUndefined();
+        expect(fieldValidationIssues(colorParam, 'green')).toBeUndefined();
+        expect(fieldValidationIssues(colorParam, 'blue')).toBeUndefined();
+        expect(fieldValidationIssues(colorParam, 'yellow')).toBeUndefined();
+        expect(fieldValidationIssues(colorParam, 'banana')).toBeTruthy();
+        expect(fieldValidationIssues(colorParam, 5)).toBeTruthy();
+        expect(fieldValidationIssues(colorParam, null)).toBeTruthy();
+        expect(fieldValidationIssues(colorParam, undefined)).toBeTruthy();
     });
-    it('validateField number choice', async () => {
+    it('fieldValidationIssues number choice', async () => {
         const numberParam = RequiredField(choice(1, 2, 3, 4));
-        expect(validateField(numberParam, 1)).toBeTruthy();
-        expect(validateField(numberParam, 2)).toBeTruthy();
-        expect(validateField(numberParam, 3)).toBeTruthy();
-        expect(validateField(numberParam, 4)).toBeTruthy();
-        expect(validateField(numberParam, 5)).toBeFalsy();
-        expect(validateField(numberParam, '1')).toBeFalsy();
-        expect(validateField(numberParam, null)).toBeFalsy();
-        expect(validateField(numberParam, undefined)).toBeFalsy();
+        expect(fieldValidationIssues(numberParam, 1)).toBeUndefined();
+        expect(fieldValidationIssues(numberParam, 2)).toBeUndefined();
+        expect(fieldValidationIssues(numberParam, 3)).toBeUndefined();
+        expect(fieldValidationIssues(numberParam, 4)).toBeUndefined();
+        expect(fieldValidationIssues(numberParam, 5)).toBeTruthy();
+        expect(fieldValidationIssues(numberParam, '1')).toBeTruthy();
+        expect(fieldValidationIssues(numberParam, null)).toBeTruthy();
+        expect(fieldValidationIssues(numberParam, undefined)).toBeTruthy();
     });
-    it('validateField int', async () => {
+    it('fieldValidationIssues int', async () => {
         const numberParam = RequiredField(t.Integer);
-        expect(validateField(numberParam, 1)).toBeTruthy();
-        expect(validateField(numberParam, 0)).toBeTruthy();
-        expect(validateField(numberParam, 0.5)).toBeFalsy();
-        expect(validateField(numberParam, '1')).toBeFalsy();
-        expect(validateField(numberParam, null)).toBeFalsy();
-        expect(validateField(numberParam, undefined)).toBeFalsy();
+        expect(fieldValidationIssues(numberParam, 1)).toBeUndefined();
+        expect(fieldValidationIssues(numberParam, 0)).toBeUndefined();
+        expect(fieldValidationIssues(numberParam, 0.5)).toBeTruthy();
+        expect(fieldValidationIssues(numberParam, '1')).toBeTruthy();
+        expect(fieldValidationIssues(numberParam, null)).toBeTruthy();
+        expect(fieldValidationIssues(numberParam, undefined)).toBeTruthy();
     });
-    it('validateField union', async () => {
+    it('fieldValidationIssues union', async () => {
         const stringOrNumberParam = RequiredField(t.union([t.string, t.number]));
-        expect(validateField(stringOrNumberParam, 1)).toBeTruthy();
-        expect(validateField(stringOrNumberParam, 2)).toBeTruthy();
-        expect(validateField(stringOrNumberParam, 'hello')).toBeTruthy();
-        expect(validateField(stringOrNumberParam, '')).toBeTruthy();
-        expect(validateField(stringOrNumberParam, true)).toBeFalsy();
-        expect(validateField(stringOrNumberParam, null)).toBeFalsy();
-        expect(validateField(stringOrNumberParam, undefined)).toBeFalsy();
+        expect(fieldValidationIssues(stringOrNumberParam, 1)).toBeUndefined();
+        expect(fieldValidationIssues(stringOrNumberParam, 2)).toBeUndefined();
+        expect(fieldValidationIssues(stringOrNumberParam, 'hello')).toBeUndefined();
+        expect(fieldValidationIssues(stringOrNumberParam, '')).toBeUndefined();
+        expect(fieldValidationIssues(stringOrNumberParam, true)).toBeTruthy();
+        expect(fieldValidationIssues(stringOrNumberParam, null)).toBeTruthy();
+        expect(fieldValidationIssues(stringOrNumberParam, undefined)).toBeTruthy();
     });
-    it('validateField nullable', async () => {
+    it('fieldValidationIssues nullable', async () => {
         const stringOrNullParam = RequiredField(nullable(t.string));
-        expect(validateField(stringOrNullParam, 'hello')).toBeTruthy();
-        expect(validateField(stringOrNullParam, '')).toBeTruthy();
-        expect(validateField(stringOrNullParam, null)).toBeTruthy();
-        expect(validateField(stringOrNullParam, 1)).toBeFalsy();
-        expect(validateField(stringOrNullParam, true)).toBeFalsy();
-        expect(validateField(stringOrNullParam, undefined)).toBeFalsy();
+        expect(fieldValidationIssues(stringOrNullParam, 'hello')).toBeUndefined();
+        expect(fieldValidationIssues(stringOrNullParam, '')).toBeUndefined();
+        expect(fieldValidationIssues(stringOrNullParam, null)).toBeUndefined();
+        expect(fieldValidationIssues(stringOrNullParam, 1)).toBeTruthy();
+        expect(fieldValidationIssues(stringOrNullParam, true)).toBeTruthy();
+        expect(fieldValidationIssues(stringOrNullParam, undefined)).toBeTruthy();
     });
 });
 
@@ -69,33 +69,33 @@ const schema = {
     surname: RequiredField(t.string),
     lunch: RequiredField(t.boolean),
     age: OptionalField(t.number),
-}
+};
 
 describe('validateParams', () => {
     it('validateParams', async () => {
-        expect(validateParamsNoExtra(schema, { surname: 'Doe', lunch: true })).toBeTruthy();
-        expect(validateParamsNoExtra(schema, { name: 'John', surname: 'Doe', lunch: true })).toBeTruthy();
-        expect(validateParamsNoExtra(schema, { surname: 'Doe', lunch: true, age: 29 })).toBeTruthy();
-        expect(validateParamsNoExtra(schema, { name: 'John', surname: 'Doe', lunch: true, age: 29 })).toBeTruthy();
-        expect(validateParamsNoExtra(schema, {})).toBeFalsy();
-        expect(validateParamsNoExtra(schema, { name: 'John', surname: 'Doe', age: 29 })).toBeFalsy(); // missing `lunch`
-        expect(validateParamsNoExtra(schema, { name: 'John', surname: 'Doe', lunch: true, age: 'old' })).toBeFalsy(); // wrong type of `age`
-        expect(validateParamsNoExtra(schema, { surname: 'Doe', lunch: true, married: false })).toBeFalsy(); // extra param `married`
-        expect(validateParams(schema, { surname: 'Doe', lunch: true, married: false })).toBeTruthy(); // extra param `married`
+        expect(paramsValidationIssues(schema, { surname: 'Doe', lunch: true }, { noExtra: true })).toBeUndefined();
+        expect(paramsValidationIssues(schema, { name: 'John', surname: 'Doe', lunch: true }, { noExtra: true })).toBeUndefined();
+        expect(paramsValidationIssues(schema, { surname: 'Doe', lunch: true, age: 29 }, { noExtra: true })).toBeUndefined();
+        expect(paramsValidationIssues(schema, { name: 'John', surname: 'Doe', lunch: true, age: 29 }, { noExtra: true })).toBeUndefined();
+        expect(paramsValidationIssues(schema, {}, { noExtra: true })).toBeTruthy();
+        expect(paramsValidationIssues(schema, { name: 'John', surname: 'Doe', age: 29 }, { noExtra: true })).toBeTruthy(); // missing `lunch`
+        expect(paramsValidationIssues(schema, { name: 'John', surname: 'Doe', lunch: true, age: 'old' }, { noExtra: true })).toBeTruthy(); // wrong type of `age`
+        expect(paramsValidationIssues(schema, { surname: 'Doe', lunch: true, married: false }, { noExtra: true })).toBeTruthy(); // extra param `married`
+        expect(paramsValidationIssues(schema, { surname: 'Doe', lunch: true, married: false })).toBeUndefined(); // extra param `married`
     });
 });
 
 
 describe('validateFullParams', () => {
     it('validateFullParams', async () => {
-        expect(validateFullParamsNoExtra(schema, { surname: 'Doe', lunch: true })).toBeFalsy();
-        expect(validateFullParamsNoExtra(schema, { name: 'John', surname: 'Doe', lunch: true })).toBeFalsy();
-        expect(validateFullParamsNoExtra(schema, { surname: 'Doe', lunch: true, age: 29 })).toBeFalsy();
-        expect(validateFullParamsNoExtra(schema, { name: 'John', surname: 'Doe', lunch: true, age: 29 })).toBeTruthy();
-        expect(validateFullParamsNoExtra(schema, {})).toBeFalsy();
-        expect(validateFullParamsNoExtra(schema, { name: 'John', surname: 'Doe', lunch: true, age: 'old' })).toBeFalsy(); // wrong type of `age`
-        expect(validateFullParamsNoExtra(schema, { name: 'John', surname: 'Doe', lunch: true, age: 29, married: true })).toBeFalsy(); // extra param `married`
-        expect(validateFullParams(schema, { name: 'John', surname: 'Doe', lunch: true, age: 29, married: true })).toBeTruthy(); // extra param `married`
+        expect(paramsValidationIssues(schema, { surname: 'Doe', lunch: true }, { requireAll: true, noExtra: true })).toBeTruthy();
+        expect(paramsValidationIssues(schema, { name: 'John', surname: 'Doe', lunch: true }, { requireAll: true, noExtra: true })).toBeTruthy();
+        expect(paramsValidationIssues(schema, { surname: 'Doe', lunch: true, age: 29 }, { requireAll: true, noExtra: true })).toBeTruthy();
+        expect(paramsValidationIssues(schema, { name: 'John', surname: 'Doe', lunch: true, age: 29 }, { requireAll: true, noExtra: true })).toBeUndefined();
+        expect(paramsValidationIssues(schema, {}, { requireAll: true, noExtra: true })).toBeTruthy();
+        expect(paramsValidationIssues(schema, { name: 'John', surname: 'Doe', lunch: true, age: 'old' }, { requireAll: true, noExtra: true })).toBeTruthy(); // wrong type of `age`
+        expect(paramsValidationIssues(schema, { name: 'John', surname: 'Doe', lunch: true, age: 29, married: true }, { requireAll: true, noExtra: true })).toBeTruthy(); // extra param `married`
+        expect(paramsValidationIssues(schema, { name: 'John', surname: 'Doe', lunch: true, age: 29, married: true }, { requireAll: true, noExtra: false })).toBeUndefined(); // extra param `married`
     });
 });
 

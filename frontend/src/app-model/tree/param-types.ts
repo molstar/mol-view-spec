@@ -1,4 +1,4 @@
-import { choice } from "./params-schema"
+import { choice } from './params-schema';
 
 export type ParseFormatT = 'mmcif' | 'pdb'
 
@@ -6,7 +6,7 @@ export type ComponentSelectorT = 'all' | 'polymer' | 'protein' | 'nucleic' | 'li
 
 export type RepresentationTypeT = 'ball-and-stick' | 'cartoon' | 'surface'
 
-export type ColorT = 'red' | 'white' | 'blue'  // presumably this is a general type and will be useful elsewhere
+export type ColorT = 'red' | 'white' | 'blue' // presumably this is a general type and will be useful elsewhere
 // TODO possible to type for hex color strings here?
 
 
@@ -16,4 +16,4 @@ export const ComponentSelectorT = choice('all', 'polymer', 'protein', 'nucleic',
 
 export const RepresentationTypeT = choice('ball-and-stick', 'cartoon', 'surface');
 
-export const ColorT = choice('red', 'white', 'blue');  // presumably this is a general type and will be useful elsewhere
+export const ColorT = choice('red', 'white', 'blue'); // presumably this is a general type and will be useful elsewhere

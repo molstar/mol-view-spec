@@ -1,4 +1,5 @@
 import * as t from 'io-ts';
+import { PathReporter } from 'io-ts/PathReporter';
 
 
 type AllowedValueTypes = string | number | boolean | null
@@ -13,7 +14,7 @@ export function nullable<T extends t.Type<any>>(type: T) {
 interface Field<V extends AllowedValueTypes = any, R extends boolean = boolean> {
     /** Definition of allowed types for the field */
     type: t.Type<V>,
-    /** If `required===true`, the value must always be defined in molviewspec format (can be `null` if `type` allows it). 
+    /** If `required===true`, the value must always be defined in molviewspec format (can be `null` if `type` allows it).
      * If `required===false`, the value can be ommitted (meaning that a default should be used).
      * If `type` allows `null`, the default must be `null`. */
     required: R,
@@ -44,56 +45,47 @@ export type DefaultFor<F extends Field> = F extends Field<infer V> ? (null exten
 export type ParamsSchema<TKey extends string = string> = { [key in TKey]: Field }
 
 export type FullValuesFor<P extends ParamsSchema> = { [key in keyof P]: ValueFor<P[key]> }
-export type ValuesFor<P extends ParamsSchema> = { [key in keyof P as (P[key] extends RequiredField<any> ? key : never)]: ValueFor<P[key]> }
+export type ValuesFor<P extends ParamsSchema> =
+    { [key in keyof P as (P[key] extends RequiredField<any> ? key : never)]: ValueFor<P[key]> }
     & { [key in keyof P as (P[key] extends OptionalField<any> ? key : never)]?: ValueFor<P[key]> }
 export type DefaultsFor<P extends ParamsSchema> = { [key in keyof P as (P[key] extends Field<any, false> ? key : never)]: ValueFor<P[key]> }
 
 
-/** Return `true` iff `value` has correct type for `field`, regardsless of if required or optional. */
-export function validateField<F extends Field, V>(field: F, value: V): V extends ValueFor<F> ? true : false {
+type Issues = string[]
+
+/** Return `undefined` if `value` has correct type for `field`, regardsless of if required or optional.
+ * Return description of validation issues, if `value` has wrong type.
+ */
+export function fieldValidationIssues<F extends Field, V>(field: F, value: V): V extends ValueFor<F> ? undefined : Issues {
     const validation = field.type.decode(value);
-    return (validation._tag === 'Right') as any;
+    if (validation._tag === 'Right') {
+        return undefined as Issues | undefined as any;
+    } else {
+        return PathReporter.report(validation) as Issues | undefined as any;
+    }
 }
 
-/** Return `true` iff `values` contains correct value types for `schema`, optional params can be missing, extra params allowed. */
-export function validateParams<P extends ParamsSchema, V extends { [k in string]: any }>(schema: P, values: V): V extends ValuesFor<P> ? true : false {
+/** Return `undefined` if `values` contains correct value types for `schema`,
+ * return description of validation issues, if `values` have wrong type.
+ * If `options.requireAll`, all parameters (including optional) must have a value provided.
+ * If `options.noExtra` is true, presence of any extra parameters is treated as an issue.
+ */
+export function paramsValidationIssues<P extends ParamsSchema, V extends { [k: string]: any }>(schema: P, values: V, options: { requireAll?: boolean, noExtra?: boolean } = {}): Issues | undefined {
     for (const key in schema) {
         const paramDef = schema[key];
         if (Object.hasOwn(values, key)) {
             const value = values[key];
-            if (!validateField(paramDef, value)) return false as any;
+            const issues = fieldValidationIssues(paramDef, value);
+            if (issues) return [`Invalid type for parameter "${key}":`, ...issues];
         } else {
-            if (paramDef.required) return false as any;
+            if (paramDef.required) return [`Missing required parameter "${key}":`];
+            if (options.requireAll) return [`Missing optional parameter "${key}":`];
         }
     }
-    return true as any;
-}
-/** Return `true` iff `values` contains correct value types for `schema`, optional params must be there, extra params allowed. */
-export function validateFullParams<P extends ParamsSchema, V extends { [k in string]: any }>(schema: P, values: V): V extends FullValuesFor<P> ? true : false {
-    for (const key in schema) {
-        const paramDef = schema[key];
-        if (Object.hasOwn(values, key)) {
-            const value = values[key];
-            if (!validateField(paramDef, value)) return false as any;
-        } else {
-            return false as any;
+    if (options.noExtra) {
+        for (const key in values) {
+            if (!Object.hasOwn(schema, key)) return [`Unknown parameter "${key}"`];
         }
     }
-    return true as any;
-}
-/** Return `true` iff `values` contains correct value types for `schema`, optional params can be missing, extra params not allowed. */
-export function validateParamsNoExtra<P extends ParamsSchema, V extends { [k in string]: any }>(schema: P, values: V): V extends ValuesFor<P> ? FullValuesFor<P> extends V ? true : false : false {
-    if (!validateParams(schema, values)) return false as any;
-    for (const key in values) {
-        if (!Object.hasOwn(schema, key)) return false as any;
-    }
-    return true as any;
-}
-/** Return `true` iff `values` contains correct value types for `schema`, optional params must be there, extra params not allowed. */
-export function validateFullParamsNoExtra<P extends ParamsSchema, V extends { [k in string]: any }>(schema: P, values: V): V extends FullValuesFor<P> ? FullValuesFor<P> extends V ? true : false : false {
-    if (!validateFullParams(schema, values)) return false as any;
-    for (const key in values) {
-        if (!Object.hasOwn(schema, key)) return false as any;
-    }
-    return true as any;
+    return undefined;
 }

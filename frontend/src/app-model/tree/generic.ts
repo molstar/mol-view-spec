@@ -5,8 +5,7 @@ import { MVSTreeSchema, Root } from './mvs-nodes';
 
 
 export type Node<TKind extends string = string, TParams extends {} = {}> =
-    {} extends TParams ?
-    {
+    {} extends TParams ? {
         kind: TKind,
         params?: TParams,
     } : {

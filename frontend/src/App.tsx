@@ -8,9 +8,7 @@ import './App.css';
 import { AppModel } from './app-model/app-model';
 
 
-export default App;
-
-function App() {
+export function App() {
     return (
         <div className='App'>
             <Main />
@@ -84,6 +82,6 @@ function Viewer({ model }: { model: AppModel }) {
         }
     }, [model]);
 
-    return <div ref={target}></div>
+    return <div ref={target}></div>;
 }
 
