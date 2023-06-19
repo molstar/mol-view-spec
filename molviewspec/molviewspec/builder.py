@@ -14,8 +14,8 @@ from molviewspec.nodes import (
     ParseParams,
     RepresentationParams,
     RepresentationTypeT,
+    State,
     StructureParams,
-    State
 )
 
 
