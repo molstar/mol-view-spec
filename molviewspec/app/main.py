@@ -1,7 +1,8 @@
-from app.api.examples import router as examples_router
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+
+from app.api.examples import router as examples_router
 
 router = APIRouter()
 router.include_router(examples_router, prefix="/examples")

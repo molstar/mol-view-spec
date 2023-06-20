@@ -20,6 +20,11 @@ class Node(TypedDict):
     children: NotRequired[list["Node"]]
 
 
+class State(TypedDict):
+    version: int
+    root: Node
+
+
 class DownloadParams(TypedDict):
     url: str
 
@@ -33,23 +38,31 @@ class ParseParams(TypedDict):
 
 
 class StructureParams(TypedDict):
-    kind: Literal["model", "assembly", "crystal-symmetry"]
+    kind: Literal["model", "assembly", "symmetry", "crystal-symmetry"]
     assembly_id: NotRequired[str]
+    """Use the name to specify which assembly to load"""
+    assembly_index: NotRequired[int]
+    """0-based assembly index, use this to load the 1st assembly"""
     model_index: NotRequired[int]
     """0-based model index in case multiple NMR frames are present"""
     block_index: NotRequired[int]
     """0-based block index in case multiple mmCIF or SDF data blocks are present"""
     block_header: NotRequired[str]
     """Reference a specific mmCIF or SDF data block by its block header"""
+    radius: NotRequired[float]
+    """Radius around model coordinates when loading symmetry mates"""
+    ijk_min: NotRequired[tuple[int, int, int]]
+    """Bottom-left Miller indices"""
+    ijk_max: NotRequired[tuple[int, int, int]]
+    """Top-right Miller indices"""
 
 
-ComponentSelectorT = Literal[
-    "all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"
-]
+ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]
 
 
 class ComponentParams(TypedDict):
     selector: ComponentSelectorT
+
 
 # TODO add possibility to define custom selections
 #     - category name | URL | data
@@ -58,9 +71,7 @@ class ComponentParams(TypedDict):
 #     - format
 
 RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
-ColorT = Literal[
-    "red", "white", "blue"
-]  # presumably this is a general type and will be useful elsewhere
+ColorT = Literal["red", "white", "blue"]  # presumably this is a general type and will be useful elsewhere
 # TODO possible to type for hex color strings here?
 
 

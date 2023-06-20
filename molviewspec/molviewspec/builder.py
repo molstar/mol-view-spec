@@ -1,3 +1,5 @@
+from typing import TypeVar
+
 from molviewspec.nodes import (
     ColorCifCategoryParams,
     ColorParams,
@@ -12,9 +14,9 @@ from molviewspec.nodes import (
     ParseParams,
     RepresentationParams,
     RepresentationTypeT,
+    State,
     StructureParams,
 )
-from typing import TypeVar
 
 
 def create_builder() -> "Root":
@@ -30,6 +32,9 @@ def _assign_params(params: dict, type: TypeVar, lcs: dict):
 class Root:
     def __init__(self) -> None:
         self.node = Node(kind="root")
+
+    def get_state(self) -> State:
+        return State(version=1, root=self.node)
 
     def download(self, *, url: str) -> "Download":
         node = Node(kind="download", params=DownloadParams(url=url))
@@ -57,6 +62,8 @@ class Download(_Base):
         lcs = locals()
         params: ParseParams = {}
         _assign_params(params, ParseParams, lcs)
+        if is_binary is None:
+            params["is_binary"] = False
         node = Node(kind="parse", params=params)
         self.add_child(node)
         return Parse(node=node, root=self.root)
@@ -64,8 +71,18 @@ class Download(_Base):
 
 class Parse(_Base):
     def model_structure(
-        self, *, model_index: int | None = None, block_index: int | None = None, block_header: str | None = None,
+        self,
+        *,
+        model_index: int | None = None,  # TODO default candidate
+        block_index: int | None = None,  # TODO default candidate
+        block_header: str | None = None,
     ) -> "Structure":
+        """
+        Create a structure for the deposited coordinates.
+        :param model_index: 0-based model index in case multiple NMR frames are present
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        """
         lcs = locals()
         params: StructureParams = {"kind": "model"}
         _assign_params(params, StructureParams, lcs)
@@ -74,24 +91,75 @@ class Parse(_Base):
         return Structure(node=node, root=self.root)
 
     def assembly_structure(
-        # TODO made this optional again, where do we draw the line between
-        self, *, assembly_id: str | None = None, block_index: int | None = None, block_header: str | None = None,
+        self,
+        *,
+        assembly_id: str | None = None,
+        assembly_index: int | None = None,
+        model_index: int | None = None,
+        block_index: int | None = None,
+        block_header: str | None = None,
     ) -> "Structure":
+        """
+        Create an assembly structure.
+        :param assembly_id: Use the name to specify which assembly to load
+        :param assembly_index: 0-based assembly index, use this to load the 1st assembly
+        :param model_index: 0-based model index in case multiple NMR frames are present
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        """
         lcs = locals()
         params: StructureParams = {"kind": "assembly"}
         _assign_params(params, StructureParams, lcs)
+        if assembly_id is None and assembly_index is None:
+            params["assembly_index"] = 0
+        node = Node(kind="structure", params=params)
+        self.add_child(node)
+        return Structure(node=node, root=self.root)
+
+    def symmetry_structure(
+        self,
+        *,
+        ijk_min: tuple[int, int, int] | None = None,
+        ijk_max: tuple[int, int, int] | None = None,
+        block_index: int | None = None,
+        block_header: str | None = None,
+    ) -> "Structure":
+        """
+        Create symmetry structure for a given range of Miller indices.
+        :param ijk_min: Bottom-left Miller indices
+        :param ijk_max: Top-right Miller indices
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        """
+        lcs = locals()
+        params: StructureParams = {"kind": "symmetry"}
+        _assign_params(params, StructureParams, lcs)
+        if ijk_min is None:
+            params["ijk_min"] = [-1, -1, -1]
+        if ijk_max is None:
+            params["ijk_max"] = [1, 1, 1]
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
 
     def symmetry_mate_structure(
-            # TODO symmetry by index? unit cell?
-            # TODO is radius too Mol* specific, how do other viewers do this?
-            self, *, radius: float | None = None, block_index: int | None = None, block_header: str | None = None,
+        self,
+        *,
+        radius: float | None = None,
+        block_index: int | None = None,
+        block_header: str | None = None,
     ) -> "Structure":
+        """
+        Create structure of symmetry mates.
+        :param radius: Radius of symmetry partners to include
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        """
         lcs = locals()
         params: StructureParams = {"kind": "symmetry-mates"}
         _assign_params(params, StructureParams, lcs)
+        if radius is None:
+            params["radius"] = 5.0
         node = Node(kind="structure", params=params)
         self.add_child(node)
         return Structure(node=node, root=self.root)
@@ -117,7 +185,7 @@ class Structure(_Base):
         end_label_seq_id: int | None = None,
         beg_auth_seq_id: int | None = None,
         end_auth_seq_id: int | None = None,
-        text: str
+        text: str,
     ) -> "Structure":
         # TODO at which level of the hierarchy do these make most sense?
         lcs = locals()
@@ -138,9 +206,7 @@ class Structure(_Base):
 
 
 class Component(_Base):
-    def representation(
-        self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None
-    ) -> "Representation":
+    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> "Representation":
         lcs = locals()
         params: RepresentationParams = {}
         _assign_params(params, RepresentationParams, lcs)
@@ -164,7 +230,7 @@ class Representation(_Base):
         beg_auth_seq_id: int | None = None,
         end_auth_seq_id: int | None = None,
         color: ColorT,
-        tooltip: str | None = None
+        tooltip: str | None = None,
     ) -> "Representation":
         lcs = locals()
         params: ColorParams = {}
