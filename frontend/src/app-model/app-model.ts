@@ -1,12 +1,13 @@
-import { BehaviorSubject } from 'rxjs';
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { PluginConfig } from 'molstar/lib/mol-plugin/config';
+import { BehaviorSubject } from 'rxjs';
 
 import { loadMVSTree } from './load-tree';
-import { SubTreeOfKind } from './tree/generic';
-import { MVSTree, treeToString } from './tree/tree-utils';
+import { treeValidationIssues } from './tree/generic';
+import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
+import { treeToString } from './tree/tree-utils';
 
 
 export class AppModel {
@@ -17,6 +18,7 @@ export class AppModel {
 
     async initPlugin(target: HTMLDivElement) {
         const defaultSpec = DefaultPluginUISpec();
+        // defaultSpec.behaviors.push(); // TODO add new extension for color-from-cif here (defined in this repo) or register manually after plugin creation instead of defining register()
         this.plugin = await createPluginUI(target, {
             ...defaultSpec,
             layout: {
@@ -45,6 +47,16 @@ export class AppModel {
     }
 
     public async loadMvsFromUrl(url: string = 'http://localhost:9000/api/v1/examples/load/1cbs') {
+        const val = treeValidationIssues(MVSTreeSchema, TEST_DATA);
+        if (val) {
+            console.warn('Validation issues:');
+            for (const line of val) {
+                console.warn(line);
+            }
+        } else {
+            console.warn('No validation issues.');
+        }
+
         this.status.next('loading');
         try {
             console.log('foo', this.plugin);
@@ -76,15 +88,15 @@ export class AppModel {
     }
 }
 
-async function getTreeFromUrl(url: string): Promise<SubTreeOfKind<MVSTree, 'root'>> {
+async function getTreeFromUrl(url: string): Promise<MVSTree> {
     console.log(url);
     const response = await fetch(url);
-    const data = await response.json() as SubTreeOfKind<MVSTree, 'root'>;
+    const data = await response.json() as MVSTree;
     if (data.kind !== 'root') throw new Error('FormatError');
     return data;
 }
 
-const TEST_DATA: SubTreeOfKind<MVSTree, 'root'> = {
+const TEST_DATA: MVSTree = {
     'kind': 'root',
     'children': [
         {
@@ -133,7 +145,7 @@ const TEST_DATA: SubTreeOfKind<MVSTree, 'root'> = {
                         { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': '1' } },
                         { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': '2' } },
                         { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': '3' } },
-                        { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': undefined } }
+                        { 'kind': 'structure', 'params': { 'model_index': 2 } }
                     ]
                 }
             ]

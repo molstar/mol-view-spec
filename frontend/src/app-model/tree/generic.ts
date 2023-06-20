@@ -1,7 +1,4 @@
-import * as t from 'io-ts';
-
-import { RequiredField, ParamsSchema, choice, OptionalField, ValuesFor } from './params-schema';
-import { MVSTreeSchema, Root } from './mvs-nodes';
+import { ParamsSchema, ValuesFor, paramsValidationIssues } from './params-schema';
 
 
 export type Node<TKind extends string = string, TParams extends {} = {}> =
@@ -11,15 +8,10 @@ export type Node<TKind extends string = string, TParams extends {} = {}> =
     } : {
         kind: TKind,
         params: TParams,
-    }
-// params can be dropped if {} is valid value for params
+    } // params can be dropped if {} is valid value for params
 
 export type Kind<TTree extends Node> = TTree['kind']
 export type Params<TTree extends Node> = NonNullable<TTree['params']>
-
-export type Rename<TKind extends string, TNode extends Node> = Node<TKind, Params<TNode>>
-export type PickParams<TNode extends Node, TKeys extends keyof Params<TNode>> = Node<TNode['kind'], Pick<Params<TNode>, TKeys>>
-export type OmitParams<TNode extends Node, TKeys extends keyof Params<TNode>> = Node<TNode['kind'], Omit<Params<TNode>, TKeys>>
 
 
 export type Tree<TNode extends Node<string, {}> = Node<string, {}>, TRoot extends TNode = TNode> =
@@ -33,8 +25,9 @@ export type SubTreeOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>>
 export type ParamsOfKind<TTree extends Tree, TKind extends Kind<TTree> = Kind<TTree>> = NonNullable<SubTreeOfKind<TTree, TKind>['params']>
 
 
-export function getParams<TKind extends string, TParams extends {}>(node: Node<TKind, TParams>) {
-    return node.params ?? {} as TParams;
+export function getParams<TNode extends Node>(node: TNode): Params<TNode> {
+    // export function getParams<TKind extends string, TParams extends {}>(node: Node<TKind, TParams>): TParams {
+    return node.params ?? {};
 }
 export function getChildren<TTree extends Tree>(tree: TTree): SubTree<TTree>[] {
     return tree.children ?? [];
@@ -60,12 +53,24 @@ export function TreeSchema<TSchemas extends { [kind: string]: ParamsSchema }, TR
     return { rootKind, paramsSchemas };
 }
 
-export type RootForTree<TTreeSchema extends TreeSchema> = TTreeSchema extends TreeSchema<infer TSchemas, infer TRoot>
-    ? Node<TRoot, ValuesFor<TSchemas[TRoot]>>
+
+export type NodeForTree<TTreeSchema extends TreeSchema, TKind extends keyof TTreeSchema['paramsSchemas'] = keyof TTreeSchema['paramsSchemas']> = TTreeSchema extends TreeSchema<infer TSchemas, any>
+    ? { [key in keyof TSchemas]: Node<key & string, ValuesFor<TSchemas[key]>> }[TKind]
     : never
 
-export type NodeForTree<TTreeSchema extends TreeSchema> = TTreeSchema extends TreeSchema<infer TSchemas, any>
-    ? { [key in keyof TSchemas]: Node<key & string, TSchemas[key]> }[keyof TSchemas]
-    : never
+export type RootForTree<TTreeSchema extends TreeSchema> = NodeForTree<TTreeSchema, TTreeSchema['rootKind']>
 
 export type TreeFor<TTreeSchema extends TreeSchema> = Tree<NodeForTree<TTreeSchema>, RootForTree<TTreeSchema> & NodeForTree<TTreeSchema>>
+
+export function treeValidationIssues(schema: TreeSchema, tree: Tree, anyRoot: boolean = false): string[] | undefined {
+    if (!anyRoot && tree.kind !== schema.rootKind) return [`Invalid root node kind "${tree.kind}", root must be of kind "${schema.rootKind}"`];
+    const paramsSchema = schema.paramsSchemas[tree.kind];
+    if (!paramsSchema) return [`Unknown node kind "${tree.kind}"`];
+    const issues = paramsValidationIssues(paramsSchema, getParams(tree));
+    if (issues) return [`Invalid parameters for node of kind "${tree.kind}":`, ...issues];
+    for (const child of getChildren(tree)) {
+        const issues = treeValidationIssues(schema, child, true);
+        if (issues) return issues;
+    }
+    return undefined;
+}

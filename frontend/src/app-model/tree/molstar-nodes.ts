@@ -1,18 +1,29 @@
-import { Node, OmitParams, Params } from './generic';
-import * as MVSNodes from './mvs-nodes';
+import { omitObjectKeys, pickObjectKeys } from '../utils';
+import { NodeForTree, TreeFor, TreeSchema } from './generic';
+import { MVSTreeSchema } from './mvs-nodes';
 
 
-export type Root = MVSNodes.Root
-export type Download = Node<'download', Params<MVSNodes.Download> & Pick<Params<MVSNodes.Parse>, 'is_binary'>>
-export type Raw = Node<'raw', Params<MVSNodes.Raw> & Pick<Params<MVSNodes.Parse>, 'is_binary'>>
-export type Parse = OmitParams<MVSNodes.Parse, 'is_binary'>
-export type Model = Node<'model', Pick<Params<MVSNodes.Structure>, 'model_index'>>
-export type Structure = OmitParams<MVSNodes.Structure, 'model_index'>
-export type Component = MVSNodes.Component
-export type Representation = MVSNodes.Representation
-export type Label = MVSNodes.Label
-export type LabelFromCif = MVSNodes.LabelFromCif
-export type Color = MVSNodes.Color
-export type ColorFromCif = MVSNodes.ColorFromCif
+export const MolstarTreeSchema = TreeSchema(
+    'root',
+    {
+        ...MVSTreeSchema.paramsSchemas,
+        'download': {
+            ...MVSTreeSchema.paramsSchemas.download,
+            ...pickObjectKeys(MVSTreeSchema.paramsSchemas.parse, ['is_binary' as const]),
+        },
+        'raw': {
+            ...MVSTreeSchema.paramsSchemas.raw,
+            ...pickObjectKeys(MVSTreeSchema.paramsSchemas.parse, ['is_binary' as const]),
+        },
+        'parse': omitObjectKeys(MVSTreeSchema.paramsSchemas.parse, ['is_binary' as const]),
+        'model': pickObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
+        'structure': omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
+    }
+);
 
-export type Any = Root | Download | Raw | Parse | Model | Structure | Component | Representation | Label | LabelFromCif | Color | ColorFromCif
+
+export type MolstarKind = keyof typeof MolstarTreeSchema.paramsSchemas;
+
+export type MolstarNode<TKind extends MolstarKind = MolstarKind> = NodeForTree<typeof MolstarTreeSchema, TKind>
+
+export type MolstarTree = TreeFor<typeof MolstarTreeSchema>

@@ -1,13 +1,9 @@
 import { deepEqual } from 'molstar/lib/mol-util';
 
-import { Kind, SubTree, SubTreeOfKind, Tree } from './generic';
-import * as MolstarNodes from './molstar-nodes';
-import * as MVSNodes from './mvs-nodes';
 import { formatObject, omitObjectKeys, pickObjectKeys } from '../utils';
-
-
-export type MolstarTree = Tree<MolstarNodes.Any>
-export type MVSTree = Tree<MVSNodes.Any>
+import { Kind, SubTree, SubTreeOfKind, Tree } from './generic';
+import { MolstarTree } from './molstar-nodes';
+import { MVSTree } from './mvs-nodes';
 
 
 function _dfs<TTree extends Tree>(root: TTree, parent: SubTree<TTree> | undefined, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
@@ -47,7 +43,7 @@ export function copyTree<T extends Tree>(root: T): T {
     return convertTree(root, {}) as T;
 }
 
-export function convertTree<A extends B, B extends Tree>(root: A, conversions: { [kind in Kind<SubTree<A>>]?: (node: SubTreeOfKind<A, kind>, parent?: SubTree<A>) => SubTree<B>[] }): SubTree<B> {
+export function convertTree<A extends Tree, B extends Tree>(root: A, conversions: { [kind in Kind<SubTree<A>>]?: (node: SubTreeOfKind<A, kind>, parent?: SubTree<A>) => SubTree<B>[] }): SubTree<B> {
     const mapping = new Map<SubTree<A>, SubTree<B>>();
     let convertedRoot: SubTree<B>;
     dfs<A>(root, (node, parent) => {
@@ -121,7 +117,7 @@ export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
             { kind: 'structure', params: node.params && omitObjectKeys(node.params, ['model_index']) },
         ],
     });
-    const condensed = condenseTree<MolstarTree>(converted);
+    const condensed = condenseTree<MolstarTree>(converted as MolstarTree);
     // TODO think if for all node kinds it makes sense to condense?
     // (e.g. how would we make 2 structures from same cif, one of them rotated)
     return condensed;

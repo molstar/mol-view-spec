@@ -7,24 +7,25 @@ import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 import { Defaults } from './param-defaults';
-import { Kind, SubTreeOfKind, Tree } from './tree/generic';
-import * as MolstarNodes from './tree/molstar-nodes';
-import { MVSTree, MolstarTree, convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
+import { SubTree, Tree, getParams } from './tree/generic';
+import { MolstarKind, MolstarNode, MolstarTree } from './tree/molstar-nodes';
+import { MVSTree } from './tree/mvs-nodes';
+import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { formatObject } from './utils';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
 export type LoadingAction<TNode extends Tree> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode) => StateObjectSelector | undefined
 
-export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTreeOfKind<MolstarNodes.Any, kind>> } = {
-    download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Download): StateObjectSelector {
+export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>> } = {
+    download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'download'>): StateObjectSelector {
         return update.to(msTarget).apply(Download, {
-            url: node.params?.url ?? Defaults.download.url,
-            isBinary: node.params?.is_binary ?? Defaults.download.is_binary, // TODO here we should force MVS defaults, not rely on consumer-specific (MolStar) defaults
+            url: getParams(node).url,
+            isBinary: getParams(node).is_binary ?? Defaults.download.is_binary,
         }).selector;
     },
-    parse(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Parse): StateObjectSelector | undefined {
-        const format = node.params?.format ?? Defaults.parse.format;
+    parse(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'parse'>): StateObjectSelector | undefined {
+        const format = getParams(node).format ?? Defaults.parse.format;
         if (format === 'mmcif') {
             const cif = update.to(msTarget).apply(ParseCif, {}).selector;
             return update.to(cif).apply(TrajectoryFromMmCif, {}).selector;
@@ -34,30 +35,30 @@ export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTr
             return undefined;
         }
     },
-    model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Model): StateObjectSelector {
+    model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'model'>): StateObjectSelector {
         return update.to(msTarget).apply(ModelFromTrajectory, {
-            modelIndex: node.params?.model_index ?? Defaults.model.model_index,
+            modelIndex: getParams(node).model_index ?? Defaults.model.model_index,
         }).selector;
     },
-    structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Structure): StateObjectSelector {
-        const assembly = node.params?.assembly_id ?? Defaults.structure.assembly_id;
+    structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'structure'>): StateObjectSelector {
+        const assembly = getParams(node).assembly_id ?? Defaults.structure.assembly_id;
         return update.to(msTarget).apply(StructureFromModel, {
             type: assembly
                 ? { name: 'assembly', params: { id: assembly } }
                 : { name: 'model', params: {} },
         }).selector;
     },
-    component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Component): StateObjectSelector {
-        const selector = node.params?.selector ?? Defaults.component.selector;
+    component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component'>): StateObjectSelector {
+        const selector = getParams(node).selector ?? Defaults.component.selector;
         return update.to(msTarget).apply(StructureComponent, {
             type: { name: 'static', params: selector },
             label: selector,
         }).selector;
         // TODO check with 'all' and other other selectors
     },
-    representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNodes.Representation): StateObjectSelector {
-        const type = node.params?.type ?? Defaults.representation.type;
-        const color = node.params?.color ?? Defaults.representation.color;
+    representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>): StateObjectSelector {
+        const type = getParams(node).type;
+        const color = getParams(node).color ?? Defaults.representation.color;
         return update.to(msTarget).apply(StructureRepresentation3D, {
             type: { name: type, params: {} },
             colorTheme: color ? { name: 'uniform', params: { value: Color(ColorNames[color as keyof ColorNames] ?? ColorNames.white) } } : undefined,
@@ -67,9 +68,9 @@ export const LoadingActions: { [kind in Kind<MolstarTree>]?: LoadingAction<SubTr
 
 export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
     const update = plugin.build();
-    const mapping = new Map<MolstarTree, StateObjectSelector | undefined>(); // TODO remove undefined
+    const mapping = new Map<SubTree<MolstarTree>, StateObjectSelector | undefined>(); // TODO remove undefined
     dfs<MolstarTree>(tree, (node, parent) => {
-        console.log('Visit', node.kind, formatObject(node.params));
+        console.log('Visit', node.kind, formatObject(getParams(node)));
         if (node.kind === 'root') {
             const msRoot = update.toRoot().selector;
             if (deletePrevious) {

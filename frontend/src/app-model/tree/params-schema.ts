@@ -78,13 +78,13 @@ export function paramsValidationIssues<P extends ParamsSchema, V extends { [k: s
             const issues = fieldValidationIssues(paramDef, value);
             if (issues) return [`Invalid type for parameter "${key}":`, ...issues];
         } else {
-            if (paramDef.required) return [`Missing required parameter "${key}":`];
-            if (options.requireAll) return [`Missing optional parameter "${key}":`];
+            if (paramDef.required) return [`Missing required parameter "${key}".`];
+            if (options.requireAll) return [`Missing optional parameter "${key}".`];
         }
     }
     if (options.noExtra) {
         for (const key in values) {
-            if (!Object.hasOwn(schema, key)) return [`Unknown parameter "${key}"`];
+            if (!Object.hasOwn(schema, key)) return [`Unknown parameter "${key}".`];
         }
     }
     return undefined;
