@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
 
 
-type AllowedValueTypes = string | number | boolean | null
+type AllowedValueTypes = string | number | boolean | null | [number, number, number]
 
 export function choice<V extends string | number | boolean>(v1: V, v2: V, ...others: V[]) {
     return t.union([t.literal(v1), t.literal(v2), ...others.map(v => t.literal(v))]);
@@ -71,6 +71,7 @@ export function fieldValidationIssues<F extends Field, V>(field: F, value: V): V
  * If `options.noExtra` is true, presence of any extra parameters is treated as an issue.
  */
 export function paramsValidationIssues<P extends ParamsSchema, V extends { [k: string]: any }>(schema: P, values: V, options: { requireAll?: boolean, noExtra?: boolean } = {}): Issues | undefined {
+    // console.log('validating', values, 'against', schema);
     for (const key in schema) {
         const paramDef = schema[key];
         if (Object.hasOwn(values, key)) {

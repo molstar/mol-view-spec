@@ -8,7 +8,9 @@ export function formatObject(obj: {} | undefined) {
 export function pickObjectKeys<T extends {}, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
     const result: Partial<Pick<T, K>> = {};
     for (const key of keys) {
-        result[key] = obj[key];
+        if (Object.hasOwn(obj, key)) {
+            result[key] = obj[key];
+        }
     }
     return result as Pick<T, K>;
 }

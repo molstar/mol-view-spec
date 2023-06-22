@@ -62,14 +62,14 @@ export type RootForTree<TTreeSchema extends TreeSchema> = NodeForTree<TTreeSchem
 
 export type TreeFor<TTreeSchema extends TreeSchema> = Tree<NodeForTree<TTreeSchema>, RootForTree<TTreeSchema> & NodeForTree<TTreeSchema>>
 
-export function treeValidationIssues(schema: TreeSchema, tree: Tree, anyRoot: boolean = false): string[] | undefined {
-    if (!anyRoot && tree.kind !== schema.rootKind) return [`Invalid root node kind "${tree.kind}", root must be of kind "${schema.rootKind}"`];
+export function treeValidationIssues(schema: TreeSchema, tree: Tree, options: { requireAll?: boolean, noExtra?: boolean, anyRoot?: boolean } = {}): string[] | undefined {
+    if (!options.anyRoot && tree.kind !== schema.rootKind) return [`Invalid root node kind "${tree.kind}", root must be of kind "${schema.rootKind}"`];
     const paramsSchema = schema.paramsSchemas[tree.kind];
     if (!paramsSchema) return [`Unknown node kind "${tree.kind}"`];
-    const issues = paramsValidationIssues(paramsSchema, getParams(tree));
+    const issues = paramsValidationIssues(paramsSchema, getParams(tree), options);
     if (issues) return [`Invalid parameters for node of kind "${tree.kind}":`, ...issues];
     for (const child of getChildren(tree)) {
-        const issues = treeValidationIssues(schema, child, true);
+        const issues = treeValidationIssues(schema, child, { ...options, anyRoot: true });
         if (issues) return issues;
     }
     return undefined;

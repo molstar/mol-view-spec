@@ -3,7 +3,9 @@ import { choice } from './params-schema';
 
 export const ParseFormatT = choice('mmcif', 'pdb');
 
-export const ComponentSelectorT = choice('all', 'polymer', 'protein', 'nucleic', 'ligand', 'ion', 'water');
+export const StructureKindT = choice('model', 'assembly', 'symmetry', 'crystal-symmetry');
+
+export const ComponentSelectorT = choice('all', 'polymer', 'protein', 'nucleic', 'branched', 'ligand', 'ion', 'water');
 
 export const RepresentationTypeT = choice('ball-and-stick', 'cartoon', 'surface');
 

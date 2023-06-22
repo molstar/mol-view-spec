@@ -74,7 +74,10 @@
                 "@typescript-eslint/indent": [
                     "error",
                     4,
-                    {"ignoredNodes": ["TypeExpression"]}
+                    {
+                        "ignoredNodes": ["TypeExpression"], 
+                        "SwitchCase": 1
+                    }
                 ],
                 "@typescript-eslint/member-delimiter-style": [
                     "off",

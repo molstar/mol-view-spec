@@ -7,9 +7,9 @@ import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 import { Defaults } from './param-defaults';
-import { SubTree, Tree, getParams } from './tree/generic';
-import { MolstarKind, MolstarNode, MolstarTree } from './tree/molstar-nodes';
-import { MVSTree } from './tree/mvs-nodes';
+import { SubTree, Tree, TreeSchema, getParams, treeValidationIssues } from './tree/generic';
+import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
+import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { formatObject } from './utils';
 
@@ -21,32 +21,56 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
     download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'download'>): StateObjectSelector {
         return update.to(msTarget).apply(Download, {
             url: getParams(node).url,
-            isBinary: getParams(node).is_binary ?? Defaults.download.is_binary,
+            isBinary: getParams(node).is_binary ?? Defaults.parse.is_binary,
         }).selector;
     },
     parse(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'parse'>): StateObjectSelector | undefined {
-        const format = getParams(node).format ?? Defaults.parse.format;
+        const format = getParams(node).format;
         if (format === 'mmcif') {
-            const cif = update.to(msTarget).apply(ParseCif, {}).selector;
-            return update.to(cif).apply(TrajectoryFromMmCif, {}).selector;
+            return update.to(msTarget).apply(ParseCif, {}).selector;
+        } else if (format === 'pdb') {
+            return msTarget;
+        } else {
+            console.error(`Unknown format in "parse" node: "${format}"`);
+            return undefined;
+        }
+    },
+    trajectory(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'trajectory'>): StateObjectSelector | undefined {
+        const format = getParams(node).format;
+        if (format === 'mmcif') {
+            return update.to(msTarget).apply(TrajectoryFromMmCif, {}).selector;
         } else if (format === 'pdb') {
             return update.to(msTarget).apply(TrajectoryFromPDB, {}).selector;
         } else {
+            console.error(`Unknown format in "trajectory" node: "${format}"`);
             return undefined;
         }
     },
     model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'model'>): StateObjectSelector {
         return update.to(msTarget).apply(ModelFromTrajectory, {
-            modelIndex: getParams(node).model_index ?? Defaults.model.model_index,
+            modelIndex: getParams(node).model_index ?? Defaults.structure.model_index,
         }).selector;
     },
     structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'structure'>): StateObjectSelector {
-        const assembly = getParams(node).assembly_id ?? Defaults.structure.assembly_id;
-        return update.to(msTarget).apply(StructureFromModel, {
-            type: assembly
-                ? { name: 'assembly', params: { id: assembly } }
-                : { name: 'model', params: {} },
-        }).selector;
+        const params = getParams(node);
+        switch (params.kind) {
+            case 'model':
+                return update.to(msTarget).apply(StructureFromModel, {
+                    type: { name: 'model', params: {} },
+                }).selector;
+            case 'assembly':
+                return update.to(msTarget).apply(StructureFromModel, {
+                    type: { name: 'assembly', params: { id: params.assembly_id } },
+                }).selector;
+            default:
+                throw new Error(`NotImplementedError: Loading action for "structure" node, kind "${params.kind}"`);
+        }
+        // const assembly = params.assembly_id ?? Defaults.structure.assembly_id;
+        // return update.to(msTarget).apply(StructureFromModel, {
+        //     type: assembly
+        //         ? { name: 'assembly', params: { id: assembly } }
+        //         : { name: 'model', params: {} },
+        // }).selector;
     },
     component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component'>): StateObjectSelector {
         const selector = getParams(node).selector ?? Defaults.component.selector;
@@ -100,8 +124,23 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
 export async function loadMVSTree(plugin: PluginContext, tree: MVSTree, deletePrevious: boolean) {
     console.log('MVS tree:');
     console.log(treeToString(tree));
+    validateTree(MVSTreeSchema, tree, 'MVS');
     const molstarTree = convertMvsToMolstar(tree);
     console.log('Converted MolStar tree:');
     console.log(treeToString(molstarTree));
+    validateTree(MolstarTreeSchema, molstarTree, 'Molstar');
     await loadMolstarTree(plugin, molstarTree, deletePrevious);
+}
+
+function validateTree(schema: TreeSchema, tree: Tree, label: string) {
+    const issues = treeValidationIssues(schema, tree, { noExtra: true });
+    if (issues) {
+        console.error(label, 'validation issues:');
+        for (const line of issues) {
+            console.error(' ', line);
+        }
+        throw new Error('FormatError');
+    } else {
+        console.warn(label, '- no validation issues.');
+    }
 }

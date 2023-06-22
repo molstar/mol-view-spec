@@ -9,15 +9,21 @@ export const MolstarTreeSchema = TreeSchema(
         ...MVSTreeSchema.paramsSchemas,
         'download': {
             ...MVSTreeSchema.paramsSchemas.download,
-            ...pickObjectKeys(MVSTreeSchema.paramsSchemas.parse, ['is_binary' as const]),
+            is_binary: MVSTreeSchema.paramsSchemas.parse.is_binary,
         },
         'raw': {
             ...MVSTreeSchema.paramsSchemas.raw,
-            ...pickObjectKeys(MVSTreeSchema.paramsSchemas.parse, ['is_binary' as const]),
+            is_binary: MVSTreeSchema.paramsSchemas.parse.is_binary,
         },
         'parse': omitObjectKeys(MVSTreeSchema.paramsSchemas.parse, ['is_binary' as const]),
+        'trajectory': {
+            format: MVSTreeSchema.paramsSchemas.parse.format,
+            block_header: MVSTreeSchema.paramsSchemas.structure.block_header,
+            block_index: MVSTreeSchema.paramsSchemas.structure.block_index,
+            // TODO think through and fix trajectory vs parse and model
+        },
         'model': pickObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
-        'structure': omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
+        'structure': omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
     }
 );
 
@@ -27,3 +33,5 @@ export type MolstarKind = keyof typeof MolstarTreeSchema.paramsSchemas;
 export type MolstarNode<TKind extends MolstarKind = MolstarKind> = NodeForTree<typeof MolstarTreeSchema, TKind>
 
 export type MolstarTree = TreeFor<typeof MolstarTreeSchema>
+
+console.log('Molstar model params schema:', MolstarTreeSchema.paramsSchemas.model);

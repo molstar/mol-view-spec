@@ -1,8 +1,8 @@
 import { deepEqual } from 'molstar/lib/mol-util';
 
 import { formatObject, omitObjectKeys, pickObjectKeys } from '../utils';
-import { Kind, SubTree, SubTreeOfKind, Tree } from './generic';
-import { MolstarTree } from './molstar-nodes';
+import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree } from './generic';
+import { MolstarNode, MolstarTree } from './molstar-nodes';
 import { MVSTree } from './mvs-nodes';
 
 
@@ -99,23 +99,27 @@ export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
         'download': node => [],
         'raw': node => [],
         'parse': (node, parent) => {
-            const moveParams = node.params && pickObjectKeys(node.params, ['is_binary']);
-            const keepParams = node.params && omitObjectKeys(node.params, ['is_binary']);
+            const moveParams = pickObjectKeys(node.params, ['is_binary']);
+            const keepParams = omitObjectKeys(node.params, ['is_binary']);
             if (parent?.kind === 'download') return [
                 { kind: 'download', params: { ...parent.params, ...moveParams } },
                 { kind: 'parse', params: keepParams }
-            ];
+            ] satisfies MolstarNode[];
             if (parent?.kind === 'raw') return [
                 { kind: 'raw', params: { ...parent.params, ...moveParams } },
                 { kind: 'parse', params: keepParams }
-            ];
+            ] satisfies MolstarNode[];
             console.warn('"parse" node is not being converted, this is suspicious');
             return [copyNodeWithoutChildren(node)];
         },
-        'structure': node => [
-            { kind: 'model', params: node.params && pickObjectKeys(node.params, ['model_index']) },
-            { kind: 'structure', params: node.params && omitObjectKeys(node.params, ['model_index']) },
-        ],
+        'structure': (node, parent) => {
+            if (parent?.kind !== 'parse') throw new Error('Parent of "structure" must be "parse".');
+            return [
+                { kind: 'trajectory', params: { ...pickObjectKeys(parent.params, ['format']), ...pickObjectKeys(node.params, ['block_header', 'block_index']) } },
+                { kind: 'model', params: pickObjectKeys(node.params, ['model_index']) },
+                { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
+            ] satisfies MolstarNode[];
+        },
     });
     const condensed = condenseTree<MolstarTree>(converted as MolstarTree);
     // TODO think if for all node kinds it makes sense to condense?

@@ -8,6 +8,8 @@ import { loadMVSTree } from './load-tree';
 import { treeValidationIssues } from './tree/generic';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { treeToString } from './tree/tree-utils';
+import { TreeSchema } from './tree/generic';
+import { Tree } from './tree/generic';
 
 
 export class AppModel {
@@ -47,52 +49,32 @@ export class AppModel {
     }
 
     public async loadMvsFromUrl(url: string = 'http://localhost:9000/api/v1/examples/load/1cbs') {
-        const val = treeValidationIssues(MVSTreeSchema, TEST_DATA);
-        if (val) {
-            console.warn('Validation issues:');
-            for (const line of val) {
-                console.warn(line);
-            }
-        } else {
-            console.warn('No validation issues.');
-        }
-
         this.status.next('loading');
         try {
             console.log('foo', this.plugin);
             if (!this.plugin) return;
             this.plugin.behaviors.layout.leftPanelTabName.next('data');
 
-            // const download = await this.plugin.build().toRoot().apply(Download, { isBinary: false, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent' }).commit();
-            // await this.plugin.build().to(download).apply(TrajectoryFromPDB, {}).commit();
-
-            // const download2 = await this.plugin.build().toRoot().apply(Download, { isBinary: true, url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.bcif' }).commit();
-            // const cif = await this.plugin.build().to(download2).apply(ParseCif, {}).commit();
-            // const traj = await this.plugin.build().to(cif).apply(TrajectoryFromMmCif, {}).commit();
-            // const model = await this.plugin.build().to(traj).apply(ModelFromTrajectory, {modelIndex: 0}).commit();
-            // const struct = await this.plugin.build().to(model).apply(StructureFromModel, {}).commit();
-            // const repr = await this.plugin.build().to(struct).apply(StructureRepresentation3D, {}).commit();
-
-            const data = await getTreeFromUrl(url);
-            // const data = TEST_DATA;
+            const { version, root } = await getTreeFromUrl(url);
+            console.log('MVS version:', version);
 
             const DELETE_PREVIOUS = true;
-            await loadMVSTree(this.plugin, data, DELETE_PREVIOUS);
+            await loadMVSTree(this.plugin, root, DELETE_PREVIOUS);
 
             this.url.next(url);
-            this.tree.next(treeToString(data));
+            this.tree.next(treeToString(root));
             this.status.next('ready');
-        } catch {
+        } catch (err) {
             this.status.next('error');
+            throw err;
         }
     }
 }
 
-async function getTreeFromUrl(url: string): Promise<MVSTree> {
+async function getTreeFromUrl(url: string): Promise<{ version: number, root: MVSTree }> {
     console.log(url);
     const response = await fetch(url);
-    const data = await response.json() as MVSTree;
-    if (data.kind !== 'root') throw new Error('FormatError');
+    const data = await response.json();
     return data;
 }
 
@@ -108,7 +90,7 @@ const TEST_DATA: MVSTree = {
                     // 'kind': 'parse', 'params': { 'format': 'pdb', 'is_binary': false },
                     'children': [
                         {
-                            'kind': 'structure', 'params': { 'model_index': 0, 'assembly_id': '1' },
+                            'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 0, 'assembly_id': '1' },
                             'children': [
                                 {
                                     'kind': 'component', 'params': { 'selector': 'protein' },
@@ -138,14 +120,14 @@ const TEST_DATA: MVSTree = {
                                 }
                             ]
                         },
-                        { 'kind': 'structure', 'params': { 'model_index': 0, 'assembly_id': '2' } },
-                        { 'kind': 'structure', 'params': { 'model_index': 1, 'assembly_id': '1' } },
-                        { 'kind': 'structure', 'params': { 'model_index': 1, 'assembly_id': '2' } },
-                        { 'kind': 'structure', 'params': { 'model_index': 1, 'assembly_id': '3' } },
-                        { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': '1' } },
-                        { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': '2' } },
-                        { 'kind': 'structure', 'params': { 'model_index': 2, 'assembly_id': '3' } },
-                        { 'kind': 'structure', 'params': { 'model_index': 2 } }
+                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 0, 'assembly_id': '2' } },
+                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 1, 'assembly_id': '1' } },
+                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 1, 'assembly_id': '2' } },
+                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 1, 'assembly_id': '3' } },
+                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 2, 'assembly_id': '1' } },
+                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 2, 'assembly_id': '2' } },
+                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 2, 'assembly_id': '3' } },
+                        { 'kind': 'structure', 'params': { 'kind': 'model', 'model_index': 2 } }
                     ]
                 }
             ]

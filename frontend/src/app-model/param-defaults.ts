@@ -1,24 +1,27 @@
 import { MolstarKind, MolstarTreeSchema } from './tree/molstar-nodes';
+import { MVSKind, MVSTreeSchema } from './tree/mvs-nodes';
 import { DefaultsFor } from './tree/params-schema';
 
 
 export const Defaults = {
     root: {},
     download: {
-        is_binary: false,
     },
     raw: {
         data: 'DEFAULT_DATA',
-        is_binary: false,
     },
     parse: {
-        format: 'mmcif',
-    },
-    model: {
-        model_index: 0,
+        is_binary: false,
     },
     structure: {
-        assembly_id: '1', // TODO fix; For know I'm puting `undefined` with meaning "use deposited model"
+        model_index: 0,
+        assembly_id: null,
+        assembly_index: null,
+        block_index: null,
+        block_header: null,
+        radius: 0,
+        ijk_min: [-1, -1, -1],
+        ijk_max: [1, 1, 1],
     },
     component: {
         selector: 'all',
@@ -26,12 +29,37 @@ export const Defaults = {
     representation: {
         color: 'white',
     },
-    color: {
-        color: 'red',
-        label_asym_id: '',
-        label_seq_id: 0,
+    label: {
+        label_asym_id: null,
+        label_entity_id: null,
+        label_seq_id: null,
+        auth_asym_id: null,
+        auth_seq_id: null,
+        pdbx_PDB_ins_code: null,
+        beg_label_seq_id: null,
+        end_label_seq_id: null,
+        beg_auth_seq_id: null,
+        end_auth_seq_id: null,
     },
-} satisfies { [kind in MolstarKind]?: DefaultsFor<(typeof MolstarTreeSchema)['paramsSchemas'][kind]> };
+    'label-from-cif': {
+    },
+    color: {
+        label_asym_id: null,
+        label_entity_id: null,
+        label_seq_id: null,
+        auth_asym_id: null,
+        auth_seq_id: null,
+        pdbx_PDB_ins_code: null,
+        beg_label_seq_id: null,
+        end_label_seq_id: null,
+        beg_auth_seq_id: null,
+        end_auth_seq_id: null,
+        tooltip: null,
+    },
+    'color-from-cif': {
+    },
+
+} satisfies { [kind in MVSKind]: DefaultsFor<(typeof MVSTreeSchema)['paramsSchemas'][kind]> };
 // TODO add all node kinds and remove ? in the type hint
 // } satisfies { [kind in Kind<MolstarTree>]?: ParamsOfKind<MolstarTree, kind> };
 // TODO mandatory params don't need to be here
