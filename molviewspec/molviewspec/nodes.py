@@ -11,6 +11,9 @@ KindT = Literal[
     "label-from-cif",
     "color",
     "color-from-cif",
+    "color-from-inline",
+    "color-from-json",
+    "color-from-url",
 ]
 
 
@@ -64,12 +67,6 @@ class ComponentParams(TypedDict):
     selector: ComponentSelectorT
 
 
-# TODO add possibility to define custom selections
-#     - category name | URL | data
-#     - schema: chain, ... residue-ranges, auth-residue-ranges, atom...
-#     - is_binary
-#     - format
-
 RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
 ColorT = Literal["red", "white", "blue"]  # presumably this is a general type and will be useful elsewhere
 # TODO possible to type for hex color strings here?
@@ -80,40 +77,67 @@ class RepresentationParams(TypedDict):
     color: NotRequired[ColorT]
 
 
-class LabelParams(TypedDict):
-    label_asym_id: NotRequired[str]
+SchemaT = Literal[
+    "chain", "auth-chain", "residue", "auth-residue", "residue-range", "auth-residue-range", "atom", "auth-atom"
+]
+SchemaFormatT = Literal["cif", "json"]
+
+
+class InlineSchemaParams(TypedDict):  # TODO split into actual subschemas if we want to keep this around
     label_entity_id: NotRequired[str]
-    label_seq_id: NotRequired[int]
+    label_asym_id: NotRequired[str]
     auth_asym_id: NotRequired[str]
+    label_seq_id: NotRequired[int]
     auth_seq_id: NotRequired[int]
     pdbx_PDB_ins_code: NotRequired[str]
     beg_label_seq_id: NotRequired[int]
     end_label_seq_id: NotRequired[int]
     beg_auth_seq_id: NotRequired[int]
     end_auth_seq_id: NotRequired[int]
+    atom_id: NotRequired[int]
     text: str
 
 
-class LabelCifCategoryParams(TypedDict):
+class LabelParams(TypedDict):
+    schema: SchemaT
+
+
+class LabelCifCategoryParams(LabelParams):
     category_name: str
+
+
+class LabelUrlParams(LabelParams):
+    url: str
+    is_binary: NotRequired[bool]
+    format: SchemaFormatT
+
+
+class LabelJsonParams(LabelParams):
+    data: str
+
+
+class LabelInlineParams(LabelParams, InlineSchemaParams):
+    pass
 
 
 class ColorParams(TypedDict):
-    label_asym_id: NotRequired[str]  # TODO how are we feelin'?
-    label_entity_id: NotRequired[str]
-    label_seq_id: NotRequired[int]
-    auth_asym_id: NotRequired[str]
-    auth_seq_id: NotRequired[int]
-    pdbx_PDB_ins_code: NotRequired[str]
-    # TODO all of these could be broken into subclasses: ColorLabelParams, ColorAuthParams, ColorLabelRangeParams, ...
-    # TODO on top of that, both label and color basically extend the same "Identifier" class
-    beg_label_seq_id: NotRequired[int]
-    end_label_seq_id: NotRequired[int]
-    beg_auth_seq_id: NotRequired[int]
-    end_auth_seq_id: NotRequired[int]
-    tooltip: NotRequired[str]
-    color: ColorT
+    schema: SchemaT
 
 
-class ColorCifCategoryParams(TypedDict):
+class ColorCifCategoryParams(ColorParams):
     category_name: str
+
+
+class ColorUrlParams(ColorParams):
+    url: str
+    is_binary: NotRequired[bool]
+    format: SchemaFormatT
+
+
+class ColorJsonParams(ColorParams):
+    data: str
+
+
+class ColorInlineParams(ColorParams, InlineSchemaParams):
+    color: ColorT
+    tooltip: NotRequired[str]

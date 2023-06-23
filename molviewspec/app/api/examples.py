@@ -35,9 +35,9 @@ async def label_example(id: str):
         .model_structure()
     )
     structure.component().representation()
-    structure.label(label_asym_id="A", label_seq_id=120, text="Residue 1").label(
-        label_asym_id="C", label_seq_id=271, text="Residue 2"
-    ).label_from_cif(category_name="my_custom_cif_category")
+    structure.label(schema="residue", label_asym_id="A", label_seq_id=120, text="Residue 1").label(
+        schema="residue", label_asym_id="C", label_seq_id=271, text="Residue 2"
+    ).label_from_cif(schema="residue", category_name="my_custom_cif_category")
     return JSONResponse(builder.get_state())
 
 
@@ -53,10 +53,10 @@ async def color_example(id: str):
         .model_structure()
     )
     structure.component(selector="protein").representation(type="cartoon", color="white").color(
-        label_asym_id="A", label_seq_id=64, color="red", tooltip="Active Site"
+        schema="residue", label_asym_id="A", label_seq_id=64, color="red", tooltip="Active Site"
     )
     structure.component(selector="ligand").representation(type="ball-and-stick").color_from_cif(
-        category_name="my_custom_cif_category"
+        schema="residue", category_name="my_custom_cif_category"
     )
     return JSONResponse(builder.get_state())
 
@@ -84,7 +84,7 @@ async def symmetry_example(id: str):
     (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
         .parse(format="mmcif")
-        .symmetry_structure(ijk_min=[-1, -1, -1], ijk_max=[1, 1, 1])
+        .symmetry_structure(ijk_min=(-1, -1, -1), ijk_max=(1, 1, 1))
     )
     return JSONResponse(builder.get_state())
 
@@ -212,12 +212,12 @@ async def testing_components_example():
     (
         structure.component(selector="protein")
         .representation(type="surface", color="white")
-        .color(label_asym_id="A", label_seq_id=64, color="red")
+        .color(schema="residue", label_asym_id="A", label_seq_id=64, color="red")
     )
     (
         structure.component(selector="nucleic")
         .representation(type="cartoon", color="red")
-        .color_from_cif(category_name="my_custom_cif_category")
+        .color_from_cif(schema="residue", category_name="my_custom_cif_category")
     )
     structure2 = (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
