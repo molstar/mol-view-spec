@@ -39,7 +39,7 @@ class Root:
         self.node = Node(kind="root")
 
     def get_state(self) -> State:
-        return State(version=1, root=self.node)
+        return State(version=2, root=self.node)
 
     def download(self, *, url: str) -> "Download":
         node = Node(kind="download", params=DownloadParams(url=url))
