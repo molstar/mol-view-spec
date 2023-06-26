@@ -1,6 +1,6 @@
+import requests
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
-import requests
 
 from app.config import settings
 from molviewspec.builder import Root
@@ -186,7 +186,7 @@ async def validation_data(id: str):
                     "label_seq_id": residue_number,
                     "label_asym_id": chain_id,
                     "color": color,
-                    "tooltip": ", ".join(outlier_types)
+                    "tooltip": ", ".join(outlier_types),
                 }
                 transformed_data.append(transformed_residue)
 
