@@ -1,4 +1,4 @@
-from typing import Any, Literal, Mapping, NotRequired, TypedDict
+from typing import Any, Literal, Mapping, NotRequired, TypedDict, Union
 
 KindT = Literal[
     "root",
@@ -68,8 +68,9 @@ class ComponentParams(TypedDict):
 
 
 RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
-ColorT = Literal["red", "white", "blue"]  # presumably this is a general type and will be useful elsewhere
-# TODO possible to type for hex color strings here?
+ColorNamesT = Literal["red", "white", "blue"]
+ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
+# TODO could validate against color names and a regex for hex colors -- or simplify to str
 
 
 class RepresentationParams(TypedDict):

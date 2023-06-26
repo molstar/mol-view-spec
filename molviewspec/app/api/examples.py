@@ -103,7 +103,7 @@ async def validation_example(id: str):
         .parse(format="mmcif")
         .assembly_structure()
         .component()
-        .representation()
+        .representation(color="#ffffff")
         .color_from_url(schema="residue", url=f"/data/{id}/validation", format="json")
     )
     return JSONResponse(builder.get_state())
