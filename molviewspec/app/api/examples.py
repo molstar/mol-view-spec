@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+import requests
 
 from app.config import settings
 from molviewspec.builder import Root
@@ -134,6 +135,43 @@ async def json_data(id: str, name: str):
     """
     path = settings.TEST_DATA_DIR / id / f"{name}.json"
     return FileResponse(path)
+
+
+@router.get("/data/{id}/validation")
+async def validation_data(id: str):
+    """
+    Fetches PDBe validation data for an entry and composes a JSON color instruction.
+    :param id: entry to process
+    :return: a JSON that can be understood by Mol* and will color all residues depending on the number of issues
+    """
+    data = requests.get(f"https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/{id}").json()
+    transformed_data = []
+
+    for molecule in data[id]["molecules"]:
+        for chain in molecule["chains"]:
+            for residue in chain["models"][0]["residues"]:
+                residue_number = residue["residue_number"]
+                chain_id = chain["chain_id"]
+                outlier_types = residue["outlier_types"]
+                issue_count = len(outlier_types)
+
+                color = ""
+                if issue_count == 1:
+                    color = "#ffff00"
+                elif issue_count == 2:
+                    color = "#ff8800"
+                elif issue_count >= 3:
+                    color = "#ff0000"
+
+                transformed_residue = {
+                    "label_seq_id": residue_number,
+                    "label_asym_id": chain_id,
+                    "color": color,
+                    "tooltip": ", ".join(outlier_types)
+                }
+                transformed_data.append(transformed_residue)
+
+    return JSONResponse(transformed_data)
 
 
 @router.get("/testing/formats")
