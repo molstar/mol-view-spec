@@ -90,6 +90,25 @@ async def symmetry_example(id: str):
     return JSONResponse(builder.get_state())
 
 
+@router.get("/validation/{id}")
+async def validation_example(id: str):
+    """
+    Color a structure by annotation data in JSON.
+    :param id: the entry to process
+    :return: view spec of a structure that will color residues depending on the number of validation report issues
+    """
+    builder = Root()
+    (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
+        .parse(format="mmcif")
+        .assembly_structure()
+        .component()
+        .representation()
+        .color_from_url(schema="residue", url=f"/data/{id}/validation", format="json")
+    )
+    return JSONResponse(builder.get_state())
+
+
 @router.get("/data/{id}/molecule")
 async def cif_data_molecule(id: str):
     """
