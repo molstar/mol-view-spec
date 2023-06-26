@@ -104,7 +104,7 @@ async def validation_example(id: str):
         .assembly_structure()
         .component()
         .representation(color="#ffffff")
-        .color_from_url(schema="residue", url=f"/data/{id}/validation", format="json")
+        .color_from_url(schema="residue", url=f"/data/{id.lower()}/validation", format="json")
     )
     return JSONResponse(builder.get_state())
 
@@ -163,10 +163,11 @@ async def validation_data(id: str):
     :param id: entry to process
     :return: a JSON that can be understood by Mol* and will color all residues depending on the number of issues
     """
-    data = requests.get(f"https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/{id}").json()
+    response = requests.get(f"https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/{id.lower()}")
+    data = response.json()
     transformed_data = []
 
-    for molecule in data[id]["molecules"]:
+    for molecule in data[id.lower()]["molecules"]:
         for chain in molecule["chains"]:
             for residue in chain["models"][0]["residues"]:
                 residue_number = residue["residue_number"]
