@@ -22,46 +22,50 @@ will run the server on `localhost:9000` with reload mode on.
 
 ```json
 {
-  "kind": "root",
-  "children": [
-    {
-      "kind": "download",
-      "params": {
-        "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif"
-      },
-      "children": [
-        {
-          "kind": "parse",
-          "params": {
-            "format": "mmcif"
-          },
-          "children": [
-            {
-              "kind": "structure",
-              "params": {
-                "kind": "model"
-              },
-              "children": [
-                {
-                  "kind": "component",
-                  "params": {
-                    "selector": "all"
-                  },
-                  "children": [
-                    {
-                      "kind": "representation",
-                      "params": {
-                        "type": "cartoon"
+  "version": 1,
+  "root": {
+    "kind": "root",
+    "children": [
+      {
+        "kind": "download",
+        "params": {
+          "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif"
+        },
+        "children": [
+          {
+            "kind": "parse",
+            "params": {
+              "format": "mmcif",
+              "is_binary": false
+            },
+            "children": [
+              {
+                "kind": "structure",
+                "params": {
+                  "kind": "model"
+                },
+                "children": [
+                  {
+                    "kind": "component",
+                    "params": {
+                      "selector": "all"
+                    },
+                    "children": [
+                      {
+                        "kind": "representation",
+                        "params": {
+                          "type": "cartoon"
+                        }
                       }
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ]
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
 ```

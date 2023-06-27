@@ -2,18 +2,23 @@ from typing import TypeVar
 
 from molviewspec.nodes import (
     ColorCifCategoryParams,
-    ColorParams,
+    ColorInlineParams,
+    ColorJsonParams,
     ColorT,
+    ColorUrlParams,
     ComponentParams,
     ComponentSelectorT,
     DownloadParams,
     LabelCifCategoryParams,
-    LabelParams,
+    LabelInlineParams,
+    LabelJsonParams,
+    LabelUrlParams,
     Node,
     ParseFormatT,
     ParseParams,
     RepresentationParams,
     RepresentationTypeT,
+    SchemaT,
     State,
     StructureParams,
 )
@@ -34,7 +39,7 @@ class Root:
         self.node = Node(kind="root")
 
     def get_state(self) -> State:
-        return State(version=1, root=self.node)
+        return State(version=2, root=self.node)
 
     def download(self, *, url: str) -> "Download":
         node = Node(kind="download", params=DownloadParams(url=url))
@@ -58,6 +63,7 @@ class _Base:
 
 
 class Download(_Base):
+    # TODO defaults in signature makes them more obvious to users but this can't accommodate more complex cases
     def parse(self, *, format: ParseFormatT, is_binary: bool | None = None) -> "Parse":
         lcs = locals()
         params: ParseParams = {}
@@ -172,35 +178,54 @@ class Structure(_Base):
         self.add_child(node)
         return Component(node=node, root=self.root)
 
+    def label_from_cif(self, *, schema: SchemaT, category_name: str) -> "Structure":
+        lcs = locals()
+        params: LabelCifCategoryParams = {}
+        _assign_params(params, LabelCifCategoryParams, lcs)
+        node = Node(kind="label-from-cif", params=params)
+        self.add_child(node)
+        return self
+
+    def label_from_url(self, *, schema: SchemaT, url: str, is_binary: bool | None = None, format: str) -> "Structure":
+        lcs = locals()
+        params: LabelUrlParams = {}
+        _assign_params(params, LabelUrlParams, lcs)
+        if is_binary is None:
+            params["is_binary"] = False
+        node = Node(kind="label-from-url", params=params)
+        self.add_child(node)
+        return self
+
+    def label_from_json(self, *, schema: SchemaT, json: str) -> "Structure":
+        lcs = locals()
+        params: LabelJsonParams = {}
+        _assign_params(params, LabelJsonParams, lcs)
+        node = Node(kind="label-from-json", params=params)
+        self.add_child(node)
+        return self
+
     def label(
         self,
         *,
+        schema: SchemaT,
         label_entity_id: str | None = None,
         label_asym_id: str | None = None,
-        label_seq_id: int | None = None,
         auth_asym_id: str | None = None,
+        label_seq_id: int | None = None,
         auth_seq_id: int | None = None,
         pdbx_PDB_ins_code: str | None = None,
         beg_label_seq_id: int | None = None,
         end_label_seq_id: int | None = None,
         beg_auth_seq_id: int | None = None,
         end_auth_seq_id: int | None = None,
+        atom_id: int | None = None,
         text: str,
     ) -> "Structure":
         # TODO at which level of the hierarchy do these make most sense?
         lcs = locals()
-        params: LabelParams = {}
-        _assign_params(params, LabelParams, lcs)
-        # TODO could validate here against "too few params"
-        node = Node(kind="label", params=params)
-        self.add_child(node)
-        return self
-
-    def label_from_cif(self, *, category_name: str) -> "Structure":
-        lcs = locals()
-        params: LabelCifCategoryParams = {}
-        _assign_params(params, LabelCifCategoryParams, lcs)
-        node = Node(kind="label-from-cif", params=params)
+        params: LabelInlineParams = {}
+        _assign_params(params, LabelInlineParams, lcs)
+        node = Node(kind="label-from-inline", params=params)
         self.add_child(node)
         return self
 
@@ -216,33 +241,55 @@ class Component(_Base):
 
 
 class Representation(_Base):
+    def color_from_cif(self, *, schema: SchemaT, category_name: str) -> "Representation":
+        lcs = locals()
+        params: ColorCifCategoryParams = {}
+        _assign_params(params, ColorCifCategoryParams, lcs)
+        node = Node(kind="color-from-cif", params=params)
+        self.add_child(node)
+        return self
+
+    def color_from_url(
+        self, *, schema: SchemaT, url: str, is_binary: bool | None = None, format: str
+    ) -> "Representation":
+        lcs = locals()
+        params: ColorUrlParams = {}
+        _assign_params(params, ColorUrlParams, lcs)
+        if is_binary is None:
+            params["is_binary"] = False
+        node = Node(kind="color-from-url", params=params)
+        self.add_child(node)
+        return self
+
+    def color_from_json(self, *, schema: SchemaT, json: str) -> "Representation":
+        lcs = locals()
+        params: ColorJsonParams = {}
+        _assign_params(params, ColorJsonParams, lcs)
+        node = Node(kind="color-from-json", params=params)
+        self.add_child(node)
+        return self
+
     def color(
         self,
         *,
+        schema: SchemaT,
         label_entity_id: str | None = None,
         label_asym_id: str | None = None,
-        label_seq_id: int | None = None,
         auth_asym_id: str | None = None,
+        label_seq_id: int | None = None,
         auth_seq_id: int | None = None,
         pdbx_PDB_ins_code: str | None = None,
         beg_label_seq_id: int | None = None,
         end_label_seq_id: int | None = None,
         beg_auth_seq_id: int | None = None,
         end_auth_seq_id: int | None = None,
+        atom_id: int | None = None,
         color: ColorT,
         tooltip: str | None = None,
     ) -> "Representation":
         lcs = locals()
-        params: ColorParams = {}
-        _assign_params(params, ColorParams, lcs)
-        node = Node(kind="color", params=params)
-        self.add_child(node)
-        return self
-
-    def color_from_cif(self, *, category_name: str) -> "Representation":
-        lcs = locals()
-        params: ColorCifCategoryParams = {}
-        _assign_params(params, ColorCifCategoryParams, lcs)
-        node = Node(kind="color-from-cif", params=params)
+        params: ColorInlineParams = {}
+        _assign_params(params, ColorInlineParams, lcs)
+        node = Node(kind="color-from-inline", params=params)
         self.add_child(node)
         return self
