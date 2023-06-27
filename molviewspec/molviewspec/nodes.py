@@ -96,7 +96,6 @@ class InlineSchemaParams(TypedDict):  # TODO split into actual subschemas if we 
     beg_auth_seq_id: NotRequired[int]
     end_auth_seq_id: NotRequired[int]
     atom_id: NotRequired[int]
-    text: str
 
 
 class LabelParams(TypedDict):
@@ -118,7 +117,7 @@ class LabelJsonParams(LabelParams):
 
 
 class LabelInlineParams(LabelParams, InlineSchemaParams):
-    pass
+    text: str
 
 
 class ColorParams(TypedDict):
