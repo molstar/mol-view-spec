@@ -10,6 +10,8 @@ import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { treeToString } from './tree/tree-utils';
 import { TreeSchema } from './tree/generic';
 import { Tree } from './tree/generic';
+import { Annotation } from './cif-color-extension/behavior';
+import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
 
 
 export class AppModel {
@@ -20,7 +22,7 @@ export class AppModel {
 
     async initPlugin(target: HTMLDivElement) {
         const defaultSpec = DefaultPluginUISpec();
-        // defaultSpec.behaviors.push(); // TODO add new extension for color-from-cif here (defined in this repo) or register manually after plugin creation instead of defining register()
+        defaultSpec.behaviors.push(PluginSpec.Behavior(Annotation)); // TODO add new extension for color-from-cif here (defined in this repo) or register manually after plugin creation instead of defining register()
         this.plugin = await createPluginUI(target, {
             ...defaultSpec,
             layout: {

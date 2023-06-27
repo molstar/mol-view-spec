@@ -38,7 +38,7 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
     trajectory(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'trajectory'>): StateObjectSelector | undefined {
         const format = getParams(node).format;
         if (format === 'mmcif') {
-            return update.to(msTarget).apply(TrajectoryFromMmCif, {}).selector;
+            return update.to(msTarget).apply(TrajectoryFromMmCif, {}).selector; // TODO apply block_header, block_index
         } else if (format === 'pdb') {
             return update.to(msTarget).apply(TrajectoryFromPDB, {}).selector;
         } else {
