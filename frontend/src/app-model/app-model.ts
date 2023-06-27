@@ -101,7 +101,7 @@ const TEST_DATA: MVSTree = {
                                             'kind': 'representation', 'params': { 'type': 'cartoon', 'color': 'white' },
                                             'children': [
                                                 {
-                                                    'kind': 'color', 'params': { 'label_asym_id': 'A', 'label_seq_id': 64, 'color': 'red' }
+                                                    'kind': 'color-from-inline', 'params': { 'schema': 'residue', 'label_asym_id': 'A', 'label_seq_id': 64, 'color': 'red', 'text': '???' }
                                                 }
                                             ]
                                         }
@@ -114,7 +114,7 @@ const TEST_DATA: MVSTree = {
                                             'kind': 'representation', 'params': { 'type': 'ball-and-stick' },
                                             'children': [
                                                 {
-                                                    'kind': 'color-from-cif', 'params': { 'category_name': 'my_custom_cif_category' }
+                                                    'kind': 'color-from-cif', 'params': { 'schema': 'residue', 'category_name': 'my_custom_cif_category' }
                                                 }
                                             ]
                                         }

@@ -1,8 +1,24 @@
 import * as t from 'io-ts';
 
 import { NodeForTree, TreeFor, TreeSchema } from './generic';
-import { ColorT, ComponentSelectorT, ParseFormatT, RepresentationTypeT, StructureKindT } from './param-types';
+import { ColorT, ComponentSelectorT, ParseFormatT, RepresentationTypeT, SchemaT, StructureKindT } from './param-types';
 import { OptionalField, RequiredField, nullable } from './params-schema';
+
+
+const InlineSchemaParams = {
+    label_entity_id: OptionalField(nullable(t.string)),
+    label_asym_id: OptionalField(nullable(t.string)),
+    auth_asym_id: OptionalField(nullable(t.string)),
+    label_seq_id: OptionalField(nullable(t.Integer)),
+    auth_seq_id: OptionalField(nullable(t.Integer)),
+    pdbx_PDB_ins_code: OptionalField(nullable(t.string)),
+    beg_label_seq_id: OptionalField(nullable(t.Integer)),
+    end_label_seq_id: OptionalField(nullable(t.Integer)),
+    beg_auth_seq_id: OptionalField(nullable(t.Integer)),
+    end_auth_seq_id: OptionalField(nullable(t.Integer)),
+    atom_id: OptionalField(nullable(t.Integer)),
+    text: OptionalField(nullable(t.string)), // TODO fix backend and sync
+};
 
 
 export const MVSTreeSchema = TreeSchema(
@@ -38,38 +54,29 @@ export const MVSTreeSchema = TreeSchema(
             type: RequiredField(RepresentationTypeT),
             color: OptionalField(ColorT),
         },
-        'label': {
-            label_asym_id: OptionalField(nullable(t.string)),
-            label_entity_id: OptionalField(nullable(t.string)),
-            label_seq_id: OptionalField(nullable(t.Integer)),
-            auth_asym_id: OptionalField(nullable(t.string)),
-            auth_seq_id: OptionalField(nullable(t.Integer)),
-            pdbx_PDB_ins_code: OptionalField(nullable(t.string)),
-            beg_label_seq_id: OptionalField(nullable(t.Integer)),
-            end_label_seq_id: OptionalField(nullable(t.Integer)),
-            beg_auth_seq_id: OptionalField(nullable(t.Integer)),
-            end_auth_seq_id: OptionalField(nullable(t.Integer)),
-            text: RequiredField(t.string),
+        'label': { // ???
+            schema: RequiredField(SchemaT),
         },
         'label-from-cif': {
+            schema: RequiredField(SchemaT),
             category_name: RequiredField(t.string),
+        },
+        'label-from-inline': {
+            schema: RequiredField(SchemaT),
+            ...InlineSchemaParams,
         },
         'color': {
-            label_asym_id: OptionalField(nullable(t.string)),
-            label_entity_id: OptionalField(nullable(t.string)),
-            label_seq_id: OptionalField(nullable(t.Integer)),
-            auth_asym_id: OptionalField(nullable(t.string)),
-            auth_seq_id: OptionalField(nullable(t.Integer)),
-            pdbx_PDB_ins_code: OptionalField(nullable(t.string)),
-            beg_label_seq_id: OptionalField(nullable(t.Integer)),
-            end_label_seq_id: OptionalField(nullable(t.Integer)),
-            beg_auth_seq_id: OptionalField(nullable(t.Integer)),
-            end_auth_seq_id: OptionalField(nullable(t.Integer)),
-            tooltip: OptionalField(nullable(t.string)),
-            color: RequiredField(ColorT),
+            schema: RequiredField(SchemaT),
         },
         'color-from-cif': {
+            schema: RequiredField(SchemaT),
             category_name: RequiredField(t.string),
+        },
+        'color-from-inline': {
+            schema: RequiredField(SchemaT),
+            ...InlineSchemaParams,
+            color: RequiredField(ColorT),
+            tooltip: OptionalField(nullable(t.string)),
         },
     }
 );

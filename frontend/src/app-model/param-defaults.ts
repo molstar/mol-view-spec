@@ -30,6 +30,10 @@ export const Defaults = {
         color: 'white',
     },
     label: {
+    },
+    'label-from-cif': {
+    },
+    'label-from-inline': {
         label_asym_id: null,
         label_entity_id: null,
         label_seq_id: null,
@@ -40,8 +44,8 @@ export const Defaults = {
         end_label_seq_id: null,
         beg_auth_seq_id: null,
         end_auth_seq_id: null,
-    },
-    'label-from-cif': {
+        text: null,
+        atom_id: null,
     },
     color: {
         label_asym_id: null,
@@ -57,6 +61,21 @@ export const Defaults = {
         tooltip: null,
     },
     'color-from-cif': {
+    },
+    'color-from-inline': {
+        label_asym_id: null,
+        label_entity_id: null,
+        label_seq_id: null,
+        auth_asym_id: null,
+        auth_seq_id: null,
+        pdbx_PDB_ins_code: null,
+        beg_label_seq_id: null,
+        end_label_seq_id: null,
+        beg_auth_seq_id: null,
+        end_auth_seq_id: null,
+        atom_id: null,
+        text: null,
+        tooltip: null,
     },
 
 } satisfies { [kind in MVSKind]: DefaultsFor<(typeof MVSTreeSchema)['paramsSchemas'][kind]> };
