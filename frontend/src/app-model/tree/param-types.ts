@@ -9,7 +9,7 @@ export const ComponentSelectorT = choice('all', 'polymer', 'protein', 'nucleic',
 
 export const RepresentationTypeT = choice('ball-and-stick', 'cartoon', 'surface');
 
-export const ColorT = choice('red', 'white', 'blue'); // presumably this is a general type and will be useful elsewhere
+export const ColorT = choice('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
 
 export const SchemaT = choice('chain', 'auth-chain', 'residue', 'auth-residue', 'residue-range', 'auth-residue-range', 'atom', 'auth-atom');
 

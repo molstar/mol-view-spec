@@ -228,8 +228,8 @@ async def testing_components_example():
     return JSONResponse(builder.get_state())
 
 
-@router.get("/testing/color")
-async def color_example():
+@router.get("/testing/color_rainbow")
+async def testing_color_rainbow_example():
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
@@ -244,5 +244,43 @@ async def color_example():
     )
     structure.component(selector="ligand").representation(type="ball-and-stick").color_from_url(
         schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", is_binary=False, format="json",
+    )
+    return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_domains")
+async def testing_color_domains_example():
+    """
+    An example with different representations and coloring for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure = (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1h9t_updated.cif")
+        .parse(format="mmcif")
+        .model_structure()
+    )
+    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", is_binary=False, format="json",
+    )
+    structure.component(selector="ion").representation(type="surface").color_from_url(
+        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", is_binary=False, format="json",
+    )
+    return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_validation")
+async def testing_color_validation_example():
+    """
+    An example with different representations and coloring for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure = (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif")
+        .parse(format="mmcif")
+        .model_structure()
+    )
+    structure.component(selector="protein").representation(type="cartoon", color="green").color_from_url(
+        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1tqn/json/validation", is_binary=False, format="json",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick", color="green").color_from_url(
+        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1tqn/json/validation", is_binary=False, format="json",
     )
     return JSONResponse(builder.get_state())

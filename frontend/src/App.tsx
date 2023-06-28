@@ -32,7 +32,9 @@ function Main() {
         formats: 'http://localhost:9000/api/v1/examples/testing/formats',
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
-        colors: 'http://localhost:9000/api/v1/examples/testing/color',
+        'colors-rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
+        'colors-domains': 'http://localhost:9000/api/v1/examples/testing/color_domains',
+        'colors-validation': 'http://localhost:9000/api/v1/examples/testing/color_validation',
     };
 
     return (
