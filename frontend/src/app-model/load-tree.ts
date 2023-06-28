@@ -1,5 +1,5 @@
 import { Download, ParseCif } from 'molstar/lib/mol-plugin-state/transforms/data';
-import { ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB } from 'molstar/lib/mol-plugin-state/transforms/model';
+import { CustomModelProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
@@ -12,6 +12,12 @@ import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { formatObject } from './utils';
+import { StateTreeSpine } from 'molstar/lib/mol-state/tree/spine';
+import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
+import { AnnotationsProps, AnnotationsSource } from './cif-color-extension/prop';
+import { Source } from 'molstar/lib/extensions/volumes-and-segmentations/entry-root';
+import { ParamDefinition } from 'molstar/lib/mol-util/param-definition';
+import { AnnotationColorThemeParams, AnnotationFormat } from './cif-color-extension/color';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -47,9 +53,21 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
         }
     },
     model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'model'>): StateObjectSelector {
-        return update.to(msTarget).apply(ModelFromTrajectory, {
-            modelIndex: getParams(node).model_index ?? Defaults.structure.model_index,
-        }).selector;
+        let annotationSources: AnnotationsSource[] = [];
+        dfs<SubTree<MolstarTree>>(node, n => {
+            if (n.kind === 'color-from-url') {
+                annotationSources.push({ url: n.params.url, isBinary: n.params.is_binary ?? Defaults['color-from-url'].is_binary });
+            }
+        });
+        annotationSources = distinctAnnotationSources(annotationSources);
+        console.log('annotationSources:', annotationSources);
+        return update.to(msTarget)
+            .apply(ModelFromTrajectory, {
+                modelIndex: getParams(node).model_index ?? Defaults.structure.model_index,
+            })
+            .apply(CustomModelProperties, {
+                properties: { annotations: { annotationSources: annotationSources } }
+            }).selector;
     },
     structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'structure'>): StateObjectSelector {
         const params = getParams(node);
@@ -88,7 +106,64 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
             colorTheme: color ? { name: 'uniform', params: { value: Color(ColorNames[color as keyof ColorNames] ?? ColorNames.white) } } : undefined,
         }).selector;
     },
+    'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>): StateObjectSelector {
+        const format: AnnotationFormat = (node.params.is_binary && node.params.format === 'cif') ? 'bcif' : node.params.format;
+        update.to(msTarget).update(old => ({
+            ...old,
+            colorTheme: {
+                name: 'annotation',
+                params: {
+                    background: ParamDefinition.getDefaultValues(AnnotationColorThemeParams).background,
+                    url: node.params.url,
+                    format: node.params.format,
+                }
+            }
+        }));
+        console.log('update:', update);
+        console.log('msTarget:', msTarget);
+        console.log('msTarget.cell:', msTarget.cell);
+        // const spine = (msTarget.state as any).spine as StateTreeSpine;
+        // const cells = msTarget.state!.cells;
+        // let ref = msTarget.ref;
+        // while (ref !== '-=root=-') {
+        //     ref = cells.get(ref)?.transform.parent;
+        // }
+        const spine = getSpine(msTarget);
+        console.log('spine:', spine);
+        // const model = spine.getAncestorOfType(PluginStateObject.Molecule.Model);
+        // console.log('model:', model);
+        // msTarget.state.
+        return msTarget;
+    },
 };
+
+function getSpine(target: StateObjectSelector) {
+    const cells = target.state!.cells;
+    let ref = target.ref;
+    const spine = [];
+    while (true) {
+        console.log('ref:', ref, cells.get('-=root=-'));
+        console.log('cells:', cells.size);
+        const cell = cells.get(ref);
+        console.log('cell:', cell);
+        if (!cell) break;
+        spine.push(cell);
+        if (cell.transform.parent === ref) break; // root
+        ref = cell.transform.parent;
+    }
+    return spine;
+}
+
+/** Remove duplicates from annotation sources. Throw error if a single URL is listed twice with different formats. */
+function distinctAnnotationSources(sources: AnnotationsSource[]) {
+    const seen: { [url: string]: AnnotationsSource } = {};
+    for (const source of sources) {
+        const older = seen[source.url];
+        if (older && older.isBinary !== source.isBinary) throw new Error('One annotation source cannot be both binary and string.');
+        if (!older) seen[source.url] = source;
+    }
+    return Object.values(seen);
+}
 
 export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
     const update = plugin.build();
@@ -117,7 +192,7 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
             }
         }
     });
-    console.log(mapping);
+    // console.log(mapping);
     await update.commit();
 }
 

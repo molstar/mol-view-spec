@@ -1,5 +1,5 @@
 {
-    "auth_asym_id": ["A", "B"],
+    "auth_asym_id": ["A", "A"],
     "beg_auth_seq_id": [1, 200],
     "end_auth_seq_id": [137, 200],
     "tooltip": ["polymer", "ligand"],

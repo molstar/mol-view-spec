@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 
 import { NodeForTree, TreeFor, TreeSchema } from './generic';
-import { ColorT, ComponentSelectorT, ParseFormatT, RepresentationTypeT, SchemaT, StructureKindT } from './param-types';
+import { ColorT, ComponentSelectorT, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT } from './param-types';
 import { OptionalField, RequiredField, nullable } from './params-schema';
 
 
@@ -71,6 +71,12 @@ export const MVSTreeSchema = TreeSchema(
         'color-from-cif': {
             schema: RequiredField(SchemaT),
             category_name: RequiredField(t.string),
+        },
+        'color-from-url': {
+            schema: RequiredField(SchemaT),
+            url: RequiredField(t.string),
+            is_binary: OptionalField(t.boolean),
+            format: RequiredField(SchemaFormatT),
         },
         'color-from-inline': {
             schema: RequiredField(SchemaT),

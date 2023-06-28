@@ -32,6 +32,7 @@ function Main() {
         formats: 'http://localhost:9000/api/v1/examples/testing/formats',
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
+        colors: 'http://localhost:9000/api/v1/examples/testing/color',
     };
 
     return (
