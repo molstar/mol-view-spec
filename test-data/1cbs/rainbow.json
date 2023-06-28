@@ -43,16 +43,15 @@
     {
         "label_asym_id": "A",
         "beg_label_seq_id": 111,
-        "end_label_seq_id": 130,
+        "end_label_seq_id": 137,
         "color": "#6600dd",
-        "tooltip": "blue"
+        "tooltip": "violet"
     },
     {
         "label_asym_id": "A",
-        "beg_label_seq_id": 71,
-        "end_label_seq_id": 70,
-        "color": "#00ff00",
-        "tooltip": "green"
+        "label_seq_id": 95,
+        "color": "#000000",
+        "tooltip": "black"
     },
     {
         "label_asym_id": "B",

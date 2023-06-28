@@ -120,6 +120,18 @@ export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
                 { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
             ] satisfies MolstarNode[];
         },
+        'color-from-url': (node, parent) => {
+            const newParams: ParamsOfKind<SubTree<MolstarTree>, 'color-from-url'> = { ...node.params };
+            if (parent?.kind === 'representation' && parent.params.color !== undefined) {
+                newParams.background = parent.params.color;
+            }
+            return [
+                { kind: 'color-from-url', params: newParams }
+                // { kind: 'trajectory', params: { ...pickObjectKeys(parent.params, ['format']), ...pickObjectKeys(node.params, ['block_header', 'block_index']) } },
+                // { kind: 'model', params: pickObjectKeys(node.params, ['model_index']) },
+                // { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
+            ] satisfies MolstarNode[];
+        },
     });
     const condensed = condenseTree<MolstarTree>(converted as MolstarTree);
     // TODO think if for all node kinds it makes sense to condense?

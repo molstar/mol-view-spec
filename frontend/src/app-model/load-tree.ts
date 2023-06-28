@@ -14,7 +14,7 @@ import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { formatObject } from './utils';
 import { StateTreeSpine } from 'molstar/lib/mol-state/tree/spine';
 import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
-import { AnnotationsProps, AnnotationsSource } from './cif-color-extension/prop';
+import { AnnotationsProps, AnnotationsSource, decodeColor } from './cif-color-extension/prop';
 import { Source } from 'molstar/lib/extensions/volumes-and-segmentations/entry-root';
 import { ParamDefinition } from 'molstar/lib/mol-util/param-definition';
 import { AnnotationColorThemeParams, AnnotationFormat } from './cif-color-extension/color';
@@ -108,51 +108,21 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
     },
     'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>): StateObjectSelector {
         const format: AnnotationFormat = (node.params.is_binary && node.params.format === 'cif') ? 'bcif' : node.params.format;
+        const background = node.params.background ? decodeColor(node.params.background) : ParamDefinition.getDefaultValues(AnnotationColorThemeParams).background;
         update.to(msTarget).update(old => ({
             ...old,
             colorTheme: {
                 name: 'annotation',
                 params: {
-                    background: ParamDefinition.getDefaultValues(AnnotationColorThemeParams).background,
+                    background: background,
                     url: node.params.url,
-                    format: node.params.format,
+                    format: format,
                 }
             }
         }));
-        console.log('update:', update);
-        console.log('msTarget:', msTarget);
-        console.log('msTarget.cell:', msTarget.cell);
-        // const spine = (msTarget.state as any).spine as StateTreeSpine;
-        // const cells = msTarget.state!.cells;
-        // let ref = msTarget.ref;
-        // while (ref !== '-=root=-') {
-        //     ref = cells.get(ref)?.transform.parent;
-        // }
-        const spine = getSpine(msTarget);
-        console.log('spine:', spine);
-        // const model = spine.getAncestorOfType(PluginStateObject.Molecule.Model);
-        // console.log('model:', model);
-        // msTarget.state.
         return msTarget;
     },
 };
-
-function getSpine(target: StateObjectSelector) {
-    const cells = target.state!.cells;
-    let ref = target.ref;
-    const spine = [];
-    while (true) {
-        console.log('ref:', ref, cells.get('-=root=-'));
-        console.log('cells:', cells.size);
-        const cell = cells.get(ref);
-        console.log('cell:', cell);
-        if (!cell) break;
-        spine.push(cell);
-        if (cell.transform.parent === ref) break; // root
-        ref = cell.transform.parent;
-    }
-    return spine;
-}
 
 /** Remove duplicates from annotation sources. Throw error if a single URL is listed twice with different formats. */
 function distinctAnnotationSources(sources: AnnotationsSource[]) {

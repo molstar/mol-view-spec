@@ -25,6 +25,7 @@ import { Asset } from 'molstar/lib/mol-util/assets';
 import { CustomPropertyDescriptor } from 'molstar/lib/mol-model/custom-property';
 import { AnnotationFormat } from './color';
 import { Color } from 'molstar/lib/mol-util/color';
+import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 
 export const AnnotationsParams = {
@@ -150,10 +151,11 @@ class Annotation {
     }
 }
 
-function decodeColor(color: string): Color | undefined {
-    const result = Color.fromHexStyle(color);
+export function decodeColor(colorString: string): Color | undefined {
+    let result = Color.fromHexStyle(colorString);
+    if (result !== undefined && !isNaN(result)) return result;
+    result = ColorNames[colorString.toLowerCase() as keyof typeof ColorNames];
     if (result !== undefined) return result;
-    // TODO parse different styles here? (e.g. color names)
     return undefined;
 }
 function isDefined<T>(value: T | undefined | null): value is T {
