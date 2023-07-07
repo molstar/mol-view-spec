@@ -6,9 +6,10 @@ dependencies:
   - pip
   - fastapi==0.93.0
   - uvicorn==0.21.0
+  - requests
 
   - nodejs >=18
-  
+
   - autoflake
   - isort
   - black
