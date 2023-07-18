@@ -9,6 +9,7 @@ from molviewspec.nodes import (
     ComponentParams,
     ComponentSelectorT,
     DownloadParams,
+    FocusInlineParams,
     LabelCifCategoryParams,
     LabelInlineParams,
     LabelJsonParams,
@@ -218,7 +219,9 @@ class Structure(_Base):
         end_label_seq_id: int | None = None,
         beg_auth_seq_id: int | None = None,
         end_auth_seq_id: int | None = None,
+        residue_index: int | None = None,
         atom_id: int | None = None,
+        atom_index: int | None = None,
         text: str,
     ) -> "Structure":
         # TODO at which level of the hierarchy do these make most sense?
@@ -226,6 +229,37 @@ class Structure(_Base):
         params: LabelInlineParams = {}
         _assign_params(params, LabelInlineParams, lcs)
         node = Node(kind="label-from-inline", params=params)
+        self.add_child(node)
+        return self
+
+    def focus(
+        self,
+        *,
+        schema: SchemaT,
+        label_entity_id: str | None = None,
+        label_asym_id: str | None = None,
+        auth_asym_id: str | None = None,
+        label_seq_id: int | None = None,
+        auth_seq_id: int | None = None,
+        pdbx_PDB_ins_code: str | None = None,
+        beg_label_seq_id: int | None = None,
+        end_label_seq_id: int | None = None,
+        beg_auth_seq_id: int | None = None,
+        end_auth_seq_id: int | None = None,
+        residue_index: int | None = None,
+        atom_id: int | None = None,
+        atom_index: int | None = None,
+    ) -> "Structure":
+        """
+        Focus on a particular selection.
+        :param schema: what is addressed? entities, chains, residues, atoms, ...
+        :return: this builder
+        """
+        # TODO other focus flavors based on CIF/JSON?
+        lcs = locals()
+        params: FocusInlineParams = {}
+        _assign_params(params, FocusInlineParams, lcs)
+        node = Node(kind="focus-from-inline", params=params)
         self.add_child(node)
         return self
 
@@ -283,7 +317,9 @@ class Representation(_Base):
         end_label_seq_id: int | None = None,
         beg_auth_seq_id: int | None = None,
         end_auth_seq_id: int | None = None,
+        residue_index: int | None = None,
         atom_id: int | None = None,
+        atom_index: int | None = None,
         color: ColorT,
         tooltip: str | None = None,
     ) -> "Representation":

@@ -14,6 +14,7 @@ KindT = Literal[
     "color-from-inline",
     "color-from-json",
     "color-from-url",
+    "focus-from-inline",
 ]
 
 
@@ -79,7 +80,16 @@ class RepresentationParams(TypedDict):
 
 
 SchemaT = Literal[
-    "chain", "auth-chain", "residue", "auth-residue", "residue-range", "auth-residue-range", "atom", "auth-atom"
+    "whole-structure",
+    "entity",
+    "chain",
+    "auth-chain",
+    "residue",
+    "auth-residue",
+    "residue-range",
+    "auth-residue-range",
+    "atom",
+    "auth-atom",
 ]
 SchemaFormatT = Literal["cif", "json"]
 
@@ -95,7 +105,11 @@ class InlineSchemaParams(TypedDict):  # TODO split into actual subschemas if we 
     end_label_seq_id: NotRequired[int]
     beg_auth_seq_id: NotRequired[int]
     end_auth_seq_id: NotRequired[int]
+    residue_index: NotRequired[int]
+    """0-based residue index in the source file"""
     atom_id: NotRequired[int]
+    atom_index: NotRequired[int]
+    """0-based atom index in the source file"""
 
 
 class LabelParams(TypedDict):
@@ -141,3 +155,11 @@ class ColorJsonParams(ColorParams):
 class ColorInlineParams(ColorParams, InlineSchemaParams):
     color: ColorT
     tooltip: NotRequired[str]
+
+
+class FocusParams(TypedDict):
+    schema: SchemaT
+
+
+class FocusInlineParams(FocusParams, InlineSchemaParams):
+    pass
