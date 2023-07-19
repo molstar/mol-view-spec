@@ -22,6 +22,7 @@ from molviewspec.nodes import (
     SchemaT,
     State,
     StructureParams,
+    TransformParams,
 )
 
 
@@ -260,6 +261,37 @@ class Structure(_Base):
         params: FocusInlineParams = {}
         _assign_params(params, FocusInlineParams, lcs)
         node = Node(kind="focus-from-inline", params=params)
+        self.add_child(node)
+        return self
+
+    def transform(
+        self,
+        *,
+        transformation: tuple[
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+        ],
+        rotation: tuple[float, float, float, float, float, float, float, float, float],
+        translation: tuple[float, float, float],
+    ) -> "Structure":
+        lcs = locals()
+        params: TransformParams = {}
+        _assign_params(params, TransformParams, lcs)
+        node = Node(kind="transform", params=params)
         self.add_child(node)
         return self
 

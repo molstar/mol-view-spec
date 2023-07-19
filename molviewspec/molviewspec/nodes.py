@@ -15,6 +15,8 @@ KindT = Literal[
     "color-from-json",
     "color-from-url",
     "focus-from-inline",
+    "transform",
+    "camera",
 ]
 
 
@@ -157,9 +159,41 @@ class ColorInlineParams(ColorParams, InlineSchemaParams):
     tooltip: NotRequired[str]
 
 
-class FocusParams(TypedDict):
+class FocusParams(TypedDict):  # TODO is this focus-repr or highlight? global vs. per-representation
     schema: SchemaT
 
 
 class FocusInlineParams(FocusParams, InlineSchemaParams):
     pass
+
+
+class TransformParams(TypedDict):
+    transformation: NotRequired[
+        tuple[
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+        ]
+    ]
+    rotation: NotRequired[tuple[float, float, float, float, float, float, float, float, float]]
+    translation: NotRequired[tuple[float, float, float]]
+
+
+# TODO where does this go? basically global, entirely independent of the actual scene, a bit like "background color"
+class CameraParams(TypedDict):
+    position: tuple[float, float, float]
+    direction: tuple[float, float, float]
+    radius: float
