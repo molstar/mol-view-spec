@@ -25,16 +25,22 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean, showToolt
 
         private labelPDBeValidation = {
             label: (loci: Loci): string | undefined => {
+
                 if (!this.params.showTooltip) return void 0;
 
                 switch (loci.kind) {
                     case 'element-loci':
+                        // const annots = AnnotationsProvider.get(loci.structure.models[0]).value;
+                        // console.log('AnnotationColorTheme:', annots);
+                        // const annot = annots?.[props.url];
+
                         if (loci.elements.length === 0) return void 0;
                         const e = loci.elements[0];
                         const u = e.unit;
                         if (!u.model.customProperties.hasReference(AnnotationsProvider.descriptor)) return void 0;
 
                         const se = StructureElement.Location.create(loci.structure, u, u.elements[OrderedSet.getAt(e.indices, 0)]);
+                        // console.log('loci:', loci);
                         return `TODO label for ${loci}`;
 
                     default: return void 0;

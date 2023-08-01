@@ -219,11 +219,11 @@ async def testing_components_example():
         .representation(type="cartoon", color="red")
         .color_from_cif(schema="residue", category_name="my_custom_cif_category")
     )
-    structure2 = (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
-        .parse(format="mmcif")
-        .model_structure()
-    )
+    # structure2 = (
+    #     builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
+    #     .parse(format="mmcif")
+    #     .model_structure()
+    # )
     # TODO add all component types to this example
     return JSONResponse(builder.get_state())
 

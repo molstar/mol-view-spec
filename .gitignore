@@ -1,6 +1,7 @@
 ### Custom
 
 node_modules/
+.DS_Store
 
 ### venv
 Scripts

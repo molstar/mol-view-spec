@@ -59,7 +59,7 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Par
                     l.unit = location.aUnit;
                     l.element = location.aUnit.elements[location.aIndex];
                     return annot.colorForLocation(l, props.format) ?? props.background;
-                    // TODO is this sufficient
+                    // TODO is this sufficient?
                 }
                 return props.background;
             };

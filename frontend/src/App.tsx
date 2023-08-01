@@ -27,12 +27,12 @@ function Main() {
 
     const exampleUrls = {
         load: 'http://localhost:9000/api/v1/examples/load/1cbs',
-        label: 'http://localhost:9000/api/v1/examples/label/1cbs',
-        color: 'http://localhost:9000/api/v1/examples/color/1cbs',
+        // label: 'http://localhost:9000/api/v1/examples/label/1cbs',
+        // color: 'http://localhost:9000/api/v1/examples/color/1cbs',
         formats: 'http://localhost:9000/api/v1/examples/testing/formats',
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
-        'colors-rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
+        // 'colors-rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
         'colors-domains': 'http://localhost:9000/api/v1/examples/testing/color_domains',
         'colors-validation': 'http://localhost:9000/api/v1/examples/testing/color_validation',
     };

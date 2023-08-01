@@ -100,7 +100,7 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
     },
     representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>): StateObjectSelector {
         const mvsType = getParams(node).type;
-        const type = (mvsType === 'surface') ? 'molecular-surface' : mvsType;
+        const type = (mvsType === 'surface') ? 'gaussian-surface' : mvsType;
         const color = getParams(node).color ?? Defaults.representation.color;
         return update.to(msTarget).apply(StructureRepresentation3D, {
             type: { name: type, params: {} },

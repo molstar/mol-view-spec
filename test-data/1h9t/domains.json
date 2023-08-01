@@ -110,12 +110,6 @@
 
     {
         "label_asym_id": "B",
-        "label_seq_id": 57,
-        "color": "#ff0000",
-        "tooltip": "Ligand binding site"
-    },
-    {
-        "label_asym_id": "B",
         "label_seq_id": 67,
         "color": "#ff0000",
         "tooltip": "Ligand binding site"
@@ -135,12 +129,6 @@
     {
         "label_asym_id": "B",
         "label_seq_id": 129,
-        "color": "#ff0000",
-        "tooltip": "Ligand binding site"
-    },
-    {
-        "label_asym_id": "B",
-        "label_seq_id": 178,
         "color": "#ff0000",
         "tooltip": "Ligand binding site"
     },
