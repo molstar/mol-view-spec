@@ -26,6 +26,7 @@ const ValidationColors = [
 
 export const AnnotationFormat = new Choice({ json: 'json', cif: 'cif', bcif: 'bcif' }, 'json');
 export type AnnotationFormat = Choice.Values<typeof AnnotationFormat>
+export const AnnotationFormatTypes = { json: 'string', cif: 'string', bcif: 'binary' } satisfies { [format in AnnotationFormat]: 'string' | 'binary' };
 
 export const AnnotationColorThemeParams = {
     background: PD.Color(ColorNames.gainsboro, { description: 'Color for elements without annotation' }),
@@ -44,21 +45,32 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Par
         console.log('AnnotationColorTheme:', annots);
         const annot = annots?.[props.url];
         if (annot) {
-            const rows = annot.genRows(props.format);
-            while (true) {
-                const row = rows.next().value;
-                if (!row) break;
-                console.log('row:', row);
+            // const rows = annot.genRows();
+            // while (true) {
+            //     const row = rows.next().value;
+            //     if (!row) break;
+            //     console.log('row:', row);
+            // }
+            const auxLocation = StructureElement.Location.create(ctx.structure);
+
+            // DEBUG
+            console.time('colorForLocation-all');
+            const h = ctx.structure.model.atomicHierarchy;
+            for (let iRes = 0; iRes < h.residueAtomSegments.count; iRes++) {
+                auxLocation.unit = auxLocation.structure.units[0];
+                auxLocation.element = h.residueAtomSegments.offsets[iRes];
+                // annot.colorForLocation_Reference(auxLocation);
+                annot.colorForLocation(auxLocation);
             }
-            const l = StructureElement.Location.create(ctx.structure);
+            console.timeEnd('colorForLocation-all');
 
             color = (location: Location) => {
                 if (StructureElement.Location.is(location)) {
-                    return annot.colorForLocation(location, props.format) ?? props.background;
+                    return annot.colorForLocation(location) ?? props.background;
                 } else if (Bond.isLocation(location)) {
-                    l.unit = location.aUnit;
-                    l.element = location.aUnit.elements[location.aIndex];
-                    return annot.colorForLocation(l, props.format) ?? props.background;
+                    auxLocation.unit = location.aUnit;
+                    auxLocation.element = location.aUnit.elements[location.aIndex];
+                    return annot.colorForLocation(auxLocation) ?? props.background;
                     // TODO is this sufficient?
                 }
                 return props.background;

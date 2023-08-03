@@ -267,20 +267,20 @@ async def testing_color_domains_example():
     return JSONResponse(builder.get_state())
 
 @router.get("/testing/color_validation")
-async def testing_color_validation_example():
+async def testing_color_validation_example(id: str = '1tqn'):
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
     structure = (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif")
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}_updated.cif")
         .parse(format="mmcif")
         .model_structure()
     )
     structure.component(selector="protein").representation(type="cartoon", color="green").color_from_url(
-        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1tqn/json/validation", is_binary=False, format="json",
+        schema="residue", url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation", is_binary=False, format="json",
     )
     structure.component(selector="ligand").representation(type="ball-and-stick", color="green").color_from_url(
-        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1tqn/json/validation", is_binary=False, format="json",
+        schema="residue", url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation", is_binary=False, format="json",
     )
     return JSONResponse(builder.get_state())

@@ -23,3 +23,31 @@ export function omitObjectKeys<T extends {}, K extends keyof T>(obj: T, omitKeys
     }
     return result as Omit<T, K>;
 }
+
+/** Return an array containing integers from [start, end) if `end` is given,
+ * or from [0, start) if `end` is omitted. */
+export function range(start: number, end?: number): number[] {
+    if (end === undefined) {
+        end = start;
+        start = 0;
+    }
+    const length = Math.max(end - start, 0);
+    const result = Array(length);
+    for (let i = 0; i < length; i++) {
+        result[i] = start + i;
+    }
+    return result;
+}
+
+/** Copy all elements from `src` to the end of `dst`.
+ * Equivalent to `dst.push(...src)`, but avoids storing element on call stack. Faster that `extend` from Underscore.js.
+ * `extend(a, a)` will double the array
+ */
+export function extend<T>(dst: T[], src: T[]): void {
+    const offset = dst.length;
+    const nCopy = src.length;
+    dst.length += nCopy;
+    for (let i = 0; i < nCopy; i++) {
+        dst[offset + i] = src[i];
+    }
+}
