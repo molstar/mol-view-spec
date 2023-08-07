@@ -35,12 +35,11 @@ class DownloadParams(TypedDict):
     url: str
 
 
-ParseFormatT = Literal["mmcif", "pdb"]
+ParseFormatT = Literal["mmcif", "bcif", "pdb"]
 
 
 class ParseParams(TypedDict):
     format: ParseFormatT
-    is_binary: NotRequired[bool]
 
 
 class StructureParams(TypedDict):
@@ -126,7 +125,6 @@ class LabelCifCategoryParams(LabelParams):
 
 class LabelUrlParams(LabelParams):
     url: str
-    is_binary: NotRequired[bool]
     format: SchemaFormatT
 
 
@@ -148,7 +146,6 @@ class ColorCifCategoryParams(ColorParams):
 
 class ColorUrlParams(ColorParams):
     url: str
-    is_binary: NotRequired[bool]
     format: SchemaFormatT
 
 

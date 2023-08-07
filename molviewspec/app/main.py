@@ -20,7 +20,7 @@ This API demonstrates the capabilities of that library and provides a range of e
 * add labels to specific residues
 
 The output is a JSON file that can be opened by Mol* and will create the defined view.
-              """,
+              """
 )
 app.add_middleware(
     CORSMiddleware,

@@ -41,7 +41,7 @@ class Root:
         self.node = Node(kind="root")
 
     def get_state(self) -> State:
-        return State(version=2, root=self.node)
+        return State(version=3, root=self.node)
 
     def download(self, *, url: str) -> "Download":
         node = Node(kind="download", params=DownloadParams(url=url))
@@ -66,12 +66,10 @@ class _Base:
 
 class Download(_Base):
     # TODO defaults in signature makes them more obvious to users but this can't accommodate more complex cases
-    def parse(self, *, format: ParseFormatT, is_binary: bool | None = None) -> "Parse":
+    def parse(self, *, format: ParseFormatT) -> "Parse":
         lcs = locals()
         params: ParseParams = {}
         _assign_params(params, ParseParams, lcs)
-        if is_binary is None:
-            params["is_binary"] = False
         node = Node(kind="parse", params=params)
         self.add_child(node)
         return Parse(node=node, root=self.root)
@@ -188,12 +186,10 @@ class Structure(_Base):
         self.add_child(node)
         return self
 
-    def label_from_url(self, *, schema: SchemaT, url: str, is_binary: bool | None = None, format: str) -> "Structure":
+    def label_from_url(self, *, schema: SchemaT, url: str, format: str) -> "Structure":
         lcs = locals()
         params: LabelUrlParams = {}
         _assign_params(params, LabelUrlParams, lcs)
-        if is_binary is None:
-            params["is_binary"] = False
         node = Node(kind="label-from-url", params=params)
         self.add_child(node)
         return self
@@ -316,13 +312,11 @@ class Representation(_Base):
         return self
 
     def color_from_url(
-        self, *, schema: SchemaT, url: str, is_binary: bool | None = None, format: str
+        self, *, schema: SchemaT, url: str, format: str
     ) -> "Representation":
         lcs = locals()
         params: ColorUrlParams = {}
         _assign_params(params, ColorUrlParams, lcs)
-        if is_binary is None:
-            params["is_binary"] = False
         node = Node(kind="color-from-url", params=params)
         self.add_child(node)
         return self
