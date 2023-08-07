@@ -33,13 +33,10 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean, showToolt
                         const location = StructureElement.Loci.getFirstLocation(loci);
                         if (!location) return undefined;
                         const annots = AnnotationsProvider.get(loci.structure.model).value;
-                        console.log('annots:', annots);
                         let color: Color | undefined = undefined;
                         for (const sourceUrl in annots) {
                             const annot = annots[sourceUrl];
-                            console.log('annot:', annot);
                             color = annot.colorForLocation(location);
-                            // TODO create index
                         }
                         return color ? `Color: ${Color.toHexStyle(color)}` : undefined;
                     default: return undefined;

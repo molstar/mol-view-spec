@@ -53,16 +53,16 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Par
             // }
             const auxLocation = StructureElement.Location.create(ctx.structure);
 
-            // DEBUG
-            console.time('colorForLocation-all');
-            const h = ctx.structure.model.atomicHierarchy;
-            for (let iRes = 0; iRes < h.residueAtomSegments.count; iRes++) {
-                auxLocation.unit = auxLocation.structure.units[0];
-                auxLocation.element = h.residueAtomSegments.offsets[iRes];
-                // annot.colorForLocation_Reference(auxLocation);
-                annot.colorForLocation(auxLocation);
-            }
-            console.timeEnd('colorForLocation-all');
+            // // DEBUG
+            // console.time('TIME colorForLocation-all');
+            // const h = ctx.structure.model.atomicHierarchy;
+            // for (let iRes = 0; iRes < h.residueAtomSegments.count; iRes++) {
+            //     auxLocation.unit = auxLocation.structure.units[0];
+            //     auxLocation.element = h.residueAtomSegments.offsets[iRes];
+            //     // annot.colorForLocation_Reference(auxLocation);
+            //     annot.colorForLocation(auxLocation);
+            // }
+            // console.timeEnd('TIME colorForLocation-all');
 
             color = (location: Location) => {
                 if (StructureElement.Location.is(location)) {

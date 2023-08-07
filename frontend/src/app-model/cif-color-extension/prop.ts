@@ -10,14 +10,17 @@ import { CustomModelProperty } from 'molstar/lib/mol-model-props/common/custom-m
 import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { CustomPropertyDescriptor } from 'molstar/lib/mol-model/custom-property';
 import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-model/structure';
-import { StructureElement } from 'molstar/lib/mol-model/structure/structure';
+import { StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure/structure';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { extend, range } from '../utils';
+import { extend, range, sortIfNeeded, takeFromWhile, takeWhile } from '../utils';
 import { AnnotationFormat, AnnotationFormatTypes } from './color';
+import { SortedArray } from 'molstar/lib/mol-data/int/sorted-array';
+import { Interval } from 'molstar/lib/mol-data/int';
+import { arrayEqual } from 'molstar/lib/mol-util';
 
 
 export const AnnotationsParams = {
@@ -151,21 +154,26 @@ class Annotation {
         const indexedModel = this.indexedModels.safeGet(loc.unit.model); // TODO base everything on loc.unit.model, not loc.structure.model
         return decodeColor(indexedModel[loc.element]?.color);
     }
+    /** Return tooltip assigned to location `loc`, if any */
+    tooltipForLocation(loc: StructureElement.Location): Color | undefined {
+        const indexedModel = this.indexedModels.safeGet(loc.unit.model); // TODO base everything on loc.unit.model, not loc.structure.model
+        return decodeColor(indexedModel[loc.element]?.color);
+    }
 
-    public rowForAllElements(model: Model): (AnnotationRow | undefined)[] { // TODO private?
-        console.time('createIndices');
-        const indices = createIndices(model);
-        console.timeEnd('createIndices');
-        console.log('indices:', indices);
+    private rowForAllElements(model: Model): (AnnotationRow | undefined)[] { // TODO private?
+        console.time('TIME createIndices');
+        const indicesAndSortings = createIndicesAndSortings(model);
+        console.timeEnd('TIME createIndices');
+        console.time('TIME fill rows');
         const nAtoms = model.atomicHierarchy.atoms._rowCount;
         const result: (AnnotationRow | undefined)[] = Array(nAtoms).fill(undefined);
         foreachOfGenerator(this.genRows(), row => {
-            const elements = this.elementsForRow(model, row, indices);
-            // const elements = this.elementsForRow_WithoutIndices(model, row);
+            const elements = this.elementsForRow_WithIndicesAndSortings(model, row, indicesAndSortings);
             for (const range of elements) {
                 result.fill(row, range.from, range.to);
             }
         });
+        console.timeEnd('TIME fill rows');
         return result;
     }
     private elementsForRow(model: Model, row: AnnotationRow, indices: ReturnType<typeof createIndices>): ElementRanges {
@@ -219,6 +227,69 @@ class Annotation {
                     residueIdcs = indices.residuesByChainIndexByInsCode.get(iChain)!.get(row.pdbx_PDB_ins_code) ?? [];
                 }
             }
+            if (isDefined(row.beg_label_seq_id) || isDefined(row.end_label_seq_id) || isDefined(row.beg_auth_seq_id) || isDefined(row.end_auth_seq_id) || isDefined(row.atom_id)) {
+                throw new Error('NotImplementedError: elementsForRow with residue ranges or atom_id');
+            }
+            // TODO implement residue ranges
+            residueIdcs ??= range(h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]], h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]]) as ResidueIndex[];
+            extend(allResidueIdcs, residueIdcs);
+        }
+
+        const ranges: ElementRanges = [];
+        for (const iRes of allResidueIdcs) {
+            addRange(ranges, h.residueAtomSegments.offsets[iRes], h.residueAtomSegments.offsets[iRes + 1]);
+        }
+        // TODO per-atom filter (first find out how to apply coloring per-atom)
+        return ranges;
+    }
+    private elementsForRow_WithIndicesAndSortings(model: Model, row: AnnotationRow, indices: ReturnType<typeof createIndicesAndSortings>): ElementRanges {
+        const h = model.atomicHierarchy;
+        const nChains = h.chains._rowCount;
+        const nResidues = h.residues._rowCount;
+        const nAtoms = h.atoms._rowCount;
+
+        let chainIdcs: ChainIndex[] | undefined = undefined;
+        if (isDefined(row.label_asym_id)) {
+            chainIdcs = indices.chainsByLabelAsymId.get(row.label_asym_id) ?? [];
+        }
+        if (isDefined(row.auth_asym_id)) {
+            if (chainIdcs) {
+                chainIdcs = chainIdcs.filter(i => h.chains.auth_asym_id.value(i) === row.auth_asym_id);
+            } else {
+                chainIdcs = indices.chainsByAuthAsymId.get(row.auth_asym_id) ?? [];
+            }
+        }
+        if (isDefined(row.label_entity_id)) {
+            if (chainIdcs) {
+                chainIdcs = chainIdcs.filter(i => h.chains.label_entity_id.value(i) === row.label_entity_id);
+            } else {
+                chainIdcs = indices.chainsByLabelEntityId.get(row.label_entity_id) ?? [];
+            }
+        }
+        chainIdcs ??= range(nChains) as ChainIndex[];
+        // const ranges: ElementRanges = [];
+        // for (const iChain of chainIdcs) {
+        //     addRange(ranges, h.chainAtomSegments.offsets[iChain], h.chainAtomSegments.offsets[iChain + 1]);
+        // }
+        // return ranges;
+
+        const allResidueIdcs: ResidueIndex[] = [];
+        for (const iChain of chainIdcs) {
+            let residueIdcs: ResidueIndex[] | undefined = undefined;
+            if (isDefined(row.label_seq_id)) {
+                const sortedIndices = indices.residuesByChainIndexSortedByLabelSeqId.get(iChain)!;
+                const sortedValues = indices.residuesByChainIndexSortedByLabelSeqIdValues.get(iChain)!;
+                residueIdcs = getResiduesWithValue(sortedIndices, sortedValues, row.label_seq_id);
+            }
+            if (isDefined(row.auth_seq_id)) {
+                if (residueIdcs) {
+                    residueIdcs = residueIdcs.filter(i => h.residues.auth_seq_id.value(i) === row.auth_seq_id);
+                } else {
+                    const sortedIndices = indices.residuesByChainIndexSortedByAuthSeqId.get(iChain)!;
+                    const sortedValues = indices.residuesByChainIndexSortedByAuthSeqIdValues.get(iChain)!;
+                    residueIdcs = getResiduesWithValue(sortedIndices, sortedValues, row.auth_seq_id);
+                }
+            }
             if (isDefined(row.pdbx_PDB_ins_code)) {
                 if (residueIdcs) {
                     residueIdcs = residueIdcs.filter(i => h.residues.pdbx_PDB_ins_code.value(i) === row.pdbx_PDB_ins_code);
@@ -226,11 +297,44 @@ class Annotation {
                     residueIdcs = indices.residuesByChainIndexByInsCode.get(iChain)!.get(row.pdbx_PDB_ins_code) ?? [];
                 }
             }
-            if (isDefined(row.beg_label_seq_id) || isDefined(row.end_label_seq_id) || isDefined(row.beg_auth_seq_id) || isDefined(row.end_auth_seq_id) || isDefined(row.atom_id)) {
+            if (isDefined(row.beg_label_seq_id) || isDefined(row.end_label_seq_id)) {
+                if (residueIdcs) {
+                    if (isDefined(row.beg_label_seq_id)) {
+                        residueIdcs = residueIdcs.filter(i => h.residues.label_seq_id.value(i) >= row.beg_label_seq_id!);
+                    }
+                    if (isDefined(row.end_label_seq_id)) {
+                        residueIdcs = residueIdcs.filter(i => h.residues.label_seq_id.value(i) <= row.end_label_seq_id!);
+                    }
+                } else {
+                    const sortedIndices = indices.residuesByChainIndexSortedByLabelSeqId.get(iChain)!;
+                    const sortedValues = indices.residuesByChainIndexSortedByLabelSeqIdValues.get(iChain)!;
+                    residueIdcs = getResiduesWithValueInRange(sortedIndices, sortedValues, row.beg_label_seq_id, row.end_label_seq_id);
+                }
+            }
+            if (isDefined(row.beg_auth_seq_id) || isDefined(row.end_auth_seq_id)) {
+                if (residueIdcs) {
+                    if (isDefined(row.beg_auth_seq_id)) {
+                        residueIdcs = residueIdcs.filter(i => h.residues.auth_seq_id.value(i) >= row.beg_auth_seq_id!);
+                    }
+                    if (isDefined(row.end_auth_seq_id)) {
+                        residueIdcs = residueIdcs.filter(i => h.residues.auth_seq_id.value(i) <= row.end_auth_seq_id!);
+                    }
+                } else {
+                    const sortedIndices = indices.residuesByChainIndexSortedByAuthSeqId.get(iChain)!;
+                    const sortedValues = indices.residuesByChainIndexSortedByAuthSeqIdValues.get(iChain)!;
+                    residueIdcs = getResiduesWithValueInRange(sortedIndices, sortedValues, row.beg_auth_seq_id, row.end_auth_seq_id);
+                }
+            }
+            // TODO use filterInPlace
+            // TODO test thoroughly
+            if (isDefined(row.atom_id)) {
                 throw new Error('NotImplementedError: elementsForRow with residue ranges or atom_id');
             }
-            // TODO implement residue ranges
-            residueIdcs ??= range(h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]], h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]]) as ResidueIndex[];
+            if (!residueIdcs) {
+                const firstResidueForChain = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]];
+                const firstResidueAfterChain = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]] ?? nResidues;
+                residueIdcs ??= range(firstResidueForChain, firstResidueAfterChain) as ResidueIndex[];
+            }
             extend(allResidueIdcs, residueIdcs);
         }
 
@@ -350,6 +454,103 @@ function createIndices(model: Model) {
         chainsByLabelEntityId, chainsByLabelAsymId, chainsByAuthAsymId,
         residuesByChainIndexByLabelSeqId, residuesByChainIndexByAuthSeqId, residuesByChainIndexByInsCode,
     };
+}
+function createIndicesAndSortings(model: Model) {
+    const h = model.atomicHierarchy;
+    const nAtoms = h.atoms._rowCount;
+    const nResidues = h.residues._rowCount;
+    console.log('nResidues:', nResidues);
+    const nChains = h.chains._rowCount;
+    const chainsByLabelEntityId = new MultiMap<string, ChainIndex>();
+    const chainsByLabelAsymId = new MultiMap<string, ChainIndex>();
+    const chainsByAuthAsymId = new MultiMap<string, ChainIndex>();
+    const residuesByChainIndexSortedByLabelSeqId = new Map<ChainIndex, ResidueIndex[]>();
+    const residuesByChainIndexSortedByLabelSeqIdValues = new Map<ChainIndex, SortedArray<number>>();
+    const residuesByChainIndexSortedByAuthSeqId = new Map<ChainIndex, ResidueIndex[]>();
+    const residuesByChainIndexSortedByAuthSeqIdValues = new Map<ChainIndex, SortedArray<number>>();
+    const residuesByChainIndexByInsCode = new Map<ChainIndex, MultiMap<string | undefined, ResidueIndex>>();
+    for (let iChain = 0 as ChainIndex; iChain < nChains; iChain++) {
+        const label_entity_id = h.chains.label_entity_id.value(iChain);
+        const label_asym_id = h.chains.label_asym_id.value(iChain);
+        const auth_asym_id = h.chains.auth_asym_id.value(iChain);
+        chainsByLabelEntityId.add(label_entity_id, iChain);
+        chainsByLabelAsymId.add(label_asym_id, iChain);
+        chainsByAuthAsymId.add(auth_asym_id, iChain);
+
+        const iResFrom = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]];
+        const iResTo = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]] ?? nResidues;
+        const residueSortingByLabelSeqId = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present); // TODO maybe implement filterInPlace?
+        sortIfNeeded(residueSortingByLabelSeqId, (a, b) => h.residues.label_seq_id.value(a) - h.residues.label_seq_id.value(b) || a - b);
+        residuesByChainIndexSortedByLabelSeqId.set(iChain, residueSortingByLabelSeqId);
+        residuesByChainIndexSortedByLabelSeqIdValues.set(iChain, SortedArray.ofSortedArray(residueSortingByLabelSeqId.map(iRes => h.residues.label_seq_id.value(iRes))));
+        const residueSortingByAuthSeqId = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.auth_seq_id.valueKind(iRes) === Column.ValueKind.Present); // TODO maybe implement filterInPlace?
+        sortIfNeeded(residueSortingByAuthSeqId, (a, b) => h.residues.auth_seq_id.value(a) - h.residues.auth_seq_id.value(b) || a - b);
+        residuesByChainIndexSortedByAuthSeqId.set(iChain, residueSortingByAuthSeqId);
+        residuesByChainIndexSortedByAuthSeqIdValues.set(iChain, SortedArray.ofSortedArray(residueSortingByAuthSeqId.map(iRes => h.residues.auth_seq_id.value(iRes))));
+
+        const residuesHereByInsCode = new MultiMap<string | undefined, ResidueIndex>();
+        for (let iRes = iResFrom; iRes < iResTo; iRes++) {
+            const pdbx_PDB_ins_code = h.residues.pdbx_PDB_ins_code.valueKind(iRes) === Column.ValueKind.Present ? h.residues.pdbx_PDB_ins_code.value(iRes) : undefined;
+            residuesHereByInsCode.add(pdbx_PDB_ins_code, iRes);
+        }
+        residuesByChainIndexByInsCode.set(iChain, residuesHereByInsCode);
+    }
+    // const residuesByInsCode = new DefaultMap<string | undefined, Set<ResidueIndex>>(() => new Set());
+    // for (let iRes = 0 as ResidueIndex; iRes < nResidues; iRes++) {
+    //     const pdbx_PDB_ins_code = h.residues.pdbx_PDB_ins_code.value(iRes);
+    //     residuesByInsCode.safeGet(pdbx_PDB_ins_code).add(iRes);
+    // }
+
+    return {
+        chainsByLabelEntityId, chainsByLabelAsymId, chainsByAuthAsymId,
+        residuesByChainIndexSortedByLabelSeqId, residuesByChainIndexSortedByLabelSeqIdValues,
+        residuesByChainIndexSortedByAuthSeqId, residuesByChainIndexSortedByAuthSeqIdValues,
+        residuesByChainIndexByInsCode,
+        // residuesByInsCode,
+    };
+}
+
+function getResiduesWithValue(residues: ResidueIndex[], values: SortedArray<number>, target: number) {
+    return getResiduesWithValueInRange(residues, values, target, target);
+}
+function getResiduesWithValueInRange(residues: ResidueIndex[], values: SortedArray<number>, min: number | undefined, max: number | undefined) {
+    const n = residues.length;
+    const from = (min !== undefined) ? SortedArray.findPredecessorIndex(values, min) : 0;
+    let to: number;
+    if (max !== undefined) {
+        to = from;
+        while (to < n && values[to] <= max) to++;
+    } else {
+        to = n;
+    }
+    return residues.slice(from, to);
+}
+
+function createIndex_Debug(model: Model) {
+    const h = model.atomicHierarchy;
+    const residuesByChainIndexByLabelSeqId = new DefaultMap<ChainIndex, MultiMap<number | undefined, ResidueIndex>>(() => new MultiMap());
+    const nResidues = h.residues._rowCount;
+    for (let iRes = 0 as ResidueIndex; iRes < nResidues; iRes++) {
+        const iAtom = h.residueAtomSegments.offsets[iRes];
+        const iChain = h.chainAtomSegments.index[iAtom];
+        const label_seq_id = h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present ? h.residues.label_seq_id.value(iRes) : undefined;
+        residuesByChainIndexByLabelSeqId.safeGet(iChain).add(label_seq_id, iRes);
+    }
+    return residuesByChainIndexByLabelSeqId;
+}
+function createSorting_Debug(model: Model) {
+    const h = model.atomicHierarchy;
+    const residuesByChainIndexSortedByLabelSeqId = new Map<ChainIndex, ResidueIndex[]>();
+    const nResidues = h.residues._rowCount;
+    const nChains = h.chains._rowCount;
+    for (let iChain = 0 as ChainIndex; iChain < nChains; iChain++) {
+        const iResFrom = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]];
+        const iResTo = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]] ?? nResidues;
+        const numberedResidues = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present); // TODO maybe implement filterInPlace?
+        sortIfNeeded(numberedResidues, (a, b) => h.residues.label_seq_id.value(a) - h.residues.label_seq_id.value(b) || a - b);
+        residuesByChainIndexSortedByLabelSeqId.set(iChain, numberedResidues);
+    }
+    return residuesByChainIndexSortedByLabelSeqId;
 }
 
 class DefaultMap<K, V> extends Map<K, V> {

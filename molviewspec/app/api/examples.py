@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+import requests
+from typing import Literal
 
 from app.config import settings
 from molviewspec.builder import Root
@@ -267,14 +269,16 @@ async def testing_color_domains_example():
     return JSONResponse(builder.get_state())
 
 @router.get("/testing/color_validation")
-async def testing_color_validation_example(id: str = '1tqn'):
+async def testing_color_validation_example(id: str = "1tqn"):
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
+    # structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}.bcif"
+    structure_url = _url_for_testing_local_bcif(id)
     structure = (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}_updated.cif")
-        .parse(format="mmcif")
+        builder.download(url=structure_url)
+        .parse(format="mmcif", is_binary=True)
         .model_structure()
     )
     structure.component(selector="protein").representation(type="cartoon", color="green").color_from_url(
@@ -284,3 +288,24 @@ async def testing_color_validation_example(id: str = '1tqn'):
         schema="residue", url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation", is_binary=False, format="json",
     )
     return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/local_bcif/{id}")
+async def testing_local_bcif(id: str):
+    """Return a PDB structure in BCIF cached on local server (obtain from PDBe and cache if not present)"""
+    print("testing_local_bcif", id)
+    result_file = settings.TEST_DATA_DIR / "tmp" / f"{id}.bcif"
+    if not result_file.exists():
+        url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}.bcif"
+        response = requests.get(url)
+        print("status", response.status_code)
+        if not response.ok:
+            raise Exception(f"Failed to obtain {url}")
+        data = response.content
+        result_file.parent.mkdir(parents=True, exist_ok=True)
+        result_file.write_bytes(data)
+    return FileResponse(result_file, media_type="application/octet-stream")
+
+def _url_for_testing_local_bcif(id: str):
+    """Return URL for `testing_local_bcif` endpoint"""
+    return f"http://0.0.0.0:9000/api/v1/examples/testing/local_bcif/{id}"

@@ -51,3 +51,47 @@ export function extend<T>(dst: T[], src: T[]): void {
         dst[offset + i] = src[i];
     }
 }
+
+export function sortIfNeeded<T>(array: T[], compareFn: (a: T, b: T) => number): T[] {
+    const n = array.length;
+    for (let i = 1; i < array.length; i++) {
+        if (compareFn(array[i - 1], array[i]) > 0) {
+            // console.log('Sort needed:', array);
+            return array.sort(compareFn);
+        }
+    }
+    // console.log('Already sorted');
+    return array;
+}
+
+/** Return a slice of `array` starting at the first element fulfilling `fromPredicate`
+ * up to the last element thenceforward ;) fulfilling `whilePredicate`.
+ * E.g. `takeFromWhile([1,2,3,4,6,2,5,6], x => x>=4, x => x%2===0)` -> `[4,6,2]` */
+export function takeFromWhile<T>(array: T[], fromPredicate: (x: T) => boolean, whilePredicate: (x: T) => boolean): T[] {
+    const start = array.findIndex(fromPredicate);
+    if (start < 0) return []; // no elements fulfil fromPredicate
+    const n = array.length;
+    let stop = start;
+    while (stop < n && whilePredicate(array[stop])) stop++;
+    return array.slice(start, stop);
+}
+/** Return a slice of `array` starting at `fromIndex`
+ * up to the last element thenceforward ;) fulfilling `whilePredicate`. */
+export function takeWhile<T>(array: T[], whilePredicate: (x: T) => boolean, fromIndex: number = 0): T[] {
+    const n = array.length;
+    let stop = fromIndex;
+    while (stop < n && whilePredicate(array[stop])) stop++;
+    return array.slice(fromIndex, stop);
+}
+/** Remove all elements from the array which do not fulfil `predicate`. Return the modified array itself. */
+export function filterInPlace<T>(array: T[], predicate: (x: T) => boolean): T[] {
+    const n = array.length;
+    let iDest = 0;
+    for (let iSrc = 0; iSrc < n; iSrc++) {
+        if (predicate(array[iSrc])) {
+            array[iDest++] = array[iSrc];
+        }
+    }
+    array.length = iDest;
+    return array;
+}
