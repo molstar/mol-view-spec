@@ -105,8 +105,10 @@ class InlineSchemaParams(TypedDict):  # TODO split into actual subschemas if we 
     pdbx_PDB_ins_code: NotRequired[str]
     beg_label_seq_id: NotRequired[int]
     end_label_seq_id: NotRequired[int]
+    """End indices are inclusive"""
     beg_auth_seq_id: NotRequired[int]
     end_auth_seq_id: NotRequired[int]
+    """End indices are inclusive"""
     residue_index: NotRequired[int]
     """0-based residue index in the source file"""
     atom_id: NotRequired[int]
@@ -188,7 +190,11 @@ class TransformParams(TypedDict):
             float,
         ]
     ]
+    """4x4 matrix in a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, 
+    to be multiplied from the left"""
     rotation: NotRequired[tuple[float, float, float, float, float, float, float, float, float]]
+    """In a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied 
+    from the left"""
     translation: NotRequired[tuple[float, float, float]]
 
 
