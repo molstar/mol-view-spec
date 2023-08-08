@@ -1,4 +1,4 @@
-from typing import Any, Literal, Mapping, NotRequired, TypedDict
+from typing import Any, Literal, Mapping, NotRequired, TypedDict, Union
 
 KindT = Literal[
     "root",
@@ -14,6 +14,9 @@ KindT = Literal[
     "color-from-inline",
     "color-from-json",
     "color-from-url",
+    "focus-from-inline",
+    "transform",
+    "camera",
 ]
 
 
@@ -32,12 +35,11 @@ class DownloadParams(TypedDict):
     url: str
 
 
-ParseFormatT = Literal["mmcif", "pdb"]
+ParseFormatT = Literal["mmcif", "bcif", "pdb"]
 
 
 class ParseParams(TypedDict):
     format: ParseFormatT
-    is_binary: NotRequired[bool]
 
 
 class StructureParams(TypedDict):
@@ -68,8 +70,8 @@ class ComponentParams(TypedDict):
 
 
 RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
-ColorT = Literal["white", "gray", "black", "red", "orange", "yellow", "green", "cyan", "blue", "magenta"]  # presumably this is a general type and will be useful elsewhere
-# TODO possible to type for hex color strings here?
+ColorNamesT = Literal["white", "gray", "black", "red", "orange", "yellow", "green", "cyan", "blue", "magenta"]
+ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
 
 
 class RepresentationParams(TypedDict):
@@ -78,7 +80,16 @@ class RepresentationParams(TypedDict):
 
 
 SchemaT = Literal[
-    "chain", "auth-chain", "residue", "auth-residue", "residue-range", "auth-residue-range", "atom", "auth-atom"
+    "whole-structure",
+    "entity",
+    "chain",
+    "auth-chain",
+    "residue",
+    "auth-residue",
+    "residue-range",
+    "auth-residue-range",
+    "atom",
+    "auth-atom",
 ]
 SchemaFormatT = Literal["cif", "json"]
 
@@ -92,10 +103,15 @@ class InlineSchemaParams(TypedDict):  # TODO split into actual subschemas if we 
     pdbx_PDB_ins_code: NotRequired[str]
     beg_label_seq_id: NotRequired[int]
     end_label_seq_id: NotRequired[int]
+    """End indices are inclusive"""
     beg_auth_seq_id: NotRequired[int]
     end_auth_seq_id: NotRequired[int]
+    """End indices are inclusive"""
+    residue_index: NotRequired[int]
+    """0-based residue index in the source file"""
     atom_id: NotRequired[int]
-    text: str
+    atom_index: NotRequired[int]
+    """0-based atom index in the source file"""
 
 
 class LabelParams(TypedDict):
@@ -108,7 +124,6 @@ class LabelCifCategoryParams(LabelParams):
 
 class LabelUrlParams(LabelParams):
     url: str
-    is_binary: NotRequired[bool]
     format: SchemaFormatT
 
 
@@ -117,7 +132,7 @@ class LabelJsonParams(LabelParams):
 
 
 class LabelInlineParams(LabelParams, InlineSchemaParams):
-    pass
+    text: str
 
 
 class ColorParams(TypedDict):
@@ -130,7 +145,6 @@ class ColorCifCategoryParams(ColorParams):
 
 class ColorUrlParams(ColorParams):
     url: str
-    is_binary: NotRequired[bool]
     format: SchemaFormatT
 
 
@@ -141,3 +155,47 @@ class ColorJsonParams(ColorParams):
 class ColorInlineParams(ColorParams, InlineSchemaParams):
     color: ColorT
     tooltip: NotRequired[str]
+
+
+class FocusParams(TypedDict):  # TODO is this focus-repr or highlight? global vs. per-representation
+    schema: SchemaT
+
+
+class FocusInlineParams(FocusParams, InlineSchemaParams):
+    pass
+
+
+class TransformParams(TypedDict):
+    transformation: NotRequired[
+        tuple[
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+            float,
+        ]
+    ]
+    """4x4 matrix in a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, 
+    to be multiplied from the left"""
+    rotation: NotRequired[tuple[float, float, float, float, float, float, float, float, float]]
+    """In a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied 
+    from the left"""
+    translation: NotRequired[tuple[float, float, float]]
+
+
+# TODO where does this go? basically global, entirely independent of the actual scene, a bit like "background color"
+class CameraParams(TypedDict):
+    position: tuple[float, float, float]
+    direction: tuple[float, float, float]
+    radius: float

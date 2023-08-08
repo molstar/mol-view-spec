@@ -22,7 +22,7 @@ will run the server on `localhost:9000` with reload mode on.
 
 ```json
 {
-  "version": 1,
+  "version": 3,
   "root": {
     "kind": "root",
     "children": [
@@ -35,8 +35,7 @@ will run the server on `localhost:9000` with reload mode on.
           {
             "kind": "parse",
             "params": {
-              "format": "mmcif",
-              "is_binary": false
+              "format": "mmcif"
             },
             "children": [
               {
