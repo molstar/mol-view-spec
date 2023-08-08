@@ -4,6 +4,7 @@ import { formatObject, omitObjectKeys, pickObjectKeys } from '../utils';
 import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree } from './generic';
 import { MolstarNode, MolstarTree } from './molstar-nodes';
 import { MVSTree } from './mvs-nodes';
+import { ParseFormatMvsToMolstar } from './param-types';
 
 
 function _dfs<TTree extends Tree>(root: TTree, parent: SubTree<TTree> | undefined, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
@@ -99,23 +100,29 @@ export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
         'download': node => [],
         'raw': node => [],
         'parse': (node, parent) => {
-            const moveParams = pickObjectKeys(node.params, ['is_binary']);
-            const keepParams = omitObjectKeys(node.params, ['is_binary']);
-            if (parent?.kind === 'download') return [
-                { kind: 'download', params: { ...parent.params, ...moveParams } },
-                { kind: 'parse', params: keepParams }
-            ] satisfies MolstarNode[];
-            if (parent?.kind === 'raw') return [
-                { kind: 'raw', params: { ...parent.params, ...moveParams } },
-                { kind: 'parse', params: keepParams }
-            ] satisfies MolstarNode[];
-            console.warn('"parse" node is not being converted, this is suspicious');
-            return [copyNodeWithoutChildren(node)];
+            const { format, is_binary } = ParseFormatMvsToMolstar[node.params.format];
+            const convertedNode: MolstarNode<'parse'> = { kind: 'parse', params: { ...node.params, format } };
+            switch (parent?.kind) {
+                case 'download':
+                    return [
+                        { kind: 'download', params: { ...parent.params, is_binary } },
+                        convertedNode,
+                    ] satisfies MolstarNode[];
+                case 'raw':
+                    return [
+                        { kind: 'raw', params: { ...parent.params, is_binary } },
+                        convertedNode,
+                    ] satisfies MolstarNode[];
+                default:
+                    console.warn('"parse" node is not being converted, this is suspicious');
+                    return [convertedNode] satisfies MolstarNode[];
+            }
         },
         'structure': (node, parent) => {
             if (parent?.kind !== 'parse') throw new Error('Parent of "structure" must be "parse".');
+            const { format } = ParseFormatMvsToMolstar[parent.params.format];
             return [
-                { kind: 'trajectory', params: { ...pickObjectKeys(parent.params, ['format']), ...pickObjectKeys(node.params, ['block_header', 'block_index']) } },
+                { kind: 'trajectory', params: { format, ...pickObjectKeys(node.params, ['block_header', 'block_index']) } },
                 { kind: 'model', params: pickObjectKeys(node.params, ['model_index']) },
                 { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
             ] satisfies MolstarNode[];

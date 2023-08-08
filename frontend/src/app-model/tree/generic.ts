@@ -22,7 +22,7 @@ export type Tree<TNode extends Node<string, {}> = Node<string, {}>, TRoot extend
 export type SubTree<TTree extends Tree> = NonNullable<TTree['children']>[number]
 type RootOfKind<TTree extends Tree, TKind extends Kind<TTree>> = Extract<TTree, Tree<any, Node<TKind>>>
 export type SubTreeOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>>> = RootOfKind<SubTree<TTree>, TKind>
-export type ParamsOfKind<TTree extends Tree, TKind extends Kind<TTree> = Kind<TTree>> = NonNullable<SubTreeOfKind<TTree, TKind>['params']>
+export type ParamsOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>> = Kind<TTree>> = NonNullable<SubTreeOfKind<TTree, TKind>['params']>
 
 
 export function getParams<TNode extends Node>(node: TNode): Params<TNode> {

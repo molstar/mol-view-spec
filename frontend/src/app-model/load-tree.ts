@@ -27,12 +27,12 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
     download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'download'>): StateObjectSelector {
         return update.to(msTarget).apply(Download, {
             url: getParams(node).url,
-            isBinary: getParams(node).is_binary ?? Defaults.parse.is_binary,
+            isBinary: getParams(node).is_binary,
         }).selector;
     },
     parse(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'parse'>): StateObjectSelector | undefined {
         const format = getParams(node).format;
-        if (format === 'mmcif') {
+        if (format === 'cif') {
             return update.to(msTarget).apply(ParseCif, {}).selector;
         } else if (format === 'pdb') {
             return msTarget;
@@ -43,7 +43,7 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
     },
     trajectory(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'trajectory'>): StateObjectSelector | undefined {
         const format = getParams(node).format;
-        if (format === 'mmcif') {
+        if (format === 'cif') {
             return update.to(msTarget).apply(TrajectoryFromMmCif, {}).selector; // TODO apply block_header, block_index
         } else if (format === 'pdb') {
             return update.to(msTarget).apply(TrajectoryFromPDB, {}).selector;

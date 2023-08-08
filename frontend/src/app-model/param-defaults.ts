@@ -11,7 +11,6 @@ export const Defaults = {
         data: 'DEFAULT_DATA',
     },
     parse: {
-        is_binary: false,
     },
     structure: {
         model_index: 0,

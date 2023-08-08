@@ -34,7 +34,7 @@ export const MVSTreeSchema = TreeSchema(
         },
         'parse': {
             format: RequiredField(ParseFormatT),
-            is_binary: OptionalField(t.boolean),
+            // is_binary: OptionalField(t.boolean),
         },
         'structure': {
             kind: RequiredField(StructureKindT),

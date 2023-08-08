@@ -88,8 +88,8 @@ const TEST_DATA: MVSTree = {
             // 'kind': 'download', 'params': { 'url': 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent' },
             'children': [
                 {
-                    'kind': 'parse', 'params': { 'format': 'mmcif', 'is_binary': true },
-                    // 'kind': 'parse', 'params': { 'format': 'pdb', 'is_binary': false },
+                    'kind': 'parse', 'params': { 'format': 'bcif' },
+                    // 'kind': 'parse', 'params': { 'format': 'pdb' },
                     'children': [
                         {
                             'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 0, 'assembly_id': '1' },
@@ -136,9 +136,9 @@ const TEST_DATA: MVSTree = {
         },
         {
             'kind': 'raw', 'params': { 'data': 'hello' }, 'children': [
-                { 'kind': 'parse', 'params': { 'format': 'pdb', 'is_binary': false } },
-                { 'kind': 'parse', 'params': { 'format': 'mmcif', 'is_binary': true } },
-                { 'kind': 'parse', 'params': { 'format': 'mmcif', 'is_binary': false } }
+                { 'kind': 'parse', 'params': { 'format': 'pdb' } },
+                { 'kind': 'parse', 'params': { 'format': 'bcif' } },
+                { 'kind': 'parse', 'params': { 'format': 'mmcif' } }
             ]
         },
         {

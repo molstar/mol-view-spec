@@ -1,6 +1,10 @@
+import * as t from 'io-ts';
+
 import { omitObjectKeys, pickObjectKeys } from '../utils';
 import { NodeForTree, TreeFor, TreeSchema } from './generic';
 import { MVSTreeSchema } from './mvs-nodes';
+import { RequiredField } from './params-schema';
+import { MolstarParseFormatT } from './param-types';
 
 
 export const MolstarTreeSchema = TreeSchema(
@@ -9,15 +13,19 @@ export const MolstarTreeSchema = TreeSchema(
         ...MVSTreeSchema.paramsSchemas,
         'download': {
             ...MVSTreeSchema.paramsSchemas.download,
-            is_binary: MVSTreeSchema.paramsSchemas.parse.is_binary,
+            is_binary: RequiredField(t.boolean),
+            // is_binary: MVSTreeSchema.paramsSchemas.parse.is_binary,
         },
         'raw': {
             ...MVSTreeSchema.paramsSchemas.raw,
-            is_binary: MVSTreeSchema.paramsSchemas.parse.is_binary,
+            is_binary: RequiredField(t.boolean),
+            // is_binary: MVSTreeSchema.paramsSchemas.parse.is_binary,
         },
-        'parse': omitObjectKeys(MVSTreeSchema.paramsSchemas.parse, ['is_binary' as const]),
+        'parse': {
+            format: RequiredField(MolstarParseFormatT),
+        },
         'trajectory': {
-            format: MVSTreeSchema.paramsSchemas.parse.format,
+            format: RequiredField(MolstarParseFormatT),
             block_header: MVSTreeSchema.paramsSchemas.structure.block_header,
             block_index: MVSTreeSchema.paramsSchemas.structure.block_index,
             // TODO think through and fix trajectory vs parse and model
