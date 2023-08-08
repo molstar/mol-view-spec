@@ -30,13 +30,26 @@
     {
         "label_asym_id": "C",
         "color": "#1100aa",
-        "tooltip": "DNA"
+        "tooltip": "DNA X"
     },
     {
         "label_asym_id": "D",
-        "color": "#880088",
-        "tooltip": "DNA"
+        "color": "#dddddd",
+        "tooltip": "DNA Y"
     },
+    {
+        "label_asym_id": "D",
+        "atom_id": 4016,
+        "color": "#ff0044",
+        "tooltip": "DNA Y - O5'"
+    },
+    {
+        "label_asym_id": "D",
+        "atom_id": 4391,
+        "color": "#4400ff",
+        "tooltip": "DNA Y - O3'"
+    },
+    
 
     {
         "label_asym_id": "E",

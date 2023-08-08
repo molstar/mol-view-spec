@@ -95,3 +95,11 @@ export function filterInPlace<T>(array: T[], predicate: (x: T) => boolean): T[] 
     array.length = iDest;
     return array;
 }
+
+export function foreachOfGenerator<T>(items: Generator<T>, func: (item: T) => any) {
+    while (true) {
+        const next = items.next();
+        if (next.done) return;
+        func(next.value);
+    }
+}

@@ -1,8 +1,7 @@
 /**
- * Copyright (c) 2018-2020 mol* contributors, licensed under MIT, See LICENSE file for more info.
+ * Copyright (c) 2023 mol* contributors, licensed under MIT, See LICENSE file for more info.
  *
- * @author David Sehnal <david.sehnal@gmail.com>
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
+ * @author Adam Midlik <midlik@gmail.com>
  */
 
 import { Column } from 'molstar/lib/mol-data/db';
@@ -89,15 +88,15 @@ class Annotation {
         console.log('fromSources:', result);
         return { value: result };
     }
-    * genRows(): Generator<AnnotationRow, void, unknown> {
-        // TODO return array instead of generator?
+    getRows(): AnnotationRow[] {
+        const rows: AnnotationRow[] = [];
         if (this.format === 'json') {
             if (this.data.kind !== 'string') throw new Error('Data for "json" format must be of kind "string"');
             const js = JSON.parse(this.data.data);
             if (Array.isArray(js)) {
                 // array of objects
                 for (const item of js) {
-                    yield item;
+                    rows.push(item);
                 }
             } else {
                 // object of arrays
@@ -110,13 +109,14 @@ class Annotation {
                         for (const key of keys) {
                             item[key] = js[key][i];
                         }
-                        yield item;
+                        rows.push(item);
                     }
                 }
             }
         } else {
             throw new Error('NotImplementedError');
         }
+        return rows;
     }
     /** Reference implementation of `colorForLocation`, just for checking, DO NOT USE DIRECTLY */
     colorForLocation_Reference(loc: StructureElement.Location): Color | undefined {
@@ -127,56 +127,56 @@ class Annotation {
         const label_entity_id = h.chains.label_entity_id.value(iChain);
         const label_asym_id = h.chains.label_asym_id.value(iChain);
         const label_seq_id = (h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present) ? h.residues.label_seq_id.value(iRes) : undefined;
-        const label_atom_id = h.atoms.label_atom_id.value(iAtom);
         const auth_asym_id = h.chains.auth_asym_id.value(iChain);
         const auth_seq_id = (h.residues.auth_seq_id.valueKind(iRes) === Column.ValueKind.Present) ? h.residues.auth_seq_id.value(iRes) : undefined;
         const pdbx_PDB_ins_code = h.residues.pdbx_PDB_ins_code.value(iRes);
+        const atom_id = loc.unit.model.atomicConformation.atomId.value(iAtom);
         let color: Color | undefined = undefined;
-        foreachOfGenerator(this.genRows(), row => {
-            if (!isDefined(row.color)) return;
-            if (isDefined(row.label_entity_id) && label_entity_id !== row.label_entity_id) return;
-            if (isDefined(row.label_asym_id) && label_asym_id !== row.label_asym_id) return;
-            if (isDefined(row.auth_asym_id) && auth_asym_id !== row.auth_asym_id) return;
-            if (isDefined(row.label_seq_id) && label_seq_id !== row.label_seq_id) return;
-            if (isDefined(row.auth_seq_id) && auth_seq_id !== row.auth_seq_id) return;
-            if (isDefined(row.pdbx_PDB_ins_code) && pdbx_PDB_ins_code !== row.pdbx_PDB_ins_code) return;
-            if (isDefined(row.beg_label_seq_id) && (!isDefined(label_seq_id) || label_seq_id < row.beg_label_seq_id)) return;
-            if (isDefined(row.end_label_seq_id) && (!isDefined(label_seq_id) || label_seq_id > row.end_label_seq_id)) return; // TODO check if this should be inclusive
-            if (isDefined(row.beg_auth_seq_id) && (!isDefined(auth_seq_id) || auth_seq_id < row.beg_auth_seq_id)) return;
-            if (isDefined(row.end_auth_seq_id) && (!isDefined(auth_seq_id) || auth_seq_id > row.end_auth_seq_id)) return; // TODO check if this should be inclusive
-            // TODO implement atom_id (what does it mean anyway???)
+        for (const row of this.getRows()) {
+            if (!isDefined(row.color)) continue;
+            if (isDefined(row.label_entity_id) && label_entity_id !== row.label_entity_id) continue;
+            if (isDefined(row.label_asym_id) && label_asym_id !== row.label_asym_id) continue;
+            if (isDefined(row.auth_asym_id) && auth_asym_id !== row.auth_asym_id) continue;
+            if (isDefined(row.label_seq_id) && label_seq_id !== row.label_seq_id) continue;
+            if (isDefined(row.auth_seq_id) && auth_seq_id !== row.auth_seq_id) continue;
+            if (isDefined(row.pdbx_PDB_ins_code) && pdbx_PDB_ins_code !== row.pdbx_PDB_ins_code) continue;
+            if (isDefined(row.beg_label_seq_id) && (!isDefined(label_seq_id) || label_seq_id < row.beg_label_seq_id)) continue;
+            if (isDefined(row.end_label_seq_id) && (!isDefined(label_seq_id) || label_seq_id > row.end_label_seq_id)) continue; // TODO check if this should be inclusive
+            if (isDefined(row.beg_auth_seq_id) && (!isDefined(auth_seq_id) || auth_seq_id < row.beg_auth_seq_id)) continue;
+            if (isDefined(row.end_auth_seq_id) && (!isDefined(auth_seq_id) || auth_seq_id > row.end_auth_seq_id)) continue; // TODO check if this should be inclusive
+            if (isDefined(row.atom_id) && atom_id !== row.atom_id) continue;
             color = decodeColor(row.color);
-        });
+        }
         return color;
     }
     /** Return color assigned to location `loc`, if any */
     colorForLocation(loc: StructureElement.Location): Color | undefined {
-        const indexedModel = this.indexedModels.safeGet(loc.unit.model); // TODO base everything on loc.unit.model, not loc.structure.model
+        const indexedModel = this.indexedModels.safeGet(loc.unit.model);
         return decodeColor(indexedModel[loc.element]?.color);
     }
     /** Return tooltip assigned to location `loc`, if any */
-    tooltipForLocation(loc: StructureElement.Location): Color | undefined {
-        const indexedModel = this.indexedModels.safeGet(loc.unit.model); // TODO base everything on loc.unit.model, not loc.structure.model
-        return decodeColor(indexedModel[loc.element]?.color);
+    tooltipForLocation(loc: StructureElement.Location): string | undefined {
+        const indexedModel = this.indexedModels.safeGet(loc.unit.model);
+        return indexedModel[loc.element]?.tooltip;
     }
 
-    private rowForAllElements(model: Model): (AnnotationRow | undefined)[] { // TODO private?
-        console.time('TIME createIndices');
+    private rowForAllElements(model: Model): (AnnotationRow | undefined)[] {
+        console.time('createIndicesAndSortings');
         const indicesAndSortings = createIndicesAndSortings(model);
-        console.timeEnd('TIME createIndices');
-        console.time('TIME fill rows');
+        console.timeEnd('createIndicesAndSortings');
+        console.time('fill');
         const nAtoms = model.atomicHierarchy.atoms._rowCount;
         const result: (AnnotationRow | undefined)[] = Array(nAtoms).fill(undefined);
-        foreachOfGenerator(this.genRows(), row => {
-            const elements = this.elementsForRow_WithIndicesAndSortings(model, row, indicesAndSortings);
+        for (const row of this.getRows()) {
+            const elements = this.elementsForRow(model, row, indicesAndSortings);
             for (const range of elements) {
                 result.fill(row, range.from, range.to);
             }
-        });
-        console.timeEnd('TIME fill rows');
+        }
+        console.timeEnd('fill');
         return result;
     }
-    private elementsForRow(model: Model, row: AnnotationRow, indices: ReturnType<typeof createIndices>): ElementRanges {
+    private elementsForRow(model: Model, row: AnnotationRow, indices: ReturnType<typeof createIndicesAndSortings>): ElementRanges {
         const h = model.atomicHierarchy;
         const nChains = h.chains._rowCount;
         const nResidues = h.residues._rowCount;
@@ -201,77 +201,6 @@ class Annotation {
             }
         }
         chainIdcs ??= range(nChains) as ChainIndex[];
-        // const ranges: ElementRanges = [];
-        // for (const iChain of chainIdcs) {
-        //     addRange(ranges, h.chainAtomSegments.offsets[iChain], h.chainAtomSegments.offsets[iChain + 1]);
-        // }
-        // return ranges;
-
-        const allResidueIdcs: ResidueIndex[] = [];
-        for (const iChain of chainIdcs) {
-            let residueIdcs: ResidueIndex[] | undefined = undefined;
-            if (isDefined(row.label_seq_id)) {
-                residueIdcs = indices.residuesByChainIndexByLabelSeqId.get(iChain)!.get(row.label_seq_id) ?? [];
-            }
-            if (isDefined(row.auth_seq_id)) {
-                if (residueIdcs) {
-                    residueIdcs = residueIdcs.filter(i => h.residues.auth_seq_id.value(i) === row.auth_seq_id);
-                } else {
-                    residueIdcs = indices.residuesByChainIndexByAuthSeqId.get(iChain)!.get(row.auth_seq_id) ?? [];
-                }
-            }
-            if (isDefined(row.pdbx_PDB_ins_code)) {
-                if (residueIdcs) {
-                    residueIdcs = residueIdcs.filter(i => h.residues.pdbx_PDB_ins_code.value(i) === row.pdbx_PDB_ins_code);
-                } else {
-                    residueIdcs = indices.residuesByChainIndexByInsCode.get(iChain)!.get(row.pdbx_PDB_ins_code) ?? [];
-                }
-            }
-            if (isDefined(row.beg_label_seq_id) || isDefined(row.end_label_seq_id) || isDefined(row.beg_auth_seq_id) || isDefined(row.end_auth_seq_id) || isDefined(row.atom_id)) {
-                throw new Error('NotImplementedError: elementsForRow with residue ranges or atom_id');
-            }
-            // TODO implement residue ranges
-            residueIdcs ??= range(h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]], h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]]) as ResidueIndex[];
-            extend(allResidueIdcs, residueIdcs);
-        }
-
-        const ranges: ElementRanges = [];
-        for (const iRes of allResidueIdcs) {
-            addRange(ranges, h.residueAtomSegments.offsets[iRes], h.residueAtomSegments.offsets[iRes + 1]);
-        }
-        // TODO per-atom filter (first find out how to apply coloring per-atom)
-        return ranges;
-    }
-    private elementsForRow_WithIndicesAndSortings(model: Model, row: AnnotationRow, indices: ReturnType<typeof createIndicesAndSortings>): ElementRanges {
-        const h = model.atomicHierarchy;
-        const nChains = h.chains._rowCount;
-        const nResidues = h.residues._rowCount;
-        const nAtoms = h.atoms._rowCount;
-
-        let chainIdcs: ChainIndex[] | undefined = undefined;
-        if (isDefined(row.label_asym_id)) {
-            chainIdcs = indices.chainsByLabelAsymId.get(row.label_asym_id) ?? [];
-        }
-        if (isDefined(row.auth_asym_id)) {
-            if (chainIdcs) {
-                chainIdcs = chainIdcs.filter(i => h.chains.auth_asym_id.value(i) === row.auth_asym_id);
-            } else {
-                chainIdcs = indices.chainsByAuthAsymId.get(row.auth_asym_id) ?? [];
-            }
-        }
-        if (isDefined(row.label_entity_id)) {
-            if (chainIdcs) {
-                chainIdcs = chainIdcs.filter(i => h.chains.label_entity_id.value(i) === row.label_entity_id);
-            } else {
-                chainIdcs = indices.chainsByLabelEntityId.get(row.label_entity_id) ?? [];
-            }
-        }
-        chainIdcs ??= range(nChains) as ChainIndex[];
-        // const ranges: ElementRanges = [];
-        // for (const iChain of chainIdcs) {
-        //     addRange(ranges, h.chainAtomSegments.offsets[iChain], h.chainAtomSegments.offsets[iChain + 1]);
-        // }
-        // return ranges;
 
         const allResidueIdcs: ResidueIndex[] = [];
         for (const iChain of chainIdcs) {
@@ -327,9 +256,6 @@ class Annotation {
             }
             // TODO use filterInPlace
             // TODO test thoroughly
-            if (isDefined(row.atom_id)) {
-                throw new Error('NotImplementedError: elementsForRow with residue ranges or atom_id');
-            }
             if (!residueIdcs) {
                 const firstResidueForChain = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]];
                 const firstResidueAfterChain = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]] ?? nResidues;
@@ -337,61 +263,28 @@ class Annotation {
             }
             extend(allResidueIdcs, residueIdcs);
         }
+        // const ranges: ElementRanges = [];
+        // for (const iRes of allResidueIdcs) {
+        //     addRange(ranges, h.residueAtomSegments.offsets[iRes], h.residueAtomSegments.offsets[iRes + 1]);
+        // }
+        // return ranges;
+
+        const allAtomIdcs: ElementIndex[] = [];
+        for (const iRes of allResidueIdcs) {
+            let atomIdcs: ElementIndex[] = range(h.residueAtomSegments.offsets[iRes], h.residueAtomSegments.offsets[iRes + 1]) as ElementIndex[];
+            if (isDefined(row.atom_id)) {
+                atomIdcs = atomIdcs.filter(iAtom => model.atomicConformation.atomId.value(iAtom) === row.atom_id);
+            }
+            extend(allAtomIdcs, atomIdcs);
+        }
+        // TODO apply this strategy only to label_atom_id/auth_atom_id!
+        // TODO for atom_id use index and then check chain/residue props!
 
         const ranges: ElementRanges = [];
-        for (const iRes of allResidueIdcs) {
-            addRange(ranges, h.residueAtomSegments.offsets[iRes], h.residueAtomSegments.offsets[iRes + 1]);
+        for (const iAtom of allAtomIdcs) {
+            addRange(ranges, iAtom, iAtom + 1 as ElementIndex);
         }
-        // TODO per-atom filter (first find out how to apply coloring per-atom)
         return ranges;
-    }
-    private elementsForRow_WithoutIndices(model: Model, row: AnnotationRow): ElementRanges {
-        const h = model.atomicHierarchy;
-        const nAtoms = h.atoms._rowCount;
-        let ranges: ElementRanges = [{ from: 0 as ElementIndex, to: nAtoms as ElementIndex }];
-
-        if (isDefined(row.label_entity_id) || isDefined(row.label_asym_id) || isDefined(row.auth_asym_id)) {
-            const filteredRanges: ElementRanges = [];
-            for (const { from, to } of ranges) {
-                for (let iChain = h.chainAtomSegments.index[from]; h.chainAtomSegments.offsets[iChain] < to; iChain++) {
-                    if (isDefined(row.label_entity_id) && h.chains.label_entity_id.value(iChain) !== row.label_entity_id) continue;
-                    if (isDefined(row.label_asym_id) && h.chains.label_asym_id.value(iChain) !== row.label_asym_id) continue;
-                    if (isDefined(row.auth_asym_id) && h.chains.auth_asym_id.value(iChain) !== row.auth_asym_id) continue;
-                    const newRangeFrom = Math.max(h.chainAtomSegments.offsets[iChain], from) as ElementIndex;
-                    const newRangeTo = Math.min(h.chainAtomSegments.offsets[iChain + 1], to) as ElementIndex;
-                    addRange(filteredRanges, newRangeFrom, newRangeTo);
-                }
-            }
-            ranges = filteredRanges;
-        }
-
-        if (isDefined(row.label_seq_id) || isDefined(row.auth_seq_id) || isDefined(row.pdbx_PDB_ins_code)
-            || isDefined(row.beg_label_seq_id) || isDefined(row.end_label_seq_id) || isDefined(row.beg_auth_seq_id) || isDefined(row.end_auth_seq_id)) {
-            const filteredRanges: ElementRanges = [];
-            for (const { from, to } of ranges) {
-                // TODO think of some smarter way than going through all residues in the range
-                for (let iResidue = h.residueAtomSegments.index[from]; h.residueAtomSegments.offsets[iResidue] < to; iResidue++) {
-                    const label_seq_id = (h.residues.label_seq_id.valueKind(iResidue) === Column.ValueKind.Present) ? h.residues.label_seq_id.value(iResidue) : undefined;
-                    const auth_seq_id = (h.residues.auth_seq_id.valueKind(iResidue) === Column.ValueKind.Present) ? h.residues.auth_seq_id.value(iResidue) : undefined;
-                    if (isDefined(row.label_seq_id) && label_seq_id !== row.label_seq_id) continue;
-                    if (isDefined(row.auth_seq_id) && auth_seq_id !== row.auth_seq_id) continue;
-                    if (isDefined(row.pdbx_PDB_ins_code) && h.residues.pdbx_PDB_ins_code.value(iResidue) !== row.pdbx_PDB_ins_code) continue;
-                    if (isDefined(row.beg_label_seq_id) && (!isDefined(label_seq_id) || label_seq_id < row.beg_label_seq_id)) continue;
-                    if (isDefined(row.end_label_seq_id) && (!isDefined(label_seq_id) || label_seq_id > row.end_label_seq_id)) continue; // TODO check if this should be inclusive
-                    if (isDefined(row.beg_auth_seq_id) && (!isDefined(auth_seq_id) || auth_seq_id < row.beg_auth_seq_id)) continue;
-                    if (isDefined(row.end_auth_seq_id) && (!isDefined(auth_seq_id) || auth_seq_id > row.end_auth_seq_id)) continue; // TODO check if this should be inclusive
-                    const newRangeFrom = Math.max(h.residueAtomSegments.offsets[iResidue], from) as ElementIndex;
-                    const newRangeTo = Math.min(h.residueAtomSegments.offsets[iResidue + 1], to) as ElementIndex;
-                    addRange(filteredRanges, newRangeFrom, newRangeTo);
-                }
-            }
-            ranges = filteredRanges;
-        }
-        // TODO per-atom filter (first find out how to apply coloring per-atom)
-
-        // console.log('elementsForRow:\n', row, '\n', ...ranges)
-        return ranges;
-        // throw new Error('NotImplementedError');
     }
 }
 
@@ -409,57 +302,11 @@ function addRange(ranges: ElementRanges, from: ElementIndex, to: ElementIndex) {
         ranges.push({ from, to });
     }
 }
-function isInRanges(element: ElementIndex, ranges: ElementRanges): boolean {
-    return ranges.some(r => element >= r.from && element < r.to);
-}
 
-interface Indices {
-    chainsByLabelEntityId: MultiMap<string, ChainIndex>,
-    chainsByLabelAsymId: MultiMap<string, ChainIndex>,
-    chainsByAuthAsymId: MultiMap<string, ChainIndex>,
-    residuesByChainIndexByLabelSeqId: Map<ChainIndex, MultiMap<number | undefined, ResidueIndex>>,
-    residuesByChainIndexByAuthSeqId: Map<ChainIndex, MultiMap<number | undefined, ResidueIndex>>,
-    residuesByChainIndexByInsCode: Map<ChainIndex, MultiMap<string | undefined, ResidueIndex>>,
-}
-function createIndices(model: Model) {
-    const h = model.atomicHierarchy;
-    const nAtoms = h.atoms._rowCount;
-    const chainsByLabelEntityId = new MultiMap<string, ChainIndex>();
-    const chainsByLabelAsymId = new MultiMap<string, ChainIndex>();
-    const chainsByAuthAsymId = new MultiMap<string, ChainIndex>();
-    const nChains = h.chains._rowCount;
-    for (let iChain = 0 as ChainIndex; iChain < nChains; iChain++) {
-        const label_entity_id = h.chains.label_entity_id.value(iChain);
-        const label_asym_id = h.chains.label_asym_id.value(iChain);
-        const auth_asym_id = h.chains.auth_asym_id.value(iChain);
-        chainsByLabelEntityId.add(label_entity_id, iChain);
-        chainsByLabelAsymId.add(label_asym_id, iChain);
-        chainsByAuthAsymId.add(auth_asym_id, iChain);
-    }
-    const residuesByChainIndexByLabelSeqId = new DefaultMap<ChainIndex, MultiMap<number | undefined, ResidueIndex>>(() => new MultiMap());
-    const residuesByChainIndexByAuthSeqId = new DefaultMap<ChainIndex, MultiMap<number | undefined, ResidueIndex>>(() => new MultiMap());
-    const residuesByChainIndexByInsCode = new DefaultMap<ChainIndex, MultiMap<string | undefined, ResidueIndex>>(() => new MultiMap());
-    const nResidues = h.residues._rowCount;
-    for (let iRes = 0 as ResidueIndex; iRes < nResidues; iRes++) {
-        const iAtom = h.residueAtomSegments.offsets[iRes];
-        const iChain = h.chainAtomSegments.index[iAtom];
-        const label_seq_id = h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present ? h.residues.label_seq_id.value(iRes) : undefined;
-        const auth_seq_id = h.residues.auth_seq_id.valueKind(iRes) === Column.ValueKind.Present ? h.residues.auth_seq_id.value(iRes) : undefined;
-        const pdbx_PDB_ins_code = h.residues.pdbx_PDB_ins_code.valueKind(iRes) === Column.ValueKind.Present ? h.residues.pdbx_PDB_ins_code.value(iRes) : undefined;
-        residuesByChainIndexByLabelSeqId.safeGet(iChain).add(label_seq_id, iRes);
-        residuesByChainIndexByAuthSeqId.safeGet(iChain).add(auth_seq_id, iRes);
-        residuesByChainIndexByInsCode.safeGet(iChain).add(pdbx_PDB_ins_code, iRes);
-    }
-    return {
-        chainsByLabelEntityId, chainsByLabelAsymId, chainsByAuthAsymId,
-        residuesByChainIndexByLabelSeqId, residuesByChainIndexByAuthSeqId, residuesByChainIndexByInsCode,
-    };
-}
 function createIndicesAndSortings(model: Model) {
     const h = model.atomicHierarchy;
     const nAtoms = h.atoms._rowCount;
     const nResidues = h.residues._rowCount;
-    console.log('nResidues:', nResidues);
     const nChains = h.chains._rowCount;
     const chainsByLabelEntityId = new MultiMap<string, ChainIndex>();
     const chainsByLabelAsymId = new MultiMap<string, ChainIndex>();
@@ -469,6 +316,7 @@ function createIndicesAndSortings(model: Model) {
     const residuesByChainIndexSortedByAuthSeqId = new Map<ChainIndex, ResidueIndex[]>();
     const residuesByChainIndexSortedByAuthSeqIdValues = new Map<ChainIndex, SortedArray<number>>();
     const residuesByChainIndexByInsCode = new Map<ChainIndex, MultiMap<string | undefined, ResidueIndex>>();
+    const atomsById = new Map<number, ElementIndex>();
     for (let iChain = 0 as ChainIndex; iChain < nChains; iChain++) {
         const label_entity_id = h.chains.label_entity_id.value(iChain);
         const label_asym_id = h.chains.label_asym_id.value(iChain);
@@ -500,6 +348,10 @@ function createIndicesAndSortings(model: Model) {
     //     const pdbx_PDB_ins_code = h.residues.pdbx_PDB_ins_code.value(iRes);
     //     residuesByInsCode.safeGet(pdbx_PDB_ins_code).add(iRes);
     // }
+    for (let iAtom = 0 as ElementIndex; iAtom < nAtoms; iAtom++) {
+        const atom_id = model.atomicConformation.atomId.value(iAtom);
+        atomsById.set(atom_id, iAtom);
+    }
 
     return {
         chainsByLabelEntityId, chainsByLabelAsymId, chainsByAuthAsymId,
@@ -507,6 +359,7 @@ function createIndicesAndSortings(model: Model) {
         residuesByChainIndexSortedByAuthSeqId, residuesByChainIndexSortedByAuthSeqIdValues,
         residuesByChainIndexByInsCode,
         // residuesByInsCode,
+        atomsById,
     };
 }
 
@@ -524,33 +377,6 @@ function getResiduesWithValueInRange(residues: ResidueIndex[], values: SortedArr
         to = n;
     }
     return residues.slice(from, to);
-}
-
-function createIndex_Debug(model: Model) {
-    const h = model.atomicHierarchy;
-    const residuesByChainIndexByLabelSeqId = new DefaultMap<ChainIndex, MultiMap<number | undefined, ResidueIndex>>(() => new MultiMap());
-    const nResidues = h.residues._rowCount;
-    for (let iRes = 0 as ResidueIndex; iRes < nResidues; iRes++) {
-        const iAtom = h.residueAtomSegments.offsets[iRes];
-        const iChain = h.chainAtomSegments.index[iAtom];
-        const label_seq_id = h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present ? h.residues.label_seq_id.value(iRes) : undefined;
-        residuesByChainIndexByLabelSeqId.safeGet(iChain).add(label_seq_id, iRes);
-    }
-    return residuesByChainIndexByLabelSeqId;
-}
-function createSorting_Debug(model: Model) {
-    const h = model.atomicHierarchy;
-    const residuesByChainIndexSortedByLabelSeqId = new Map<ChainIndex, ResidueIndex[]>();
-    const nResidues = h.residues._rowCount;
-    const nChains = h.chains._rowCount;
-    for (let iChain = 0 as ChainIndex; iChain < nChains; iChain++) {
-        const iResFrom = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]];
-        const iResTo = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]] ?? nResidues;
-        const numberedResidues = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present); // TODO maybe implement filterInPlace?
-        sortIfNeeded(numberedResidues, (a, b) => h.residues.label_seq_id.value(a) - h.residues.label_seq_id.value(b) || a - b);
-        residuesByChainIndexSortedByLabelSeqId.set(iChain, numberedResidues);
-    }
-    return residuesByChainIndexSortedByLabelSeqId;
 }
 
 class DefaultMap<K, V> extends Map<K, V> {
@@ -584,6 +410,7 @@ export function decodeColor(colorString: string | undefined): Color | undefined 
     if (result !== undefined) return result;
     return undefined;
 }
+
 function isDefined<T>(value: T | undefined | null): value is T {
     return value !== undefined && value !== null;
 }
@@ -602,12 +429,4 @@ interface AnnotationRow {
     atom_id?: number,
     color?: string,
     tooltip?: string,
-}
-
-function foreachOfGenerator<T>(items: Generator<T>, func: (item: T) => any) {
-    while (true) {
-        const next = items.next();
-        if (next.done) return;
-        func(next.value);
-    }
 }

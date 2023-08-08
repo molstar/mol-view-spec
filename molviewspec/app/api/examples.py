@@ -260,7 +260,10 @@ async def testing_color_domains_example():
         .parse(format="mmcif")
         .model_structure()
     )
-    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+    structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
+        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", is_binary=False, format="json",
+    )
+    structure.component(selector="nucleic").representation(type="ball-and-stick", color="white").color_from_url(
         schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", is_binary=False, format="json",
     )
     structure.component(selector="ion").representation(type="surface").color_from_url(

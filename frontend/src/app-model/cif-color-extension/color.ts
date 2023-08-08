@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2018 mol* contributors, licensed under MIT, See LICENSE file for more info.
+ * Copyright (c) 2023 mol* contributors, licensed under MIT, See LICENSE file for more info.
  *
- * @author David Sehnal <david.sehnal@gmail.com>
+ * @author Adam Midlik <midlik@gmail.com>
  */
 
 import { AnnotationsProvider } from './prop';
@@ -45,12 +45,6 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Par
         console.log('AnnotationColorTheme:', annots);
         const annot = annots?.[props.url];
         if (annot) {
-            // const rows = annot.genRows();
-            // while (true) {
-            //     const row = rows.next().value;
-            //     if (!row) break;
-            //     console.log('row:', row);
-            // }
             const auxLocation = StructureElement.Location.create(ctx.structure);
 
             // // DEBUG
@@ -66,6 +60,7 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Par
 
             color = (location: Location) => {
                 if (StructureElement.Location.is(location)) {
+                    // if (annot.colorForLocation(location) !== annot.colorForLocation_Reference(location)) throw new Error('AssertionError');
                     return annot.colorForLocation(location) ?? props.background;
                 } else if (Bond.isLocation(location)) {
                     auxLocation.unit = location.aUnit;

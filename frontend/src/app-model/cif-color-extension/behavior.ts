@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2018-2020 mol* contributors, licensed under MIT, See LICENSE file for more info.
+ * Copyright (c) 2023 mol* contributors, licensed under MIT, See LICENSE file for more info.
  *
- * @author David Sehnal <david.sehnal@gmail.com>
+ * @author Adam Midlik <midlik@gmail.com>
  */
 
 import { AnnotationsProvider } from './prop';
@@ -32,13 +32,16 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean, showToolt
                     case 'element-loci':
                         const location = StructureElement.Loci.getFirstLocation(loci);
                         if (!location) return undefined;
-                        const annots = AnnotationsProvider.get(loci.structure.model).value;
-                        let color: Color | undefined = undefined;
+                        const annots = AnnotationsProvider.get(location.unit.model).value;
+                        const tooltips: string[] = [];
                         for (const sourceUrl in annots) {
                             const annot = annots[sourceUrl];
-                            color = annot.colorForLocation(location);
+                            const tooltip = annot.tooltipForLocation(location);
+                            if (tooltip) {
+                                tooltips.push(tooltip);
+                            }
                         }
-                        return color ? `Color: ${Color.toHexStyle(color)}` : undefined;
+                        return (tooltips.length > 0) ? tooltips.join('\n') : undefined;
                     default: return undefined;
                 }
             }
