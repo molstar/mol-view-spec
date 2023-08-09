@@ -12,6 +12,7 @@ import { ThemeDataContext } from 'molstar/lib/mol-theme/theme';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
+import { Color } from 'molstar/lib/mol-util/color';
 
 
 export const AnnotationColorThemeParams = {
@@ -19,9 +20,10 @@ export const AnnotationColorThemeParams = {
     url: PD.Text('', { description: 'Annotation source URL' }),
 };
 
-type Params = typeof AnnotationColorThemeParams
+type AnnotationColorThemeParams = typeof AnnotationColorThemeParams
 
-export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Params>): ColorTheme<Params> {
+
+export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<AnnotationColorThemeParams>): ColorTheme<AnnotationColorThemeParams> {
     let color: LocationColor = () => props.background;
 
     if (ctx.structure && !ctx.structure.isEmpty && ctx.structure.models[0].customProperties.has(AnnotationsProvider.descriptor)) {
@@ -29,27 +31,20 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Par
         console.log('AnnotationColorTheme:', annots);
         const annot = annots?.[props.url];
         if (annot) {
+            const colorForStructureElementLocation = (location: StructureElement.Location) => {
+                // if (annot.getAnnotationForLocation(location)?.color !== annot.getAnnotationForLocation_Reference(location)?.color) throw new Error('AssertionError');
+                const annotationRow = annot.getAnnotationForLocation(location);
+                return decodeColor(annotationRow?.color) ?? props.background;
+            };
             const auxLocation = StructureElement.Location.create(ctx.structure);
-
-            // // DEBUG
-            // console.time('TIME colorForLocation-all');
-            // const h = ctx.structure.model.atomicHierarchy;
-            // for (let iRes = 0; iRes < h.residueAtomSegments.count; iRes++) {
-            //     auxLocation.unit = auxLocation.structure.units[0];
-            //     auxLocation.element = h.residueAtomSegments.offsets[iRes];
-            //     // annot.colorForLocation_Reference(auxLocation);
-            //     annot.colorForLocation(auxLocation);
-            // }
-            // console.timeEnd('TIME colorForLocation-all');
 
             color = (location: Location) => {
                 if (StructureElement.Location.is(location)) {
-                    // if (annot.colorForLocation(location) !== annot.colorForLocation_Reference(location)) throw new Error('AssertionError');
-                    return annot.colorForLocation(location) ?? props.background;
+                    return colorForStructureElementLocation(location);
                 } else if (Bond.isLocation(location)) {
                     auxLocation.unit = location.aUnit;
                     auxLocation.element = location.aUnit.elements[location.aIndex];
-                    return annot.colorForLocation(auxLocation) ?? props.background;
+                    return colorForStructureElementLocation(auxLocation);
                     // TODO is this sufficient?
                 }
                 return props.background;
@@ -69,7 +64,8 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Par
     };
 }
 
-export const AnnotationColorThemeProvider: ColorTheme.Provider<Params, 'annotation'> = {
+
+export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorThemeParams, 'annotation'> = {
     name: 'annotation',
     label: 'Annotation',
     category: ColorTheme.Category.Misc,
@@ -82,3 +78,13 @@ export const AnnotationColorThemeProvider: ColorTheme.Provider<Params, 'annotati
         detach: (data) => data.structure && AnnotationsProvider.ref(data.structure.models[0], false),
     }
 };
+
+
+export function decodeColor(colorString: string | undefined): Color | undefined {
+    if (colorString === undefined) return undefined;
+    let result = Color.fromHexStyle(colorString);
+    if (result !== undefined && !isNaN(result)) return result;
+    result = ColorNames[colorString.toLowerCase() as keyof typeof ColorNames];
+    if (result !== undefined) return result;
+    return undefined;
+}

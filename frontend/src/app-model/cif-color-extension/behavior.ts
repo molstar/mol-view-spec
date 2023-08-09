@@ -30,25 +30,21 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean, showToolt
                     case 'element-loci':
                         const location = StructureElement.Loci.getFirstLocation(loci);
                         if (!location) return undefined;
+                        if (!location.unit.model.customProperties.hasReference(this.provider.descriptor)) return undefined; // somehow this line disables this label after colorTheme has been changed (magic)
                         const annots = AnnotationsProvider.get(location.unit.model).value;
-                        const tooltips: string[] = [];
-                        for (const sourceUrl in annots) {
-                            const annot = annots[sourceUrl];
-                            const tooltip = annot.tooltipForLocation(location);
-                            if (tooltip) {
-                                tooltips.push(tooltip);
-                            }
-                        }
+                        if (!annots) return undefined;
+                        const tooltips = Object.values(annots).map(annot => annot.getAnnotationForLocation(location)?.tooltip).filter(tooltip => !!tooltip);
                         return (tooltips.length > 0) ? tooltips.join('\n') : undefined;
-                    default: return undefined;
+                    default:
+                        return undefined;
                 }
             }
         };
 
         register(): void {
             this.ctx.customModelProperties.register(this.provider, this.params.autoAttach);
-            this.ctx.representation.structure.themes.colorThemeRegistry.add(AnnotationColorThemeProvider);
             this.ctx.managers.lociLabels.addProvider(this.labelProvider);
+            this.ctx.representation.structure.themes.colorThemeRegistry.add(AnnotationColorThemeProvider);
         }
 
         update(p: { autoAttach: boolean, showTooltip: boolean }) {

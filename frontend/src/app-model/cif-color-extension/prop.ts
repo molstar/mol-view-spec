@@ -4,20 +4,19 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
+import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers';
 import { Column } from 'molstar/lib/mol-data/db';
-import { SortedArray } from 'molstar/lib/mol-data/int/sorted-array';
 import { CustomModelProperty } from 'molstar/lib/mol-model-props/common/custom-model-property';
 import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { CustomPropertyDescriptor } from 'molstar/lib/mol-model/custom-property';
 import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-model/structure';
 import { StructureElement } from 'molstar/lib/mol-model/structure/structure';
 import { Asset } from 'molstar/lib/mol-util/assets';
-import { Color } from 'molstar/lib/mol-util/color';
-import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
-import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers';
 
-import { extend, range, sortIfNeeded } from '../utils';
+import { DefaultMap, extend, range } from '../utils';
+import { ElementRanges, IndicesAndSortings, addRange, createIndicesAndSortings, getResiduesWithValue, getResiduesWithValueInRange } from './helpers';
+
 
 export const AnnotationFormat = new Choice({ json: 'json', cif: 'cif', bcif: 'bcif' }, 'json');
 export type AnnotationFormat = Choice.Values<typeof AnnotationFormat>
@@ -35,6 +34,7 @@ export const AnnotationsParams = {
 export type AnnotationsParams = typeof AnnotationsParams
 export type AnnotationsProps = PD.Values<AnnotationsParams>
 export type AnnotationsSource = { url: string, format: AnnotationFormat }
+
 
 export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams, Annotations> = CustomModelProperty.createProvider({
     label: 'Annotations',
@@ -54,6 +54,22 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
         return annots;
     }
 });
+
+interface AnnotationRow {
+    label_entity_id?: string,
+    label_asym_id?: string,
+    auth_asym_id?: string,
+    label_seq_id?: number,
+    auth_seq_id?: number,
+    pdbx_PDB_ins_code?: string,
+    beg_label_seq_id?: number,
+    end_label_seq_id?: number,
+    beg_auth_seq_id?: number,
+    end_auth_seq_id?: number,
+    atom_id?: number,
+    color?: string,
+    tooltip?: string,
+}
 
 type Data = { kind: 'string', data: string } | { kind: 'binary', data: Uint8Array }
 
@@ -118,8 +134,8 @@ class Annotation {
         }
         return rows;
     }
-    /** Reference implementation of `colorForLocation`, just for checking, DO NOT USE DIRECTLY */
-    colorForLocation_Reference(loc: StructureElement.Location): Color | undefined {
+    /** Reference implementation of `getAnnotationForLocation`, just for checking, DO NOT USE DIRECTLY */
+    getAnnotationForLocation_Reference(loc: StructureElement.Location): AnnotationRow | undefined {
         const h = loc.unit.model.atomicHierarchy;
         const iAtom = loc.element;
         const iRes = h.residueAtomSegments.index[iAtom];
@@ -131,7 +147,7 @@ class Annotation {
         const auth_seq_id = (h.residues.auth_seq_id.valueKind(iRes) === Column.ValueKind.Present) ? h.residues.auth_seq_id.value(iRes) : undefined;
         const pdbx_PDB_ins_code = h.residues.pdbx_PDB_ins_code.value(iRes);
         const atom_id = loc.unit.model.atomicConformation.atomId.value(iAtom);
-        let color: Color | undefined = undefined;
+        let result: AnnotationRow | undefined = undefined;
         for (const row of this.getRows()) {
             if (!isDefined(row.color)) continue;
             if (isDefined(row.label_entity_id) && label_entity_id !== row.label_entity_id) continue;
@@ -145,19 +161,14 @@ class Annotation {
             if (isDefined(row.beg_auth_seq_id) && (!isDefined(auth_seq_id) || auth_seq_id < row.beg_auth_seq_id)) continue;
             if (isDefined(row.end_auth_seq_id) && (!isDefined(auth_seq_id) || auth_seq_id > row.end_auth_seq_id)) continue; // TODO check if this should be inclusive
             if (isDefined(row.atom_id) && atom_id !== row.atom_id) continue;
-            color = decodeColor(row.color);
+            result = row;
         }
-        return color;
+        return result;
     }
-    /** Return color assigned to location `loc`, if any */
-    colorForLocation(loc: StructureElement.Location): Color | undefined {
+    /** Return AnnotationRow assigned to location `loc`, if any */
+    getAnnotationForLocation(loc: StructureElement.Location): AnnotationRow | undefined {
         const indexedModel = this.indexedModels.safeGet(loc.unit.model);
-        return decodeColor(indexedModel[loc.element]?.color);
-    }
-    /** Return tooltip assigned to location `loc`, if any */
-    tooltipForLocation(loc: StructureElement.Location): string | undefined {
-        const indexedModel = this.indexedModels.safeGet(loc.unit.model);
-        return indexedModel[loc.element]?.tooltip;
+        return indexedModel[loc.element];
     }
 
     private rowForAllElements(model: Model): (AnnotationRow | undefined)[] {
@@ -176,7 +187,7 @@ class Annotation {
         console.timeEnd('fill');
         return result;
     }
-    private elementsForRow(model: Model, row: AnnotationRow, indices: ReturnType<typeof createIndicesAndSortings>): ElementRanges {
+    private elementsForRow(model: Model, row: AnnotationRow, indices: IndicesAndSortings): ElementRanges {
         const h = model.atomicHierarchy;
         const nChains = h.chains._rowCount;
         const nResidues = h.residues._rowCount;
@@ -288,145 +299,7 @@ class Annotation {
     }
 }
 
-type ElementRanges = { from: ElementIndex, to: ElementIndex }[]
-function addRange(ranges: ElementRanges, from: ElementIndex, to: ElementIndex) {
-    if (ranges.length > 0) {
-        const last = ranges[ranges.length - 1];
-        if (from < last.to) throw new Error('Overlapping ranges not allowed');
-        if (from === last.to) {
-            last.to = to;
-        } else {
-            ranges.push({ from, to });
-        }
-    } else {
-        ranges.push({ from, to });
-    }
-}
-
-function createIndicesAndSortings(model: Model) {
-    const h = model.atomicHierarchy;
-    const nAtoms = h.atoms._rowCount;
-    const nResidues = h.residues._rowCount;
-    const nChains = h.chains._rowCount;
-    const chainsByLabelEntityId = new MultiMap<string, ChainIndex>();
-    const chainsByLabelAsymId = new MultiMap<string, ChainIndex>();
-    const chainsByAuthAsymId = new MultiMap<string, ChainIndex>();
-    const residuesByChainIndexSortedByLabelSeqId = new Map<ChainIndex, ResidueIndex[]>();
-    const residuesByChainIndexSortedByLabelSeqIdValues = new Map<ChainIndex, SortedArray<number>>();
-    const residuesByChainIndexSortedByAuthSeqId = new Map<ChainIndex, ResidueIndex[]>();
-    const residuesByChainIndexSortedByAuthSeqIdValues = new Map<ChainIndex, SortedArray<number>>();
-    const residuesByChainIndexByInsCode = new Map<ChainIndex, MultiMap<string | undefined, ResidueIndex>>();
-    const atomsById = new Map<number, ElementIndex>();
-    for (let iChain = 0 as ChainIndex; iChain < nChains; iChain++) {
-        const label_entity_id = h.chains.label_entity_id.value(iChain);
-        const label_asym_id = h.chains.label_asym_id.value(iChain);
-        const auth_asym_id = h.chains.auth_asym_id.value(iChain);
-        chainsByLabelEntityId.add(label_entity_id, iChain);
-        chainsByLabelAsymId.add(label_asym_id, iChain);
-        chainsByAuthAsymId.add(auth_asym_id, iChain);
-
-        const iResFrom = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]];
-        const iResTo = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]] ?? nResidues;
-        const residueSortingByLabelSeqId = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present); // TODO maybe implement filterInPlace?
-        sortIfNeeded(residueSortingByLabelSeqId, (a, b) => h.residues.label_seq_id.value(a) - h.residues.label_seq_id.value(b) || a - b);
-        residuesByChainIndexSortedByLabelSeqId.set(iChain, residueSortingByLabelSeqId);
-        residuesByChainIndexSortedByLabelSeqIdValues.set(iChain, SortedArray.ofSortedArray(residueSortingByLabelSeqId.map(iRes => h.residues.label_seq_id.value(iRes))));
-        const residueSortingByAuthSeqId = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.auth_seq_id.valueKind(iRes) === Column.ValueKind.Present); // TODO maybe implement filterInPlace?
-        sortIfNeeded(residueSortingByAuthSeqId, (a, b) => h.residues.auth_seq_id.value(a) - h.residues.auth_seq_id.value(b) || a - b);
-        residuesByChainIndexSortedByAuthSeqId.set(iChain, residueSortingByAuthSeqId);
-        residuesByChainIndexSortedByAuthSeqIdValues.set(iChain, SortedArray.ofSortedArray(residueSortingByAuthSeqId.map(iRes => h.residues.auth_seq_id.value(iRes))));
-
-        const residuesHereByInsCode = new MultiMap<string | undefined, ResidueIndex>();
-        for (let iRes = iResFrom; iRes < iResTo; iRes++) {
-            const pdbx_PDB_ins_code = h.residues.pdbx_PDB_ins_code.valueKind(iRes) === Column.ValueKind.Present ? h.residues.pdbx_PDB_ins_code.value(iRes) : undefined;
-            residuesHereByInsCode.add(pdbx_PDB_ins_code, iRes);
-        }
-        residuesByChainIndexByInsCode.set(iChain, residuesHereByInsCode);
-    }
-    // const residuesByInsCode = new DefaultMap<string | undefined, Set<ResidueIndex>>(() => new Set());
-    // for (let iRes = 0 as ResidueIndex; iRes < nResidues; iRes++) {
-    //     const pdbx_PDB_ins_code = h.residues.pdbx_PDB_ins_code.value(iRes);
-    //     residuesByInsCode.safeGet(pdbx_PDB_ins_code).add(iRes);
-    // }
-    for (let iAtom = 0 as ElementIndex; iAtom < nAtoms; iAtom++) {
-        const atom_id = model.atomicConformation.atomId.value(iAtom);
-        atomsById.set(atom_id, iAtom);
-    }
-
-    return {
-        chainsByLabelEntityId, chainsByLabelAsymId, chainsByAuthAsymId,
-        residuesByChainIndexSortedByLabelSeqId, residuesByChainIndexSortedByLabelSeqIdValues,
-        residuesByChainIndexSortedByAuthSeqId, residuesByChainIndexSortedByAuthSeqIdValues,
-        residuesByChainIndexByInsCode,
-        // residuesByInsCode,
-        atomsById,
-    };
-}
-
-function getResiduesWithValue(residues: ResidueIndex[], values: SortedArray<number>, target: number) {
-    return getResiduesWithValueInRange(residues, values, target, target);
-}
-function getResiduesWithValueInRange(residues: ResidueIndex[], values: SortedArray<number>, min: number | undefined, max: number | undefined) {
-    const n = residues.length;
-    const from = (min !== undefined) ? SortedArray.findPredecessorIndex(values, min) : 0;
-    let to: number;
-    if (max !== undefined) {
-        to = from;
-        while (to < n && values[to] <= max) to++;
-    } else {
-        to = n;
-    }
-    return residues.slice(from, to);
-}
-
-class DefaultMap<K, V> extends Map<K, V> {
-    constructor(public defaultFactory: (key: K) => V) {
-        super();
-    }
-    /** Return the same as `this.get(key)` if `key` is present.
-     * Set `key`'s value to `this.defaultFactory(key)` and return it if `key` is not present.
-     */
-    safeGet(key: K): V {
-        if (!this.has(key)) {
-            this.set(key, this.defaultFactory(key));
-        }
-        return this.get(key)!;
-    }
-}
-class MultiMap<K, V> extends Map<K, V[]> {
-    add(key: K, value: V) {
-        if (!this.has(key)) {
-            this.set(key, []);
-        }
-        this.get(key)!.push(value);
-    }
-}
-
-export function decodeColor(colorString: string | undefined): Color | undefined {
-    if (colorString === undefined) return undefined;
-    let result = Color.fromHexStyle(colorString);
-    if (result !== undefined && !isNaN(result)) return result;
-    result = ColorNames[colorString.toLowerCase() as keyof typeof ColorNames];
-    if (result !== undefined) return result;
-    return undefined;
-}
 
 function isDefined<T>(value: T | undefined | null): value is T {
     return value !== undefined && value !== null;
-}
-
-interface AnnotationRow {
-    label_entity_id?: string,
-    label_asym_id?: string,
-    auth_asym_id?: string,
-    label_seq_id?: number,
-    auth_seq_id?: number,
-    pdbx_PDB_ins_code?: string,
-    beg_label_seq_id?: number,
-    end_label_seq_id?: number,
-    beg_auth_seq_id?: number,
-    end_auth_seq_id?: number,
-    atom_id?: number,
-    color?: string,
-    tooltip?: string,
 }

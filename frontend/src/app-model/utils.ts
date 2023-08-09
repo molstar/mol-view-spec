@@ -103,3 +103,28 @@ export function foreachOfGenerator<T>(items: Generator<T>, func: (item: T) => an
         func(next.value);
     }
 }
+
+
+export class DefaultMap<K, V> extends Map<K, V> {
+    constructor(public defaultFactory: (key: K) => V) {
+        super();
+    }
+    /** Return the same as `this.get(key)` if `key` is present.
+     * Set `key`'s value to `this.defaultFactory(key)` and return it if `key` is not present.
+     */
+    safeGet(key: K): V {
+        if (!this.has(key)) {
+            this.set(key, this.defaultFactory(key));
+        }
+        return this.get(key)!;
+    }
+}
+
+export class MultiMap<K, V> extends Map<K, V[]> {
+    add(key: K, value: V) {
+        if (!this.has(key)) {
+            this.set(key, []);
+        }
+        this.get(key)!.push(value);
+    }
+}

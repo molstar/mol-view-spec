@@ -6,7 +6,8 @@ import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
-import { AnnotationsSource, decodeColor } from './cif-color-extension/prop';
+import { decodeColor } from './cif-color-extension/color';
+import { AnnotationsSource } from './cif-color-extension/prop';
 import { Defaults } from './param-defaults';
 import { SubTree, Tree, TreeSchema, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
