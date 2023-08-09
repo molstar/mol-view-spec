@@ -14,13 +14,13 @@ import { StructureElement } from 'molstar/lib/mol-model/structure/structure';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { DefaultMap, extend, range } from '../utils';
+import { DefaultMap, extend, promiseAllObj, range } from '../utils';
 import { ElementRanges, IndicesAndSortings, addRange, createIndicesAndSortings, getResiduesWithValue, getResiduesWithValueInRange } from './helpers';
 
 
 export const AnnotationFormat = new Choice({ json: 'json', cif: 'cif', bcif: 'bcif' }, 'json');
 export type AnnotationFormat = Choice.Values<typeof AnnotationFormat>
-export const AnnotationFormatTypes = { json: 'string', cif: 'string', bcif: 'binary' } satisfies { [format in AnnotationFormat]: 'string' | 'binary' };
+export const AnnotationFormatTypes = { json: 'string', cif: 'string', bcif: 'binary' } as const satisfies { [format in AnnotationFormat]: 'string' | 'binary' };
 
 export const AnnotationsParams = {
     annotationSources: PD.ObjectList(
@@ -51,7 +51,7 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
         const annots = await Annotation.fromSources(ctx, sources);
         console.log('obtain: annotation sources:', props.annotationSources);
         console.log('obtain: annotation data:', annots);
-        return annots;
+        return { value: annots } satisfies CustomProperty.Data<Annotations>;
     }
 });
 
@@ -71,7 +71,7 @@ interface AnnotationRow {
     tooltip?: string,
 }
 
-type Data = { kind: 'string', data: string } | { kind: 'binary', data: Uint8Array }
+type AnnotationData = { format: 'json', data: string } | { format: 'cif', data: string } | { format: 'bcif', data: Uint8Array }
 
 type Annotations = { [url: string]: Annotation }
 
@@ -79,35 +79,28 @@ class Annotation {
     /** Store ElementIndex->AnnotationRow mapping for each Model */
     private indexedModels = new DefaultMap<Model, (AnnotationRow | undefined)[]>(model => this.rowForAllElements(model));
 
-    constructor(
-        public url: string,
-        public format: AnnotationFormat,
-        public data: Data,
-    ) {
-        // TODO check if data kind matches format (or enforce)
-    }
+    constructor(public data: AnnotationData) { }
 
-    static async fromSource(ctx: CustomProperty.Context, source: AnnotationsSource): Promise<CustomProperty.Data<Annotation>> {
+    static async fromSource(ctx: CustomProperty.Context, source: AnnotationsSource): Promise<Annotation> {
         const url = Asset.getUrlAsset(ctx.assetManager, source.url);
-        const kind = AnnotationFormatTypes[source.format];
-        const dataWrapper = await ctx.assetManager.resolve(url, kind).runInContext(ctx.runtime);
+        const dataType = AnnotationFormatTypes[source.format];
+        const dataWrapper = await ctx.assetManager.resolve(url, dataType).runInContext(ctx.runtime);
         const data = dataWrapper.data;
         if (!data) throw new Error('missing data');
-        return { value: new Annotation(source.url, source.format, { kind, data } as Data) };
+        return new Annotation({ format: source.format, data } as AnnotationData);
     }
-    static async fromSources(ctx: CustomProperty.Context, sources: AnnotationsSource[]): Promise<CustomProperty.Data<Annotations>> {
-        const result: Annotations = {};
+    static async fromSources(ctx: CustomProperty.Context, sources: AnnotationsSource[]): Promise<Annotations> {
+        const promises: { [url: string]: Promise<Annotation> } = {};
         for (const source of sources) {
-            const annot = await this.fromSource(ctx, source);
-            result[source.url] = annot.value;
+            promises[source.url] = this.fromSource(ctx, source);
         }
-        console.log('fromSources:', result);
-        return { value: result };
+        const annotations: Annotations = await promiseAllObj(promises);
+        console.log('fromSources:', annotations);
+        return annotations;
     }
     getRows(): AnnotationRow[] {
         const rows: AnnotationRow[] = [];
-        if (this.format === 'json') {
-            if (this.data.kind !== 'string') throw new Error('Data for "json" format must be of kind "string"');
+        if (this.data.format === 'json') {
             const js = JSON.parse(this.data.data);
             if (Array.isArray(js)) {
                 // array of objects

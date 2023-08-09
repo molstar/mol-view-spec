@@ -104,6 +104,23 @@ export function foreachOfGenerator<T>(items: Generator<T>, func: (item: T) => an
     }
 }
 
+/** Create an object from keys and values (first key maps to first value etc.) */
+export function objectFromKeysAndValues<K extends keyof any, V>(keys: K[], values: V[]): Record<K, V> {
+    const obj: Partial<Record<K, V>> = {};
+    for (let i = 0; i < keys.length; i++) {
+        obj[keys[i]] = values[i];
+    }
+    return obj as Record<K, V>;
+}
+
+/** Like `Promise.all` but with objects instead of arrays */
+export async function promiseAllObj<T extends {}>(promisesObj: { [key in keyof T]: Promise<T[key]> }): Promise<T> {
+    const keys = Object.keys(promisesObj);
+    const promises = Object.values(promisesObj);
+    const results = await Promise.all(promises);
+    return objectFromKeysAndValues(keys, results) as any;
+}
+
 
 export class DefaultMap<K, V> extends Map<K, V> {
     constructor(public defaultFactory: (key: K) => V) {
