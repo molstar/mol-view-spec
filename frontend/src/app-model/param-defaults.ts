@@ -62,7 +62,6 @@ export const Defaults = {
     'color-from-cif': {
     },
     'color-from-url': {
-        is_binary: false,
     },
     'color-from-inline': {
         label_asym_id: null,

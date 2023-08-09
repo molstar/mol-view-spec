@@ -34,15 +34,14 @@ export const MVSTreeSchema = TreeSchema(
         },
         'parse': {
             format: RequiredField(ParseFormatT),
-            // is_binary: OptionalField(t.boolean),
         },
         'structure': {
             kind: RequiredField(StructureKindT),
             assembly_id: OptionalField(nullable(t.string)),
             assembly_index: OptionalField(nullable(t.Integer)),
             model_index: OptionalField(t.Integer),
-            block_index: OptionalField(nullable(t.Integer)), // TODO in conversion move to "parse"
-            block_header: OptionalField(nullable(t.string)), // TODO in conversion move to "parse"
+            block_index: OptionalField(nullable(t.Integer)),
+            block_header: OptionalField(nullable(t.string)),
             radius: OptionalField(t.number),
             ijk_min: OptionalField(t.tuple([t.Integer, t.Integer, t.Integer])),
             ijk_max: OptionalField(t.tuple([t.Integer, t.Integer, t.Integer])),
@@ -75,7 +74,6 @@ export const MVSTreeSchema = TreeSchema(
         'color-from-url': {
             schema: RequiredField(SchemaT),
             url: RequiredField(t.string),
-            is_binary: OptionalField(t.boolean),
             format: RequiredField(SchemaFormatT),
         },
         'color-from-inline': {

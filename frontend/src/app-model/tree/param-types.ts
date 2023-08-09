@@ -19,10 +19,10 @@ export const ColorT = choice('white', 'gray', 'black', 'red', 'orange', 'yellow'
 
 export const SchemaT = choice('chain', 'auth-chain', 'residue', 'auth-residue', 'residue-range', 'auth-residue-range', 'atom', 'auth-atom');
 
-export const SchemaFormatT = choice('cif', 'json');
+export const SchemaFormatT = choice('cif', 'bcif', 'json');
 
 /** Convert `format` parameter of `parse` node in MVS tree
- * into `format` and `is_binary` parameters of `parse` node in Molstar tree */
+ * into `format` and `is_binary` parameters in Molstar tree */
 export const ParseFormatMvsToMolstar = {
     mmcif: { format: 'cif', is_binary: false },
     bcif: { format: 'cif', is_binary: true },

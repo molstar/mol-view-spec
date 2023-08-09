@@ -6,18 +6,13 @@ import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
+import { AnnotationsSource, decodeColor } from './cif-color-extension/prop';
 import { Defaults } from './param-defaults';
 import { SubTree, Tree, TreeSchema, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { formatObject } from './utils';
-import { StateTreeSpine } from 'molstar/lib/mol-state/tree/spine';
-import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
-import { AnnotationsProps, AnnotationsSource, decodeColor } from './cif-color-extension/prop';
-import { Source } from 'molstar/lib/extensions/volumes-and-segmentations/entry-root';
-import { ParamDefinition } from 'molstar/lib/mol-util/param-definition';
-import { AnnotationColorThemeParams, AnnotationFormat } from './cif-color-extension/color';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -56,7 +51,7 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
         let annotationSources: AnnotationsSource[] = [];
         dfs<SubTree<MolstarTree>>(node, n => {
             if (n.kind === 'color-from-url') {
-                annotationSources.push({ url: n.params.url, isBinary: n.params.is_binary ?? Defaults['color-from-url'].is_binary });
+                annotationSources.push({ url: n.params.url, format: n.params.format });
             }
         });
         annotationSources = distinctAnnotationSources(annotationSources);
@@ -108,16 +103,14 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
         }).selector;
     },
     'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>): StateObjectSelector {
-        const format: AnnotationFormat = (node.params.is_binary && node.params.format === 'cif') ? 'bcif' : node.params.format;
-        const background = node.params.background ? decodeColor(node.params.background) : ParamDefinition.getDefaultValues(AnnotationColorThemeParams).background;
         update.to(msTarget).update(old => ({
             ...old,
             colorTheme: {
                 name: 'annotation',
                 params: {
-                    background: background,
+                    background: decodeColor(node.params.background),
                     url: node.params.url,
-                    format: format,
+                    format: node.params.format,
                 }
             }
         }));
@@ -130,7 +123,7 @@ function distinctAnnotationSources(sources: AnnotationsSource[]) {
     const seen: { [url: string]: AnnotationsSource } = {};
     for (const source of sources) {
         const older = seen[source.url];
-        if (older && older.isBinary !== source.isBinary) throw new Error('One annotation source cannot be both binary and string.');
+        if (older && older.format !== source.format) throw new Error('One annotation source URL cannot be listed with different formats.');
         if (!older) seen[source.url] = source;
     }
     return Object.values(seen);

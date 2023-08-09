@@ -26,7 +26,6 @@ export type ParamsOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>> 
 
 
 export function getParams<TNode extends Node>(node: TNode): Params<TNode> {
-    // export function getParams<TKind extends string, TParams extends {}>(node: Node<TKind, TParams>): TParams {
     return node.params ?? {};
 }
 export function getChildren<TTree extends Tree>(tree: TTree): SubTree<TTree>[] {

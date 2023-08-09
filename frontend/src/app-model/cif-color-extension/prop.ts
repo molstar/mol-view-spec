@@ -5,36 +5,36 @@
  */
 
 import { Column } from 'molstar/lib/mol-data/db';
+import { SortedArray } from 'molstar/lib/mol-data/int/sorted-array';
 import { CustomModelProperty } from 'molstar/lib/mol-model-props/common/custom-model-property';
 import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { CustomPropertyDescriptor } from 'molstar/lib/mol-model/custom-property';
 import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-model/structure';
-import { StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure/structure';
+import { StructureElement } from 'molstar/lib/mol-model/structure/structure';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
+import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers';
 
-import { extend, range, sortIfNeeded, takeFromWhile, takeWhile } from '../utils';
-import { AnnotationFormat, AnnotationFormatTypes } from './color';
-import { SortedArray } from 'molstar/lib/mol-data/int/sorted-array';
-import { Interval } from 'molstar/lib/mol-data/int';
-import { arrayEqual } from 'molstar/lib/mol-util';
+import { extend, range, sortIfNeeded } from '../utils';
 
+export const AnnotationFormat = new Choice({ json: 'json', cif: 'cif', bcif: 'bcif' }, 'json');
+export type AnnotationFormat = Choice.Values<typeof AnnotationFormat>
+export const AnnotationFormatTypes = { json: 'string', cif: 'string', bcif: 'binary' } satisfies { [format in AnnotationFormat]: 'string' | 'binary' };
 
 export const AnnotationsParams = {
     annotationSources: PD.ObjectList(
         {
             url: PD.Text(''),
             format: AnnotationFormat.PDSelect(),
-            // isBinary: PD.Boolean(false, { description: 'Specify if the data are binary or string' }),
         },
         obj => obj.url
     ),
 };
 export type AnnotationsParams = typeof AnnotationsParams
 export type AnnotationsProps = PD.Values<AnnotationsParams>
-export type AnnotationsSource = { url: string, isBinary: boolean }
+export type AnnotationsSource = { url: string, format: AnnotationFormat }
 
 export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams, Annotations> = CustomModelProperty.createProvider({
     label: 'Annotations',
@@ -47,7 +47,7 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
     isApplicable: (data: Model) => true,
     obtain: async (ctx: CustomProperty.Context, data: Model, props: Partial<AnnotationsProps>) => {
         const p = { ...PD.getDefaultValues(AnnotationsParams), ...props };
-        const sources = props.annotationSources ?? [];// as { url: string, isBinary: boolean }[] ?? [];
+        const sources: AnnotationsSource[] = props.annotationSources ?? [];
         const annots = await Annotation.fromSources(ctx, sources);
         console.log('obtain: annotation sources:', props.annotationSources);
         console.log('obtain: annotation data:', annots);
@@ -71,7 +71,7 @@ class Annotation {
         // TODO check if data kind matches format (or enforce)
     }
 
-    static async fromSource(ctx: CustomProperty.Context, source: { url: string, format: AnnotationFormat }): Promise<CustomProperty.Data<Annotation>> {
+    static async fromSource(ctx: CustomProperty.Context, source: AnnotationsSource): Promise<CustomProperty.Data<Annotation>> {
         const url = Asset.getUrlAsset(ctx.assetManager, source.url);
         const kind = AnnotationFormatTypes[source.format];
         const dataWrapper = await ctx.assetManager.resolve(url, kind).runInContext(ctx.runtime);
@@ -79,7 +79,7 @@ class Annotation {
         if (!data) throw new Error('missing data');
         return { value: new Annotation(source.url, source.format, { kind, data } as Data) };
     }
-    static async fromSources(ctx: CustomProperty.Context, sources: { url: string, format: AnnotationFormat }[]): Promise<CustomProperty.Data<Annotations>> {
+    static async fromSources(ctx: CustomProperty.Context, sources: AnnotationsSource[]): Promise<CustomProperty.Data<Annotations>> {
         const result: Annotations = {};
         for (const source of sources) {
             const annot = await this.fromSource(ctx, source);

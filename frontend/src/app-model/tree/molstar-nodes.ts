@@ -14,12 +14,10 @@ export const MolstarTreeSchema = TreeSchema(
         'download': {
             ...MVSTreeSchema.paramsSchemas.download,
             is_binary: RequiredField(t.boolean),
-            // is_binary: MVSTreeSchema.paramsSchemas.parse.is_binary,
         },
         'raw': {
             ...MVSTreeSchema.paramsSchemas.raw,
             is_binary: RequiredField(t.boolean),
-            // is_binary: MVSTreeSchema.paramsSchemas.parse.is_binary,
         },
         'parse': {
             format: RequiredField(MolstarParseFormatT),
