@@ -1,10 +1,8 @@
-import * as t from 'io-ts';
-
 import { omitObjectKeys, pickObjectKeys } from '../utils';
 import { NodeForTree, TreeFor, TreeSchema } from './generic';
 import { MVSTreeSchema } from './mvs-nodes';
-import { RequiredField } from './params-schema';
 import { MolstarParseFormatT } from './param-types';
+import { RequiredField, bool } from './params-schema';
 
 
 export const MolstarTreeSchema = TreeSchema(
@@ -13,11 +11,11 @@ export const MolstarTreeSchema = TreeSchema(
         ...MVSTreeSchema.paramsSchemas,
         'download': {
             ...MVSTreeSchema.paramsSchemas.download,
-            is_binary: RequiredField(t.boolean),
+            is_binary: RequiredField(bool),
         },
         'raw': {
             ...MVSTreeSchema.paramsSchemas.raw,
-            is_binary: RequiredField(t.boolean),
+            is_binary: RequiredField(bool),
         },
         'parse': {
             format: RequiredField(MolstarParseFormatT),

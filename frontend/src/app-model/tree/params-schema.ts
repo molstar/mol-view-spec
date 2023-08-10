@@ -4,6 +4,12 @@ import { PathReporter } from 'io-ts/PathReporter';
 
 type AllowedValueTypes = string | number | boolean | null | [number, number, number]
 
+export const str = t.string;
+export const int = t.Integer;
+export const float = t.number;
+export const bool = t.boolean;
+export const tuple = t.tuple;
+
 export function choice<V extends string | number | boolean>(v1: V, v2: V, ...others: V[]) {
     return t.union([t.literal(v1), t.literal(v2), ...others.map(v => t.literal(v))]);
 }
