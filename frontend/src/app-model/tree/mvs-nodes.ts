@@ -17,7 +17,15 @@ const InlineSchemaParams = {
     beg_auth_seq_id: OptionalField(nullable(t.Integer)),
     end_auth_seq_id: OptionalField(nullable(t.Integer)),
     atom_id: OptionalField(nullable(t.Integer)),
-    text: OptionalField(nullable(t.string)), // TODO fix backend and sync
+    atom_index: OptionalField(nullable(t.Integer)),
+    label_atom_id: OptionalField(nullable(t.string)),
+    auth_atom_id: OptionalField(nullable(t.string)),
+};
+const LabelParams = {
+    schema: RequiredField(SchemaT),
+};
+const ColorParams = {
+    schema: RequiredField(SchemaT),
 };
 
 
@@ -53,31 +61,39 @@ export const MVSTreeSchema = TreeSchema(
             type: RequiredField(RepresentationTypeT),
             color: OptionalField(ColorT),
         },
-        'label': { // ???
-            schema: RequiredField(SchemaT),
-        },
         'label-from-cif': {
-            schema: RequiredField(SchemaT),
+            ...LabelParams,
             category_name: RequiredField(t.string),
         },
-        'label-from-inline': {
-            schema: RequiredField(SchemaT),
-            ...InlineSchemaParams,
-        },
-        'color': {
-            schema: RequiredField(SchemaT),
-        },
-        'color-from-cif': {
-            schema: RequiredField(SchemaT),
-            category_name: RequiredField(t.string),
-        },
-        'color-from-url': {
-            schema: RequiredField(SchemaT),
+        'label-from-url': {
+            ...LabelParams,
             url: RequiredField(t.string),
             format: RequiredField(SchemaFormatT),
         },
+        'label-from-json': {
+            ...LabelParams,
+            data: RequiredField(t.string),
+        },
+        'label-from-inline': {
+            ...LabelParams,
+            ...InlineSchemaParams,
+            text: RequiredField(t.string),
+        },
+        'color-from-cif': {
+            ...ColorParams,
+            category_name: RequiredField(t.string),
+        },
+        'color-from-url': {
+            ...ColorParams,
+            url: RequiredField(t.string),
+            format: RequiredField(SchemaFormatT),
+        },
+        'color-from-json': {
+            ...ColorParams,
+            data: RequiredField(t.string),
+        },
         'color-from-inline': {
-            schema: RequiredField(SchemaT),
+            ...ColorParams,
             ...InlineSchemaParams,
             color: RequiredField(ColorT),
             tooltip: OptionalField(nullable(t.string)),

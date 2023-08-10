@@ -2,7 +2,6 @@ import * as t from 'io-ts';
 
 import { choice } from './params-schema';
 
-
 /** `format` parameter values of `parse` node in MVS tree */
 export const ParseFormatT = choice('mmcif', 'bcif', 'pdb');
 
@@ -17,7 +16,7 @@ export const RepresentationTypeT = choice('ball-and-stick', 'cartoon', 'surface'
 
 export const ColorT = choice('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
 
-export const SchemaT = choice('chain', 'auth-chain', 'residue', 'auth-residue', 'residue-range', 'auth-residue-range', 'atom', 'auth-atom');
+export const SchemaT = choice('whole-structure', 'entity', 'chain', 'auth-chain', 'residue', 'auth-residue', 'residue-range', 'auth-residue-range', 'atom', 'auth-atom');
 
 export const SchemaFormatT = choice('cif', 'bcif', 'json');
 

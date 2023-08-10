@@ -307,6 +307,23 @@ async def testing_color_rainbow_example():
     )
     return JSONResponse(builder.get_state())
 
+@router.get("/testing/color_small")
+async def testing_color_small_example():
+    """
+    An example with a small structure coloring applied down to atom level.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif('2bvk')
+    structure = (
+        builder.download(url=structure_url)
+        .parse(format="bcif")
+        .model_structure()
+    )
+    structure.component(selector="all").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/2bvk/json/atoms", format="json",
+    )
+    return JSONResponse(builder.get_state())
+
 @router.get("/testing/color_domains")
 async def testing_color_domains_example():
     """

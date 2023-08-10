@@ -33,6 +33,7 @@ function Main() {
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
         // 'colors-rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
+        'colors-small 2bvk': 'http://localhost:9000/api/v1/examples/testing/color_small',
         'colors-domains 1h9t': 'http://localhost:9000/api/v1/examples/testing/color_domains',
         'colors-validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn',
         'colors-validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q',

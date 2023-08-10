@@ -13,6 +13,9 @@ import { MultiMap, range, sortIfNeeded } from '../utils';
 
 export type ElementRanges = { from: ElementIndex, to: ElementIndex }[]
 
+export function emptyRanges(): ElementRanges {
+    return [];
+};
 export function addRange(ranges: ElementRanges, from: ElementIndex, to: ElementIndex) {
     if (ranges.length > 0) {
         const last = ranges[ranges.length - 1];
@@ -25,6 +28,7 @@ export function addRange(ranges: ElementRanges, from: ElementIndex, to: ElementI
     } else {
         ranges.push({ from, to });
     }
+    return ranges;
 }
 
 
@@ -44,6 +48,7 @@ export function createIndicesAndSortings(model: Model) {
     const residuesByChainIndexSortedByAuthSeqIdValues = new Map<ChainIndex, SortedArray<number>>();
     const residuesByChainIndexByInsCode = new Map<ChainIndex, MultiMap<string | undefined, ResidueIndex>>();
     const atomsById = new Map<number, ElementIndex>();
+    const atomsByIndex = new Map<number, ElementIndex>();
     for (let iChain = 0 as ChainIndex; iChain < nChains; iChain++) {
         const label_entity_id = h.chains.label_entity_id.value(iChain);
         const label_asym_id = h.chains.label_asym_id.value(iChain);
@@ -54,11 +59,11 @@ export function createIndicesAndSortings(model: Model) {
 
         const iResFrom = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]];
         const iResTo = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]] ?? nResidues;
-        const residueSortingByLabelSeqId = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present); // TODO maybe implement filterInPlace?
+        const residueSortingByLabelSeqId = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.label_seq_id.valueKind(iRes) === Column.ValueKind.Present);
         sortIfNeeded(residueSortingByLabelSeqId, (a, b) => h.residues.label_seq_id.value(a) - h.residues.label_seq_id.value(b) || a - b);
         residuesByChainIndexSortedByLabelSeqId.set(iChain, residueSortingByLabelSeqId);
         residuesByChainIndexSortedByLabelSeqIdValues.set(iChain, SortedArray.ofSortedArray(residueSortingByLabelSeqId.map(iRes => h.residues.label_seq_id.value(iRes))));
-        const residueSortingByAuthSeqId = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.auth_seq_id.valueKind(iRes) === Column.ValueKind.Present); // TODO maybe implement filterInPlace?
+        const residueSortingByAuthSeqId = (range(iResFrom, iResTo) as ResidueIndex[]).filter(iRes => h.residues.auth_seq_id.valueKind(iRes) === Column.ValueKind.Present);
         sortIfNeeded(residueSortingByAuthSeqId, (a, b) => h.residues.auth_seq_id.value(a) - h.residues.auth_seq_id.value(b) || a - b);
         residuesByChainIndexSortedByAuthSeqId.set(iChain, residueSortingByAuthSeqId);
         residuesByChainIndexSortedByAuthSeqIdValues.set(iChain, SortedArray.ofSortedArray(residueSortingByAuthSeqId.map(iRes => h.residues.auth_seq_id.value(iRes))));
@@ -77,7 +82,9 @@ export function createIndicesAndSortings(model: Model) {
     // }
     for (let iAtom = 0 as ElementIndex; iAtom < nAtoms; iAtom++) {
         const atom_id = model.atomicConformation.atomId.value(iAtom);
+        const atom_index = h.atomSourceIndex.value(iAtom);
         atomsById.set(atom_id, iAtom);
+        atomsByIndex.set(atom_index, iAtom);
     }
 
     return {
@@ -86,7 +93,7 @@ export function createIndicesAndSortings(model: Model) {
         residuesByChainIndexSortedByAuthSeqId, residuesByChainIndexSortedByAuthSeqIdValues,
         residuesByChainIndexByInsCode,
         // residuesByInsCode,
-        atomsById,
+        atomsById, atomsByIndex,
     };
 }
 
