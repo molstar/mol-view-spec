@@ -33,6 +33,8 @@ function Main() {
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
         // 'colors-rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
+        'colors-cif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_cif',
+        'colors-bcif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_bcif',
         'colors-small 2bvk': 'http://localhost:9000/api/v1/examples/testing/color_small',
         'colors-domains 1h9t': 'http://localhost:9000/api/v1/examples/testing/color_domains',
         'colors-validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn',
@@ -41,7 +43,7 @@ function Main() {
 
     return (
         <div className='Main'>
-            <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: PanelWidth }}>
+            <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: PanelWidth, zIndex: 1 }}>
                 <Viewer model={model} />
             </div>
 

@@ -16,6 +16,7 @@ const InlineSchemaDefaults = {
     atom_index: null,
     label_atom_id: null,
     auth_atom_id: null,
+    type_symbol: null,
 };
 
 

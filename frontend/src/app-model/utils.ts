@@ -113,6 +113,14 @@ export function objectFromKeysAndValues<K extends keyof any, V>(keys: K[], value
     return obj as Record<K, V>;
 }
 
+export function mapArrToObj<K extends keyof any, V>(array: readonly K[], getValue: (key: K) => V): Record<K, V> {
+    const result = {} as Record<K, V>;
+    for (const key of array) {
+        result[key] = getValue(key);
+    }
+    return result;
+}
+
 /** Like `Promise.all` but with objects instead of arrays */
 export async function promiseAllObj<T extends {}>(promisesObj: { [key in keyof T]: Promise<T[key]> }): Promise<T> {
     const keys = Object.keys(promisesObj);
@@ -145,3 +153,5 @@ export class MultiMap<K, V> extends Map<K, V[]> {
         this.get(key)!.push(value);
     }
 }
+
+export type Json = string | number | boolean | null | Json[] | { [key: string]: Json }

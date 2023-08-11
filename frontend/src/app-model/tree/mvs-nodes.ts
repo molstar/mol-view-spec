@@ -18,6 +18,7 @@ const InlineSchemaParams = {
     atom_index: OptionalField(nullable(int)),
     label_atom_id: OptionalField(nullable(str)),
     auth_atom_id: OptionalField(nullable(str)),
+    type_symbol: OptionalField(nullable(str)),
 };
 const LabelParams = {
     schema: RequiredField(SchemaT),

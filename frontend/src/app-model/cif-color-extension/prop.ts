@@ -5,16 +5,19 @@
  */
 
 import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers';
-import { Column } from 'molstar/lib/mol-data/db';
+import { Column, Table } from 'molstar/lib/mol-data/db';
+import { CIF, CifFile } from 'molstar/lib/mol-io/reader/cif';
+import { toTable } from 'molstar/lib/mol-io/reader/cif/schema';
 import { CustomModelProperty } from 'molstar/lib/mol-model-props/common/custom-model-property';
 import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { CustomPropertyDescriptor } from 'molstar/lib/mol-model/custom-property';
 import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-model/structure';
 import { StructureElement } from 'molstar/lib/mol-model/structure/structure';
+import { UUID } from 'molstar/lib/mol-util';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { DefaultMap, extend, filterInPlace, promiseAllObj, range } from '../utils';
+import { Json, extend, filterInPlace, promiseAllObj, range } from '../utils';
 import { ElementRanges, IndicesAndSortings, addRange, createIndicesAndSortings, getResiduesWithValue, getResiduesWithValueInRange } from './helpers';
 
 
@@ -55,46 +58,76 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
     }
 });
 
-interface AnnotationRow {
-    label_entity_id?: string,
-    label_asym_id?: string,
-    auth_asym_id?: string,
-    label_seq_id?: number,
-    auth_seq_id?: number,
-    pdbx_PDB_ins_code?: string,
-    beg_label_seq_id?: number,
-    end_label_seq_id?: number,
-    beg_auth_seq_id?: number,
-    end_auth_seq_id?: number,
-    /** Atom name like 'CA', 'N', 'O'... */
-    label_atom_id?: string,
-    /** Atom name like 'CA', 'N', 'O'... */
-    auth_atom_id?: string,
-    /** Unique atom identifier across conformations (_atom_site.id) */
-    atom_id?: number,
-    /** 0-base index of the atom in the source data */
-    atom_index?: number,
-    color?: string,
-    tooltip?: string,
-}
 
-type AnnotationData = { format: 'json', data: string } | { format: 'cif', data: string } | { format: 'bcif', data: Uint8Array }
+const { str, int } = Column.Schema;
+
+const CIFAnnotationSchema = {
+    label_entity_id: str,
+    label_asym_id: str,
+    auth_asym_id: str,
+    label_seq_id: int,
+    auth_seq_id: int,
+    pdbx_PDB_ins_code: str,
+    beg_label_seq_id: int,
+    end_label_seq_id: int,
+    beg_auth_seq_id: int,
+    end_auth_seq_id: int,
+    /** Atom name like 'CA', 'N', 'O'... */
+    label_atom_id: str,
+    /** Atom name like 'CA', 'N', 'O'... */
+    auth_atom_id: str,
+    /** Element symbol like 'H', 'HE', 'LI', 'BE'... */
+    type_symbol: str,
+    /** Unique atom identifier across conformations (_atom_site.id) */
+    atom_id: int,
+    /** 0-base index of the atom in the source data */
+    atom_index: int,
+    color: str,
+    tooltip: str,
+} satisfies Table.Schema;
+
+type AnnotationRow = Partial<Table.Row<typeof CIFAnnotationSchema>>
+
+
+type AnnotationData = { format: 'json', data: Json } | { format: 'cif', data: CifFile } | { format: 'bcif', data: CifFile }
 
 type Annotations = { [url: string]: Annotation }
 
 class Annotation {
     /** Store ElementIndex->AnnotationRow mapping for each Model */
-    private indexedModels = new DefaultMap<Model, (AnnotationRow | undefined)[]>(model => this.rowForAllElements(model));
+    private indexedModels = new Map<UUID, (AnnotationRow | undefined)[]>();
 
     constructor(public data: AnnotationData) { }
 
-    static async fromSource(ctx: CustomProperty.Context, source: AnnotationsSource): Promise<Annotation> {
+    private getIndexedModel(model: Model) {
+        const key = model.id;
+        if (!this.indexedModels.has(key)) {
+            const result = this.rowForAllElements(model);
+            this.indexedModels.set(key, result);
+        }
+        return this.indexedModels.get(key)!;
+    }
+
+    private static async getDataFromSource(ctx: CustomProperty.Context, source: AnnotationsSource): Promise<AnnotationData> {
         const url = Asset.getUrlAsset(ctx.assetManager, source.url);
         const dataType = AnnotationFormatTypes[source.format];
         const dataWrapper = await ctx.assetManager.resolve(url, dataType).runInContext(ctx.runtime);
-        const data = dataWrapper.data;
-        if (!data) throw new Error('missing data');
-        return new Annotation({ format: source.format, data } as AnnotationData);
+        const rawData = dataWrapper.data;
+        if (!rawData) throw new Error('Missing data');
+        switch (source.format) {
+            case 'json':
+                const json = JSON.parse(rawData as string) as Json;
+                return { format: source.format, data: json };
+            case 'cif':
+            case 'bcif':
+                const parsed = await CIF.parse(rawData).run();
+                if (parsed.isError) throw new Error(`Failed to parse ${source.format}`);
+                return { format: source.format, data: parsed.result };
+        }
+    }
+
+    static async fromSource(ctx: CustomProperty.Context, source: AnnotationsSource): Promise<Annotation> {
+        return new Annotation(await this.getDataFromSource(ctx, source));
     }
     static async fromSources(ctx: CustomProperty.Context, sources: AnnotationsSource[]): Promise<Annotations> {
         const promises: { [url: string]: Promise<Annotation> } = {};
@@ -106,33 +139,13 @@ class Annotation {
         return annotations;
     }
     getRows(): AnnotationRow[] {
-        const rows: AnnotationRow[] = [];
-        if (this.data.format === 'json') {
-            const js = JSON.parse(this.data.data);
-            if (Array.isArray(js)) {
-                // array of objects
-                for (const item of js) {
-                    rows.push(item);
-                }
-            } else {
-                // object of arrays
-                const keys = Object.keys(js);
-                if (keys.length > 0) {
-                    const n = js[keys[0]].length;
-                    for (const key of keys) if (js[key].length !== n) throw new Error('FormatError: arrays must have the same length.');
-                    for (let i = 0; i < n; i++) {
-                        const item: { [key: string]: any } = {};
-                        for (const key of keys) {
-                            item[key] = js[key][i];
-                        }
-                        rows.push(item);
-                    }
-                }
-            }
-        } else {
-            throw new Error('NotImplementedError');
+        switch (this.data.format) {
+            case 'json':
+                return getRowsFromJson(this.data.data);
+            case 'cif':
+            case 'bcif':
+                return getRowsFromCif(this.data.data);
         }
-        return rows;
     }
     /** Reference implementation of `getAnnotationForLocation`, just for checking, DO NOT USE DIRECTLY */
     getAnnotationForLocation_Reference(loc: StructureElement.Location): AnnotationRow | undefined {
@@ -146,7 +159,7 @@ class Annotation {
     }
     /** Return AnnotationRow assigned to location `loc`, if any */
     getAnnotationForLocation(loc: StructureElement.Location): AnnotationRow | undefined {
-        const indexedModel = this.indexedModels.safeGet(loc.unit.model);
+        const indexedModel = this.getIndexedModel(loc.unit.model);
         return indexedModel[loc.element];
     }
 
@@ -158,6 +171,7 @@ class Annotation {
         const nAtoms = model.atomicHierarchy.atoms._rowCount;
         const result: (AnnotationRow | undefined)[] = Array(nAtoms).fill(undefined);
         for (const row of this.getRows()) {
+            console.log('row:', row) // DEBUG
             const elements = elementsForRow(model, row, indicesAndSortings);
             for (const range of elements) {
                 result.fill(row, range.from, range.to);
@@ -166,6 +180,60 @@ class Annotation {
         console.timeEnd('fill');
         return result;
     }
+}
+
+function getRowsFromJson(data: Json): AnnotationRow[] {
+    const js = data as any;
+    const rows: AnnotationRow[] = [];
+    if (Array.isArray(js)) {
+        // array of objects
+        return js;
+    } else {
+        // object of arrays
+        const keys = Object.keys(js);
+        if (keys.length > 0) {
+            const n = js[keys[0]].length;
+            for (const key of keys) if (js[key].length !== n) throw new Error('FormatError: arrays must have the same length.');
+            for (let i = 0; i < n; i++) {
+                const item: { [key: string]: any } = {};
+                for (const key of keys) {
+                    item[key] = js[key][i];
+                }
+                rows.push(item);
+            }
+        }
+    }
+    return rows;
+}
+
+function getRowsFromCif(data: CifFile, categoryName: string = 'color'): AnnotationRow[] {
+    const rows: AnnotationRow[] = [];
+    if (data.blocks.length === 0) throw new Error('No block in CIF');
+    const block = data.blocks[0]; // TODO block header or index should be passed from somewhere
+    const category = block.categories[categoryName];
+    if (!category) throw new Error(`CIF category ${categoryName} not found`);
+    const table = toTable(CIFAnnotationSchema, category);
+    return getRowsFromTable(table); // Avoiding Table.getRows(table) as it replaces . and ? fields by 0 or ''
+    // TODO_continue_here
+    // TODO test
+}
+
+/** Same as `Table.getRows` but omits `.` and `?` fields (instead of using type defaults) */
+function getRowsFromTable<S extends Table.Schema>(table: Table<S>): Partial<Table.Row<S>>[] {
+    const rows: Partial<Table.Row<S>>[] = [];
+    const columns = table._columns;
+    const nRows = table._rowCount;
+    const Present = Column.ValueKind.Present;
+    for (let iRow = 0; iRow < nRows; iRow++) {
+        const row: Partial<Table.Row<S>> = {};
+        for (const col of columns) {
+            if (table[col].valueKind(iRow) === Present) {
+                row[col as keyof S] = table[col].value(iRow);
+            }
+        }
+        rows[iRow] = row;
+    }
+    return rows;
 }
 
 
@@ -184,7 +252,7 @@ function elementsForRow(model: Model, row: AnnotationRow, indices: IndicesAndSor
     const nAtoms = h.atoms._rowCount;
 
     const hasAtomIds = isAnyDefined(row.atom_id, row.atom_index);
-    const hasAtomFilter = isAnyDefined(row.label_atom_id, row.auth_atom_id);
+    const hasAtomFilter = isAnyDefined(row.label_atom_id, row.auth_atom_id, row.type_symbol);
     const hasResidueFilter = isAnyDefined(row.label_seq_id, row.auth_seq_id, row.pdbx_PDB_ins_code, row.beg_label_seq_id, row.end_label_seq_id, row.beg_auth_seq_id, row.end_auth_seq_id);
     const hasChainFilter = isAnyDefined(row.label_asym_id, row.auth_asym_id, row.label_entity_id);
 
@@ -300,6 +368,9 @@ function elementsForRow(model: Model, row: AnnotationRow, indices: IndicesAndSor
         if (isDefined(row.auth_atom_id)) {
             filterInPlace(atomIdcs, iAtom => h.atoms.auth_atom_id.value(iAtom) === row.auth_atom_id);
         }
+        if (isDefined(row.type_symbol)) {
+            filterInPlace(atomIdcs, iAtom => h.atoms.type_symbol.value(iAtom) === row.type_symbol);
+        }
         extend(allAtomIdcs, atomIdcs);
     }
 
@@ -357,10 +428,12 @@ function atomQualifies(model: Model, iAtom: ElementIndex, row: AnnotationRow): b
 
     const label_atom_id = h.atoms.label_atom_id.value(iAtom);
     const auth_atom_id = h.atoms.auth_atom_id.value(iAtom);
+    const type_symbol = h.atoms.type_symbol.value(iAtom);
     const atom_id = model.atomicConformation.atomId.value(iAtom);
     const atom_index = h.atomSourceIndex.value(iAtom);
     if (!matches(row.label_atom_id, label_atom_id)) return false;
     if (!matches(row.auth_atom_id, auth_atom_id)) return false;
+    if (!matches(row.type_symbol, type_symbol)) return false;
     if (!matches(row.atom_id, atom_id)) return false;
     if (!matches(row.atom_index, atom_index)) return false;
 

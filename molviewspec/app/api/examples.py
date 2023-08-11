@@ -158,6 +158,15 @@ async def json_data(id: str, name: str):
     return FileResponse(path)
 
 
+@router.get("/data/{id}/file/{filename}")
+async def file(id: str, filename: str):
+    """
+    Download a specific file. (Mostly for testing)
+    """
+    path = settings.TEST_DATA_DIR / id / filename
+    return FileResponse(path)
+
+
 @router.get("/data/{id}/validation")
 async def validation_data(id: str):
     """
@@ -304,6 +313,48 @@ async def testing_color_rainbow_example():
     )
     structure.component(selector="ligand").representation(type="ball-and-stick").color_from_url(
         schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
+    )
+    return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_cif")
+async def testing_color_cif_example():
+    """
+    An example with CIF-encoded coloring.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif('1cbs')
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.cif"
+    structure = (
+        builder.download(url=structure_url)
+        .parse(format="bcif")
+        .model_structure()
+    )
+    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+        schema="residue", url=annotation_url, format="cif",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="residue", url=annotation_url, format="cif",
+    )
+    return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_bcif")
+async def testing_color_bcif_example():
+    """
+    An example with BCIF-encoded coloring.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif('1cbs')
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.bcif"
+    structure = (
+        builder.download(url=structure_url)
+        .parse(format="bcif")
+        .model_structure()
+    )
+    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+        schema="residue", url=annotation_url, format="bcif",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="residue", url=annotation_url, format="bcif",
     )
     return JSONResponse(builder.get_state())
 

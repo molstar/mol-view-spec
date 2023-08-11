@@ -13,11 +13,32 @@ import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { Color } from 'molstar/lib/mol-util/color';
+import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers';
+
+
+// TODO Where should this be? In ColorTheme or in CustomModelProperty?
+export const AnnotationSchema = new Choice(
+    {
+        'whole-structure': 'whole-structure',
+        'entity': 'entity',
+        'chain': 'chain',
+        'auth-chain': 'auth-chain',
+        'residue': 'residue',
+        'auth-residue': 'auth-residue',
+        'residue-range': 'residue-range',
+        'auth-residue-range': 'auth-residue-range',
+        'atom': 'atom',
+        'auth-atom': 'auth-atom',
+        'all': 'all',
+    },
+    'all');
+export type AnnotationSchema = Choice.Values<typeof AnnotationSchema>
 
 
 export const AnnotationColorThemeParams = {
     background: PD.Color(ColorNames.gainsboro, { description: 'Color for elements without annotation' }),
     url: PD.Text('', { description: 'Annotation source URL' }),
+    schema: AnnotationSchema.PDSelect(),
 };
 
 type AnnotationColorThemeParams = typeof AnnotationColorThemeParams
