@@ -17,7 +17,7 @@ import { UUID } from 'molstar/lib/mol-util';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { Json, extend, filterInPlace, promiseAllObj, range } from '../utils';
+import { Json, canonicalJsonString, extend, filterInPlace, promiseAllObj, range } from '../utils';
 import { ElementRanges, IndicesAndSortings, addRange, createIndicesAndSortings, getResiduesWithValue, getResiduesWithValueInRange } from './helpers';
 
 
@@ -25,18 +25,49 @@ export const AnnotationFormat = new Choice({ json: 'json', cif: 'cif', bcif: 'bc
 export type AnnotationFormat = Choice.Values<typeof AnnotationFormat>
 export const AnnotationFormatTypes = { json: 'string', cif: 'string', bcif: 'binary' } as const satisfies { [format in AnnotationFormat]: 'string' | 'binary' };
 
+// TODO Where should this be? In ColorTheme or in CustomModelProperty?
+export const AnnotationSchema = new Choice(
+    {
+        'whole-structure': 'whole-structure',
+        'entity': 'entity',
+        'chain': 'chain',
+        'auth-chain': 'auth-chain',
+        'residue': 'residue',
+        'auth-residue': 'auth-residue',
+        'residue-range': 'residue-range',
+        'auth-residue-range': 'auth-residue-range',
+        'atom': 'atom',
+        'auth-atom': 'auth-atom',
+        'all-atomic': 'all-atomic',
+    },
+    'all-atomic');
+
+export type AnnotationSchema = Choice.Values<typeof AnnotationSchema>
+
 export const AnnotationsParams = {
-    annotationSources: PD.ObjectList(
+    annotations: PD.ObjectList(
         {
             url: PD.Text(''),
             format: AnnotationFormat.PDSelect(),
+            schema: AnnotationSchema.PDSelect(),
+            cifCategories: PD.MappedStatic('all', {
+                all: PD.EmptyGroup(),
+                selected: PD.Group({
+                    list: PD.ObjectList(
+                        { categoryName: PD.Text() },
+                        obj => obj.categoryName
+                    ),
+                })
+            }),
+            id: PD.Text('', { description: 'Arbitrary identifier that can be referenced by AnnotationColorTheme' }),
         },
-        obj => obj.url
+        obj => obj.id
     ),
 };
 export type AnnotationsParams = typeof AnnotationsParams
 export type AnnotationsProps = PD.Values<AnnotationsParams>
-export type AnnotationsSource = { url: string, format: AnnotationFormat }
+export type AnnotationSpec = AnnotationsProps['annotations'][number]
+export type AnnotationSource = { url: string, format: AnnotationFormat }
 
 
 export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams, Annotations> = CustomModelProperty.createProvider({
@@ -50,9 +81,9 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
     isApplicable: (data: Model) => true,
     obtain: async (ctx: CustomProperty.Context, data: Model, props: Partial<AnnotationsProps>) => {
         const p = { ...PD.getDefaultValues(AnnotationsParams), ...props };
-        const sources: AnnotationsSource[] = props.annotationSources ?? [];
-        const annots = await Annotation.fromSources(ctx, sources);
-        console.log('obtain: annotation sources:', props.annotationSources);
+        const specs: AnnotationSpec[] = props.annotations ?? [];
+        const annots = await Annotations.fromSpecs(ctx, specs);
+        console.log('obtain: annotation sources:', props.annotations);
         console.log('obtain: annotation data:', annots);
         return { value: annots } satisfies CustomProperty.Data<Annotations>;
     }
@@ -91,13 +122,34 @@ type AnnotationRow = Partial<Table.Row<typeof CIFAnnotationSchema>>
 
 type AnnotationData = { format: 'json', data: Json } | { format: 'cif', data: CifFile } | { format: 'bcif', data: CifFile }
 
-type Annotations = { [url: string]: Annotation }
+class Annotations {
+    private constructor(private dict: { [id: string]: Annotation }) { }
+    static async fromSpecs(ctx: CustomProperty.Context, specs: AnnotationSpec[]): Promise<Annotations> {
+        const data = await getDataFromSources(ctx, specs);
+        const dict: { [id: string]: Annotation } = {};
+        for (let i = 0; i < specs.length; i++) {
+            const spec = specs[i];
+            dict[spec.id] = await Annotation.fromSpec(ctx, spec, data[i]);
+        }
+        return new Annotations(dict);
+    }
+    getAnnotation(id: string): Annotation | undefined {
+        return this.dict[id];
+    }
+    getAllAnnotations(): Annotation[] {
+        return Object.values(this.dict);
+    }
+}
 
 class Annotation {
     /** Store ElementIndex->AnnotationRow mapping for each Model */
     private indexedModels = new Map<UUID, (AnnotationRow | undefined)[]>();
 
-    constructor(public data: AnnotationData) { }
+    constructor(
+        public data: AnnotationData,
+        public schema: AnnotationSchema,
+        public cifCategories: string[] | undefined,
+    ) { }
 
     private getIndexedModel(model: Model) {
         const key = model.id;
@@ -108,35 +160,11 @@ class Annotation {
         return this.indexedModels.get(key)!;
     }
 
-    private static async getDataFromSource(ctx: CustomProperty.Context, source: AnnotationsSource): Promise<AnnotationData> {
-        const url = Asset.getUrlAsset(ctx.assetManager, source.url);
-        const dataType = AnnotationFormatTypes[source.format];
-        const dataWrapper = await ctx.assetManager.resolve(url, dataType).runInContext(ctx.runtime);
-        const rawData = dataWrapper.data;
-        if (!rawData) throw new Error('Missing data');
-        switch (source.format) {
-            case 'json':
-                const json = JSON.parse(rawData as string) as Json;
-                return { format: source.format, data: json };
-            case 'cif':
-            case 'bcif':
-                const parsed = await CIF.parse(rawData).run();
-                if (parsed.isError) throw new Error(`Failed to parse ${source.format}`);
-                return { format: source.format, data: parsed.result };
-        }
-    }
-
-    static async fromSource(ctx: CustomProperty.Context, source: AnnotationsSource): Promise<Annotation> {
-        return new Annotation(await this.getDataFromSource(ctx, source));
-    }
-    static async fromSources(ctx: CustomProperty.Context, sources: AnnotationsSource[]): Promise<Annotations> {
-        const promises: { [url: string]: Promise<Annotation> } = {};
-        for (const source of sources) {
-            promises[source.url] = this.fromSource(ctx, source);
-        }
-        const annotations: Annotations = await promiseAllObj(promises);
-        console.log('fromSources:', annotations);
-        return annotations;
+    static async fromSpec(ctx: CustomProperty.Context, spec: AnnotationSpec, data?: AnnotationData): Promise<Annotation> {
+        data ??= await getDataFromSource(ctx, spec);
+        const schema = spec.schema;
+        const cifCategories = spec.cifCategories.name === 'selected' ? spec.cifCategories.params.list.map(o => o.categoryName) : undefined;
+        return new Annotation(data, schema, cifCategories);
     }
     getRows(): AnnotationRow[] {
         switch (this.data.format) {
@@ -171,7 +199,6 @@ class Annotation {
         const nAtoms = model.atomicHierarchy.atoms._rowCount;
         const result: (AnnotationRow | undefined)[] = Array(nAtoms).fill(undefined);
         for (const row of this.getRows()) {
-            console.log('row:', row) // DEBUG
             const elements = elementsForRow(model, row, indicesAndSortings);
             for (const range of elements) {
                 result.fill(row, range.from, range.to);
@@ -214,8 +241,6 @@ function getRowsFromCif(data: CifFile, categoryName: string = 'color'): Annotati
     if (!category) throw new Error(`CIF category ${categoryName} not found`);
     const table = toTable(CIFAnnotationSchema, category);
     return getRowsFromTable(table); // Avoiding Table.getRows(table) as it replaces . and ? fields by 0 or ''
-    // TODO_continue_here
-    // TODO test
 }
 
 /** Same as `Table.getRows` but omits `.` and `?` fields (instead of using type defaults) */
@@ -451,4 +476,34 @@ function matchesRange<T>(requiredMin: T | undefined | null, requiredMax: T | und
     if (isDefined(requiredMin) && (!isDefined(value) || value < requiredMin)) return false;
     if (isDefined(requiredMax) && (!isDefined(value) || value > requiredMax)) return false;
     return true;
+}
+
+
+async function getDataFromSource(ctx: CustomProperty.Context, source: AnnotationSource): Promise<AnnotationData> {
+    const url = Asset.getUrlAsset(ctx.assetManager, source.url);
+    const dataType = AnnotationFormatTypes[source.format];
+    const dataWrapper = await ctx.assetManager.resolve(url, dataType).runInContext(ctx.runtime);
+    const rawData = dataWrapper.data;
+    if (!rawData) throw new Error('Missing data');
+    switch (source.format) {
+        case 'json':
+            const json = JSON.parse(rawData as string) as Json;
+            return { format: source.format, data: json };
+        case 'cif':
+        case 'bcif':
+            const parsed = await CIF.parse(rawData).run();
+            if (parsed.isError) throw new Error(`Failed to parse ${source.format}`);
+            return { format: source.format, data: parsed.result };
+    }
+}
+/** Like `sources.map(s => getDataFromSource(ctx, s))`
+ * but downloads a repeating source only once. */
+async function getDataFromSources(ctx: CustomProperty.Context, sources: AnnotationSource[]): Promise<AnnotationData[]> {
+    const promises: { [key: string]: Promise<AnnotationData> } = {};
+    for (const src of sources) {
+        const key = `${src.format}:${src.url}`;
+        promises[key] = getDataFromSource(ctx, src);
+    }
+    const data = await promiseAllObj(promises);
+    return sources.map(src => data[`${src.format}:${src.url}`]);
 }

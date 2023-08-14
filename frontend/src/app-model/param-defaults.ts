@@ -57,6 +57,7 @@ export const Defaults = {
     'color-from-cif': {
     },
     'color-from-url': {
+        cif_category_names: null
     },
     'color-from-json': {
     },

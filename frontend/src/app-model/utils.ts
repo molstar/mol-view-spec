@@ -154,4 +154,47 @@ export class MultiMap<K, V> extends Map<K, V[]> {
     }
 }
 
-export type Json = string | number | boolean | null | Json[] | { [key: string]: Json }
+export type Json = string | number | boolean | null | Json[] | { [key: string]: Json | undefined }
+
+
+/** Decide if `obj` is a good old object (not array or null or other type). */
+function isReallyObject(obj: any): boolean {
+    return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+}
+
+/** Return a copy of object `obj` with sorted keys and dropped keys whose value is undefined. */
+export function sortObjectKeys<T extends {}>(obj: T): T {
+    const result = {} as T;
+    for (const key of Object.keys(obj).sort() as (keyof T)[]) {
+        const value = obj[key];
+        if (value !== undefined) {
+            result[key] = value;
+        }
+    }
+    return result;
+}
+
+/** Return a canonical string representation for a JSON-able object,
+ * independent from object key order and undefined properties. */
+export function canonicalJsonString(obj: Json) {
+    return JSON.stringify(obj, (key, value) => isReallyObject(value) ? sortObjectKeys(value) : value);
+}
+
+/** Return an array of all distinct values from `values`
+ * (i.e. with removed duplicates).
+ * Uses deep equality for objects and arrays,
+ * independent from object key order and undefined properties.
+ * E.g. {a: 1, b: undefined, c: {d: [], e: null}} is equal to {c: {e: null, d: []}}, a: 1}.
+ * If two or more objects in `values` are equal, only the first of them will be in the result. */
+export function distinct<T extends Json>(values: T[]): T[] {
+    const seen = new Set<string>();
+    const result: T[] = [];
+    for (const value of values) {
+        const key = canonicalJsonString(value);
+        if (!seen.has(key)) {
+            seen.add(key);
+            result.push(value);
+        }
+    }
+    return result;
+}

@@ -1,6 +1,6 @@
 import { NodeForTree, TreeFor, TreeSchema } from './generic';
 import { ColorT, ComponentSelectorT, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT } from './param-types';
-import { OptionalField, RequiredField, float, int, nullable, str, tuple } from './params-schema';
+import { OptionalField, RequiredField, float, int, list, nullable, str, tuple } from './params-schema';
 
 
 const InlineSchemaParams = {
@@ -86,6 +86,7 @@ export const MVSTreeSchema = TreeSchema(
             ...ColorParams,
             url: RequiredField(str),
             format: RequiredField(SchemaFormatT),
+            cif_category_names: OptionalField(nullable(list(str))),
         },
         'color-from-json': {
             ...ColorParams,

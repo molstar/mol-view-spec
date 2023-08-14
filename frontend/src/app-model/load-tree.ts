@@ -3,23 +3,27 @@ import { CustomModelProperties, ModelFromTrajectory, StructureComponent, Structu
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
+import { UUID } from 'molstar/lib/mol-util';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
-import { decodeColor } from './cif-color-extension/color';
-import { AnnotationsSource } from './cif-color-extension/prop';
+import { AnnotationColorThemeProps, decodeColor } from './cif-color-extension/color';
+import { AnnotationSource, AnnotationSpec } from './cif-color-extension/prop';
 import { Defaults } from './param-defaults';
 import { SubTree, Tree, TreeSchema, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
-import { formatObject } from './utils';
+import { canonicalJsonString, formatObject } from './utils';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
-export type LoadingAction<TNode extends Tree> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode) => StateObjectSelector | undefined
+export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
 
-export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>> } = {
+
+interface MolstarLoadingContext { annotationMap?: Map<MolstarNode<'color-from-url'>, string> }
+
+export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>, MolstarLoadingContext> } = {
     download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'download'>): StateObjectSelector {
         return update.to(msTarget).apply(Download, {
             url: getParams(node).url,
@@ -48,21 +52,35 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
             return undefined;
         }
     },
-    model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'model'>): StateObjectSelector {
-        let annotationSources: AnnotationsSource[] = [];
+    model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'model'>, context: MolstarLoadingContext): StateObjectSelector {
+        const distinctSpecs: { [key: string]: AnnotationSpec } = {};
         dfs<SubTree<MolstarTree>>(node, n => {
             if (n.kind === 'color-from-url') {
-                annotationSources.push({ url: n.params.url, format: n.params.format });
+                const cifCategories: AnnotationSpec['cifCategories'] = n.params.cif_category_names ?
+                    {
+                        name: 'selected',
+                        params: {
+                            list: n.params.cif_category_names.map(categoryName => ({ categoryName }))
+                        }
+                    }
+                    : {
+                        name: 'all',
+                        params: {}
+                    };
+                const spec: Omit<AnnotationSpec, 'id'> = { url: n.params.url, format: n.params.format, schema: n.params.schema, cifCategories };
+                const key = canonicalJsonString(spec as any);
+                distinctSpecs[key] ??= { ...spec, id: UUID.create22() };
+                (context.annotationMap ??= new Map()).set(n, distinctSpecs[key].id);
             }
         });
-        annotationSources = distinctAnnotationSources(annotationSources);
-        console.log('annotationSources:', annotationSources);
+        const annotations = Object.values(distinctSpecs);
+        console.log('annotationSources:', annotations);
         return update.to(msTarget)
             .apply(ModelFromTrajectory, {
                 modelIndex: getParams(node).model_index ?? Defaults.structure.model_index,
             })
             .apply(CustomModelProperties, {
-                properties: { annotations: { annotationSources: annotationSources } }
+                properties: { annotations: { annotations: annotations } }
             }).selector;
     },
     structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'structure'>): StateObjectSelector {
@@ -104,16 +122,15 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
             colorTheme: color ? { name: 'uniform', params: { value: Color(ColorNames[color as keyof ColorNames] ?? ColorNames.white) } } : undefined,
         }).selector;
     },
-    'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>): StateObjectSelector {
+    'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
         update.to(msTarget).update(old => ({
             ...old,
             colorTheme: {
                 name: 'annotation',
                 params: {
                     background: decodeColor(node.params.background),
-                    url: node.params.url,
-                    format: node.params.format,
-                }
+                    annotationId: context.annotationMap?.get(node),
+                } satisfies Partial<AnnotationColorThemeProps>
             }
         }));
         return msTarget;
@@ -121,8 +138,8 @@ export const LoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode
 };
 
 /** Remove duplicates from annotation sources. Throw error if a single URL is listed twice with different formats. */
-function distinctAnnotationSources(sources: AnnotationsSource[]) {
-    const seen: { [url: string]: AnnotationsSource } = {};
+function distinctAnnotationSources(sources: AnnotationSource[]) {
+    const seen: { [url: string]: AnnotationSource } = {};
     for (const source of sources) {
         const older = seen[source.url];
         if (older && older.format !== source.format) throw new Error('One annotation source URL cannot be listed with different formats.');
@@ -134,6 +151,7 @@ function distinctAnnotationSources(sources: AnnotationsSource[]) {
 export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
     const update = plugin.build();
     const mapping = new Map<SubTree<MolstarTree>, StateObjectSelector | undefined>(); // TODO remove undefined
+    const context: MolstarLoadingContext = {};
     dfs<MolstarTree>(tree, (node, parent) => {
         console.log('Visit', node.kind, formatObject(getParams(node)));
         if (node.kind === 'root') {
@@ -149,9 +167,9 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
                 console.warn('No target found for this', node.kind);
                 return;
             }
-            const action = LoadingActions[node.kind] as LoadingAction<typeof node> | undefined;
+            const action = MolstarLoadingActions[node.kind] as LoadingAction<typeof node, MolstarLoadingContext> | undefined;
             if (action) {
-                const msNode = action(update, msTarget, node);
+                const msNode = action(update, msTarget, node, context);
                 mapping.set(node, msNode);
             } else {
                 console.warn('No action for node kind', node.kind);

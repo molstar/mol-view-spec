@@ -4,44 +4,25 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { AnnotationsProvider } from './prop';
+import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { Location } from 'molstar/lib/mol-model/location';
 import { Bond, StructureElement } from 'molstar/lib/mol-model/structure';
 import { ColorTheme, LocationColor } from 'molstar/lib/mol-theme/color';
 import { ThemeDataContext } from 'molstar/lib/mol-theme/theme';
-import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
-import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
-import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { Color } from 'molstar/lib/mol-util/color';
-import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers';
+import { ColorNames } from 'molstar/lib/mol-util/color/names';
+import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-
-// TODO Where should this be? In ColorTheme or in CustomModelProperty?
-export const AnnotationSchema = new Choice(
-    {
-        'whole-structure': 'whole-structure',
-        'entity': 'entity',
-        'chain': 'chain',
-        'auth-chain': 'auth-chain',
-        'residue': 'residue',
-        'auth-residue': 'auth-residue',
-        'residue-range': 'residue-range',
-        'auth-residue-range': 'auth-residue-range',
-        'atom': 'atom',
-        'auth-atom': 'auth-atom',
-        'all': 'all',
-    },
-    'all');
-export type AnnotationSchema = Choice.Values<typeof AnnotationSchema>
+import { AnnotationsProvider } from './prop';
 
 
 export const AnnotationColorThemeParams = {
     background: PD.Color(ColorNames.gainsboro, { description: 'Color for elements without annotation' }),
-    url: PD.Text('', { description: 'Annotation source URL' }),
-    schema: AnnotationSchema.PDSelect(),
+    annotationId: PD.Text('', { description: 'Reference to "Annotation" custom model property' }),
 };
 
-type AnnotationColorThemeParams = typeof AnnotationColorThemeParams
+export type AnnotationColorThemeParams = typeof AnnotationColorThemeParams
+export type AnnotationColorThemeProps = PD.Values<AnnotationColorThemeParams>
 
 
 export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<AnnotationColorThemeParams>): ColorTheme<AnnotationColorThemeParams> {
@@ -50,7 +31,7 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Ann
     if (ctx.structure && !ctx.structure.isEmpty && ctx.structure.models[0].customProperties.has(AnnotationsProvider.descriptor)) {
         const annots = AnnotationsProvider.get(ctx.structure.models[0]).value;
         console.log('AnnotationColorTheme:', annots);
-        const annot = annots?.[props.url];
+        const annot = annots?.getAnnotation(props.annotationId);
         if (annot) {
             const colorForStructureElementLocation = (location: StructureElement.Location) => {
                 // if (annot.getAnnotationForLocation(location)?.color !== annot.getAnnotationForLocation_Reference(location)?.color) throw new Error('AssertionError');
@@ -71,7 +52,7 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Ann
                 return props.background;
             };
         } else {
-            console.error(`Annotation source "${props.url}" not present`);
+            console.error(`Annotation source "${props.annotationId}" not present`);
         }
     }
 
@@ -84,7 +65,6 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Ann
         description: 'Assigns colors based on custom annotation data.',
     };
 }
-
 
 export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorThemeParams, 'annotation'> = {
     name: 'annotation',

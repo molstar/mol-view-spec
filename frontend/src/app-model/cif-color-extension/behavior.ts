@@ -12,7 +12,6 @@ import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { AnnotationColorThemeProvider } from './color';
 import { AnnotationsProvider } from './prop';
 
-
 export const Annotation = PluginBehavior.create<{ autoAttach: boolean, showTooltip: boolean }>({
     name: 'annotation-prop',
     category: 'custom-props',
@@ -33,8 +32,8 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean, showToolt
                         if (!location.unit.model.customProperties.hasReference(this.provider.descriptor)) return undefined; // somehow this line disables this label after colorTheme has been changed (magic)
                         const annots = AnnotationsProvider.get(location.unit.model).value;
                         if (!annots) return undefined;
-                        const tooltips = Object.values(annots).map(annot => annot.getAnnotationForLocation(location)?.tooltip).filter(tooltip => !!tooltip);
-                        return (tooltips.length > 0) ? tooltips.join('\n') : undefined;
+                        const tooltips = annots.getAllAnnotations().map(annot => annot.getAnnotationForLocation(location)?.tooltip).filter(tooltip => !!tooltip);
+                        return (tooltips.length > 0) ? tooltips.join(' | ') : undefined;
                     default:
                         return undefined;
                 }
