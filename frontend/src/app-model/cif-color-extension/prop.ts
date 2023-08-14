@@ -80,7 +80,7 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
     getParams: (data: Model) => AnnotationsParams,
     isApplicable: (data: Model) => true,
     obtain: async (ctx: CustomProperty.Context, data: Model, props: Partial<AnnotationsProps>) => {
-        const p = { ...PD.getDefaultValues(AnnotationsParams), ...props };
+        props = { ...PD.getDefaultValues(AnnotationsParams), ...props };
         const specs: AnnotationSpec[] = props.annotations ?? [];
         const annots = await Annotations.fromSpecs(ctx, specs);
         console.log('obtain: annotation sources:', props.annotations);
@@ -172,7 +172,7 @@ class Annotation {
                 return getRowsFromJson(this.data.data);
             case 'cif':
             case 'bcif':
-                return getRowsFromCif(this.data.data);
+                return getRowsFromCif(this.data.data, this.cifCategories);
         }
     }
     /** Reference implementation of `getAnnotationForLocation`, just for checking, DO NOT USE DIRECTLY */
@@ -233,14 +233,22 @@ function getRowsFromJson(data: Json): AnnotationRow[] {
     return rows;
 }
 
-function getRowsFromCif(data: CifFile, categoryName: string = 'color'): AnnotationRow[] {
+function getRowsFromCif(data: CifFile, categoryNames: string[] | undefined): AnnotationRow[] {
     const rows: AnnotationRow[] = [];
     if (data.blocks.length === 0) throw new Error('No block in CIF');
     const block = data.blocks[0]; // TODO block header or index should be passed from somewhere
-    const category = block.categories[categoryName];
-    if (!category) throw new Error(`CIF category ${categoryName} not found`);
-    const table = toTable(CIFAnnotationSchema, category);
-    return getRowsFromTable(table); // Avoiding Table.getRows(table) as it replaces . and ? fields by 0 or ''
+    categoryNames ??= Object.keys(block.categories);
+    for (const categoryName of categoryNames) {
+        const category = block.categories[categoryName];
+        if (!category) {
+            console.error(`CIF category ${categoryName} not found`);
+            continue;
+        }
+        if (!category.getField('color')) continue;
+        const table = toTable(CIFAnnotationSchema, category);
+        extend(rows, getRowsFromTable(table)); // Avoiding Table.getRows(table) as it replaces . and ? fields by 0 or ''
+    }
+    return rows;
 }
 
 /** Same as `Table.getRows` but omits `.` and `?` fields (instead of using type defaults) */
