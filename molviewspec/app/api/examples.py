@@ -309,10 +309,10 @@ async def testing_color_rainbow_example():
         .model_structure()
     )
     structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
-        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
+        schema="residue-range", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
     )
     structure.component(selector="ligand").representation(type="ball-and-stick").color_from_url(
-        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
+        schema="residue-range", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
     )
     return JSONResponse(builder.get_state())
 
@@ -330,10 +330,10 @@ async def testing_color_cif_example():
         .model_structure()
     )
     structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
-        schema="residue", url=annotation_url, format="cif",
+        schema="atom", url=annotation_url, format="cif",
     )
     structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
-        schema="residue", url=annotation_url, format="cif",
+        schema="atom", url=annotation_url, format="cif",
     )
     return JSONResponse(builder.get_state())
 
@@ -351,10 +351,10 @@ async def testing_color_bcif_example():
         .model_structure()
     )
     structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
-        schema="residue", url=annotation_url, format="bcif",
+        schema="atom", url=annotation_url, format="bcif",
     )
     structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
-        schema="residue", url=annotation_url, format="bcif",
+        schema="atom", url=annotation_url, format="bcif",
     )
     return JSONResponse(builder.get_state())
 
@@ -371,7 +371,7 @@ async def testing_color_small_example():
         .model_structure()
     )
     structure.component(selector="all").representation(type="ball-and-stick", color="white").color_from_url(
-        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/2bvk/json/atoms", format="json",
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/2bvk/json/atoms", format="json",
     )
     return JSONResponse(builder.get_state())
 
@@ -387,13 +387,13 @@ async def testing_color_domains_example():
         .model_structure()
     )
     structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
-        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
     )
     structure.component(selector="nucleic").representation(type="ball-and-stick", color="white").color_from_url(
-        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
     )
     structure.component(selector="ion").representation(type="surface").color_from_url(
-        schema="residue", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
     )
     return JSONResponse(builder.get_state())
 

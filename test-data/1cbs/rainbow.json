@@ -49,7 +49,8 @@
     },
     {
         "label_asym_id": "A",
-        "label_seq_id": 95,
+        "beg_label_seq_id": 95,
+        "end_label_seq_id": 95,
         "color": "#000000",
         "tooltip": "black"
     },

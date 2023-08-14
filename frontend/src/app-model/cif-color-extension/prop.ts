@@ -17,32 +17,14 @@ import { UUID } from 'molstar/lib/mol-util';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { Json, canonicalJsonString, extend, filterInPlace, promiseAllObj, range } from '../utils';
+import { Json, extend, filterInPlace, pickObjectKeys, promiseAllObj, range } from '../utils';
 import { ElementRanges, IndicesAndSortings, addRange, createIndicesAndSortings, getResiduesWithValue, getResiduesWithValueInRange } from './helpers';
+import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from './schemas';
 
 
 export const AnnotationFormat = new Choice({ json: 'json', cif: 'cif', bcif: 'bcif' }, 'json');
 export type AnnotationFormat = Choice.Values<typeof AnnotationFormat>
 export const AnnotationFormatTypes = { json: 'string', cif: 'string', bcif: 'binary' } as const satisfies { [format in AnnotationFormat]: 'string' | 'binary' };
-
-// TODO Where should this be? In ColorTheme or in CustomModelProperty?
-export const AnnotationSchema = new Choice(
-    {
-        'whole-structure': 'whole-structure',
-        'entity': 'entity',
-        'chain': 'chain',
-        'auth-chain': 'auth-chain',
-        'residue': 'residue',
-        'auth-residue': 'auth-residue',
-        'residue-range': 'residue-range',
-        'auth-residue-range': 'auth-residue-range',
-        'atom': 'atom',
-        'auth-atom': 'auth-atom',
-        'all-atomic': 'all-atomic',
-    },
-    'all-atomic');
-
-export type AnnotationSchema = Choice.Values<typeof AnnotationSchema>
 
 export const AnnotationsParams = {
     annotations: PD.ObjectList(
@@ -89,35 +71,6 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
     }
 });
 
-
-const { str, int } = Column.Schema;
-
-const CIFAnnotationSchema = {
-    label_entity_id: str,
-    label_asym_id: str,
-    auth_asym_id: str,
-    label_seq_id: int,
-    auth_seq_id: int,
-    pdbx_PDB_ins_code: str,
-    beg_label_seq_id: int,
-    end_label_seq_id: int,
-    beg_auth_seq_id: int,
-    end_auth_seq_id: int,
-    /** Atom name like 'CA', 'N', 'O'... */
-    label_atom_id: str,
-    /** Atom name like 'CA', 'N', 'O'... */
-    auth_atom_id: str,
-    /** Element symbol like 'H', 'HE', 'LI', 'BE'... */
-    type_symbol: str,
-    /** Unique atom identifier across conformations (_atom_site.id) */
-    atom_id: int,
-    /** 0-base index of the atom in the source data */
-    atom_index: int,
-    color: str,
-    tooltip: str,
-} satisfies Table.Schema;
-
-type AnnotationRow = Partial<Table.Row<typeof CIFAnnotationSchema>>
 
 
 type AnnotationData = { format: 'json', data: Json } | { format: 'cif', data: CifFile } | { format: 'bcif', data: CifFile }
@@ -169,10 +122,10 @@ class Annotation {
     getRows(): AnnotationRow[] {
         switch (this.data.format) {
             case 'json':
-                return getRowsFromJson(this.data.data);
+                return getRowsFromJson(this.data.data, this.schema);
             case 'cif':
             case 'bcif':
-                return getRowsFromCif(this.data.data, this.cifCategories);
+                return getRowsFromCif(this.data.data, this.cifCategories, this.schema);
         }
     }
     /** Reference implementation of `getAnnotationForLocation`, just for checking, DO NOT USE DIRECTLY */
@@ -199,6 +152,7 @@ class Annotation {
         const nAtoms = model.atomicHierarchy.atoms._rowCount;
         const result: (AnnotationRow | undefined)[] = Array(nAtoms).fill(undefined);
         for (const row of this.getRows()) {
+            console.log('row:', row);
             const elements = elementsForRow(model, row, indicesAndSortings);
             for (const range of elements) {
                 result.fill(row, range.from, range.to);
@@ -209,18 +163,20 @@ class Annotation {
     }
 }
 
-function getRowsFromJson(data: Json): AnnotationRow[] {
+function getRowsFromJson(data: Json, schema: AnnotationSchema): AnnotationRow[] {
     const js = data as any;
-    const rows: AnnotationRow[] = [];
     if (Array.isArray(js)) {
         // array of objects
-        return js;
+        const wantedKeys = FieldsForSchemas[schema];
+        return js.map(row => pickObjectKeys(row, wantedKeys));
     } else {
         // object of arrays
-        const keys = Object.keys(js);
+        const rows: AnnotationRow[] = [];
+        const wantedKeys = new Set<string>(FieldsForSchemas[schema]);
+        const keys = Object.keys(js).filter(key => wantedKeys.has(key));
         if (keys.length > 0) {
             const n = js[keys[0]].length;
-            for (const key of keys) if (js[key].length !== n) throw new Error('FormatError: arrays must have the same length.');
+            if (keys.some(key => js[key].length !== n)) throw new Error('FormatError: arrays must have the same length.');
             for (let i = 0; i < n; i++) {
                 const item: { [key: string]: any } = {};
                 for (const key of keys) {
@@ -229,11 +185,11 @@ function getRowsFromJson(data: Json): AnnotationRow[] {
                 rows.push(item);
             }
         }
+        return rows;
     }
-    return rows;
 }
 
-function getRowsFromCif(data: CifFile, categoryNames: string[] | undefined): AnnotationRow[] {
+function getRowsFromCif(data: CifFile, categoryNames: string[] | undefined, schema: AnnotationSchema): AnnotationRow[] {
     const rows: AnnotationRow[] = [];
     if (data.blocks.length === 0) throw new Error('No block in CIF');
     const block = data.blocks[0]; // TODO block header or index should be passed from somewhere
@@ -245,7 +201,8 @@ function getRowsFromCif(data: CifFile, categoryNames: string[] | undefined): Ann
             continue;
         }
         if (!category.getField('color')) continue;
-        const table = toTable(CIFAnnotationSchema, category);
+        const cifSchema = pickObjectKeys(CIFAnnotationSchema, FieldsForSchemas[schema]);
+        const table = toTable(cifSchema, category);
         extend(rows, getRowsFromTable(table)); // Avoiding Table.getRows(table) as it replaces . and ? fields by 0 or ''
     }
     return rows;

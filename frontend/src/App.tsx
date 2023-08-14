@@ -32,7 +32,7 @@ function Main() {
         formats: 'http://localhost:9000/api/v1/examples/testing/formats',
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
-        // 'colors-rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
+        'colors-rainbow 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
         'colors-cif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_cif',
         'colors-bcif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_bcif',
         'colors-small 2bvk': 'http://localhost:9000/api/v1/examples/testing/color_small',
