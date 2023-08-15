@@ -8,33 +8,10 @@ import { Column } from 'molstar/lib/mol-data/db';
 import { SortedArray } from 'molstar/lib/mol-data/int';
 import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-model/structure';
 
-import { BasicReadonlyMap, MultiMap, NumberMap, filterInPlace, range, sortIfNeeded } from '../utils';
+import { BasicReadonlyMap, MultiMap, NumberMap, filterInPlace, range, sortIfNeeded } from '../../utils';
 
 
-export type ElementRanges = { from: ElementIndex, to: ElementIndex }[]
-
-export function emptyRanges(): ElementRanges {
-    return [];
-};
-export function singleRange(from: ElementIndex, to: ElementIndex): ElementRanges {
-    return [{ from, to }];
-};
-export function addRange(ranges: ElementRanges, from: ElementIndex, to: ElementIndex): ElementRanges {
-    if (ranges.length > 0) {
-        const last = ranges[ranges.length - 1];
-        if (from < last.to) throw new Error('Overlapping ranges not allowed');
-        if (from === last.to) {
-            last.to = to;
-        } else {
-            ranges.push({ from, to });
-        }
-    } else {
-        ranges.push({ from, to });
-    }
-    return ranges;
-}
-
-
+/** Auxiliary data structure for efficiently finding chains/residues/atoms by their properties */
 export interface IndicesAndSortings {
     chainsByLabelEntityId: ReadonlyMap<string, readonly ChainIndex[]>,
     chainsByLabelAsymId: ReadonlyMap<string, readonly ChainIndex[]>,
@@ -46,6 +23,7 @@ export interface IndicesAndSortings {
     atomsByIndex: BasicReadonlyMap<number, ElementIndex>,
 }
 
+/** Create `IndicesAndSortings` for a model */
 export function createIndicesAndSortings(model: Model): IndicesAndSortings {
     const h = model.atomicHierarchy;
     const nAtoms = h.atoms._rowCount;
@@ -96,29 +74,37 @@ export function createIndicesAndSortings(model: Model): IndicesAndSortings {
 
     return {
         chainsByLabelEntityId, chainsByLabelAsymId, chainsByAuthAsymId,
-        residuesSortedByLabelSeqId,
-        residuesSortedByAuthSeqId,
-        residuesByInsCode,
+        residuesSortedByLabelSeqId, residuesSortedByAuthSeqId, residuesByInsCode,
         atomsById, atomsByIndex,
     };
 }
 
-interface Sorting<TIndex, TValue extends number> {
-    keys: readonly TIndex[],
-    values: SortedArray<TValue>,
+
+/** Represents a set of things (keys) of type `K`, sorted by some property (value) of type `V` */
+export interface Sorting<K, V extends number> {
+    /** Keys sorted by their corresponding values */
+    keys: readonly K[],
+    /** Sorted values corresponding to each key (value for `keys[i]` is `values[i]`) */
+    values: SortedArray<V>,
 }
 
-/** Create a sorting from an array of keys and a value function.
- * Modifies `keys`! Create a copy if you need the original order! */
+/** Create a `Sorting` from an array of keys and a function returning their corresponding values.
+ * If two keys have the same value, the smaller key will come first.
+ * This function modifies `keys` - create a copy if you need the original order! */
 function createSorting<K extends number, V extends number>(keys: K[], value: (i: K) => V): Sorting<K, V> {
     sortIfNeeded(keys, (a, b) => value(a) - value(b) || a - b);
     const values: SortedArray<V> = SortedArray.ofSortedArray(keys.map(value));
     return { keys, values };
 }
 
+/** Return a newly allocated array of keys which have value equal to `target` */
 export function getKeysWithValue<K, V extends number>(sorting: Sorting<K, V>, target: V): K[] {
     return getKeysWithValueInRange(sorting, target, target);
 }
+
+/** Return a newly allocated array of keys which have value within interval `[min, max]` (inclusive).
+ * Ther returned keys are sorted by their value.
+ * Undefined `min` is interpreted as negative infitity, undefined `max` is interpreted as positive infinity. */
 export function getKeysWithValueInRange<K, V extends number>(sorting: Sorting<K, V>, min: V | undefined, max: V | undefined): K[] {
     const { keys, values } = sorting;
     if (!keys) return [];

@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2023 mol* contributors, licensed under MIT, See LICENSE file for more info.
+ *
+ * @author Adam Midlik <midlik@gmail.com>
+ */
+
 import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers';
 import { Column, Table } from 'molstar/lib/mol-data/db';
 
