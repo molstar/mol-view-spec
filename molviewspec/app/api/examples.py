@@ -182,7 +182,7 @@ async def validation_data(id: str):
         for chain in molecule["chains"]:
             for residue in chain["models"][0]["residues"]:
                 residue_number = residue["residue_number"]
-                chain_id = chain["chain_id"]
+                asym_id = chain["struct_asym_id"]  # "struct_asym_id" contains label_asym_id, "chain_id" contains auth_asym_id
                 outlier_types = residue["outlier_types"]
                 issue_count = len(outlier_types)
 
@@ -196,7 +196,7 @@ async def validation_data(id: str):
 
                 transformed_residue = {
                     "label_seq_id": residue_number,
-                    "label_asym_id": chain_id,
+                    "label_asym_id": asym_id,
                     "color": color,
                     "tooltip": ", ".join(outlier_types),
                 }
@@ -309,10 +309,10 @@ async def testing_color_rainbow_example():
         .model_structure()
     )
     structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
-        schema="residue-range", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
     )
     structure.component(selector="ligand").representation(type="ball-and-stick").color_from_url(
-        schema="residue-range", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
     )
     return JSONResponse(builder.get_state())
 

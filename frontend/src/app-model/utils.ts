@@ -43,7 +43,7 @@ export function range(start: number, end?: number): number[] {
  * Equivalent to `dst.push(...src)`, but avoids storing element on call stack. Faster that `extend` from Underscore.js.
  * `extend(a, a)` will double the array
  */
-export function extend<T>(dst: T[], src: T[]): void {
+export function extend<T>(dst: T[], src: readonly T[]): void {
     const offset = dst.length;
     const nCopy = src.length;
     dst.length += nCopy;
@@ -56,11 +56,9 @@ export function sortIfNeeded<T>(array: T[], compareFn: (a: T, b: T) => number): 
     const n = array.length;
     for (let i = 1; i < array.length; i++) {
         if (compareFn(array[i - 1], array[i]) > 0) {
-            // console.log('Sort needed:', array);
             return array.sort(compareFn);
         }
     }
-    // console.log('Already sorted');
     return array;
 }
 
@@ -153,6 +151,28 @@ export class MultiMap<K, V> extends Map<K, V[]> {
         this.get(key)!.push(value);
     }
 }
+
+/** Implementation of `Map` where keys are integers
+ * and most keys are expected to be from interval `[0, limit)`.
+ * For the keys within this interval, performance is better than `Map` (implemented by array).
+ * For the keys out of this interval, performance is slightly worse than `Map`. */
+export class NumberMap<K extends number, V> {
+    private array: V[];
+    private map: Map<K, V>;
+    constructor(public readonly limit: K) {
+        this.array = new Array(limit);
+        this.map = new Map();
+    }
+    get(key: K): V | undefined {
+        if (0 <= key && key < this.limit) return this.array[key];
+        else return this.map.get(key);
+    }
+    set(key: K, value: V): void {
+        if (0 <= key && key < this.limit) this.array[key] = value;
+        else this.map.set(key, value);
+    }
+}
+export type BasicReadonlyMap<K, V> = Pick<Map<K, V>, 'get'>
 
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json | undefined }
 

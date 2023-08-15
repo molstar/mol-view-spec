@@ -18,7 +18,7 @@ import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
 import { Json, extend, filterInPlace, pickObjectKeys, promiseAllObj, range } from '../utils';
-import { ElementRanges, IndicesAndSortings, addRange, createIndicesAndSortings, getResiduesWithValue, getResiduesWithValueInRange } from './helpers';
+import { ElementRanges, IndicesAndSortings, addRange, createIndicesAndSortings, emptyRanges, getKeysWithValue, getKeysWithValueInRange, singleRange } from './helpers';
 import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from './schemas';
 
 
@@ -148,17 +148,22 @@ class Annotation {
         console.time('createIndicesAndSortings');
         const indicesAndSortings = createIndicesAndSortings(model);
         console.timeEnd('createIndicesAndSortings');
+
+        console.time('getRows');
+        const rows = this.getRows();
+        console.timeEnd('getRows');
+
         console.time('fill');
         const nAtoms = model.atomicHierarchy.atoms._rowCount;
         const result: (AnnotationRow | undefined)[] = Array(nAtoms).fill(undefined);
-        for (const row of this.getRows()) {
-            console.log('row:', row);
+        for (const row of rows) {
             const elements = elementsForRow(model, row, indicesAndSortings);
             for (const range of elements) {
                 result.fill(row, range.from, range.to);
             }
         }
         console.timeEnd('fill');
+
         return result;
     }
 }
@@ -237,8 +242,6 @@ function isAnyDefined(...values: any[]): boolean {
 
 function elementsForRow(model: Model, row: AnnotationRow, indices: IndicesAndSortings): ElementRanges {
     const h = model.atomicHierarchy;
-    const nChains = h.chains._rowCount;
-    const nResidues = h.residues._rowCount;
     const nAtoms = h.atoms._rowCount;
 
     const hasAtomIds = isAnyDefined(row.atom_id, row.atom_index);
@@ -248,129 +251,147 @@ function elementsForRow(model: Model, row: AnnotationRow, indices: IndicesAndSor
 
     if (hasAtomIds) {
         const theAtom = elementForRow_WithAtomsIds(model, row, indices);
-        return theAtom !== undefined ? [{ from: theAtom, to: theAtom + 1 as ElementIndex }] : [];
+        return theAtom !== undefined ? singleRange(theAtom, theAtom + 1 as ElementIndex) : [];
     }
 
     if (!hasChainFilter && !hasResidueFilter && !hasAtomFilter) {
-        return [{ from: 0 as ElementIndex, to: nAtoms as ElementIndex }];
+        return singleRange(0 as ElementIndex, nAtoms as ElementIndex);
     }
 
-    let chainIdcs: ChainIndex[] | undefined = undefined;
-    if (isDefined(row.label_asym_id)) {
-        chainIdcs = indices.chainsByLabelAsymId.get(row.label_asym_id) ?? [];
-    }
-    if (isDefined(row.auth_asym_id)) {
-        if (chainIdcs) {
-            filterInPlace(chainIdcs, i => h.chains.auth_asym_id.value(i) === row.auth_asym_id);
-        } else {
-            chainIdcs = indices.chainsByAuthAsymId.get(row.auth_asym_id) ?? [];
-        }
-    }
-    if (isDefined(row.label_entity_id)) {
-        if (chainIdcs) {
-            filterInPlace(chainIdcs, i => h.chains.label_entity_id.value(i) === row.label_entity_id);
-        } else {
-            chainIdcs = indices.chainsByLabelEntityId.get(row.label_entity_id) ?? [];
-        }
-    }
-    chainIdcs ??= range(nChains) as ChainIndex[];
+    const qualifyingChains = getQualifyingChains(model, row, indices);
     if (!hasResidueFilter && !hasAtomFilter) {
-        const ranges: ElementRanges = [];
-        for (const iChain of chainIdcs) {
+        const ranges = emptyRanges();
+        for (const iChain of qualifyingChains) {
             addRange(ranges, h.chainAtomSegments.offsets[iChain], h.chainAtomSegments.offsets[iChain + 1]);
         }
         return ranges;
     }
 
-    const allResidueIdcs: ResidueIndex[] = [];
-    for (const iChain of chainIdcs) {
-        let residueIdcs: ResidueIndex[] | undefined = undefined;
-        if (isDefined(row.label_seq_id)) {
-            const sortedIndices = indices.residuesByChainIndexSortedByLabelSeqId.get(iChain)!;
-            const sortedValues = indices.residuesByChainIndexSortedByLabelSeqIdValues.get(iChain)!;
-            residueIdcs = getResiduesWithValue(sortedIndices, sortedValues, row.label_seq_id);
-        }
-        if (isDefined(row.auth_seq_id)) {
-            if (residueIdcs) {
-                filterInPlace(residueIdcs, i => h.residues.auth_seq_id.value(i) === row.auth_seq_id);
-            } else {
-                const sortedIndices = indices.residuesByChainIndexSortedByAuthSeqId.get(iChain)!;
-                const sortedValues = indices.residuesByChainIndexSortedByAuthSeqIdValues.get(iChain)!;
-                residueIdcs = getResiduesWithValue(sortedIndices, sortedValues, row.auth_seq_id);
-            }
-        }
-        if (isDefined(row.pdbx_PDB_ins_code)) {
-            if (residueIdcs) {
-                filterInPlace(residueIdcs, i => h.residues.pdbx_PDB_ins_code.value(i) === row.pdbx_PDB_ins_code);
-            } else {
-                residueIdcs = indices.residuesByChainIndexByInsCode.get(iChain)!.get(row.pdbx_PDB_ins_code) ?? [];
-            }
-        }
-        if (isDefined(row.beg_label_seq_id) || isDefined(row.end_label_seq_id)) {
-            if (residueIdcs) {
-                if (isDefined(row.beg_label_seq_id)) {
-                    filterInPlace(residueIdcs, i => h.residues.label_seq_id.value(i) >= row.beg_label_seq_id!);
-                }
-                if (isDefined(row.end_label_seq_id)) {
-                    filterInPlace(residueIdcs, i => h.residues.label_seq_id.value(i) <= row.end_label_seq_id!);
-                }
-            } else {
-                const sortedIndices = indices.residuesByChainIndexSortedByLabelSeqId.get(iChain)!;
-                const sortedValues = indices.residuesByChainIndexSortedByLabelSeqIdValues.get(iChain)!;
-                residueIdcs = getResiduesWithValueInRange(sortedIndices, sortedValues, row.beg_label_seq_id, row.end_label_seq_id);
-            }
-        }
-        if (isDefined(row.beg_auth_seq_id) || isDefined(row.end_auth_seq_id)) {
-            if (residueIdcs) {
-                if (isDefined(row.beg_auth_seq_id)) {
-                    filterInPlace(residueIdcs, i => h.residues.auth_seq_id.value(i) >= row.beg_auth_seq_id!);
-                }
-                if (isDefined(row.end_auth_seq_id)) {
-                    filterInPlace(residueIdcs, i => h.residues.auth_seq_id.value(i) <= row.end_auth_seq_id!);
-                }
-            } else {
-                const sortedIndices = indices.residuesByChainIndexSortedByAuthSeqId.get(iChain)!;
-                const sortedValues = indices.residuesByChainIndexSortedByAuthSeqIdValues.get(iChain)!;
-                residueIdcs = getResiduesWithValueInRange(sortedIndices, sortedValues, row.beg_auth_seq_id, row.end_auth_seq_id);
-            }
-        }
-        if (!residueIdcs) {
-            const firstResidueForChain = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain]];
-            const firstResidueAfterChain = h.residueAtomSegments.index[h.chainAtomSegments.offsets[iChain + 1]] ?? nResidues;
-            residueIdcs ??= range(firstResidueForChain, firstResidueAfterChain) as ResidueIndex[];
-        }
-        extend(allResidueIdcs, residueIdcs);
-    }
+    const qualifyingResidues = getQualifyingResidues(model, row, indices, qualifyingChains);
     if (!hasAtomFilter) {
-        const ranges: ElementRanges = [];
-        for (const iRes of allResidueIdcs) {
+        const ranges = emptyRanges();
+        for (const iRes of qualifyingResidues) {
             addRange(ranges, h.residueAtomSegments.offsets[iRes], h.residueAtomSegments.offsets[iRes + 1]);
         }
         return ranges;
     }
 
-    const allAtomIdcs: ElementIndex[] = [];
-    for (const iRes of allResidueIdcs) {
-        const atomIdcs: ElementIndex[] = range(h.residueAtomSegments.offsets[iRes], h.residueAtomSegments.offsets[iRes + 1]) as ElementIndex[];
-        if (isDefined(row.label_atom_id)) {
-            filterInPlace(atomIdcs, iAtom => h.atoms.label_atom_id.value(iAtom) === row.label_atom_id);
-        }
-        if (isDefined(row.auth_atom_id)) {
-            filterInPlace(atomIdcs, iAtom => h.atoms.auth_atom_id.value(iAtom) === row.auth_atom_id);
-        }
-        if (isDefined(row.type_symbol)) {
-            filterInPlace(atomIdcs, iAtom => h.atoms.type_symbol.value(iAtom) === row.type_symbol);
-        }
-        extend(allAtomIdcs, atomIdcs);
-    }
-
-    const ranges: ElementRanges = [];
-    for (const iAtom of allAtomIdcs) {
+    const qualifyingAtoms = getQualifyingAtoms(model, row, indices, qualifyingResidues);
+    const ranges = emptyRanges();
+    for (const iAtom of qualifyingAtoms) {
         addRange(ranges, iAtom, iAtom + 1 as ElementIndex);
     }
     return ranges;
 }
 
+
+const EMPTY_ARRAY: readonly any[] = [];
+
+function getQualifyingChains(model: Model, row: AnnotationRow, indices: IndicesAndSortings): readonly ChainIndex[] {
+    const { auth_asym_id, label_entity_id, _rowCount: nChains } = model.atomicHierarchy.chains;
+    let result: readonly ChainIndex[] | undefined = undefined;
+    if (isDefined(row.label_asym_id)) {
+        result = indices.chainsByLabelAsymId.get(row.label_asym_id) ?? EMPTY_ARRAY;
+    }
+    if (isDefined(row.auth_asym_id)) {
+        if (result) {
+            result = result.filter(i => auth_asym_id.value(i) === row.auth_asym_id);
+        } else {
+            result = indices.chainsByAuthAsymId.get(row.auth_asym_id) ?? EMPTY_ARRAY;
+        }
+    }
+    if (isDefined(row.label_entity_id)) {
+        if (result) {
+            result = result.filter(i => label_entity_id.value(i) === row.label_entity_id);
+        } else {
+            result = indices.chainsByLabelEntityId.get(row.label_entity_id) ?? EMPTY_ARRAY;
+        }
+    }
+    result ??= range(nChains) as ChainIndex[];
+    return result;
+}
+
+function getQualifyingResidues(model: Model, row: AnnotationRow, indices: IndicesAndSortings, fromChains: readonly ChainIndex[]): ResidueIndex[] {
+    const { label_seq_id, auth_seq_id, pdbx_PDB_ins_code, _rowCount: nResidues } = model.atomicHierarchy.residues;
+    const { Present } = Column.ValueKind;
+    const result: ResidueIndex[] = [];
+    for (const iChain of fromChains) {
+        let residuesHere: readonly ResidueIndex[] | undefined = undefined;
+        if (isDefined(row.label_seq_id)) {
+            const sorting = indices.residuesSortedByLabelSeqId.get(iChain)!;
+            residuesHere = getKeysWithValue(sorting, row.label_seq_id);
+        }
+        if (isDefined(row.auth_seq_id)) {
+            if (residuesHere) {
+                residuesHere = residuesHere.filter(i => auth_seq_id.valueKind(i) === Present && auth_seq_id.value(i) === row.auth_seq_id);
+            } else {
+                const sorting = indices.residuesSortedByAuthSeqId.get(iChain)!;
+                residuesHere = getKeysWithValue(sorting, row.auth_seq_id);
+            }
+        }
+        if (isDefined(row.pdbx_PDB_ins_code)) {
+            if (residuesHere) {
+                residuesHere = residuesHere.filter(i => pdbx_PDB_ins_code.value(i) === row.pdbx_PDB_ins_code);
+            } else {
+                residuesHere = indices.residuesByInsCode.get(iChain)!.get(row.pdbx_PDB_ins_code) ?? EMPTY_ARRAY;
+            }
+        }
+        if (isDefined(row.beg_label_seq_id) || isDefined(row.end_label_seq_id)) {
+            if (residuesHere) {
+                if (isDefined(row.beg_label_seq_id)) {
+                    residuesHere = residuesHere.filter(i => label_seq_id.valueKind(i) === Present && label_seq_id.value(i) >= row.beg_label_seq_id!);
+                }
+                if (isDefined(row.end_label_seq_id)) {
+                    residuesHere = residuesHere.filter(i => label_seq_id.valueKind(i) === Present && label_seq_id.value(i) <= row.end_label_seq_id!);
+                }
+            } else {
+                const sorting = indices.residuesSortedByLabelSeqId.get(iChain)!;
+                residuesHere = getKeysWithValueInRange(sorting, row.beg_label_seq_id, row.end_label_seq_id);
+            }
+        }
+        if (isDefined(row.beg_auth_seq_id) || isDefined(row.end_auth_seq_id)) {
+            if (residuesHere) {
+                if (isDefined(row.beg_auth_seq_id)) {
+                    residuesHere = residuesHere.filter(i => auth_seq_id.valueKind(i) === Present && auth_seq_id.value(i) >= row.beg_auth_seq_id!);
+                }
+                if (isDefined(row.end_auth_seq_id)) {
+                    residuesHere = residuesHere.filter(i => auth_seq_id.valueKind(i) === Present && auth_seq_id.value(i) <= row.end_auth_seq_id!);
+                }
+            } else {
+                const sorting = indices.residuesSortedByAuthSeqId.get(iChain)!;
+                residuesHere = getKeysWithValueInRange(sorting, row.beg_auth_seq_id, row.end_auth_seq_id);
+            }
+        }
+        if (!residuesHere) {
+            const { residueAtomSegments, chainAtomSegments } = model.atomicHierarchy;
+            const firstResidueForChain = residueAtomSegments.index[chainAtomSegments.offsets[iChain]];
+            const firstResidueAfterChain = residueAtomSegments.index[chainAtomSegments.offsets[iChain + 1]] ?? nResidues;
+            residuesHere = range(firstResidueForChain, firstResidueAfterChain) as ResidueIndex[];
+        }
+        extend(result, residuesHere);
+    }
+    return result;
+}
+
+function getQualifyingAtoms(model: Model, row: AnnotationRow, indices: IndicesAndSortings, fromResidues: readonly ResidueIndex[]): ElementIndex[] {
+    const { label_atom_id, auth_atom_id, type_symbol } = model.atomicHierarchy.atoms;
+    const residueAtomSegments_offsets = model.atomicHierarchy.residueAtomSegments.offsets;
+    const result: ElementIndex[] = [];
+    for (const iRes of fromResidues) {
+        const atomIdcs = range(residueAtomSegments_offsets[iRes], residueAtomSegments_offsets[iRes + 1]) as ElementIndex[];
+        if (isDefined(row.label_atom_id)) {
+            filterInPlace(atomIdcs, iAtom => label_atom_id.value(iAtom) === row.label_atom_id);
+        }
+        if (isDefined(row.auth_atom_id)) {
+            filterInPlace(atomIdcs, iAtom => auth_atom_id.value(iAtom) === row.auth_atom_id);
+        }
+        if (isDefined(row.type_symbol)) {
+            filterInPlace(atomIdcs, iAtom => type_symbol.value(iAtom) === row.type_symbol);
+        }
+        extend(result, atomIdcs);
+    }
+    return result;
+}
 
 /** Return index of atom in `model` which qualifies selection criteria given by `row`, if any.
  * Only works when `row.atom_id` and/or `row.atom_index` is defined (otherwise use elementsForRow). */
