@@ -2,16 +2,14 @@ import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { PluginConfig } from 'molstar/lib/mol-plugin/config';
+import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
 import { BehaviorSubject } from 'rxjs';
 
-import { loadMVSTree } from './load-tree';
-import { treeValidationIssues } from './tree/generic';
-import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
-import { treeToString } from './tree/tree-utils';
-import { TreeSchema } from './tree/generic';
-import { Tree } from './tree/generic';
 import { Annotation } from './cif-color-extension/behavior';
-import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
+import { CustomLabel } from './custom-label-extension/behavior';
+import { loadMVSTree } from './load-tree';
+import { MVSTree } from './tree/mvs-nodes';
+import { treeToString } from './tree/tree-utils';
 
 
 export class AppModel {
@@ -23,6 +21,7 @@ export class AppModel {
     async initPlugin(target: HTMLDivElement) {
         const defaultSpec = DefaultPluginUISpec();
         defaultSpec.behaviors.push(PluginSpec.Behavior(Annotation));
+        defaultSpec.behaviors.push(PluginSpec.Behavior(CustomLabel));
         this.plugin = await createPluginUI(target, {
             ...defaultSpec,
             layout: {

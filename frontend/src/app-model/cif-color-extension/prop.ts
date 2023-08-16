@@ -117,6 +117,7 @@ export class Annotation {
         public cifCategories: string[] | undefined,
     ) { }
 
+    /** Create a new `Annotation` based on specification `spec`. Use `data` if provided, otherwise download the data. */
     static async fromSpec(ctx: CustomProperty.Context, spec: AnnotationSpec, data?: AnnotationData): Promise<Annotation> {
         data ??= await getDataFromSource(ctx, spec);
         const schema = spec.schema;
