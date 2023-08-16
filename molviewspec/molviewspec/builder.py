@@ -1,6 +1,8 @@
 from typing import TypeVar
 
 from molviewspec.nodes import (
+    CameraParams,
+    CanvasParams,
     ColorCifCategoryParams,
     ColorInlineParams,
     ColorJsonParams,
@@ -42,6 +44,32 @@ class Root:
 
     def get_state(self) -> State:
         return State(version=3, root=self.node)
+
+    def camera(
+        self,
+        *,
+        position: tuple[float, float, float] | None,
+        direction: tuple[float, float, float] | None,
+        radius: float | None,
+    ):
+        lcs = locals()
+        params: CameraParams = {}
+        _assign_params(params, CameraParams, lcs)
+        node = Node(kind="camera", params=params)
+        if "children" not in self.node:
+            self.node["children"] = []
+        self.node["children"].append(node)
+        return self
+
+    def canvas(self, *, background_color: ColorT | None = None) -> "Root":
+        lcs = locals()
+        params: CanvasParams = {}
+        _assign_params(params, CanvasParams, lcs)
+        node = Node(kind="canvas", params=params)
+        if "children" not in self.node:
+            self.node["children"] = []
+        self.node["children"].append(node)
+        return self
 
     def download(self, *, url: str) -> "Download":
         node = Node(kind="download", params=DownloadParams(url=url))
@@ -311,9 +339,7 @@ class Representation(_Base):
         self.add_child(node)
         return self
 
-    def color_from_url(
-        self, *, schema: SchemaT, url: str, format: str
-    ) -> "Representation":
+    def color_from_url(self, *, schema: SchemaT, url: str, format: str) -> "Representation":
         lcs = locals()
         params: ColorUrlParams = {}
         _assign_params(params, ColorUrlParams, lcs)
