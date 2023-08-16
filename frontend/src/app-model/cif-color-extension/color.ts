@@ -16,15 +16,20 @@ import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { AnnotationsProvider } from './prop';
 
 
+/** Parameter definition for color theme "Annotation" */
 export const AnnotationColorThemeParams = {
     background: PD.Color(ColorNames.gainsboro, { description: 'Color for elements without annotation' }),
     annotationId: PD.Text('', { description: 'Reference to "Annotation" custom model property' }),
 };
-
 export type AnnotationColorThemeParams = typeof AnnotationColorThemeParams
+
+/** Parameter values for color theme "Annotation" */
 export type AnnotationColorThemeProps = PD.Values<AnnotationColorThemeParams>
 
 
+/** Return color theme that assigns colors based on an annotation file.
+ * The annotation file itself is handled by a custom model property (`AnnotationsProvider`),
+ * the color theme then just uses this property. */
 export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<AnnotationColorThemeParams>): ColorTheme<AnnotationColorThemeParams> {
     let color: LocationColor = () => props.background;
 
@@ -44,10 +49,10 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Ann
                 if (StructureElement.Location.is(location)) {
                     return colorForStructureElementLocation(location);
                 } else if (Bond.isLocation(location)) {
+                    // this will be applied for each bond twice, to get color of each half (a* refers to the adjacent atom, b* to the opposite atom)
                     auxLocation.unit = location.aUnit;
                     auxLocation.element = location.aUnit.elements[location.aIndex];
                     return colorForStructureElementLocation(auxLocation);
-                    // TODO is this sufficient?
                 }
                 return props.background;
             };
@@ -66,6 +71,8 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Ann
     };
 }
 
+
+/** A thingy that is needed to register color theme "Annotation" */
 export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorThemeParams, 'annotation'> = {
     name: 'annotation',
     label: 'Annotation',
@@ -81,6 +88,8 @@ export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorTh
 };
 
 
+/** Convert `colorString` (either color name like 'magenta' or hex code like '#ff00ff') to Color.
+ * Return `undefined` if `colorString` cannot be converted. */
 export function decodeColor(colorString: string | undefined): Color | undefined {
     if (colorString === undefined) return undefined;
     let result = Color.fromHexStyle(colorString);

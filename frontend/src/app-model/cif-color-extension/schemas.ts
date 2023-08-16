@@ -8,6 +8,7 @@ import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers
 import { Column, Table } from 'molstar/lib/mol-data/db';
 
 
+/** Names of allowed annotation schemas (values for the annotation schema parameter) */
 export type AnnotationSchema = Choice.Values<typeof AnnotationSchema>
 export const AnnotationSchema = new Choice(
     {
@@ -28,17 +29,24 @@ export const AnnotationSchema = new Choice(
 
 const { str, int } = Column.Schema;
 
+/** Definition of `all-atomic` schema for CIF (other atomic schemas are subschemas of this one) */
 export const CIFAnnotationSchema = {
     label_entity_id: str,
     label_asym_id: str,
     auth_asym_id: str,
+
     label_seq_id: int,
     auth_seq_id: int,
     pdbx_PDB_ins_code: str,
+    /** Minimum label_seq_id (inclusive) */
     beg_label_seq_id: int,
+    /** Maximum label_seq_id (inclusive) */
     end_label_seq_id: int,
+    /** Minimum auth_seq_id (inclusive) */
     beg_auth_seq_id: int,
+    /** Maximum auth_seq_id (inclusive) */
     end_auth_seq_id: int,
+
     /** Atom name like 'CA', 'N', 'O'... */
     label_atom_id: str,
     /** Atom name like 'CA', 'N', 'O'... */
@@ -49,15 +57,20 @@ export const CIFAnnotationSchema = {
     atom_id: int,
     /** 0-base index of the atom in the source data */
     atom_index: int,
+
     color: str,
     tooltip: str,
 } satisfies Table.Schema;
 
+/** Represents a set of criteria for selection of atoms in a model (`all-atomic` schema) + `color` and `tooltip`.
+ * Missing/undefined values mean than we do not care about that specific atom property. */
 export type AnnotationRow = Partial<Table.Row<typeof CIFAnnotationSchema>>
 
 
 const CommonFields = ['color', 'tooltip'] as const;
 
+/** Allowed fields (i.e. CIF columns or JSON keys) for each annotation schema
+ * (other fields will just be ignored) */
 export const FieldsForSchemas = {
     'whole-structure': [...CommonFields],
     'entity': ['label_entity_id', ...CommonFields],

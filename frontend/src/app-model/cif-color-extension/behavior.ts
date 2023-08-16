@@ -12,6 +12,8 @@ import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { AnnotationColorThemeProvider } from './color';
 import { AnnotationsProvider } from './prop';
 
+
+/** Registers color theme "Annotation", related custom model property, and loci labels */
 export const Annotation = PluginBehavior.create<{ autoAttach: boolean, showTooltip: boolean }>({
     name: 'annotation-prop',
     category: 'custom-props',
