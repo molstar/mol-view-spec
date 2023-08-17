@@ -27,10 +27,10 @@
         "import/order": "off",
         "no-eval": "warn",
         "no-new-wrappers": "warn",
-        "no-trailing-spaces": "error",
+        "no-trailing-spaces": "warn",
         "no-unsafe-finally": "warn",
         "no-var": "error",
-        "spaced-comment": "error",
+        "spaced-comment": "warn",
         "semi": "warn",
         "no-restricted-syntax": [
             "error",
@@ -40,22 +40,22 @@
             }
         ],
         "no-throw-literal": "error",
-        "key-spacing": "error",
-        "object-curly-spacing": ["error", "always"],
-        "array-bracket-spacing": "error",
-        "space-in-parens": "error",
+        "key-spacing": "warn",
+        "object-curly-spacing": ["warn", "always"],
+        "array-bracket-spacing": "warn",
+        "space-in-parens": "warn",
         "computed-property-spacing": "error",
-        "prefer-const": ["error", {
+        "prefer-const": ["warn", {
             "destructuring": "all",
             "ignoreReadBeforeAssign": false
         }],
         "space-before-function-paren": "off",
         "func-call-spacing": "off",
-        "no-multi-spaces": "error",
-        "block-spacing": "error",
+        "no-multi-spaces": "warn",
+        "block-spacing": "warn",
         "keyword-spacing": "off",
-        "space-before-blocks": "error",
-        "semi-spacing": "error"
+        "space-before-blocks": "warn",
+        "semi-spacing": "warn"
     },
     "overrides": [
         {
@@ -110,15 +110,15 @@
                     "error",
                     "1tbs", { "allowSingleLine": true }
                 ],
-                "@typescript-eslint/comma-spacing": "error",
-                "@typescript-eslint/space-infix-ops": "error",
-                "@typescript-eslint/space-before-function-paren": ["error", {
+                "@typescript-eslint/comma-spacing": "warn",
+                "@typescript-eslint/space-infix-ops": "warn",
+                "@typescript-eslint/space-before-function-paren": ["warn", {
                     "anonymous": "always",
                     "named": "never",
                     "asyncArrow": "always"
                 }],
-                "@typescript-eslint/func-call-spacing": ["error"],
-                "@typescript-eslint/keyword-spacing": ["error"]
+                "@typescript-eslint/func-call-spacing": ["warn"],
+                "@typescript-eslint/keyword-spacing": ["warn"]
             }
         }
     ]
