@@ -38,3 +38,14 @@ export function addRange(ranges: AtomRanges, from: ElementIndex, to: ElementInde
     }
     return ranges;
 }
+
+export function rangesForeach(ranges: AtomRanges, func: (from: ElementIndex, to: ElementIndex) => any) {
+    const n = ranges.length;
+    for (let i = 0; i < n; i++) func(ranges[i].from, ranges[i].to);
+}
+export function rangesMap<T>(ranges: AtomRanges, func: (from: ElementIndex, to: ElementIndex) => T): T[] {
+    const n = ranges.length;
+    const result: T[] = new Array(n);
+    for (let i = 0; i < n; i++) result[i] = func(ranges[i].from, ranges[i].to);
+    return result;
+}

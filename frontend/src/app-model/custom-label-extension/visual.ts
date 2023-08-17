@@ -7,27 +7,29 @@
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 // import { VisualUpdateState } from '../../../mol-repr/util';
 // import { VisualContext } from '../../../mol-repr/visual';
-import { ElementIndex, Model, Structure, StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure';
+import { Model, Structure, StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure';
 // import { Theme } from '../../../mol-theme/theme';
 import { Text } from 'molstar/lib/mol-geo/geometry/text/text';
 import { TextBuilder } from 'molstar/lib/mol-geo/geometry/text/text-builder';
 // import { ComplexTextVisual, ComplexTextParams, ComplexVisual } from '../complex-visual';
-import { ElementIterator, getSerialElementLoci, eachSerialElement } from 'molstar/lib/mol-repr/structure/visual/util/element';
+import { ElementIterator, eachSerialElement, getSerialElementLoci } from 'molstar/lib/mol-repr/structure/visual/util/element';
 // import { ColorNames } from '../../../mol-util/color/names';
 // import { Vec3 } from '../../../mol-math/linear-algebra';
+import { Sphere3D } from 'molstar/lib/mol-math/geometry';
 import { BoundaryHelper } from 'molstar/lib/mol-math/geometry/boundary-helper';
-import * as Original from 'molstar/lib/mol-repr/structure/visual/label-text';
+import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { ComplexTextVisual, ComplexVisual } from 'molstar/lib/mol-repr/structure/complex-visual';
+import * as Original from 'molstar/lib/mol-repr/structure/visual/label-text';
+import { VisualUpdateState } from 'molstar/lib/mol-repr/util';
 import { VisualContext } from 'molstar/lib/mol-repr/visual';
 import { Theme } from 'molstar/lib/mol-theme/theme';
-import { VisualUpdateState } from 'molstar/lib/mol-repr/util';
-import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
-import { extend, omitObjectKeys } from '../utils';
 import { UUID, deepEqual } from 'molstar/lib/mol-util';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
-import { Sphere3D } from 'molstar/lib/mol-math/geometry';
+import { AtomRanges, rangesMap } from '../cif-color-extension/helpers/atom-ranges';
+import { IndicesAndSortings, createIndicesAndSortings } from '../cif-color-extension/helpers/indexing';
 import { atomQualifies, getAtomRangesForRow } from '../cif-color-extension/helpers/selections';
-import { createIndicesAndSortings, IndicesAndSortings } from '../cif-color-extension/helpers/indexing';
+import { extend, omitObjectKeys } from '../utils';
+import { SortedArray } from 'molstar/lib/mol-data/int';
 
 
 export const CustomLabelTextParams = {
@@ -112,10 +114,13 @@ export function CustomLabelTextVisual(materialId: number): ComplexVisual<CustomL
 }
 
 function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme, props: CustomLabelTextProps, text?: Text): Text {
-    // return createChainText(ctx, structure, theme, props, text);
-    // return createResidueText(ctx, structure, theme, props, text);
-    // return createElementText(ctx, structure, theme, props, text);
-    return createSingleText(ctx, structure, theme, props, text);
+    console.time('createLabelText');
+    // const result =  createChainText(ctx, structure, theme, props, text);
+    // const result =  createResidueText(ctx, structure, theme, props, text);
+    // const result =  createElementText(ctx, structure, theme, props, text);
+    const result = createSingleText(ctx, structure, theme, props, text);
+    console.timeEnd('createLabelText');
+    return result;
 }
 
 
@@ -234,11 +239,11 @@ function createElementText(ctx: VisualContext, structure: Structure, theme: Them
     return builder.getText();
 }
 
-// // TODO find a smart place to store these
-// const modelIndices: { [id: UUID]: IndicesAndSortings } = {};
-// function getModelIndices(model: Model): IndicesAndSortings {
-//     return modelIndices[model.id] ??= createIndicesAndSortings(model);
-// }
+// TODO find a smart place to store these
+const modelIndices: { [id: UUID]: IndicesAndSortings } = {};
+function getModelIndices(model: Model): IndicesAndSortings {
+    return modelIndices[model.id] ??= createIndicesAndSortings(model);
+}
 
 function createSingleText(ctx: VisualContext, structure: Structure, theme: Theme, props: CustomLabelTextProps, text?: Text): Text {
     const loc = StructureElement.Location.create(structure);
@@ -263,16 +268,33 @@ function createSingleText(ctx: VisualContext, structure: Structure, theme: Theme
                 tmpArray.length = 0;
                 let includedAtoms = 0;
                 let group = -1;
+                const rangesByModel: { [modelId: UUID]: AtomRanges } = {};
+                const rangeTosByModel: { [modelId: UUID]: SortedArray } = {};
+                console.time('get indices');
+                for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
+                    getModelIndices(units[iUnit].model)
+                }
+                console.timeEnd('get indices');
+                console.time('select atoms');
                 for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
                     const unit = units[iUnit];
-                    // const indices = getModelIndices(unit.model);
-                    // const ranges = getAtomRangesForRow(unit.model, item.position.params, indices);
+                    const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRow(unit.model, item.position.params, getModelIndices(unit.model));
+                    const rangeTos = rangeTosByModel[unit.model.id] ??= SortedArray.ofSortedArray(rangesMap(ranges, (from, to) => to));
+                    // const rFroms = SortedArray.ofSortedArray(ranges.map(r => r.from));
+                    // const rTos = SortedArray.ofSortedArray(ranges.map(r => r.to));
+                    // console.log('ranges:', ranges.length);
                     const pos = unit.conformation.position;
                     const { elements } = unit;
                     loc.unit = unit;
                     for (let iAtom = 0, nAtoms = elements.length; iAtom < nAtoms; iAtom++) {
                         loc.element = elements[iAtom];
-                        if (atomQualifies(loc.unit.model, loc.element, item.position.params)) {
+                        const qualifiesC = atomQualifies(loc.unit.model, loc.element, item.position.params);
+                        // const qualifies = ranges.some(r => r.from <= loc.element && loc.element < r.to);
+                        const iRange = SortedArray.findPredecessorIndex(rangeTos, loc.element + 1);
+                        const qualifies = iRange < ranges.length && ranges[iRange].from <= loc.element;
+                        // const qualifies = true;
+                        if (qualifies !== qualifiesC) throw new Error('AssertionError')
+                        if (qualifies) {
                             pos(loc.element, tmpVec);
                             extend(tmpArray, tmpVec);
                             if (group < 0) group = cumulativeUnitElementCount[iUnit] + iAtom;
@@ -280,8 +302,12 @@ function createSingleText(ctx: VisualContext, structure: Structure, theme: Theme
                         };
                     }
                 }
+                console.timeEnd('select atoms');
+                console.time('boundarySphere');
                 const { center, radius } = boundarySphere(tmpArray);
+                console.timeEnd('boundarySphere')
                 scale = includedAtoms ** (1 / 3);
+                console.log('includedAtoms:', includedAtoms)
                 if (includedAtoms > 0) {
                     builder.add(item.text, center[0], center[1], center[2], radius, scale, group);
                 }
@@ -307,6 +333,33 @@ function boundarySphere(flatCoords: readonly number[]): Sphere3D {
         boundaryHelper.radiusPosition(tmpVec);
     }
     return boundaryHelper.getSphere();
+}
+
+// This doesn't really compute the boundary sphere, but is much faster (400->15ms for 3j3q)
+function boundarySphereApproximation(flatCoords: readonly number[]): Sphere3D {
+    let x = 0.0, y = 0.0, z = 0.0;
+    let cumX = 0, cumY = 0, cumZ = 0;
+
+    const length = flatCoords.length;
+    const nPoints = Math.floor(length / 3);
+    if (nPoints < 0) return { center: Vec3.zero(), radius: 0 };
+    for (let offset = 0; offset < length; offset += 3) {
+        cumX += flatCoords[offset];
+        cumY += flatCoords[offset + 1];
+        cumZ += flatCoords[offset + 2];
+    }
+    cumX /= nPoints;
+    cumY /= nPoints;
+    cumZ /= nPoints;
+    let maxSqDist = 0;
+    for (let offset = 0; offset < length; offset += 3) {
+        x = flatCoords[offset];
+        y = flatCoords[offset + 1];
+        z = flatCoords[offset + 2];
+        const sqDist = (x - cumX) ** 2 + (y - cumY) ** 2 + (z - cumZ) ** 2;
+        if (sqDist > maxSqDist) maxSqDist = sqDist;
+    }
+    return { center: Vec3.create(cumX, cumY, cumZ), radius: maxSqDist ** 0.5 };
 }
 
 

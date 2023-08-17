@@ -21,6 +21,7 @@ import { Json, extend, pickObjectKeys, promiseAllObj } from '../utils';
 import { createIndicesAndSortings } from './helpers/indexing';
 import { atomQualifies, getAtomRangesForRow } from './helpers/selections';
 import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from './schemas';
+import { rangesForeach } from './helpers/atom-ranges';
 
 
 /** Allowed values for the annotation format parameter */
@@ -157,12 +158,15 @@ export class Annotation {
         const indices = createIndicesAndSortings(model);
         const nAtoms = model.atomicHierarchy.atoms._rowCount;
         const result: (AnnotationRow | undefined)[] = Array(nAtoms).fill(undefined);
+        console.time('fill');
         for (const row of this.getRows()) {
             const atomRanges = getAtomRangesForRow(model, row, indices);
-            for (const range of atomRanges) {
-                result.fill(row, range.from, range.to);
-            }
+            rangesForeach(atomRanges, (from, to) => result.fill(row, from, to))
+            // for (const range of atomRanges) {
+            //     result.fill(row, range.from, range.to);
+            // }
         }
+        console.timeEnd('fill');
         return result;
     }
 
