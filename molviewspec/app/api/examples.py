@@ -441,12 +441,12 @@ async def testing_labels_example(id='1h9t'):
     structure.component(selector="ion").representation(type="surface").color_from_url(
         schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
     )
-    # structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=9, end_label_seq_id=83)
-    # structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=9, end_label_seq_id=83)
-    # structure.label(text='Acyl-CoA\nbinding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=84, end_label_seq_id=231)
-    # structure.label(text='Acyl-CoA binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=84, end_label_seq_id=231)
-    # structure.label(text='DNA X', schema='all-atomic', label_asym_id='C')
-    # structure.label(text='DNA Y', schema='all-atomic', label_asym_id='D')
+    structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=9, end_label_seq_id=83)
+    structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=9, end_label_seq_id=83)
+    structure.label(text='Acyl-CoA\nbinding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=84, end_label_seq_id=231)
+    structure.label(text='Acyl-CoA binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=84, end_label_seq_id=231)
+    structure.label(text='DNA X', schema='all-atomic', label_asym_id='C')
+    structure.label(text='DNA Y', schema='all-atomic', label_asym_id='D')
 
     structure.label(text="DNA Y O5'", schema='all-atomic', label_asym_id='D', atom_id=4016)
     structure.label(text="DNA Y O3'", schema='all-atomic', label_asym_id='D', atom_id=4391)

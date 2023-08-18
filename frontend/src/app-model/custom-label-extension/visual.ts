@@ -259,7 +259,7 @@ function createSingleText(ctx: VisualContext, structure: Structure, theme: Theme
                 break;
             case 'selection':
                 console.time('addLabelItem');
-                const p = textPropsForSelection(structure, item.position.params);
+                const p = textPropsForSelection(structure, theme, item.position.params);
                 if (p) builder.add(item.text, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
                 console.timeEnd('addLabelItem');
                 break;
@@ -275,14 +275,15 @@ interface TextPosition {
     scale: number,
     group: number,
 }
-function textPropsForSelection(structure: Structure, row: AnnotationRow): TextPosition | undefined {
+function textPropsForSelection(structure: Structure, theme: Theme, row: AnnotationRow): TextPosition | undefined {
     const loc = StructureElement.Location.create(structure);
     const { units } = structure;
     const { type_symbol } = StructureProperties.atom;
     tmpArray.length = 0;
     let includedAtoms = 0;
     let includedHeavyAtoms = 0;
-    let group = -1;
+    let group: number | undefined = undefined;
+    let atomSize: number | undefined = undefined;
     const rangesByModel: { [modelId: UUID]: AtomRanges } = {};
     // {
     //     // Just a debugging block for timing, TODO remove
@@ -311,7 +312,8 @@ function textPropsForSelection(structure: Structure, row: AnnotationRow): TextPo
             if (qualifies) {
                 pos(loc.element, tmpVec);
                 extend(tmpArray, tmpVec);
-                if (group < 0) group = structure.serialMapping.cumulativeUnitElementCount[iUnit] + iAtom;
+                group ??= structure.serialMapping.cumulativeUnitElementCount[iUnit] + iAtom;
+                atomSize ??= theme.size.size(loc);
                 includedAtoms++;
                 if (type_symbol(loc) !== 'H') includedHeavyAtoms++;
             };
@@ -321,10 +323,11 @@ function textPropsForSelection(structure: Structure, row: AnnotationRow): TextPo
     // console.log('includedAtoms:', includedAtoms)
     if (includedAtoms > 0) {
         // console.time('boundarySphere');
-        const { center, radius } = boundarySphere(tmpArray);
+        const { center, radius } = (includedAtoms > 1) ? boundarySphere(tmpArray) : { center: Vec3.fromArray(Vec3(), tmpArray, 0), radius: 1.1 * atomSize! };
         // console.timeEnd('boundarySphere')
         const scale = (includedHeavyAtoms || includedAtoms) ** (1 / 3);
-        return { center, radius, scale, group };
+        if (includedAtoms === 1) console.log('radius:', radius, 'atomSize:', atomSize);
+        return { center, radius, scale, group: group! };
     }
 }
 
