@@ -301,7 +301,7 @@ function textPropsForSelection(structure: Structure, row: AnnotationRow): TextPo
         const { elements } = unit;
         loc.unit = unit;
         let iRange = SortedArray.findPredecessorIndex(SortedArray.ofSortedArray(ranges.to), elements[0] + 1);
-        const nRanges = ranges.from.length
+        const nRanges = ranges.from.length;
         for (let iAtom = 0, nAtoms = elements.length; iAtom < nAtoms; iAtom++) {
             loc.element = elements[iAtom];
             // const qualifiesC = atomQualifies(loc.unit.model, loc.element, row);

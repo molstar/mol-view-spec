@@ -418,6 +418,60 @@ async def testing_color_validation_example(id: str = "1tqn"):
     )
     return JSONResponse(builder.get_state())
 
+# TODO test labels
+
+@router.get("/testing/labels")
+async def testing_labels_example(id='1h9t'):
+    """
+    An example with different labels for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    structure = (
+        builder.download(url=structure_url)
+        .parse(format="bcif")
+        .model_structure()
+    )
+    structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+    )
+    structure.component(selector="nucleic").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+    )
+    structure.component(selector="ion").representation(type="surface").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+    )
+    # structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=9, end_label_seq_id=83)
+    # structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=9, end_label_seq_id=83)
+    # structure.label(text='Acyl-CoA\nbinding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=84, end_label_seq_id=231)
+    # structure.label(text='Acyl-CoA binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=84, end_label_seq_id=231)
+    # structure.label(text='DNA X', schema='all-atomic', label_asym_id='C')
+    # structure.label(text='DNA Y', schema='all-atomic', label_asym_id='D')
+
+    structure.label(text="DNA Y O5'", schema='all-atomic', label_asym_id='D', atom_id=4016)
+    structure.label(text="DNA Y O3'", schema='all-atomic', label_asym_id='D', atom_id=4391)
+    structure.label(text='Gold', schema='all-atomic', label_asym_id='E')
+    structure.label(text='Gold', schema='all-atomic', label_asym_id='H')
+    structure.label(text='Chloride', schema='all-atomic', label_asym_id='F')
+    structure.label(text='Chloride', schema='all-atomic', label_asym_id='G')
+    structure.label(text='Chloride', schema='all-atomic', label_asym_id='I')
+    
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=57)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=67)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=121)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=125)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=129)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=178)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=203, end_label_seq_id=205)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=67)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=121)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=125)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=129)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=178)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=203, end_label_seq_id=205)
+    return JSONResponse(builder.get_state())
+
+
 
 @router.get("/testing/local_bcif/{id}")
 async def testing_local_bcif(id: str):

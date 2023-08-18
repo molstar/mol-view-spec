@@ -161,7 +161,7 @@ export class Annotation {
         console.time('fill');
         for (const row of this.getRows()) {
             const atomRanges = getAtomRangesForRow(model, row, indices);
-            rangesForeach(atomRanges, (from, to) => result.fill(row, from, to))
+            rangesForeach(atomRanges, (from, to) => result.fill(row, from, to));
             // for (const range of atomRanges) {
             //     result.fill(row, range.from, range.to);
             // }

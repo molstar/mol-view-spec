@@ -39,6 +39,7 @@ function Main() {
         'colors-domains 1h9t': 'http://localhost:9000/api/v1/examples/testing/color_domains',
         'colors-validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn',
         'colors-validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q',
+        'labels 1h9t': 'http://localhost:9000/api/v1/examples/testing/labels',
     };
 
     return (

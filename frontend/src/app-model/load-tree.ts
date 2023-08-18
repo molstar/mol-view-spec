@@ -10,11 +10,13 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { AnnotationColorThemeProps, decodeColor } from './cif-color-extension/color';
 import { AnnotationSource, AnnotationSpec } from './cif-color-extension/prop';
 import { Defaults } from './param-defaults';
-import { SubTree, Tree, TreeSchema, getParams, treeValidationIssues } from './tree/generic';
+import { SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
-import { canonicalJsonString, formatObject } from './utils';
+import { canonicalJsonString, formatObject, pickObjectKeys } from './utils';
+import { CustomLabelParams, CustomLabelProps } from './custom-label-extension/representation';
+import { FieldsForSchemas } from './cif-color-extension/schemas';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -83,17 +85,20 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
                 properties: { annotations: { annotations: annotations } }
             }).selector;
     },
-    structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'structure'>): StateObjectSelector {
+    structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'structure'>, context: MolstarLoadingContext): StateObjectSelector {
         const params = getParams(node);
+        let result: StateObjectSelector;
         switch (params.kind) {
             case 'model':
-                return update.to(msTarget).apply(StructureFromModel, {
+                result = update.to(msTarget).apply(StructureFromModel, {
                     type: { name: 'model', params: {} },
                 }).selector;
+                break;
             case 'assembly':
-                return update.to(msTarget).apply(StructureFromModel, {
+                result = update.to(msTarget).apply(StructureFromModel, {
                     type: { name: 'assembly', params: { id: params.assembly_id } },
                 }).selector;
+                break;
             default:
                 throw new Error(`NotImplementedError: Loading action for "structure" node, kind "${params.kind}"`);
         }
@@ -103,6 +108,8 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         //         ? { name: 'assembly', params: { id: assembly } }
         //         : { name: 'model', params: {} },
         // }).selector;
+        loadLabelsFromInline(update, result, node, context);
+        return result;
     },
     component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component'>): StateObjectSelector {
         const selector = getParams(node).selector ?? Defaults.component.selector;
@@ -135,7 +142,62 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }));
         return msTarget;
     },
+    'label-from-inline'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-inline'>, context: MolstarLoadingContext): StateObjectSelector {
+        // Do nothing (labels loaded as one node in `structure`)
+        return msTarget;
+        // const params = getParams(node);
+        // const items: CustomLabelProps['items'] = [
+        //     { text: params.text, position: { name: 'selection', params: { ...pickObjectKeys(params, FieldsForSchemas[params.schema] as any[]) } } }
+        // ];
+        // return update.to(msTarget).apply(StructureRepresentation3D, {
+        //     type: { name: 'custom-label', params: { items } },
+        //     colorTheme: { name: 'uniform', params: { value: ColorNames.white } }
+        // }).selector;
+    },
 };
+
+function loadLabelsFromInline(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure' | 'component'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
+    const items: Partial<CustomLabelProps>['items'] = [];
+    for (const child of getChildren(node as SubTree<MolstarTree>)) {
+        if (child.kind === 'label-from-inline') {
+            const p = getParams(child);
+            const item: CustomLabelProps['items'][number] = {
+                text: p.text,
+                position: { name: 'selection', params: { ...pickObjectKeys(p, FieldsForSchemas[p.schema] as any[]) } }
+            };
+            items.push(item);
+        }
+    }
+    let annotationId: string | undefined = undefined;
+    let color: string | undefined = undefined;
+    dfs<SubTree<MolstarTree>>(node, n => {
+        if (n.kind === 'color-from-url') {
+            annotationId ??= context.annotationMap?.get(n);
+            color ??= n.params.background;
+        }
+    });
+    if (!color) {
+        dfs<SubTree<MolstarTree>>(node, n => {
+            if (n.kind === 'representation') color ??= n.params.color;
+        });
+    }
+    const colorTheme = annotationId ? {
+        name: 'annotation',
+        params: {
+            background: decodeColor(color ?? Defaults.representation.color),
+            annotationId: annotationId,
+        } satisfies Partial<AnnotationColorThemeProps>
+    } : { name: 'uniform', params: { value: decodeColor(color ?? Defaults.representation.color) } };
+    if (items.length > 0) {
+        return update.to(msTarget).apply(StructureRepresentation3D, {
+            type: { name: 'custom-label', params: { items } },
+            colorTheme: colorTheme,
+        }).selector;
+    } else {
+        return undefined;
+    }
+}
+
 
 /** Remove duplicates from annotation sources. Throw error if a single URL is listed twice with different formats. */
 function distinctAnnotationSources(sources: AnnotationSource[]) {
