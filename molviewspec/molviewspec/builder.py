@@ -29,6 +29,8 @@ from molviewspec.nodes import (
     TransformParams,
 )
 
+VERSION = 4
+
 
 def create_builder() -> "Root":
     return Root()
@@ -45,7 +47,7 @@ class Root:
         self.node = Node(kind="root")
 
     def get_state(self) -> State:
-        return State(version=3, root=self.node)
+        return State(version=VERSION, root=self.node)
 
     def camera(
         self,
@@ -85,7 +87,7 @@ class Root:
         if "children" not in self.node:
             self.node["children"] = []
         self.node["children"].append(node)
-        return Download(node=node, root=self)
+        return GenericVisuals(node=node, root=self)
 
     # TODO Root inherit from _Base and have special __init__ with `self.root = self`? (to be able to use `add_child` in `download`)
 
