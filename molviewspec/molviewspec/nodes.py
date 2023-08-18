@@ -2,22 +2,25 @@ from typing import Any, Literal, Mapping, NotRequired, TypedDict, Union
 
 KindT = Literal[
     "root",
-    "download",
-    "parse",
-    "structure",
-    "component",
-    "representation",
-    "label",
-    "label-from-cif",
+    "camera",
+    "canvas",
     "color",
     "color-from-cif",
     "color-from-inline",
     "color-from-json",
     "color-from-url",
+    "component",
+    "download",
     "focus-from-inline",
+    "generic-visuals",
+    "label",
+    "label-from-cif",
+    "line",
+    "parse",
+    "representation",
+    "sphere",
+    "structure",
     "transform",
-    "camera",
-    "canvas",
 ]
 
 
@@ -204,3 +207,24 @@ class CameraParams(TypedDict):
 
 class CanvasParams(TypedDict):
     background_color: ColorT
+
+
+class GenericVisualsParams(TypedDict):
+    pass
+
+
+class SphereParams(TypedDict):
+    position: tuple[float, float, float]
+    radius: float
+    color: ColorT
+    label: NotRequired[str]
+    tooltip: NotRequired[str]
+
+
+class LineParams(TypedDict):
+    position1: tuple[float, float, float]
+    position2: tuple[float, float, float]
+    radius: float
+    color: ColorT
+    label: NotRequired[str]
+    tooltip: NotRequired[str]
