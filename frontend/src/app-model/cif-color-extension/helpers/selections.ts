@@ -28,7 +28,7 @@ export function getAtomRangesForRow(model: Model, row: AnnotationRow, indices: I
 
     if (hasAtomIds) {
         const theAtom = getTheAtomForRow(model, row, indices);
-        return theAtom !== undefined ? singleRange(theAtom, theAtom + 1 as ElementIndex) : [];
+        return theAtom !== undefined ? singleRange(theAtom, theAtom + 1 as ElementIndex) : emptyRanges();
     }
 
     if (!hasChainFilter && !hasResidueFilter && !hasAtomFilter) {

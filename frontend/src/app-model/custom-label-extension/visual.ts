@@ -30,6 +30,7 @@ import { IndicesAndSortings, createIndicesAndSortings } from '../cif-color-exten
 import { atomQualifies, getAtomRangesForRow } from '../cif-color-extension/helpers/selections';
 import { extend, omitObjectKeys } from '../utils';
 import { SortedArray } from 'molstar/lib/mol-data/int';
+import { AnnotationRow } from '../cif-color-extension/schemas';
 
 
 export const CustomLabelTextParams = {
@@ -246,13 +247,6 @@ function getModelIndices(model: Model): IndicesAndSortings {
 }
 
 function createSingleText(ctx: VisualContext, structure: Structure, theme: Theme, props: CustomLabelTextProps, text?: Text): Text {
-    const loc = StructureElement.Location.create(structure);
-
-    const { units, serialMapping } = structure;
-    const { label_atom_id, label_alt_id } = StructureProperties.atom;
-    const { cumulativeUnitElementCount } = serialMapping;
-
-
     const count = props.items.length;
     const builder = TextBuilder.create(props, count, count / 2, text);
     for (const item of props.items) {
@@ -265,58 +259,73 @@ function createSingleText(ctx: VisualContext, structure: Structure, theme: Theme
                 break;
             case 'selection':
                 console.time('addLabelItem');
-                tmpArray.length = 0;
-                let includedAtoms = 0;
-                let group = -1;
-                const rangesByModel: { [modelId: UUID]: AtomRanges } = {};
-                const rangeTosByModel: { [modelId: UUID]: SortedArray } = {};
-                console.time('get indices');
-                for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
-                    getModelIndices(units[iUnit].model)
-                }
-                console.timeEnd('get indices');
-                console.time('select atoms');
-                for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
-                    const unit = units[iUnit];
-                    const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRow(unit.model, item.position.params, getModelIndices(unit.model));
-                    const rangeTos = rangeTosByModel[unit.model.id] ??= SortedArray.ofSortedArray(rangesMap(ranges, (from, to) => to));
-                    // const rFroms = SortedArray.ofSortedArray(ranges.map(r => r.from));
-                    // const rTos = SortedArray.ofSortedArray(ranges.map(r => r.to));
-                    // console.log('ranges:', ranges.length);
-                    const pos = unit.conformation.position;
-                    const { elements } = unit;
-                    loc.unit = unit;
-                    for (let iAtom = 0, nAtoms = elements.length; iAtom < nAtoms; iAtom++) {
-                        loc.element = elements[iAtom];
-                        const qualifiesC = atomQualifies(loc.unit.model, loc.element, item.position.params);
-                        // const qualifies = ranges.some(r => r.from <= loc.element && loc.element < r.to);
-                        const iRange = SortedArray.findPredecessorIndex(rangeTos, loc.element + 1);
-                        const qualifies = iRange < ranges.length && ranges[iRange].from <= loc.element;
-                        // const qualifies = true;
-                        if (qualifies !== qualifiesC) throw new Error('AssertionError')
-                        if (qualifies) {
-                            pos(loc.element, tmpVec);
-                            extend(tmpArray, tmpVec);
-                            if (group < 0) group = cumulativeUnitElementCount[iUnit] + iAtom;
-                            includedAtoms++;
-                        };
-                    }
-                }
-                console.timeEnd('select atoms');
-                console.time('boundarySphere');
-                const { center, radius } = boundarySphere(tmpArray);
-                console.timeEnd('boundarySphere')
-                scale = includedAtoms ** (1 / 3);
-                console.log('includedAtoms:', includedAtoms)
-                if (includedAtoms > 0) {
-                    builder.add(item.text, center[0], center[1], center[2], radius, scale, group);
-                }
+                const p = textPropsForSelection(structure, item.position.params);
+                if (p) builder.add(item.text, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
                 console.timeEnd('addLabelItem');
                 break;
         }
     }
 
     return builder.getText();
+}
+
+interface TextPosition {
+    center: Vec3,
+    radius: number,
+    scale: number,
+    group: number,
+}
+function textPropsForSelection(structure: Structure, row: AnnotationRow): TextPosition | undefined {
+    const loc = StructureElement.Location.create(structure);
+    const { units } = structure;
+    const { type_symbol } = StructureProperties.atom;
+    tmpArray.length = 0;
+    let includedAtoms = 0;
+    let includedHeavyAtoms = 0;
+    let group = -1;
+    const rangesByModel: { [modelId: UUID]: AtomRanges } = {};
+    // {
+    //     // Just a debugging block for timing, TODO remove
+    //     console.time('get ranges');
+    //     for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
+    //         const unit = units[iUnit];
+    //         rangesByModel[unit.model.id] ??= getAtomRangesForRow(unit.model, row, getModelIndices(unit.model));
+    //     }
+    //     console.timeEnd('get ranges');
+    // }
+    // console.time('select atoms');
+    for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
+        const unit = units[iUnit];
+        const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRow(unit.model, row, getModelIndices(unit.model));
+        const pos = unit.conformation.position;
+        const { elements } = unit;
+        loc.unit = unit;
+        let iRange = SortedArray.findPredecessorIndex(SortedArray.ofSortedArray(ranges.to), elements[0] + 1);
+        const nRanges = ranges.from.length
+        for (let iAtom = 0, nAtoms = elements.length; iAtom < nAtoms; iAtom++) {
+            loc.element = elements[iAtom];
+            // const qualifiesC = atomQualifies(loc.unit.model, loc.element, row);
+            while (iRange < nRanges && ranges.to[iRange] <= loc.element) iRange++;
+            const qualifies = iRange < nRanges && ranges.from[iRange] <= loc.element;
+            // if (qualifies !== qualifiesC) throw new Error('AssertionError')
+            if (qualifies) {
+                pos(loc.element, tmpVec);
+                extend(tmpArray, tmpVec);
+                if (group < 0) group = structure.serialMapping.cumulativeUnitElementCount[iUnit] + iAtom;
+                includedAtoms++;
+                if (type_symbol(loc) !== 'H') includedHeavyAtoms++;
+            };
+        }
+    }
+    // console.timeEnd('select atoms');
+    // console.log('includedAtoms:', includedAtoms)
+    if (includedAtoms > 0) {
+        // console.time('boundarySphere');
+        const { center, radius } = boundarySphere(tmpArray);
+        // console.timeEnd('boundarySphere')
+        const scale = (includedHeavyAtoms || includedAtoms) ** (1 / 3);
+        return { center, radius, scale, group };
+    }
 }
 
 /** Calculate the boundary sphere for a set of points given by their flattened coordinates (`flatCoords.slice(0,3)` is the first point etc.) */
@@ -334,7 +343,6 @@ function boundarySphere(flatCoords: readonly number[]): Sphere3D {
     }
     return boundaryHelper.getSphere();
 }
-
 // This doesn't really compute the boundary sphere, but is much faster (400->15ms for 3j3q)
 function boundarySphereApproximation(flatCoords: readonly number[]): Sphere3D {
     let x = 0.0, y = 0.0, z = 0.0;
