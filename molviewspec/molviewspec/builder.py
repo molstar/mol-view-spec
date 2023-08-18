@@ -16,12 +16,14 @@ from molviewspec.nodes import (
     LabelInlineParams,
     LabelJsonParams,
     LabelUrlParams,
+    LineParams,
     Node,
     ParseFormatT,
     ParseParams,
     RepresentationParams,
     RepresentationTypeT,
     SchemaT,
+    SphereParams,
     State,
     StructureParams,
     TransformParams,
@@ -73,6 +75,13 @@ class Root:
 
     def download(self, *, url: str) -> "Download":
         node = Node(kind="download", params=DownloadParams(url=url))
+        if "children" not in self.node:
+            self.node["children"] = []
+        self.node["children"].append(node)
+        return Download(node=node, root=self)
+
+    def generic_visuals(self) -> "GenericVisuals":
+        node = Node(kind="generic-visuals")
         if "children" not in self.node:
             self.node["children"] = []
         self.node["children"].append(node)
@@ -379,5 +388,40 @@ class Representation(_Base):
         params: ColorInlineParams = {}
         _assign_params(params, ColorInlineParams, lcs)
         node = Node(kind="color-from-inline", params=params)
+        self.add_child(node)
+        return self
+
+
+class GenericVisuals(_Base):
+    def sphere(
+        self,
+        *,
+        position: tuple[float, float, float],
+        radius: float,
+        color: ColorT,
+        label: str | None = None,
+        tooltip: str | None = None,
+    ) -> "GenericVisuals":
+        lcs = locals()
+        params: SphereParams = {}
+        _assign_params(params, SphereParams, lcs)
+        node = Node(kind="sphere", params=params)
+        self.add_child(node)
+        return self
+
+    def line(
+        self,
+        *,
+        position1: tuple[float, float, float],
+        position2: tuple[float, float, float],
+        radius: float,
+        color: ColorT,
+        label: str | None = None,
+        tooltip: str | None = None,
+    ) -> "GenericVisuals":
+        lcs = locals()
+        params: LineParams = {}
+        _assign_params(params, LineParams, lcs)
+        node = Node(kind="line", params=params)
         self.add_child(node)
         return self

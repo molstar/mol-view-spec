@@ -209,10 +209,6 @@ class CanvasParams(TypedDict):
     background_color: ColorT
 
 
-class GenericVisualsParams(TypedDict):
-    pass
-
-
 class SphereParams(TypedDict):
     position: tuple[float, float, float]
     radius: float
