@@ -1,0 +1,62 @@
+[
+    {
+        "label_asym_id": "A",
+        "beg_label_seq_id": 1,
+        "end_label_seq_id": 13,
+        "color": "#FF0000",
+        "tooltip": "red"
+    },
+    {
+        "label_asym_id": "A",
+        "beg_label_seq_id": 40,
+        "end_label_seq_id": 51,
+        "color": "#FF8800",
+        "tooltip": "orange"
+    },
+    {
+        "label_asym_id": "A",
+        "label_seq_id": 52,
+        "color": "#FFFF00",
+        "tooltip": "yellow"
+    },
+    {
+        "label_asym_id": "A",
+        "beg_label_seq_id": 53,
+        "end_label_seq_id": 70,
+        "color": "#00ff00",
+        "tooltip": "green"
+    },
+    {
+        "label_asym_id": "A",
+        "beg_label_seq_id": 71,
+        "end_label_seq_id": 90,
+        "color": "#00ffff",
+        "tooltip": "cyan"
+    },
+    {
+        "label_asym_id": "A",
+        "beg_label_seq_id": 91,
+        "end_label_seq_id": 110,
+        "color": "#0088ff",
+        "tooltip": "blue"
+    },
+    {
+        "label_asym_id": "A",
+        "beg_label_seq_id": 111,
+        "end_label_seq_id": 137,
+        "color": "#6600dd",
+        "tooltip": "violet"
+    },
+    {
+        "label_asym_id": "A",
+        "beg_label_seq_id": 95,
+        "end_label_seq_id": 95,
+        "color": "#000000",
+        "tooltip": "black"
+    },
+    {
+        "label_asym_id": "B",
+        "color": "#FF00FF",
+        "tooltip": "ligand"
+    }
+]

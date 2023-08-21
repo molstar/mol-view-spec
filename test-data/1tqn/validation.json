@@ -1,0 +1,1160 @@
+[
+    {
+        "label_seq_id": 7,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 11,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 14,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 15,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 26,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 37,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 38,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 41,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 42,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 44,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 45,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 46,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 49,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 50,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 51,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 58,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 59,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 61,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 66,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 68,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 71,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 72,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 75,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 81,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 89,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 90,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 102,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 107,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 109,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 111,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 112,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 113,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 114,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 115,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 118,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 119,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 120,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 121,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 123,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 124,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 125,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 127,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 128,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, clashes"
+    },
+    {
+        "label_seq_id": 130,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 131,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "planes, clashes"
+    },
+    {
+        "label_seq_id": 137,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 139,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 140,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 141,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 142,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, clashes"
+    },
+    {
+        "label_seq_id": 143,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 144,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 145,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "RSRZ"
+    },
+    {
+        "label_seq_id": 146,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "RSRZ"
+    },
+    {
+        "label_seq_id": 149,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 150,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 151,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 152,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 154,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 158,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 161,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 162,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 163,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 167,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 168,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 169,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 170,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, clashes"
+    },
+    {
+        "label_seq_id": 171,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 174,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 176,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 177,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 178,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 179,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 181,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, clashes"
+    },
+    {
+        "label_seq_id": 182,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 183,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 184,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 186,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 188,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 200,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 216,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 217,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 219,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 222,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 224,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 225,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 227,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 228,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 229,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 230,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 231,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 232,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 233,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 234,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 235,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 236,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 237,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 238,
+        "label_asym_id": "A",
+        "color": "#ff0000",
+        "tooltip": "RSRZ, clashes, sidechain_outliers, ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 239,
+        "label_asym_id": "A",
+        "color": "#ff0000",
+        "tooltip": "RSRZ, clashes, ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 240,
+        "label_asym_id": "A",
+        "color": "#ff0000",
+        "tooltip": "RSRZ, clashes, ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 241,
+        "label_asym_id": "A",
+        "color": "#ff0000",
+        "tooltip": "RSRZ, clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 242,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 243,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, clashes"
+    },
+    {
+        "label_seq_id": 244,
+        "label_asym_id": "A",
+        "color": "#ff0000",
+        "tooltip": "RSRZ, bond_angles, clashes, ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 245,
+        "label_asym_id": "A",
+        "color": "#ff0000",
+        "tooltip": "RSRZ, clashes, ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 246,
+        "label_asym_id": "A",
+        "color": "#ff0000",
+        "tooltip": "RSRZ, clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 247,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, clashes"
+    },
+    {
+        "label_seq_id": 248,
+        "label_asym_id": "A",
+        "color": "#ff0000",
+        "tooltip": "RSRZ, clashes, ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 249,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 250,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 252,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 253,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 254,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 255,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 256,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 257,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 258,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 259,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "RSRZ"
+    },
+    {
+        "label_seq_id": 266,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 267,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, clashes"
+    },
+    {
+        "label_seq_id": 268,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 269,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 270,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 271,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 272,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 273,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 274,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 275,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 276,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 277,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 280,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 281,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 286,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 287,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 298,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 313,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 317,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 318,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 320,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 322,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 324,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 325,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 326,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 327,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 328,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 332,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 341,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 352,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 354,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 359,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 360,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 363,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 373,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 378,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 379,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 387,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 388,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 389,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 390,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 394,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 397,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 398,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 400,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 401,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 402,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "ramachandran_outliers"
+    },
+    {
+        "label_seq_id": 404,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 406,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 407,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 408,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 410,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 420,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 425,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 427,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 430,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 431,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 433,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 434,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 436,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 438,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 440,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 442,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "RSRZ"
+    },
+    {
+        "label_seq_id": 444,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 448,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 449,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 454,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 464,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 469,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 472,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 474,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 475,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 476,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, clashes"
+    },
+    {
+        "label_seq_id": 477,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "RSRZ, clashes"
+    },
+    {
+        "label_seq_id": 478,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "RSRZ"
+    }
+]

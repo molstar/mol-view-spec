@@ -1,20 +1,20 @@
-from typing import TypeVar
+from __future__ import annotations
+from typing import Sequence, TypeVar
 
 from molviewspec.nodes import (
     CameraParams,
     CanvasParams,
     ColorCifCategoryParams,
     ColorInlineParams,
-    ColorJsonParams,
     ColorT,
     ColorUrlParams,
     ComponentParams,
+    ComponentExpression,
     ComponentSelectorT,
     DownloadParams,
     FocusInlineParams,
     LabelCifCategoryParams,
     LabelInlineParams,
-    LabelJsonParams,
     LabelUrlParams,
     LineParams,
     Node,
@@ -24,15 +24,19 @@ from molviewspec.nodes import (
     RepresentationTypeT,
     SchemaT,
     SphereParams,
+    SchemaFormatT,
     State,
     StructureParams,
+    TooltipCifCategoryParams,
+    TooltipInlineParams,
+    TooltipUrlParams,
     TransformParams,
 )
 
 VERSION = 4
 
 
-def create_builder() -> "Root":
+def create_builder() -> Root:
     return Root()
 
 
@@ -75,7 +79,7 @@ class Root:
         self.node["children"].append(node)
         return self
 
-    def download(self, *, url: str) -> "Download":
+    def download(self, *, url: str) -> Download:
         node = Node(kind="download", params=DownloadParams(url=url))
         if "children" not in self.node:
             self.node["children"] = []
@@ -105,7 +109,7 @@ class _Base:
 
 class Download(_Base):
     # TODO defaults in signature makes them more obvious to users but this can't accommodate more complex cases
-    def parse(self, *, format: ParseFormatT) -> "Parse":
+    def parse(self, *, format: ParseFormatT) -> Parse:
         lcs = locals()
         params: ParseParams = {}
         _assign_params(params, ParseParams, lcs)
@@ -143,7 +147,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
-    ) -> "Structure":
+    ) -> Structure:
         """
         Create an assembly structure.
         :param assembly_id: Use the name to specify which assembly to load
@@ -168,7 +172,7 @@ class Parse(_Base):
         ijk_max: tuple[int, int, int] | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
-    ) -> "Structure":
+    ) -> Structure:
         """
         Create symmetry structure for a given range of Miller indices.
         :param ijk_min: Bottom-left Miller indices
@@ -193,7 +197,7 @@ class Parse(_Base):
         radius: float | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
-    ) -> "Structure":
+    ) -> Structure:
         """
         Create structure of symmetry mates.
         :param radius: Radius of symmetry partners to include
@@ -211,21 +215,29 @@ class Parse(_Base):
 
 
 class Structure(_Base):
-    def component(self, *, selector: ComponentSelectorT = "all") -> "Component":
+    def component(self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all") -> Structure:
         params: ComponentParams = {"selector": selector}
         node = Node(kind="component", params=params)
         self.add_child(node)
-        return Component(node=node, root=self.root)
+        return Structure(node=node, root=self.root)
 
-    def label_from_cif(self, *, schema: SchemaT, category_name: str) -> "Structure":
+    def label(self, *, text: str) -> Structure:
         lcs = locals()
-        params: LabelCifCategoryParams = {}
-        _assign_params(params, LabelCifCategoryParams, lcs)
-        node = Node(kind="label-from-cif", params=params)
+        params: LabelInlineParams = {}
+        _assign_params(params, LabelInlineParams, lcs)
+        node = Node(kind="label", params=params)
         self.add_child(node)
         return self
 
-    def label_from_url(self, *, schema: SchemaT, url: str, format: str) -> "Structure":
+    def label_from_url(self, *,
+                       url: str,
+                       format: SchemaFormatT,
+                       category_name: str | None = None,
+                       field_name: str | None = None,
+                       block_header: str | None = None,
+                       block_index: int | None = None,
+                       schema: SchemaT
+                       ) -> Structure:
         lcs = locals()
         params: LabelUrlParams = {}
         _assign_params(params, LabelUrlParams, lcs)
@@ -233,96 +245,85 @@ class Structure(_Base):
         self.add_child(node)
         return self
 
-    def label_from_json(self, *, schema: SchemaT, json: str) -> "Structure":
+    def label_from_cif(self, *,
+                       category_name: str,
+                       field_name: str | None = None,
+                       block_header: str | None = None,
+                       block_index: int | None = None,
+                       schema: SchemaT) -> Structure:
         lcs = locals()
-        params: LabelJsonParams = {}
-        _assign_params(params, LabelJsonParams, lcs)
-        node = Node(kind="label-from-json", params=params)
+        params: LabelCifCategoryParams = {}
+        _assign_params(params, LabelCifCategoryParams, lcs)
+        node = Node(kind="label-from-cif", params=params)
         self.add_child(node)
         return self
 
-    def label(
-        self,
-        *,
-        schema: SchemaT,
-        label_entity_id: str | None = None,
-        label_asym_id: str | None = None,
-        auth_asym_id: str | None = None,
-        label_seq_id: int | None = None,
-        auth_seq_id: int | None = None,
-        pdbx_PDB_ins_code: str | None = None,
-        beg_label_seq_id: int | None = None,
-        end_label_seq_id: int | None = None,
-        beg_auth_seq_id: int | None = None,
-        end_auth_seq_id: int | None = None,
-        residue_index: int | None = None,
-        atom_id: int | None = None,
-        atom_index: int | None = None,
-        text: str,
-    ) -> "Structure":
-        # TODO at which level of the hierarchy do these make most sense?
+    def tooltip(self, *, text: str) -> Structure:
         lcs = locals()
-        params: LabelInlineParams = {}
-        _assign_params(params, LabelInlineParams, lcs)
-        node = Node(kind="label-from-inline", params=params)
+        params: TooltipInlineParams = {}
+        _assign_params(params, TooltipInlineParams, lcs)
+        node = Node(kind="tooltip", params=params)
         self.add_child(node)
         return self
 
-    def focus(
-        self,
-        *,
-        schema: SchemaT,
-        label_entity_id: str | None = None,
-        label_asym_id: str | None = None,
-        auth_asym_id: str | None = None,
-        label_seq_id: int | None = None,
-        auth_seq_id: int | None = None,
-        pdbx_PDB_ins_code: str | None = None,
-        beg_label_seq_id: int | None = None,
-        end_label_seq_id: int | None = None,
-        beg_auth_seq_id: int | None = None,
-        end_auth_seq_id: int | None = None,
-        residue_index: int | None = None,
-        atom_id: int | None = None,
-        atom_index: int | None = None,
-    ) -> "Structure":
+    def tooltip_from_url(self, *,
+                         url: str,
+                         format: SchemaFormatT,
+                         category_name: str | None = None,
+                         field_name: str | None = None,
+                         block_header: str | None = None,
+                         block_index: int | None = None,
+                         schema: SchemaT
+                         ) -> Structure:
+        lcs = locals()
+        params: TooltipUrlParams = {}
+        _assign_params(params, TooltipUrlParams, lcs)
+        node = Node(kind="tooltip-from-url", params=params)
+        self.add_child(node)
+        return self
+
+    def tooltip_from_cif(self, *,
+                         category_name: str,
+                         field_name: str | None = None,
+                         block_header: str | None = None,
+                         block_index: int | None = None,
+                         schema: SchemaT) -> Structure:
+        lcs = locals()
+        params: TooltipCifCategoryParams = {}
+        _assign_params(params, TooltipCifCategoryParams, lcs)
+        node = Node(kind="tooltip-from-cif", params=params)
+        self.add_child(node)
+        return self
+
+    def focus(self) -> Structure:
         """
-        Focus on a particular selection.
-        :param schema: what is addressed? entities, chains, residues, atoms, ...
+        Focus on this structure or component.
         :return: this builder
         """
         # TODO other focus flavors based on CIF/JSON?
         lcs = locals()
         params: FocusInlineParams = {}
         _assign_params(params, FocusInlineParams, lcs)
-        node = Node(kind="focus-from-inline", params=params)
+        node = Node(kind="focus", params=params)
         self.add_child(node)
         return self
 
     def transform(
         self,
         *,
-        transformation: tuple[
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-        ],
-        rotation: tuple[float, float, float, float, float, float, float, float, float],
+        transformation: Sequence[float],
+        rotation: Sequence[float],
         translation: tuple[float, float, float],
-    ) -> "Structure":
+    ) -> Structure:
+        transformation = tuple(transformation)
+        if len(transformation) != 16:
+            raise ValueError(f"Parameter `transformation` must have lenght 16")
+        rotation = tuple(rotation)
+        if len(rotation) != 9:
+            raise ValueError(f"Parameter `rotation` must have lenght 9")
+        translation = tuple(translation)
+        if len(translation) != 3:
+            raise ValueError(f"Parameter `translation` must have lenght 3")
         lcs = locals()
         params: TransformParams = {}
         _assign_params(params, TransformParams, lcs)
@@ -330,9 +331,7 @@ class Structure(_Base):
         self.add_child(node)
         return self
 
-
-class Component(_Base):
-    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> "Representation":
+    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> Representation:
         lcs = locals()
         params: RepresentationParams = {}
         _assign_params(params, RepresentationParams, lcs)
@@ -342,7 +341,7 @@ class Component(_Base):
 
 
 class Representation(_Base):
-    def color_from_cif(self, *, schema: SchemaT, category_name: str) -> "Representation":
+    def color_from_cif(self, *, schema: SchemaT, category_name: str) -> Representation:
         lcs = locals()
         params: ColorCifCategoryParams = {}
         _assign_params(params, ColorCifCategoryParams, lcs)
@@ -358,38 +357,11 @@ class Representation(_Base):
         self.add_child(node)
         return self
 
-    def color_from_json(self, *, schema: SchemaT, json: str) -> "Representation":
-        lcs = locals()
-        params: ColorJsonParams = {}
-        _assign_params(params, ColorJsonParams, lcs)
-        node = Node(kind="color-from-json", params=params)
-        self.add_child(node)
-        return self
-
-    def color(
-        self,
-        *,
-        schema: SchemaT,
-        label_entity_id: str | None = None,
-        label_asym_id: str | None = None,
-        auth_asym_id: str | None = None,
-        label_seq_id: int | None = None,
-        auth_seq_id: int | None = None,
-        pdbx_PDB_ins_code: str | None = None,
-        beg_label_seq_id: int | None = None,
-        end_label_seq_id: int | None = None,
-        beg_auth_seq_id: int | None = None,
-        end_auth_seq_id: int | None = None,
-        residue_index: int | None = None,
-        atom_id: int | None = None,
-        atom_index: int | None = None,
-        color: ColorT,
-        tooltip: str | None = None,
-    ) -> "Representation":
+    def color(self, *, color: ColorT) -> Representation:
         lcs = locals()
         params: ColorInlineParams = {}
         _assign_params(params, ColorInlineParams, lcs)
-        node = Node(kind="color-from-inline", params=params)
+        node = Node(kind="color", params=params)
         self.add_child(node)
         return self
 

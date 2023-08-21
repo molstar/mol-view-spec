@@ -1,0 +1,18 @@
+{
+    "moduleFileExtensions": [
+        "ts",
+        "js"
+    ],
+    "transform": {
+        "\\.ts$": "ts-jest"
+    },
+    "moduleDirectories": [
+        "node_modules",
+        "lib"
+    ],
+    "testEnvironmentOptions": {
+        "url": "http://localhost/"
+    },
+    "testRegex": "\\.spec\\.ts$",
+    "collectCoverage": true
+}

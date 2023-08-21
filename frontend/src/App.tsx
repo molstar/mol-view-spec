@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Button, Divider, Typography, Link, LinearProgress } from '@mui/material';
+import { Button, Typography, Link } from '@mui/material';
 
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { useBehavior } from 'molstar/lib/mol-plugin-ui/hooks/use-behavior';
@@ -8,9 +8,7 @@ import './App.css';
 import { AppModel } from './app-model/app-model';
 
 
-export default App;
-
-function App() {
+export function App() {
     return (
         <div className='App'>
             <Main />
@@ -29,16 +27,24 @@ function Main() {
 
     const exampleUrls = {
         load: 'http://localhost:9000/api/v1/examples/load/1cbs',
-        label: 'http://localhost:9000/api/v1/examples/label/1cbs',
-        color: 'http://localhost:9000/api/v1/examples/color/1cbs',
+        // label: 'http://localhost:9000/api/v1/examples/label/1cbs',
+        // color: 'http://localhost:9000/api/v1/examples/color/1cbs',
         formats: 'http://localhost:9000/api/v1/examples/testing/formats',
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
+        'colors-rainbow 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
+        'colors-cif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_cif',
+        'colors-bcif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_bcif',
+        'colors-small 2bvk': 'http://localhost:9000/api/v1/examples/testing/color_small',
+        'colors-domains 1h9t': 'http://localhost:9000/api/v1/examples/testing/color_domains',
+        'colors-validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn',
+        'colors-validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q',
+        'labels 1h9t': 'http://localhost:9000/api/v1/examples/testing/labels',
     };
 
     return (
         <div className='Main'>
-            <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: PanelWidth }}>
+            <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: PanelWidth, zIndex: 1 }}>
                 <Viewer model={model} />
             </div>
 
@@ -84,6 +90,6 @@ function Viewer({ model }: { model: AppModel }) {
         }
     }, [model]);
 
-    return <div ref={target}></div>
+    return <div ref={target}></div>;
 }
 

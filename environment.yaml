@@ -7,6 +7,7 @@ dependencies:
   - fastapi==0.93.0
   - uvicorn==0.21.0
   - requests
+  - types-requests
 
   - nodejs >=18
 

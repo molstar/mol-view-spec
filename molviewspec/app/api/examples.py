@@ -1,6 +1,8 @@
 import requests
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+import requests
+from typing import Literal
 
 from app.config import settings
 from molviewspec.builder import Root
@@ -178,6 +180,15 @@ async def json_data(id: str, name: str):
     return FileResponse(path)
 
 
+@router.get("/data/{id}/file/{filename}")
+async def file(id: str, filename: str):
+    """
+    Download a specific file. (Mostly for testing)
+    """
+    path = settings.TEST_DATA_DIR / id / filename
+    return FileResponse(path)
+
+
 @router.get("/data/{id}/validation")
 async def validation_data(id: str):
     """
@@ -193,7 +204,7 @@ async def validation_data(id: str):
         for chain in molecule["chains"]:
             for residue in chain["models"][0]["residues"]:
                 residue_number = residue["residue_number"]
-                chain_id = chain["chain_id"]
+                asym_id = chain["struct_asym_id"]  # "struct_asym_id" contains label_asym_id, "chain_id" contains auth_asym_id
                 outlier_types = residue["outlier_types"]
                 issue_count = len(outlier_types)
 
@@ -207,7 +218,7 @@ async def validation_data(id: str):
 
                 transformed_residue = {
                     "label_seq_id": residue_number,
-                    "label_asym_id": chain_id,
+                    "label_asym_id": asym_id,
                     "color": color,
                     "tooltip": ", ".join(outlier_types),
                 }
@@ -299,10 +310,207 @@ async def testing_components_example():
         .representation(type="cartoon", color="red")
         .color_from_cif(schema="residue", category_name="my_custom_cif_category")
     )
-    structure2 = (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
+    # structure2 = (
+    #     builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
+    #     .parse(format="mmcif")
+    #     .model_structure()
+    # )
+    # TODO add all component types to this example
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/color_rainbow")
+async def testing_color_rainbow_example():
+    """
+    An example with different representations and coloring for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure = (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif")
         .parse(format="mmcif")
         .model_structure()
     )
-    # TODO add all component types to this example
+    structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow", format="json",
+    )
     return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_cif")
+async def testing_color_cif_example():
+    """
+    An example with CIF-encoded coloring.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif('1cbs')
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.cif"
+    structure = (
+        builder.download(url=structure_url)
+        .parse(format="bcif")
+        .model_structure()
+    )
+    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+        schema="atom", url=annotation_url, format="cif",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="atom", url=annotation_url, format="cif",
+    )
+    return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_bcif")
+async def testing_color_bcif_example():
+    """
+    An example with BCIF-encoded coloring.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif('1cbs')
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.bcif"
+    structure = (
+        builder.download(url=structure_url)
+        .parse(format="bcif")
+        .model_structure()
+    )
+    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+        schema="atom", url=annotation_url, format="bcif",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="atom", url=annotation_url, format="bcif",
+    )
+    return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_small")
+async def testing_color_small_example():
+    """
+    An example with a small structure coloring applied down to atom level.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif('2bvk')
+    structure = (
+        builder.download(url=structure_url)
+        .parse(format="bcif")
+        .model_structure()
+    )
+    structure.component(selector="all").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/2bvk/json/atoms", format="json",
+    )
+    return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_domains")
+async def testing_color_domains_example():
+    """
+    An example with different representations and coloring for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure = (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1h9t_updated.cif")
+        .parse(format="mmcif")
+        .model_structure()
+    )
+    structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+    )
+    structure.component(selector="nucleic").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+    )
+    structure.component(selector="ion").representation(type="surface").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+    )
+    return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_validation")
+async def testing_color_validation_example(id: str = "1tqn"):
+    """
+    An example with different representations and coloring for polymer and non-polymer chains.
+    """
+    builder = Root()
+    # structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}.bcif"
+    structure_url = _url_for_testing_local_bcif(id)
+    structure = (
+        builder.download(url=structure_url)
+        .parse(format="bcif")
+        .model_structure()
+    )
+    structure.component(selector="protein").representation(type="cartoon", color="green").color_from_url(
+        schema="residue", url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation", format="json",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick", color="green").color_from_url(
+        schema="residue", url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation", format="json",
+    )
+    return JSONResponse(builder.get_state())
+
+# TODO test labels
+
+@router.get("/testing/labels")
+async def testing_labels_example(id='1h9t'):
+    """
+    An example with different labels for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    structure = (
+        builder.download(url=structure_url)
+        .parse(format="bcif")
+        .model_structure()
+    )
+    structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+    )
+    structure.component(selector="nucleic").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+    )
+    structure.component(selector="ion").representation(type="surface").color_from_url(
+        schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
+    )
+    structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=9, end_label_seq_id=83)
+    structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=9, end_label_seq_id=83)
+    structure.label(text='Acyl-CoA\nbinding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=84, end_label_seq_id=231)
+    structure.label(text='Acyl-CoA binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=84, end_label_seq_id=231)
+    structure.label(text='DNA X', schema='all-atomic', label_asym_id='C')
+    structure.label(text='DNA Y', schema='all-atomic', label_asym_id='D')
+
+    structure.label(text="DNA Y O5'", schema='all-atomic', label_asym_id='D', atom_id=4016)
+    structure.label(text="DNA Y O3'", schema='all-atomic', label_asym_id='D', atom_id=4391)
+    structure.label(text='Gold', schema='all-atomic', label_asym_id='E')
+    structure.label(text='Gold', schema='all-atomic', label_asym_id='H')
+    structure.label(text='Chloride', schema='all-atomic', label_asym_id='F')
+    structure.label(text='Chloride', schema='all-atomic', label_asym_id='G')
+    structure.label(text='Chloride', schema='all-atomic', label_asym_id='I')
+    
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=57)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=67)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=121)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=125)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=129)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=178)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=203, end_label_seq_id=205)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=67)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=121)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=125)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=129)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=178)
+    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=203, end_label_seq_id=205)
+    return JSONResponse(builder.get_state())
+
+
+
+@router.get("/testing/local_bcif/{id}")
+async def testing_local_bcif(id: str):
+    """Return a PDB structure in BCIF cached on local server (obtain from PDBe and cache if not present)"""
+    print("testing_local_bcif", id)
+    result_file = settings.TEST_DATA_DIR / "tmp" / f"{id}.bcif"
+    if not result_file.exists():
+        url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}.bcif"
+        response = requests.get(url)
+        print("status", response.status_code)
+        if not response.ok:
+            raise Exception(f"Failed to obtain {url}")
+        data = response.content
+        result_file.parent.mkdir(parents=True, exist_ok=True)
+        result_file.write_bytes(data)
+    return FileResponse(result_file, media_type="application/octet-stream")
+
+def _url_for_testing_local_bcif(id: str):
+    """Return URL for `testing_local_bcif` endpoint"""
+    return f"http://0.0.0.0:9000/api/v1/examples/testing/local_bcif/{id}"

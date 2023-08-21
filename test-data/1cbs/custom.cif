@@ -1,0 +1,16 @@
+# Test annotations #
+
+# Chain Annotation (label)
+loop_
+_color.label_asym_id 
+_color.label_entity_id 
+_color.type_symbol
+_color.label_atom_id
+_color.tooltip
+_color.color
+# polymer
+A . . . polymer '#121212'
+# REA ligand 
+B . . . ligand  '#FF0000'
+B . C . ligand  '#0044FF'
+B . . C2 ligand  '#00FFFF'

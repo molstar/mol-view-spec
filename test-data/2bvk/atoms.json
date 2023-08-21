@@ -1,0 +1,96 @@
+[
+    {
+        "atom_index": 0,
+        "color": "#ffdd88",
+        "tooltip": "First cycle (by atom_index)"
+    },
+    {
+        "atom_index": 1,
+        "color": "#ffdd88",
+        "tooltip": "First cycle (by atom_index)"
+    },
+    {
+        "atom_index": 2,
+        "color": "#ffdd88",
+        "tooltip": "First cycle (by atom_index)"
+    },
+    {
+        "atom_index": 3,
+        "color": "#ffdd88",
+        "tooltip": "First cycle (by atom_index)"
+    },
+    {
+        "atom_index": 4,
+        "color": "#ffdd88",
+        "tooltip": "First cycle (by atom_index)"
+    },
+    {
+        "atom_index": 9,
+        "color": "#ffdd88",
+        "tooltip": "First cycle (by atom_index)"
+    },
+
+
+    {
+        "atom_id": 145,
+        "color": "#88ff88",
+        "tooltip": "Last cycle (by atom_id)"
+    },
+    {
+        "atom_id": 146,
+        "color": "#88ff88",
+        "tooltip": "Last cycle (by atom_id)"
+    },
+    {
+        "atom_id": 147,
+        "color": "#88ff88",
+        "tooltip": "Last cycle (by atom_id)"
+    },
+    {
+        "atom_id": 148,
+        "color": "#88ff88",
+        "tooltip": "Last cycle (by atom_id)"
+    },
+    {
+        "atom_id": 149,
+        "color": "#88ff88",
+        "tooltip": "Last cycle (by atom_id)"
+    },
+    {
+        "atom_id": 156,
+        "color": "#88ff88",
+        "tooltip": "Last cycle (by atom_id)"
+    },
+
+
+    {
+        "label_atom_id": "N2",
+        "color": "#4444ff",
+        "tooltip": "Four blue atoms"
+    },
+    {
+        "auth_atom_id": "O2",
+        "end_auth_seq_id": 4,
+        "color": "#ff0000",
+        "tooltip": "Two red atoms"
+    },
+    {
+        "auth_atom_id": "O2",
+        "auth_seq_id": 7,
+        "color": "#ff00ff",
+        "tooltip": "One magenta atom"
+    },
+
+    {
+        "atom_id": 19,
+        "label_seq_id": 100,
+        "color": "#000000",
+        "tooltip": "No black atoms!"
+    },
+    {
+        "atom_index": 25,
+        "label_asym_id": "X",
+        "color": "#000000",
+        "tooltip": "No black atoms!"
+    }
+]
