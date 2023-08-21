@@ -171,7 +171,7 @@ class LabelCifCategoryParams(_DataFromCifParams):
 
 
 class TooltipInlineParams(TypedDict):
-    tooltip: str
+    text: str
     # schema and other stuff not needed here, the tooltip will be applied on the whole parent Structure or Component
 
 class TooltipUrlParams(_DataFromUrlParams):
