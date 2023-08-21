@@ -46,12 +46,26 @@ def _assign_params(params: dict, type: TypeVar, lcs: dict):
             params[k] = lcs.get(k)
 
 
-class Root:
+class _Base:
+    _root: Root
+    _node: Node
+
+    def __init__(self, *, root: Root, node: Node) -> None:
+        self._root = root
+        self._node = node
+
+    def _add_child(self, node: Node) -> None:
+        if "children" not in self._node:
+            self._node["children"] = []
+        self._node["children"].append(node)
+
+
+class Root(_Base):
     def __init__(self) -> None:
-        self.node = Node(kind="root")
+        super().__init__(root=self, node=Node(kind="root"))
 
     def get_state(self) -> State:
-        return State(version=VERSION, root=self.node)
+        return State(version=VERSION, root=self._node)
 
     def camera(
         self,
@@ -64,9 +78,7 @@ class Root:
         params: CameraParams = {}
         _assign_params(params, CameraParams, lcs)
         node = Node(kind="camera", params=params)
-        if "children" not in self.node:
-            self.node["children"] = []
-        self.node["children"].append(node)
+        self._add_child(node)
         return self
 
     def canvas(self, *, background_color: ColorT | None = None) -> "Root":
@@ -74,37 +86,20 @@ class Root:
         params: CanvasParams = {}
         _assign_params(params, CanvasParams, lcs)
         node = Node(kind="canvas", params=params)
-        if "children" not in self.node:
-            self.node["children"] = []
-        self.node["children"].append(node)
+        self._add_child(node)
         return self
 
     def download(self, *, url: str) -> Download:
         node = Node(kind="download", params=DownloadParams(url=url))
-        if "children" not in self.node:
-            self.node["children"] = []
-        self.node["children"].append(node)
-        return Download(node=node, root=self)
+        self._add_child(node)
+        return Download(node=node, root=self._root)
 
     def generic_visuals(self) -> "GenericVisuals":
         node = Node(kind="generic-visuals")
-        if "children" not in self.node:
-            self.node["children"] = []
-        self.node["children"].append(node)
-        return GenericVisuals(node=node, root=self)
+        self._add_child(node)
+        return GenericVisuals(node=node, root=self._root)
 
     # TODO Root inherit from _Base and have special __init__ with `self.root = self`? (to be able to use `add_child` in `download`)
-
-
-class _Base:
-    def __init__(self, *, root: Root, node: Node) -> None:
-        self.root = root
-        self.node = node
-
-    def add_child(self, node: Node) -> None:
-        if "children" not in self.node:
-            self.node["children"] = []
-        self.node["children"].append(node)
 
 
 class Download(_Base):
@@ -114,8 +109,8 @@ class Download(_Base):
         params: ParseParams = {}
         _assign_params(params, ParseParams, lcs)
         node = Node(kind="parse", params=params)
-        self.add_child(node)
-        return Parse(node=node, root=self.root)
+        self._add_child(node)
+        return Parse(node=node, root=self._root)
 
 
 class Parse(_Base):
@@ -136,8 +131,8 @@ class Parse(_Base):
         params: StructureParams = {"kind": "model"}
         _assign_params(params, StructureParams, lcs)
         node = Node(kind="structure", params=params)
-        self.add_child(node)
-        return Structure(node=node, root=self.root)
+        self._add_child(node)
+        return Structure(node=node, root=self._root)
 
     def assembly_structure(
         self,
@@ -162,8 +157,8 @@ class Parse(_Base):
         if assembly_id is None and assembly_index is None:
             params["assembly_index"] = 0
         node = Node(kind="structure", params=params)
-        self.add_child(node)
-        return Structure(node=node, root=self.root)
+        self._add_child(node)
+        return Structure(node=node, root=self._root)
 
     def symmetry_structure(
         self,
@@ -188,8 +183,8 @@ class Parse(_Base):
         if ijk_max is None:
             params["ijk_max"] = [1, 1, 1]
         node = Node(kind="structure", params=params)
-        self.add_child(node)
-        return Structure(node=node, root=self.root)
+        self._add_child(node)
+        return Structure(node=node, root=self._root)
 
     def symmetry_mate_structure(
         self,
@@ -210,23 +205,23 @@ class Parse(_Base):
         if radius is None:
             params["radius"] = 5.0
         node = Node(kind="structure", params=params)
-        self.add_child(node)
-        return Structure(node=node, root=self.root)
+        self._add_child(node)
+        return Structure(node=node, root=self._root)
 
 
 class Structure(_Base):
     def component(self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all") -> Structure:
         params: ComponentParams = {"selector": selector}
         node = Node(kind="component", params=params)
-        self.add_child(node)
-        return Structure(node=node, root=self.root)
+        self._add_child(node)
+        return Structure(node=node, root=self._root)
 
     def label(self, *, text: str) -> Structure:
         lcs = locals()
         params: LabelInlineParams = {}
         _assign_params(params, LabelInlineParams, lcs)
         node = Node(kind="label", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def label_from_url(self, *,
@@ -242,7 +237,7 @@ class Structure(_Base):
         params: LabelUrlParams = {}
         _assign_params(params, LabelUrlParams, lcs)
         node = Node(kind="label-from-url", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def label_from_cif(self, *,
@@ -255,7 +250,7 @@ class Structure(_Base):
         params: LabelCifCategoryParams = {}
         _assign_params(params, LabelCifCategoryParams, lcs)
         node = Node(kind="label-from-cif", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def tooltip(self, *, text: str) -> Structure:
@@ -263,7 +258,7 @@ class Structure(_Base):
         params: TooltipInlineParams = {}
         _assign_params(params, TooltipInlineParams, lcs)
         node = Node(kind="tooltip", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def tooltip_from_url(self, *,
@@ -279,7 +274,7 @@ class Structure(_Base):
         params: TooltipUrlParams = {}
         _assign_params(params, TooltipUrlParams, lcs)
         node = Node(kind="tooltip-from-url", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def tooltip_from_cif(self, *,
@@ -292,7 +287,7 @@ class Structure(_Base):
         params: TooltipCifCategoryParams = {}
         _assign_params(params, TooltipCifCategoryParams, lcs)
         node = Node(kind="tooltip-from-cif", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def focus(self) -> Structure:
@@ -305,7 +300,7 @@ class Structure(_Base):
         params: FocusInlineParams = {}
         _assign_params(params, FocusInlineParams, lcs)
         node = Node(kind="focus", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def transform(
@@ -328,7 +323,7 @@ class Structure(_Base):
         params: TransformParams = {}
         _assign_params(params, TransformParams, lcs)
         node = Node(kind="transform", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> Representation:
@@ -336,8 +331,8 @@ class Structure(_Base):
         params: RepresentationParams = {}
         _assign_params(params, RepresentationParams, lcs)
         node = Node(kind="representation", params=params)
-        self.add_child(node)
-        return Representation(node=node, root=self.root)
+        self._add_child(node)
+        return Representation(node=node, root=self._root)
 
 
 class Representation(_Base):
@@ -346,7 +341,7 @@ class Representation(_Base):
         params: ColorCifCategoryParams = {}
         _assign_params(params, ColorCifCategoryParams, lcs)
         node = Node(kind="color-from-cif", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def color_from_url(self, *, schema: SchemaT, url: str, format: str) -> "Representation":
@@ -354,7 +349,7 @@ class Representation(_Base):
         params: ColorUrlParams = {}
         _assign_params(params, ColorUrlParams, lcs)
         node = Node(kind="color-from-url", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def color(self, *, color: ColorT) -> Representation:
@@ -362,7 +357,7 @@ class Representation(_Base):
         params: ColorInlineParams = {}
         _assign_params(params, ColorInlineParams, lcs)
         node = Node(kind="color", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
 
@@ -380,7 +375,7 @@ class GenericVisuals(_Base):
         params: SphereParams = {}
         _assign_params(params, SphereParams, lcs)
         node = Node(kind="sphere", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
 
     def line(
@@ -397,5 +392,5 @@ class GenericVisuals(_Base):
         params: LineParams = {}
         _assign_params(params, LineParams, lcs)
         node = Node(kind="line", params=params)
-        self.add_child(node)
+        self._add_child(node)
         return self
