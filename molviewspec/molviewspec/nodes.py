@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any, Literal, Mapping, NotRequired, TypedDict, Union
 
 KindT = Literal[
@@ -7,14 +8,16 @@ KindT = Literal[
     "structure",
     "component",
     "representation",
-    "label",
-    "label-from-cif",
     "color",
-    "color-from-cif",
-    "color-from-inline",
-    "color-from-json",
     "color-from-url",
-    "focus-from-inline",
+    "color-from-cif",
+    "label",
+    "label-from-url",
+    "label-from-cif",
+    "tooltip",
+    "tooltip-from-url",
+    "tooltip-from-cif",
+    "focus",
     "transform",
     "camera",
 ]
@@ -64,9 +67,38 @@ class StructureParams(TypedDict):
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]
 
+class ComponentExpression(TypedDict):  # Feel free to rename (this used to be InlineSchemaParams)
+    label_entity_id: NotRequired[str]
+    label_asym_id: NotRequired[str]
+    auth_asym_id: NotRequired[str]
+    label_seq_id: NotRequired[int]
+    auth_seq_id: NotRequired[int]
+    pdbx_PDB_ins_code: NotRequired[str]
+    beg_label_seq_id: NotRequired[int]
+    end_label_seq_id: NotRequired[int]
+    """End indices are inclusive"""
+    beg_auth_seq_id: NotRequired[int]
+    end_auth_seq_id: NotRequired[int]
+    """End indices are inclusive"""
+    residue_index: NotRequired[int]
+    """0-based residue index in the source file"""
+    label_atom_id: NotRequired[int]
+    """Atom name like 'CA', 'N', 'O' (`_atom_site.label_atom_id`)"""
+    auth_atom_id: NotRequired[int]
+    """Atom name like 'CA', 'N', 'O' (`_atom_site.auth_atom_id`)"""
+    type_symbol: NotRequired[str]
+    """Element symbol like 'H', 'HE', 'LI', 'BE' (`_atom_site.type_symbol`)"""
+    atom_id: NotRequired[int]
+    """Unique atom identifier (`_atom_site.id`)"""
+    atom_index: NotRequired[int]
+    """0-based atom index in the source file"""
+    # group_id: NotRequired[str]
+    # """This allows to merge multiple selections into one (when they have the same `group_id`) for example to show one label for two chains; if the `group_id` is not given, the selection is processed separately"""
+    # Not sure if group_id should be here (it makes sense in data from JSON/CIF, but not for inline)
+
 
 class ComponentParams(TypedDict):
-    selector: ComponentSelectorT
+    selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression]
 
 
 RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
@@ -91,105 +123,77 @@ SchemaT = Literal[
     "atom",
     "auth-atom",
 ]
-SchemaFormatT = Literal["cif", "json"]
+SchemaFormatT = Literal["cif", "bcif", "json"]
 
 
-class InlineSchemaParams(TypedDict):  # TODO split into actual subschemas if we want to keep this around
-    label_entity_id: NotRequired[str]
-    label_asym_id: NotRequired[str]
-    auth_asym_id: NotRequired[str]
-    label_seq_id: NotRequired[int]
-    auth_seq_id: NotRequired[int]
-    pdbx_PDB_ins_code: NotRequired[str]
-    beg_label_seq_id: NotRequired[int]
-    end_label_seq_id: NotRequired[int]
-    """End indices are inclusive"""
-    beg_auth_seq_id: NotRequired[int]
-    end_auth_seq_id: NotRequired[int]
-    """End indices are inclusive"""
-    residue_index: NotRequired[int]
-    """0-based residue index in the source file"""
-    atom_id: NotRequired[int]
-    atom_index: NotRequired[int]
-    """0-based atom index in the source file"""
+class _DataFromUrlParams(TypedDict):
+    url: str
+    format: SchemaFormatT
+    category_name: NotRequired[str]
+    """Only applies when format is 'cif' or 'bcif'"""
+    field_name: NotRequired[str]
+    """Name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip...); the default value is 'color'/'label'/'tooltip' depending on the node type"""
+    block_header: NotRequired[str]
+    """Only applies when format is 'cif' or 'bcif'"""
+    block_index: NotRequired[int]
+    """Only applies when format is 'cif' or 'bcif'"""
+    schema: SchemaT
 
-
-class LabelParams(TypedDict):
+class _DataFromCifParams(TypedDict):
+    category_name: str
+    field_name: NotRequired[str]
+    """Name of the column in CIF that contains the desired value (color/label/tooltip...); the default value is 'color'/'label'/'tooltip' depending on the node type"""
+    block_header: NotRequired[str]
+    block_index: NotRequired[int]
     schema: SchemaT
 
 
-class LabelCifCategoryParams(LabelParams):
-    category_name: str
-
-
-class LabelUrlParams(LabelParams):
-    url: str
-    format: SchemaFormatT
-
-
-class LabelJsonParams(LabelParams):
-    data: str
-
-
-class LabelInlineParams(LabelParams, InlineSchemaParams):
-    text: str
-
-
-class ColorParams(TypedDict):
-    schema: SchemaT
-
-
-class ColorCifCategoryParams(ColorParams):
-    category_name: str
-
-
-class ColorUrlParams(ColorParams):
-    url: str
-    format: SchemaFormatT
-
-
-class ColorJsonParams(ColorParams):
-    data: str
-
-
-class ColorInlineParams(ColorParams, InlineSchemaParams):
+class ColorInlineParams(TypedDict):
     color: ColorT
-    tooltip: NotRequired[str]
+    # schema and other stuff not needed here, the color will be applied on the whole parent Structure or Component
 
-
-class FocusParams(TypedDict):  # TODO is this focus-repr or highlight? global vs. per-representation
-    schema: SchemaT
-
-
-class FocusInlineParams(FocusParams, InlineSchemaParams):
+class ColorUrlParams(_DataFromUrlParams):
     pass
+
+class ColorCifCategoryParams(_DataFromCifParams):
+    pass
+
+
+class LabelInlineParams(TypedDict):
+    text: str
+    # schema and other stuff not needed here, the label will be applied on the whole parent Structure or Component
+
+class LabelUrlParams(_DataFromUrlParams):
+    pass
+
+class LabelCifCategoryParams(_DataFromCifParams):
+    pass
+
+
+class TooltipInlineParams(TypedDict):
+    tooltip: str
+    # schema and other stuff not needed here, the tooltip will be applied on the whole parent Structure or Component
+
+class TooltipUrlParams(_DataFromUrlParams):
+    pass
+
+class TooltipCifCategoryParams(_DataFromCifParams):
+    pass
+
+
+class FocusInlineParams(TypedDict):
+    pass
+    # nothing needed here, the focus will be applied on the whole parent Structure or Component
 
 
 class TransformParams(TypedDict):
     transformation: NotRequired[
-        tuple[
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-        ]
+        tuple[float, ...]
     ]
     """4x4 matrix in a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, 
     to be multiplied from the left"""
-    rotation: NotRequired[tuple[float, float, float, float, float, float, float, float, float]]
-    """In a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied 
+    rotation: NotRequired[tuple[float, ...]]
+    """In a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied 
     from the left"""
     translation: NotRequired[tuple[float, float, float]]
 

@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import Sequence, TypeVar
 
 from molviewspec.nodes import (
     ColorCifCategoryParams,
@@ -263,27 +263,19 @@ class Structure(_Base):
     def transform(
         self,
         *,
-        transformation: tuple[
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-            float,
-        ],
-        rotation: tuple[float, float, float, float, float, float, float, float, float],
+        transformation: Sequence[float],
+        rotation: Sequence[float],
         translation: tuple[float, float, float],
     ) -> "Structure":
+        transformation = tuple(transformation)
+        if len(transformation) != 16:
+            raise ValueError(f"Parameter `transformation` must have lenght 16")
+        rotation = tuple(rotation)
+        if len(rotation) != 9:
+            raise ValueError(f"Parameter `rotation` must have lenght 9")
+        translation = tuple(translation)
+        if len(translation) != 3:
+            raise ValueError(f"Parameter `translation` must have lenght 3")
         lcs = locals()
         params: TransformParams = {}
         _assign_params(params, TransformParams, lcs)
