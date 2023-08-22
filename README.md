@@ -22,7 +22,7 @@ will run the server on `localhost:9000` with reload mode on.
 
 ```json
 {
-  "version": 3,
+  "version": 5,
   "root": {
     "kind": "root",
     "children": [

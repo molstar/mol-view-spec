@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Sequence, TypeVar
+
+from typing import Sequence, TypedDict, Type
 
 from molviewspec.nodes import (
     CameraParams,
@@ -8,8 +9,8 @@ from molviewspec.nodes import (
     ColorInlineParams,
     ColorT,
     ColorUrlParams,
-    ComponentParams,
     ComponentExpression,
+    ComponentParams,
     ComponentSelectorT,
     DownloadParams,
     FocusInlineParams,
@@ -22,9 +23,9 @@ from molviewspec.nodes import (
     ParseParams,
     RepresentationParams,
     RepresentationTypeT,
+    SchemaFormatT,
     SchemaT,
     SphereParams,
-    SchemaFormatT,
     State,
     StructureParams,
     TooltipCifCategoryParams,
@@ -33,14 +34,14 @@ from molviewspec.nodes import (
     TransformParams,
 )
 
-VERSION = 4
+VERSION = 5
 
 
 def create_builder() -> Root:
     return Root()
 
 
-def _assign_params(params: dict, type: TypeVar, lcs: dict):
+def _assign_params(params: TypedDict, type: Type[TypedDict], lcs: TypedDict):
     for k in type.__annotations__.keys():
         if k in lcs and lcs.get(k) is not None:
             params[k] = lcs.get(k)
@@ -179,9 +180,9 @@ class Parse(_Base):
         params: StructureParams = {"kind": "symmetry"}
         _assign_params(params, StructureParams, lcs)
         if ijk_min is None:
-            params["ijk_min"] = [-1, -1, -1]
+            params["ijk_min"] = (-1, -1, -1)
         if ijk_max is None:
-            params["ijk_max"] = [1, 1, 1]
+            params["ijk_max"] = (1, 1, 1)
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -210,7 +211,9 @@ class Parse(_Base):
 
 
 class Structure(_Base):
-    def component(self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all") -> Structure:
+    def component(
+        self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
+    ) -> Structure:
         params: ComponentParams = {"selector": selector}
         node = Node(kind="component", params=params)
         self._add_child(node)
@@ -224,15 +227,17 @@ class Structure(_Base):
         self._add_child(node)
         return self
 
-    def label_from_url(self, *,
-                       url: str,
-                       format: SchemaFormatT,
-                       category_name: str | None = None,
-                       field_name: str | None = None,
-                       block_header: str | None = None,
-                       block_index: int | None = None,
-                       schema: SchemaT
-                       ) -> Structure:
+    def label_from_url(
+        self,
+        *,
+        url: str,
+        format: SchemaFormatT,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
         lcs = locals()
         params: LabelUrlParams = {}
         _assign_params(params, LabelUrlParams, lcs)
@@ -240,12 +245,15 @@ class Structure(_Base):
         self._add_child(node)
         return self
 
-    def label_from_cif(self, *,
-                       category_name: str,
-                       field_name: str | None = None,
-                       block_header: str | None = None,
-                       block_index: int | None = None,
-                       schema: SchemaT) -> Structure:
+    def label_from_cif(
+        self,
+        *,
+        category_name: str,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
         lcs = locals()
         params: LabelCifCategoryParams = {}
         _assign_params(params, LabelCifCategoryParams, lcs)
@@ -261,15 +269,17 @@ class Structure(_Base):
         self._add_child(node)
         return self
 
-    def tooltip_from_url(self, *,
-                         url: str,
-                         format: SchemaFormatT,
-                         category_name: str | None = None,
-                         field_name: str | None = None,
-                         block_header: str | None = None,
-                         block_index: int | None = None,
-                         schema: SchemaT
-                         ) -> Structure:
+    def tooltip_from_url(
+        self,
+        *,
+        url: str,
+        format: SchemaFormatT,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
         lcs = locals()
         params: TooltipUrlParams = {}
         _assign_params(params, TooltipUrlParams, lcs)
@@ -277,12 +287,15 @@ class Structure(_Base):
         self._add_child(node)
         return self
 
-    def tooltip_from_cif(self, *,
-                         category_name: str,
-                         field_name: str | None = None,
-                         block_header: str | None = None,
-                         block_index: int | None = None,
-                         schema: SchemaT) -> Structure:
+    def tooltip_from_cif(
+        self,
+        *,
+        category_name: str,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
         lcs = locals()
         params: TooltipCifCategoryParams = {}
         _assign_params(params, TooltipCifCategoryParams, lcs)
@@ -312,13 +325,13 @@ class Structure(_Base):
     ) -> Structure:
         transformation = tuple(transformation)
         if len(transformation) != 16:
-            raise ValueError(f"Parameter `transformation` must have lenght 16")
+            raise ValueError(f"Parameter `transformation` must have length 16")
         rotation = tuple(rotation)
         if len(rotation) != 9:
-            raise ValueError(f"Parameter `rotation` must have lenght 9")
+            raise ValueError(f"Parameter `rotation` must have length 9")
         translation = tuple(translation)
         if len(translation) != 3:
-            raise ValueError(f"Parameter `translation` must have lenght 3")
+            raise ValueError(f"Parameter `translation` must have length 3")
         lcs = locals()
         params: TransformParams = {}
         _assign_params(params, TransformParams, lcs)

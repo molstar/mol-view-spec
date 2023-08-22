@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import Any, Literal, Mapping, NotRequired, TypedDict, Union
 
 KindT = Literal[
@@ -70,6 +71,7 @@ class StructureParams(TypedDict):
 
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]
+
 
 class ComponentExpression(TypedDict):  # Feel free to rename (this used to be InlineSchemaParams)
     label_entity_id: NotRequired[str]
@@ -143,6 +145,7 @@ class _DataFromUrlParams(TypedDict):
     """Only applies when format is 'cif' or 'bcif'"""
     schema: SchemaT
 
+
 class _DataFromCifParams(TypedDict):
     category_name: str
     field_name: NotRequired[str]
@@ -156,8 +159,10 @@ class ColorInlineParams(TypedDict):
     color: ColorT
     # schema and other stuff not needed here, the color will be applied on the whole parent Structure or Component
 
+
 class ColorUrlParams(_DataFromUrlParams):
     pass
+
 
 class ColorCifCategoryParams(_DataFromCifParams):
     pass
@@ -167,8 +172,10 @@ class LabelInlineParams(TypedDict):
     text: str
     # schema and other stuff not needed here, the label will be applied on the whole parent Structure or Component
 
+
 class LabelUrlParams(_DataFromUrlParams):
     pass
+
 
 class LabelCifCategoryParams(_DataFromCifParams):
     pass
@@ -178,8 +185,10 @@ class TooltipInlineParams(TypedDict):
     text: str
     # schema and other stuff not needed here, the tooltip will be applied on the whole parent Structure or Component
 
+
 class TooltipUrlParams(_DataFromUrlParams):
     pass
+
 
 class TooltipCifCategoryParams(_DataFromCifParams):
     pass
@@ -191,9 +200,7 @@ class FocusInlineParams(TypedDict):
 
 
 class TransformParams(TypedDict):
-    transformation: NotRequired[
-        tuple[float, ...]
-    ]
+    transformation: NotRequired[tuple[float, ...]]
     """4x4 matrix in a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, 
     to be multiplied from the left"""
     rotation: NotRequired[tuple[float, ...]]
