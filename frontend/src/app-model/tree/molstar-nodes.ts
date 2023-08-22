@@ -5,8 +5,7 @@ import { MolstarParseFormatT } from './param-types';
 import { RequiredField, bool } from './params-schema';
 
 
-export const MolstarTreeSchema = TreeSchema(
-    'root',
+export const MolstarTreeSchema = TreeSchema('root',
     {
         ...MVSTreeSchema.paramsSchemas,
         'download': {

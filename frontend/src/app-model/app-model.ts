@@ -100,7 +100,7 @@ const TEST_DATA: MVSTree = {
                                             'kind': 'representation', 'params': { 'type': 'cartoon', 'color': 'white' },
                                             'children': [
                                                 {
-                                                    'kind': 'color-from-inline', 'params': { 'schema': 'residue', 'label_asym_id': 'A', 'label_seq_id': 64, 'color': 'red' }
+                                                    'kind': 'color', 'params': { 'color': 'red' }
                                                 }
                                             ]
                                         }

@@ -45,26 +45,57 @@ export const Defaults = {
     representation: {
         color: 'white',
     },
-    'label-from-cif': {
-    },
-    'label-from-url': {
-    },
-    'label-from-json': {
-    },
-    'label-from-inline': {
-        ...InlineSchemaDefaults,
-    },
-    'color-from-cif': {
+    'color': {
     },
     'color-from-url': {
-        cif_category_names: null
+        category_name: null,
+        field_name: 'color',
+        block_index: null,
+        block_header: null,
     },
-    'color-from-json': {
+    'color-from-cif': {
+        category_name: null,
+        field_name: 'color',
+        block_index: null,
+        block_header: null,
     },
-    'color-from-inline': {
-        ...InlineSchemaDefaults,
-        tooltip: null,
+    'label': {
     },
+    'label-from-url': {
+        category_name: null,
+        field_name: 'label',
+        block_index: null,
+        block_header: null,
+    },
+    'label-from-cif': {
+        category_name: null,
+        field_name: 'label',
+        block_index: null,
+        block_header: null,
+    },
+    'tooltip': {
+    },
+    'tooltip-from-url': {
+        category_name: null,
+        field_name: 'tooltip',
+        block_index: null,
+        block_header: null,
+    },
+    'tooltip-from-cif': {
+        category_name: null,
+        field_name: 'tooltip',
+        block_index: null,
+        block_header: null,
+    },
+    'focus': {
+    },
+    'transform': {
+        transformation: null,
+        rotation: null,
+        translation: null,
+    },
+    'canvas': {
+    }
 
 } satisfies { [kind in MVSKind]: DefaultsFor<(typeof MVSTreeSchema)['paramsSchemas'][kind]> };
 // TODO mandatory params don't need to be here

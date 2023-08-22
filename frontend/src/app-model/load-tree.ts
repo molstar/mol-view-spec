@@ -14,9 +14,8 @@ import { SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeV
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
-import { canonicalJsonString, formatObject, pickObjectKeys } from './utils';
-import { CustomLabelParams, CustomLabelProps } from './custom-label-extension/representation';
-import { FieldsForSchemas } from './cif-color-extension/schemas';
+import { canonicalJsonString, formatObject } from './utils';
+import { CustomLabelProps } from './custom-label-extension/representation';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -58,11 +57,11 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         const distinctSpecs: { [key: string]: AnnotationSpec } = {};
         dfs<SubTree<MolstarTree>>(node, n => {
             if (n.kind === 'color-from-url') {
-                const cifCategories: AnnotationSpec['cifCategories'] = n.params.cif_category_names ?
+                const cifCategories: AnnotationSpec['cifCategories'] = n.params.category_name ?
                     {
                         name: 'selected',
                         params: {
-                            list: n.params.cif_category_names.map(categoryName => ({ categoryName }))
+                            list: [{ categoryName: n.params.category_name }]
                         }
                     }
                     : {
@@ -142,7 +141,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }));
         return msTarget;
     },
-    'label-from-inline'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-inline'>, context: MolstarLoadingContext): StateObjectSelector {
+    'label'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
         // Do nothing (labels loaded as one node in `structure`)
         return msTarget;
         // const params = getParams(node);
@@ -159,11 +158,12 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
 function loadLabelsFromInline(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure' | 'component'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
     const items: Partial<CustomLabelProps>['items'] = [];
     for (const child of getChildren(node as SubTree<MolstarTree>)) {
-        if (child.kind === 'label-from-inline') {
+        if (child.kind === 'label') {
             const p = getParams(child);
             const item: CustomLabelProps['items'][number] = {
                 text: p.text,
-                position: { name: 'selection', params: { ...pickObjectKeys(p, FieldsForSchemas[p.schema] as any[]) } }
+                // position: { name: 'selection', params: { ...pickObjectKeys(p, FieldsForSchemas[p.schema] as any[]) } }
+                position: { name: 'selection', params: {} } // For now applying label on the whole structure, TODO create bundles for components
             };
             items.push(item);
         }

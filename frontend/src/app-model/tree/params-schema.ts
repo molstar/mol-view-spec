@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
 
 
-type AllowedValueTypes = string | number | boolean | null | [number, number, number] | string[]
+type AllowedValueTypes = string | number | boolean | null | [number, number, number] | string[] | number[]
 
 export const str = t.string;
 export const int = t.Integer;

@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 
-import { choice } from './params-schema';
+import { choice, float, tuple } from './params-schema';
 
 
 /** `format` parameter values of `parse` node in MVS tree */
@@ -13,6 +13,8 @@ export const StructureKindT = choice('model', 'assembly', 'symmetry', 'crystal-s
 
 export const ComponentSelectorT = choice('all', 'polymer', 'protein', 'nucleic', 'branched', 'ligand', 'ion', 'water');
 
+// export const ComponentExpression = ... TODO
+
 export const RepresentationTypeT = choice('ball-and-stick', 'cartoon', 'surface');
 
 export const ColorT = choice('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
@@ -20,6 +22,10 @@ export const ColorT = choice('white', 'gray', 'black', 'red', 'orange', 'yellow'
 export const SchemaT = choice('whole-structure', 'entity', 'chain', 'auth-chain', 'residue', 'auth-residue', 'residue-range', 'auth-residue-range', 'atom', 'auth-atom', 'all-atomic');
 
 export const SchemaFormatT = choice('cif', 'bcif', 'json');
+
+export const Vector3 = tuple([float, float, float]);
+
+export const Matrix = tuple([float, float, float]);
 
 
 /** Convert `format` parameter of `parse` node in MVS tree

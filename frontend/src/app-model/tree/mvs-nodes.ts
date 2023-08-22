@@ -1,6 +1,6 @@
 import { NodeForTree, TreeFor, TreeSchema } from './generic';
-import { ColorT, ComponentSelectorT, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT } from './param-types';
-import { OptionalField, RequiredField, float, int, list, nullable, str, tuple } from './params-schema';
+import { ColorT, ComponentSelectorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
+import { OptionalField, RequiredField, float, int, nullable, str, tuple } from './params-schema';
 
 
 const InlineSchemaParams = {
@@ -27,9 +27,30 @@ const ColorParams = {
     schema: RequiredField(SchemaT),
 };
 
+const _DataFromUrlParams = {
+    url: RequiredField(str),
+    format: RequiredField(SchemaFormatT),
+    /** Only applies when format is 'cif' or 'bcif' */
+    category_name: OptionalField(nullable(str)),
+    /** Name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip...); the default value is 'color'/'label'/'tooltip' depending on the node type */
+    field_name: OptionalField(str),
+    /** Only applies when format is 'cif' or 'bcif' */
+    block_index: OptionalField(nullable(int)),
+    /** Only applies when format is 'cif' or 'bcif' */
+    block_header: OptionalField(nullable(str)),
+    schema: RequiredField(SchemaT),
+};
+const _DataFromCifParams = {
+    category_name: OptionalField(nullable(str)),
+    /** Name of the column in CIF that contains the desired value (color/label/tooltip...); the default value is 'color'/'label'/'tooltip' depending on the node type */
+    field_name: OptionalField(str),
+    block_index: OptionalField(nullable(int)),
+    block_header: OptionalField(nullable(str)),
+    schema: RequiredField(SchemaT),
+};
 
-export const MVSTreeSchema = TreeSchema(
-    'root',
+
+export const MVSTreeSchema = TreeSchema('root',
     {
         'root': {},
         'download': {
@@ -54,49 +75,50 @@ export const MVSTreeSchema = TreeSchema(
             ijk_max: OptionalField(tuple([int, int, int])),
         },
         'component': {
-            selector: RequiredField(ComponentSelectorT),
+            selector: RequiredField(ComponentSelectorT), // TODO or ComponentExpression or ComponentExpression[]
         },
         'representation': {
             type: RequiredField(RepresentationTypeT),
             color: OptionalField(ColorT),
         },
-        'label-from-cif': {
-            ...LabelParams,
-            category_name: RequiredField(str),
-        },
-        'label-from-url': {
-            ...LabelParams,
-            url: RequiredField(str),
-            format: RequiredField(SchemaFormatT),
-        },
-        'label-from-json': {
-            ...LabelParams,
-            data: RequiredField(str),
-        },
-        'label-from-inline': {
-            ...LabelParams,
-            ...InlineSchemaParams,
-            text: RequiredField(str),
-        },
-        'color-from-cif': {
-            ...ColorParams,
-            category_name: RequiredField(str),
+        'color': {
+            color: RequiredField(ColorT),
         },
         'color-from-url': {
-            ...ColorParams,
-            url: RequiredField(str),
-            format: RequiredField(SchemaFormatT),
-            cif_category_names: OptionalField(nullable(list(str))),
+            ..._DataFromUrlParams,
         },
-        'color-from-json': {
-            ...ColorParams,
-            data: RequiredField(str),
+        'color-from-cif': {
+            ..._DataFromCifParams,
         },
-        'color-from-inline': {
-            ...ColorParams,
-            ...InlineSchemaParams,
-            color: RequiredField(ColorT),
-            tooltip: OptionalField(nullable(str)),
+        'label': {
+            text: RequiredField(str),
+        },
+        'label-from-url': {
+            ..._DataFromUrlParams,
+        },
+        'label-from-cif': {
+            ..._DataFromCifParams,
+        },
+        'tooltip': {
+            text: RequiredField(str),
+        },
+        'tooltip-from-url': {
+            ..._DataFromUrlParams,
+        },
+        'tooltip-from-cif': {
+            ..._DataFromCifParams,
+        },
+        'focus': {
+        },
+        'transform': {
+            /** 4x4 matrix, column major */
+            transformation: OptionalField(nullable(Matrix)),
+            /** 3x3 matrix, column major */
+            rotation: OptionalField(nullable(Matrix)),
+            translation: OptionalField(nullable(Vector3)),
+        },
+        'canvas': {
+            background_color: RequiredField(ColorT),
         },
     }
 );
