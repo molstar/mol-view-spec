@@ -6,6 +6,7 @@ from typing import Literal
 
 from app.config import settings
 from molviewspec.builder import Root
+from molviewspec.nodes import ComponentExpression
 
 router = APIRouter()
 
@@ -303,12 +304,10 @@ async def testing_components_example():
     (
         structure.component(selector="protein")
         .representation(type="surface", color="white")
-        .color(schema="residue", label_asym_id="A", label_seq_id=64, color="red")
     )
     (
         structure.component(selector="nucleic")
         .representation(type="cartoon", color="red")
-        .color_from_cif(schema="residue", category_name="my_custom_cif_category")
     )
     # structure2 = (
     #     builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
@@ -463,34 +462,34 @@ async def testing_labels_example(id='1h9t'):
     structure.component(selector="ion").representation(type="surface").color_from_url(
         schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
     )
-    structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=9, end_label_seq_id=83)
-    structure.label(text='DNA-binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=9, end_label_seq_id=83)
-    structure.label(text='Acyl-CoA\nbinding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=84, end_label_seq_id=231)
-    structure.label(text='Acyl-CoA binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=84, end_label_seq_id=231)
-    structure.label(text='DNA X', schema='all-atomic', label_asym_id='C')
-    structure.label(text='DNA Y', schema='all-atomic', label_asym_id='D')
+    structure.component(selector=ComponentExpression(label_asym_id='A', beg_label_seq_id=9, end_label_seq_id=83)).label(text='DNA-binding')
+    structure.component(selector=ComponentExpression(label_asym_id='B', beg_label_seq_id=9, end_label_seq_id=83)).label(text='DNA-binding')
+    structure.component(selector=ComponentExpression(label_asym_id='A', beg_label_seq_id=84, end_label_seq_id=231)).label(text='Acyl-CoA binding')
+    structure.component(selector=ComponentExpression(label_asym_id='B', beg_label_seq_id=84, end_label_seq_id=231)).label(text='Acyl-CoA binding')
+    structure.component(selector=ComponentExpression(label_asym_id='C')).label(text='DNA X')
+    structure.component(selector=ComponentExpression(label_asym_id='D')).label(text='DNA Y')
 
-    structure.label(text="DNA Y O5'", schema='all-atomic', label_asym_id='D', atom_id=4016)
-    structure.label(text="DNA Y O3'", schema='all-atomic', label_asym_id='D', atom_id=4391)
-    structure.label(text='Gold', schema='all-atomic', label_asym_id='E')
-    structure.label(text='Gold', schema='all-atomic', label_asym_id='H')
-    structure.label(text='Chloride', schema='all-atomic', label_asym_id='F')
-    structure.label(text='Chloride', schema='all-atomic', label_asym_id='G')
-    structure.label(text='Chloride', schema='all-atomic', label_asym_id='I')
+    structure.component(selector=ComponentExpression(label_asym_id='D', atom_id=4016)).label(text="DNA Y O5'")
+    structure.component(selector=ComponentExpression(label_asym_id='D', atom_id=4391)).label(text="DNA Y O3'")
+    structure.component(selector=ComponentExpression(label_asym_id='E')).label(text='Gold')
+    structure.component(selector=ComponentExpression(label_asym_id='H')).label(text='Gold')
+    structure.component(selector=ComponentExpression(label_asym_id='F')).label(text='Chloride')
+    structure.component(selector=ComponentExpression(label_asym_id='G')).label(text='Chloride')
+    structure.component(selector=ComponentExpression(label_asym_id='I')).label(text='Chloride')
     
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=57)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=67)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=121)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=125)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=129)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', label_seq_id=178)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='A', beg_label_seq_id=203, end_label_seq_id=205)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=67)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=121)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=125)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=129)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', label_seq_id=178)
-    structure.label(text='Ligand binding', schema='all-atomic', label_asym_id='B', beg_label_seq_id=203, end_label_seq_id=205)
+    structure.component(selector=ComponentExpression(label_asym_id='A', label_seq_id=57)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='A', label_seq_id=67)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='A', label_seq_id=121)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='A', label_seq_id=125)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='A', label_seq_id=129)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='A', label_seq_id=178)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='A', beg_label_seq_id=203, end_label_seq_id=205)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='B', label_seq_id=67)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='B', label_seq_id=121)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='B', label_seq_id=125)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='B', label_seq_id=129)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='B', label_seq_id=178)).label(text='Ligand binding')
+    structure.component(selector=ComponentExpression(label_asym_id='B', beg_label_seq_id=203, end_label_seq_id=205)).label(text='Ligand binding')
     return JSONResponse(builder.get_state())
 
 
