@@ -112,10 +112,24 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
     },
     component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component'>): StateObjectSelector {
         const selector = getParams(node).selector ?? Defaults.component.selector;
-        return update.to(msTarget).apply(StructureComponent, {
-            type: { name: 'static', params: selector },
-            label: selector,
-        }).selector;
+        if (typeof selector === 'string') {
+            return update.to(msTarget).apply(StructureComponent, {
+                type: { name: 'static', params: selector },
+                label: selector,
+            }).selector;
+        } else if (Array.isArray(selector)) {
+            throw new Error('NotImplementedError: selector=[{...}] for component node');
+            // TODO implement this (using bundles?)
+        } else {
+            throw new Error('NotImplementedError: selector={...} for component node');
+            console.warn('Incomplete implementation of component with selector={...}');
+            return update.to(msTarget).apply(StructureComponent, {
+                type: { name: 'script', params: { language: 'pymol', expression: 'chain A' } },
+                label: canonicalJsonString(selector),
+            }).selector;
+            throw new Error('NotImplementedError: selector={...} for component node');
+            // TODO implement this (using bundles?)
+        }
         // TODO check with 'all' and other other selectors
     },
     representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>): StateObjectSelector {

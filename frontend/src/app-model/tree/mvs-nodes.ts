@@ -1,6 +1,6 @@
 import { NodeForTree, TreeFor, TreeSchema } from './generic';
-import { ColorT, ComponentSelectorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
-import { OptionalField, RequiredField, float, int, nullable, str, tuple } from './params-schema';
+import { ColorT, ComponentExpression, ComponentSelectorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
+import { OptionalField, RequiredField, float, int, list, nullable, str, tuple, union } from './params-schema';
 
 
 const InlineSchemaParams = {
@@ -75,7 +75,7 @@ export const MVSTreeSchema = TreeSchema('root',
             ijk_max: OptionalField(tuple([int, int, int])),
         },
         'component': {
-            selector: RequiredField(ComponentSelectorT), // TODO or ComponentExpression or ComponentExpression[]
+            selector: RequiredField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
         'representation': {
             type: RequiredField(RepresentationTypeT),
