@@ -33,6 +33,8 @@ from molviewspec.nodes import (
     TooltipUrlParams,
     TransformParams,
 )
+from molviewspec.params_utils import make_params
+
 
 VERSION = 5
 
@@ -75,9 +77,7 @@ class Root(_Base):
         direction: tuple[float, float, float] | None,
         radius: float | None,
     ):
-        lcs = locals()
-        params: CameraParams = {}
-        _assign_params(params, CameraParams, lcs)
+        params = make_params(CameraParams, locals())
         node = Node(kind="camera", params=params)
         self._add_child(node)
         return self
@@ -106,9 +106,7 @@ class Root(_Base):
 class Download(_Base):
     # TODO defaults in signature makes them more obvious to users but this can't accommodate more complex cases
     def parse(self, *, format: ParseFormatT) -> Parse:
-        lcs = locals()
-        params: ParseParams = {}
-        _assign_params(params, ParseParams, lcs)
+        params = make_params(ParseParams, locals())
         node = Node(kind="parse", params=params)
         self._add_child(node)
         return Parse(node=node, root=self._root)
@@ -128,9 +126,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        lcs = locals()
-        params: StructureParams = {"kind": "model"}
-        _assign_params(params, StructureParams, lcs)
+        params = make_params(StructureParams, locals(), kind="model")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -152,11 +148,9 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        lcs = locals()
-        params: StructureParams = {"kind": "assembly"}
-        _assign_params(params, StructureParams, lcs)
         if assembly_id is None and assembly_index is None:
-            params["assembly_index"] = 0
+            assembly_index = 0
+        params = make_params(StructureParams, locals(), kind="assembly")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
