@@ -51,7 +51,7 @@ export const CIFAnnotationSchema = {
     label_atom_id: str,
     /** Atom name like 'CA', 'N', 'O'... */
     auth_atom_id: str,
-    /** Element symbol like 'H', 'HE', 'LI', 'BE'... */
+    /** Element symbol like 'H', 'He', 'Li', 'Be' (case-insensitive)... */
     type_symbol: str,
     /** Unique atom identifier across conformations (_atom_site.id) */
     atom_id: int,

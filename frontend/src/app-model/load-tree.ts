@@ -16,6 +16,9 @@ import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { canonicalJsonString, formatObject } from './utils';
 import { CustomLabelProps } from './custom-label-extension/representation';
+import { Expression } from 'molstar/lib/mol-script/language/expression';
+import { rowToExpression, rowsToExpression } from './cif-color-extension/helpers/selections';
+import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expression-formatter';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -117,18 +120,14 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
                 type: { name: 'static', params: selector },
                 label: selector,
             }).selector;
-        } else if (Array.isArray(selector)) {
-            throw new Error('NotImplementedError: selector=[{...}] for component node');
-            // TODO implement this (using bundles?)
         } else {
-            throw new Error('NotImplementedError: selector={...} for component node');
-            console.warn('Incomplete implementation of component with selector={...}');
+            // TODO implement this using bundles? or not? I don't know
+            const expression = Array.isArray(selector) ? rowsToExpression(selector) : rowToExpression(selector);
             return update.to(msTarget).apply(StructureComponent, {
-                type: { name: 'script', params: { language: 'pymol', expression: 'chain A' } },
+                type: { name: 'expression', params: expression },
+                nullIfEmpty: false,
                 label: canonicalJsonString(selector),
             }).selector;
-            throw new Error('NotImplementedError: selector={...} for component node');
-            // TODO implement this (using bundles?)
         }
         // TODO check with 'all' and other other selectors
     },

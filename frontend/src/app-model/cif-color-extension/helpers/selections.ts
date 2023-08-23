@@ -6,6 +6,9 @@
 
 import { Column } from 'molstar/lib/mol-data/db';
 import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-model/structure';
+import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder';
+import { Expression } from 'molstar/lib/mol-script/language/expression';
+import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expression-formatter';
 
 import { extend, filterInPlace, range } from '../../utils';
 import { AtomRanges, addRange, emptyRanges, singleRange } from '../helpers/atom-ranges';
@@ -178,7 +181,7 @@ function getQualifyingAtoms(model: Model, row: AnnotationRow, indices: IndicesAn
             filterInPlace(atomIdcs, iAtom => auth_atom_id.value(iAtom) === row.auth_atom_id);
         }
         if (isDefined(row.type_symbol)) {
-            filterInPlace(atomIdcs, iAtom => type_symbol.value(iAtom) === row.type_symbol);
+            filterInPlace(atomIdcs, iAtom => type_symbol.value(iAtom) === row.type_symbol?.toUpperCase());
         }
         extend(result, atomIdcs);
     }
@@ -236,7 +239,7 @@ export function atomQualifies(model: Model, iAtom: ElementIndex, row: Annotation
     const atom_index = h.atomSourceIndex.value(iAtom);
     if (!matches(row.label_atom_id, label_atom_id)) return false;
     if (!matches(row.auth_atom_id, auth_atom_id)) return false;
-    if (!matches(row.type_symbol, type_symbol)) return false;
+    if (!matches(row.type_symbol?.toUpperCase(), type_symbol)) return false;
     if (!matches(row.atom_id, atom_id)) return false;
     if (!matches(row.atom_index, atom_index)) return false;
 
@@ -255,4 +258,62 @@ function matchesRange<T>(requiredMin: T | undefined | null, requiredMax: T | und
     if (isDefined(requiredMin) && (!isDefined(value) || value < requiredMin)) return false;
     if (isDefined(requiredMax) && (!isDefined(value) || value > requiredMax)) return false;
     return true;
+}
+
+
+
+
+export function rowToExpression(row: AnnotationRow): Expression {
+    const { and } = MS.core.logic;
+    const { eq, gre: gte, lte } = MS.core.rel;
+    const { macromolecular } = MS.struct.atomProperty;
+    const propTests: Partial<Record<string, Expression>> = {};
+
+    if (isDefined(row.label_entity_id)) {
+        propTests['entity-test'] = eq([macromolecular.label_entity_id(), row.label_entity_id]);
+    }
+
+    const chainTests: Expression[] = [];
+    if (isDefined(row.label_asym_id)) chainTests.push(eq([macromolecular.label_asym_id(), row.label_asym_id]));
+    if (isDefined(row.auth_asym_id)) chainTests.push(eq([macromolecular.auth_asym_id(), row.auth_asym_id]));
+
+    if (chainTests.length === 1) {
+        propTests['chain-test'] = chainTests[0];
+    } else if (chainTests.length > 1) {
+        propTests['chain-test'] = and(chainTests);
+    }
+
+    const residueTests: Expression[] = [];
+    if (isDefined(row.label_seq_id)) residueTests.push(eq([macromolecular.label_seq_id(), row.label_seq_id]));
+    if (isDefined(row.auth_seq_id)) residueTests.push(eq([macromolecular.auth_seq_id(), row.auth_seq_id]));
+    if (isDefined(row.pdbx_PDB_ins_code)) residueTests.push(eq([macromolecular.pdbx_PDB_ins_code(), row.pdbx_PDB_ins_code]));
+    if (isDefined(row.beg_label_seq_id)) residueTests.push(gte([macromolecular.label_seq_id(), row.beg_label_seq_id]));
+    if (isDefined(row.end_label_seq_id)) residueTests.push(lte([macromolecular.label_seq_id(), row.end_label_seq_id]));
+    if (isDefined(row.beg_auth_seq_id)) residueTests.push(gte([macromolecular.auth_seq_id(), row.beg_auth_seq_id]));
+    if (isDefined(row.end_auth_seq_id)) residueTests.push(lte([macromolecular.auth_seq_id(), row.end_auth_seq_id]));
+    if (residueTests.length === 1) {
+        propTests['residue-test'] = residueTests[0];
+    } else if (residueTests.length > 1) {
+        propTests['residue-test'] = and(residueTests);
+    }
+
+    const atomTests: Expression[] = [];
+    if (isDefined(row.atom_id)) atomTests.push(eq([macromolecular.id(), row.atom_id]));
+    if (isDefined(row.atom_index)) atomTests.push(eq([MS.struct.atomProperty.core.sourceIndex(), row.atom_index]));
+    if (isDefined(row.label_atom_id)) atomTests.push(eq([macromolecular.label_atom_id(), row.label_atom_id]));
+    if (isDefined(row.auth_atom_id)) atomTests.push(eq([macromolecular.auth_atom_id(), row.auth_atom_id]));
+    if (isDefined(row.type_symbol)) atomTests.push(eq([MS.struct.atomProperty.core.elementSymbol(), row.type_symbol.toUpperCase()]));
+    if (atomTests.length === 1) {
+        propTests['atom-test'] = atomTests[0];
+    } else if (atomTests.length > 1) {
+        propTests['atom-test'] = and(atomTests);
+    }
+
+    return MS.struct.generator.atomGroups(propTests);
+}
+export function rowsToExpression(rows: AnnotationRow[]): Expression {
+    return unionExpression(rows.map(rowToExpression));
+}
+function unionExpression(expressions: Expression[]): Expression {
+    return MS.struct.combinator.merge(expressions.map(e => MS.struct.modifier.union([e])));
 }
