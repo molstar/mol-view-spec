@@ -462,7 +462,9 @@ async def testing_labels_example(id='1h9t'):
     structure.component(selector="ion").representation(type="surface").color_from_url(
         schema="all-atomic", url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains", format="json",
     )
-    structure.component(selector=[ComponentExpression(atom_index=4404), ComponentExpression(atom_index=4405), ComponentExpression(label_asym_id='A')]).label(text='XXX')
+    # structure.label(text='structure')
+    # structure.component(selector=[ComponentExpression(atom_index=4404), ComponentExpression(atom_index=4405), ComponentExpression(label_asym_id='A')])
+
     structure.component(selector=ComponentExpression(label_asym_id='A', beg_label_seq_id=9, end_label_seq_id=83)).label(text='DNA-binding')
     structure.component(selector=ComponentExpression(label_asym_id='B', beg_label_seq_id=9, end_label_seq_id=83)).label(text='DNA-binding')
     structure.component(selector=ComponentExpression(label_asym_id='A', beg_label_seq_id=84, end_label_seq_id=231)).label(text='Acyl-CoA binding')
@@ -489,7 +491,6 @@ async def testing_labels_example(id='1h9t'):
     structure.component(selector=ComponentExpression(label_asym_id='B', label_seq_id=121)).label(text='Ligand binding')
     structure.component(selector=ComponentExpression(label_asym_id='B', label_seq_id=125)).label(text='Ligand binding')
     structure.component(selector=ComponentExpression(label_asym_id='B', label_seq_id=129)).label(text='Ligand binding')
-    structure.component(selector=ComponentExpression(label_asym_id='B', label_seq_id=178)).label(text='Ligand binding')
     structure.component(selector=ComponentExpression(label_asym_id='B', beg_label_seq_id=203, end_label_seq_id=205)).label(text='Ligand binding')
     return JSONResponse(builder.get_state())
 

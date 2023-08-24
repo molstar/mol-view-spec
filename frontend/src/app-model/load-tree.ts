@@ -25,9 +25,18 @@ import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expres
 export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
 
 
-interface MolstarLoadingContext { annotationMap?: Map<MolstarNode<'color-from-url'>, string> }
+interface MolstarLoadingContext {
+    /** Maps 'color-from-url' nodes to annotationId they should reference */
+    annotationMap?: Map<MolstarNode<'color-from-url'>, string>,
+    /** Maps each node (on 'structure' or lower level) than model to its nearest node with color information */
+    nearestColorMap?: Map<MolstarNode, MolstarNode<'representation' | 'color' | 'color-from-url' | 'color-from-cif'>>,
+}
 
 export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>, MolstarLoadingContext> } = {
+    root(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'root'>, context: MolstarLoadingContext): StateObjectSelector {
+        context.nearestColorMap = makeNearestColorMap(node);
+        return msTarget;
+    },
     download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'download'>): StateObjectSelector {
         return update.to(msTarget).apply(Download, {
             url: getParams(node).url,
@@ -110,7 +119,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         //         ? { name: 'assembly', params: { id: assembly } }
         //         : { name: 'model', params: {} },
         // }).selector;
-        loadLabelsFromInline(update, result, node, context);
+        // loadAllLabelsFromSubtree(update, result, node, context);
         return result;
     },
     component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component'>): StateObjectSelector {
@@ -155,20 +164,83 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         return msTarget;
     },
     'label'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
-        // Do nothing (labels loaded as one node in `structure`)
+        const item: CustomLabelProps['items'][number] = {
+            text: node.params.text,
+            position: { name: 'selection', params: {} },
+        };
+        const nearestColorNode = context.nearestColorMap?.get(node);
+        return update.to(msTarget).apply(StructureRepresentation3D, {
+            type: { name: 'custom-label', params: { items: [item] } },
+            colorTheme: colorThemeForColorNode(nearestColorNode, context),
+        }).selector;
         return msTarget;
-        // const params = getParams(node);
-        // const items: CustomLabelProps['items'] = [
-        //     { text: params.text, position: { name: 'selection', params: { ...pickObjectKeys(params, FieldsForSchemas[params.schema] as any[]) } } }
-        // ];
-        // return update.to(msTarget).apply(StructureRepresentation3D, {
-        //     type: { name: 'custom-label', params: { items } },
-        //     colorTheme: { name: 'uniform', params: { value: ColorNames.white } }
-        // }).selector;
     },
 };
 
-function loadLabelsFromInline(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure' | 'component'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
+function colorThemeForColorNode(node: MolstarNode<'representation' | 'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext) {
+    let annotationId: string | undefined = undefined;
+    let color: string | undefined = undefined;
+    switch (node?.kind) {
+        case 'color-from-url':
+            annotationId = context.annotationMap?.get(node);
+            color = node.params.background;
+            break;
+        case 'color-from-cif':
+            console.error('Not implemented: label color from color-from-cif node');
+            break;
+        case 'color':
+            color = node.params.color;
+            break;
+        case 'representation':
+            color = node.params.color;
+            break;
+    }
+    color ??= Defaults.representation.color;
+    if (annotationId) {
+        return {
+            name: 'annotation',
+            params: { background: decodeColor(color), annotationId: annotationId, } satisfies Partial<AnnotationColorThemeProps>
+        };
+    } else {
+        return {
+            name: 'uniform',
+            params: { value: decodeColor(color) }
+        };
+    }
+}
+function makeNearestColorMap(root: MolstarTree) {
+    const map = new Map<MolstarNode, MolstarNode<'representation' | 'color' | 'color-from-url' | 'color-from-cif'>>();
+    dfs<MolstarTree>(root, undefined, (node, parent) => {
+        if (!map.has(node)) {
+            switch (node.kind) {
+                case 'representation':
+                case 'color':
+                case 'color-from-url':
+                case 'color-from-cif':
+                    map.set(node, node);
+            }
+        }
+        if (node.kind !== 'structure' && map.has(node) && parent && !map.has(parent)) {
+            map.set(parent, map.get(node)!);
+        }
+    });
+    dfs<MolstarTree>(root, (node, parent) => {
+        if (parent && map.has(parent)) {
+            map.set(node, map.get(parent)!);
+        }
+    });
+    // DEBUG:
+    // dfs<MolstarTree>(root, node => {
+    //     const info = map.get(node);
+    //     if (info) {
+    //         ((node.params ??= {}) as any).C = info.kind + canonicalJsonString(info.params);
+    //     }
+    // });
+    // console.log('makeNearestColorMap:')
+    // console.log(treeToString(root))
+    return map;
+}
+function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure' | 'component'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
     const items: Partial<CustomLabelProps>['items'] = [];
     for (const child of getChildren(node as SubTree<MolstarTree>)) {
         if (child.kind === 'label') {
@@ -230,11 +302,13 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
     dfs<MolstarTree>(tree, (node, parent) => {
         console.log('Visit', node.kind, formatObject(getParams(node)));
         if (node.kind === 'root') {
-            const msRoot = update.toRoot().selector;
+            let msRoot = update.toRoot().selector;
             if (deletePrevious) {
                 update.currentTree.children.get(msRoot.ref).forEach(child => update.delete(child));
             }
-            mapping.set(node, msRoot);
+            const action = MolstarLoadingActions[node.kind] as LoadingAction<typeof node, MolstarLoadingContext> | undefined;
+            const msNode = action?.(update, msRoot, node, context) ?? msRoot;
+            mapping.set(node, msNode);
         } else {
             if (!parent) throw new Error(`FormatError: non-root node (${node.kind}) has no parent`);
             const msTarget = mapping.get(parent);

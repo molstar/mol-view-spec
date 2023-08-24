@@ -115,12 +115,12 @@ export function CustomLabelTextVisual(materialId: number): ComplexVisual<CustomL
 }
 
 function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme, props: CustomLabelTextProps, text?: Text): Text {
-    console.time('createLabelText');
+    // console.time('createLabelText');
     // const result =  createChainText(ctx, structure, theme, props, text);
     // const result =  createResidueText(ctx, structure, theme, props, text);
     // const result =  createElementText(ctx, structure, theme, props, text);
     const result = createSingleText(ctx, structure, theme, props, text);
-    console.timeEnd('createLabelText');
+    // console.timeEnd('createLabelText');
     return result;
 }
 
@@ -258,10 +258,10 @@ function createSingleText(ctx: VisualContext, structure: Structure, theme: Theme
                 builder.add(item.text, tmpVec[0], tmpVec[1], tmpVec[2], scale, scale, 0);
                 break;
             case 'selection':
-                console.time('addLabelItem');
+                // console.time('addLabelItem');
                 const p = textPropsForSelection(structure, theme, item.position.params);
                 if (p) builder.add(item.text, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
-                console.timeEnd('addLabelItem');
+                // console.timeEnd('addLabelItem');
                 break;
         }
     }
