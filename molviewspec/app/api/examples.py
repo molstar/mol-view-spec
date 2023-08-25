@@ -291,6 +291,25 @@ async def testing_structures_example():
     model_2 = cif_1wrf.model_structure(model_index=2).component().representation(color="blue")
     return JSONResponse(builder.get_state())
 
+@router.get("/testing/transforms")
+async def testing_transforms_example(id: str = "1cbs"):
+    """TODO docstring"""
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    model = builder.download(url=structure_url).parse(format="bcif")
+    orig = (
+        model
+        .model_structure()
+        .representation(color="green")
+    )
+    trans1 = (
+        model
+        .model_structure()
+        .transform()
+        .representation(color="blue")
+    )
+    return JSONResponse(builder.get_state())
+
 
 @router.get("/testing/components")
 async def testing_components_example():

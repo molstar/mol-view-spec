@@ -1,5 +1,5 @@
 import { Download, ParseCif } from 'molstar/lib/mol-plugin-state/transforms/data';
-import { CustomModelProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB } from 'molstar/lib/mol-plugin-state/transforms/model';
+import { CustomModelProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
@@ -19,6 +19,7 @@ import { CustomLabelProps } from './custom-label-extension/representation';
 import { Expression } from 'molstar/lib/mol-script/language/expression';
 import { rowToExpression, rowsToExpression } from './cif-color-extension/helpers/selections';
 import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expression-formatter';
+import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -163,7 +164,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }));
         return msTarget;
     },
-    'label'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
+    label(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
         const item: CustomLabelProps['items'][number] = {
             text: node.params.text,
             position: { name: 'selection', params: {} },
@@ -175,7 +176,41 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }).selector;
         return msTarget;
     },
+    transform(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'transform'>, context: MolstarLoadingContext): StateObjectSelector {
+        const { transformation, rotation, translation } = getParams(node);
+        const T1 = transformFromArray(transformation ?? undefined);
+        const T2 = transformFromRotationTranslation(rotation ?? undefined, translation ?? undefined);
+        const T = (T1 && T2) ? Mat4.mul(Mat4(), T2, T1) : (T1 || T2);
+        const matrix = [
+            0, 1, 0, 0,
+            -1, 0, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+        ];
+        return update.to(msTarget).apply(TransformStructureConformation, { transform: { name: 'matrix', params: { data: matrix } } }).selector;
+    },
 };
+
+function transformFromArray(transformation: number[] | undefined): Mat4 | undefined {
+    if (!transformation) return undefined;
+    if (transformation.length !== 16) throw new Error(`'transformation' param for 'transform' node must be array of 16 elements, found ${transformation}`);
+    const T = Mat4.fromArray(Mat4(), transformation, 0);
+    if (!Mat4.isRotationAndTranslation(T)) throw new Error(`'transformation' param for 'transform' node is not a valid 4x4 rotation+translation matrix: ${transformation} (last row is not [0,0,0,1])`);
+    return T;
+}
+function transformFromRotationTranslation(rotation: number[] | undefined, translation: number[] | undefined): Mat4 | undefined {
+    if (rotation && rotation.length !== 9) throw new Error(`'rotation' param for 'transform' node must be array of 9 elements, found ${rotation}`);
+    if (translation && translation.length !== 3) throw new Error(`'translation' param for 'transform' node must be array of 3 elements, found ${translation}`);
+    const T = Mat4.identity();
+    if (rotation) {
+        Mat4.fromMat3(T, Mat3.fromArray(Mat3(), rotation, 0));
+    }
+    if (translation) {
+        Mat4.setTranslation(T, Vec3.fromArray(Vec3(), translation, 0));
+    }
+    // TODO reuse Mat3 and Vec3
+    return T;
+}
 
 function colorThemeForColorNode(node: MolstarNode<'representation' | 'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext) {
     let annotationId: string | undefined = undefined;

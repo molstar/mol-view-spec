@@ -31,6 +31,7 @@ function Main() {
         // color: 'http://localhost:9000/api/v1/examples/color/1cbs',
         formats: 'http://localhost:9000/api/v1/examples/testing/formats',
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
+        transforms: 'http://localhost:9000/api/v1/examples/testing/transforms',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
         'colors-rainbow 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
         'colors-cif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_cif',

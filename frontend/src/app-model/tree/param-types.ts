@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 
-import { choice, float, int, nullable, str, tuple } from './params-schema';
+import { choice, float, int, list, nullable, str, tuple } from './params-schema';
 
 
 /** `format` parameter values of `parse` node in MVS tree */
@@ -41,7 +41,7 @@ export const SchemaFormatT = choice('cif', 'bcif', 'json');
 
 export const Vector3 = tuple([float, float, float]);
 
-export const Matrix = tuple([float, float, float]);
+export const Matrix = list(float);
 
 
 /** Convert `format` parameter of `parse` node in MVS tree
