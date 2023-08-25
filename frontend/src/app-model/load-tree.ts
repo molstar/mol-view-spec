@@ -302,7 +302,7 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
     dfs<MolstarTree>(tree, (node, parent) => {
         console.log('Visit', node.kind, formatObject(getParams(node)));
         if (node.kind === 'root') {
-            let msRoot = update.toRoot().selector;
+            const msRoot = update.toRoot().selector;
             if (deletePrevious) {
                 update.currentTree.children.get(msRoot.ref).forEach(child => update.delete(child));
             }
