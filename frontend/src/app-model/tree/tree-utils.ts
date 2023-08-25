@@ -82,16 +82,19 @@ export function convertTree<A extends Tree, B extends Tree>(root: A, conversions
 /** Create a copy of the tree where twins (siblings of the same kind with the same params) are merged into one node.
  * Applies only to the node kinds listed in `condenseNodes` (or all if undefined) except node kinds in `skipNodes`. */
 export function condenseTree<T extends Tree>(root: T, condenseNodes?: Set<Kind<Tree>>, skipNodes?: Set<Kind<Tree>>): T {
-    // const map = new Map<string, SubTree<T>>();
+    const map = new Map<string, SubTree<T>>();
     const result = copyTree(root);
     dfs<T>(result, node => {
-        // map.clear();
+        map.clear();
         const newChildren: SubTree<T>[] = [];
         for (const child of node.children ?? []) {
+            let twin: SubTree<T> | undefined = undefined;
             const doApply = (!condenseNodes || condenseNodes.has(child.kind)) && !skipNodes?.has(child.kind);
-            // const key = child.kind + canonicalJsonString(getParams(child));
-            const twin = doApply ? newChildren.find(sibling => sibling.kind === child.kind && deepEqual(sibling.params, child.params)) : undefined;
-            // Using .find could be inefficient when their are too many children. TODO implement using a set, if we expect big numbers of children (e.g. one label per each residue?)
+            if (doApply) {
+                const key = child.kind + canonicalJsonString(getParams(child));
+                twin = map.get(key);
+                if (!twin) map.set(key, child);
+            }
             if (twin) {
                 (twin.children ??= []).push(...child.children ?? []);
             } else {

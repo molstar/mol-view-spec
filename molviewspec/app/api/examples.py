@@ -289,7 +289,6 @@ async def testing_structures_example():
     model_0 = cif_1wrf.model_structure(model_index=0).component().representation(color="white")
     model_1 = cif_1wrf.model_structure(model_index=1).component().representation(color="red")
     model_2 = cif_1wrf.model_structure(model_index=2).component().representation(color="blue")
-    # TODO check model indexing convention (0- or 1-based)
     return JSONResponse(builder.get_state())
 
 
