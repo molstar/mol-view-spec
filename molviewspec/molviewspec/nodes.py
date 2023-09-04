@@ -2,7 +2,6 @@ from typing import Any, Literal, Mapping, NotRequired, TypedDict, Union
 
 from .params_utils import Params
 
-
 KindT = Literal[
     "root",
     "camera",

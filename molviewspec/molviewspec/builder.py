@@ -35,7 +35,6 @@ from molviewspec.nodes import (
 )
 from molviewspec.params_utils import make_params
 
-
 VERSION = 5
 
 
