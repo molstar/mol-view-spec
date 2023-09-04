@@ -76,7 +76,7 @@ async def color_example(id: str):
 
 
 @router.get("/symmetry-mates/{id}")
-async def symmetry_example(id: str):
+async def symmetry_mates_example(id: str):
     """
     Add symmetry mates within a distance threshold.
     """
@@ -84,7 +84,7 @@ async def symmetry_example(id: str):
     (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
         .parse(format="mmcif")
-        .symmetry_mate_structure(radius=5.0)
+        .symmetry_mates_structure(radius=5.0)
     )
     return JSONResponse(builder.get_state())
 

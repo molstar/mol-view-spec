@@ -1,6 +1,7 @@
-from __future__ import annotations
-
 from typing import Any, Literal, Mapping, NotRequired, TypedDict, Union
+
+from .params_utils import Params
+
 
 KindT = Literal[
     "root",
@@ -39,18 +40,18 @@ class State(TypedDict):
     root: Node
 
 
-class DownloadParams(TypedDict):
+class DownloadParams(Params):
     url: str
 
 
 ParseFormatT = Literal["mmcif", "bcif", "pdb"]
 
 
-class ParseParams(TypedDict):
+class ParseParams(Params):
     format: ParseFormatT
 
 
-class StructureParams(TypedDict):
+class StructureParams(Params):
     kind: Literal["model", "assembly", "symmetry", "crystal-symmetry"]
     assembly_id: NotRequired[str]
     """Use the name to specify which assembly to load"""
@@ -103,7 +104,7 @@ class ComponentExpression(TypedDict):  # Feel free to rename (this used to be In
     # Not sure if group_id should be here (it makes sense in data from JSON/CIF, but not for inline)
 
 
-class ComponentParams(TypedDict):
+class ComponentParams(Params):
     selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression]
 
 
@@ -112,7 +113,7 @@ ColorNamesT = Literal["white", "gray", "black", "red", "orange", "yellow", "gree
 ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
 
 
-class RepresentationParams(TypedDict):
+class RepresentationParams(Params):
     type: RepresentationTypeT
     color: NotRequired[ColorT]
 
@@ -132,7 +133,7 @@ SchemaT = Literal[
 SchemaFormatT = Literal["cif", "bcif", "json"]
 
 
-class _DataFromUrlParams(TypedDict):
+class _DataFromUrlParams(Params):
     url: str
     format: SchemaFormatT
     category_name: NotRequired[str]
@@ -146,7 +147,7 @@ class _DataFromUrlParams(TypedDict):
     schema: SchemaT
 
 
-class _DataFromCifParams(TypedDict):
+class _DataFromCifParams(Params):
     category_name: str
     field_name: NotRequired[str]
     """Name of the column in CIF that contains the desired value (color/label/tooltip...); the default value is 'color'/'label'/'tooltip' depending on the node type"""
@@ -155,7 +156,7 @@ class _DataFromCifParams(TypedDict):
     schema: SchemaT
 
 
-class ColorInlineParams(TypedDict):
+class ColorInlineParams(Params):
     color: ColorT
     # schema and other stuff not needed here, the color will be applied on the whole parent Structure or Component
 
@@ -168,7 +169,7 @@ class ColorCifCategoryParams(_DataFromCifParams):
     pass
 
 
-class LabelInlineParams(TypedDict):
+class LabelInlineParams(Params):
     text: str
     # schema and other stuff not needed here, the label will be applied on the whole parent Structure or Component
 
@@ -181,7 +182,7 @@ class LabelCifCategoryParams(_DataFromCifParams):
     pass
 
 
-class TooltipInlineParams(TypedDict):
+class TooltipInlineParams(Params):
     text: str
     # schema and other stuff not needed here, the tooltip will be applied on the whole parent Structure or Component
 
@@ -194,12 +195,12 @@ class TooltipCifCategoryParams(_DataFromCifParams):
     pass
 
 
-class FocusInlineParams(TypedDict):
+class FocusInlineParams(Params):
     pass
     # nothing needed here, the focus will be applied on the whole parent Structure or Component
 
 
-class TransformParams(TypedDict):
+class TransformParams(Params):
     transformation: NotRequired[tuple[float, ...]]
     """4x4 matrix in a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, 
     to be multiplied from the left"""
@@ -209,17 +210,17 @@ class TransformParams(TypedDict):
     translation: NotRequired[tuple[float, float, float]]
 
 
-class CameraParams(TypedDict):
+class CameraParams(Params):
     position: tuple[float, float, float]
     direction: tuple[float, float, float]
     radius: float
 
 
-class CanvasParams(TypedDict):
+class CanvasParams(Params):
     background_color: ColorT
 
 
-class SphereParams(TypedDict):
+class SphereParams(Params):
     position: tuple[float, float, float]
     radius: float
     color: ColorT
@@ -227,7 +228,7 @@ class SphereParams(TypedDict):
     tooltip: NotRequired[str]
 
 
-class LineParams(TypedDict):
+class LineParams(Params):
     position1: tuple[float, float, float]
     position2: tuple[float, float, float]
     radius: float
