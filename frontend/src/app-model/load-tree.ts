@@ -178,27 +178,24 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
     },
     transform(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'transform'>, context: MolstarLoadingContext): StateObjectSelector {
         const { transformation, rotation, translation } = getParams(node);
-        const T1 = transformFromArray(transformation ?? undefined);
-        const T2 = transformFromRotationTranslation(rotation ?? undefined, translation ?? undefined);
+        const T1 = transformFromArray(transformation);
+        const T2 = transformFromRotationTranslation(rotation, translation);
         const T = (T1 && T2) ? Mat4.mul(Mat4(), T2, T1) : (T1 || T2);
-        const matrix = [
-            0, 1, 0, 0,
-            -1, 0, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1,
-        ];
-        return update.to(msTarget).apply(TransformStructureConformation, { transform: { name: 'matrix', params: { data: matrix } } }).selector;
+        const res = update.to(msTarget).apply(TransformStructureConformation, { transform: { name: 'matrix', params: { data: T } } }).selector;
+        console.log('transform:', msTarget.ref, '->', res.ref)
+        return res;
     },
 };
 
-function transformFromArray(transformation: number[] | undefined): Mat4 | undefined {
+function transformFromArray(transformation: number[] | null | undefined): Mat4 | undefined {
     if (!transformation) return undefined;
     if (transformation.length !== 16) throw new Error(`'transformation' param for 'transform' node must be array of 16 elements, found ${transformation}`);
     const T = Mat4.fromArray(Mat4(), transformation, 0);
     if (!Mat4.isRotationAndTranslation(T)) throw new Error(`'transformation' param for 'transform' node is not a valid 4x4 rotation+translation matrix: ${transformation} (last row is not [0,0,0,1])`);
     return T;
 }
-function transformFromRotationTranslation(rotation: number[] | undefined, translation: number[] | undefined): Mat4 | undefined {
+
+function transformFromRotationTranslation(rotation: number[] | null | undefined, translation: number[] | null | undefined): Mat4 | undefined {
     if (rotation && rotation.length !== 9) throw new Error(`'rotation' param for 'transform' node must be array of 9 elements, found ${rotation}`);
     if (translation && translation.length !== 3) throw new Error(`'translation' param for 'transform' node must be array of 3 elements, found ${translation}`);
     const T = Mat4.identity();
@@ -208,7 +205,6 @@ function transformFromRotationTranslation(rotation: number[] | undefined, transl
     if (translation) {
         Mat4.setTranslation(T, Vec3.fromArray(Vec3(), translation, 0));
     }
-    // TODO reuse Mat3 and Vec3
     return T;
 }
 
