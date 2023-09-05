@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from typing import Sequence
 
 from molviewspec.nodes import (
@@ -295,16 +296,39 @@ class Structure(_Base):
         rotation: Sequence[float],
         translation: Sequence[float],
     ) -> Structure:
+        # guard against multiple transforms getting registered -- TODO factor out as general purpose validation?
+        if "children" in self._node and list(filter(lambda c: c["kind"] == "transform", self._node["children"])):
+            raise ValueError(
+                f"Only a single `transform` node can be registered per structure, compose them if you need to chain transforms"
+            )
+
         rotation = tuple(rotation)
         if len(rotation) != 9:
             raise ValueError(f"Parameter `rotation` must have length 9")
+        if not self._is_rotation_matrix(rotation):
+            raise ValueError(f"Parameter `rotation` must be a rotation matrix")
         translation = tuple(translation)
+
         if len(translation) != 3:
             raise ValueError(f"Parameter `translation` must have length 3")
+
         params = make_params(TransformParams, locals())
         node = Node(kind="transform", params=params)
         self._add_child(node)
         return self
+
+    # TODO factor out as general purpose validation?
+    @staticmethod
+    def _is_rotation_matrix(t: tuple[float], eps: float = 0.005):
+        a00, a01, a02, a10, a11, a12, a20, a21, a22 = t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
+
+        det3x3 = math.fabs(
+            a00 * (a11 * a22 - a12 * a21) - a01 * (a10 * a22 - a12 * a20) + a02 * (a10 * a21 - a11 * a20)
+        )
+        if not math.isclose(det3x3, 1, abs_tol=eps):
+            return False
+
+        return True
 
     def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> Representation:
         params = make_params(RepresentationParams, locals())
