@@ -111,8 +111,6 @@ export const MVSTreeSchema = TreeSchema('root',
         'focus': {
         },
         'transform': {
-            /** 4x4 matrix, column major */
-            transformation: OptionalField(nullable(Matrix)),
             /** 3x3 matrix, column major */
             rotation: OptionalField(nullable(Matrix)),
             translation: OptionalField(nullable(Vector3)),

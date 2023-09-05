@@ -270,7 +270,7 @@ async function getDataFromSources(ctx: CustomProperty.Context, sources: Annotati
     const promises: { [key: string]: Promise<AnnotationData> } = {};
     for (const src of sources) {
         const key = `${src.format}:${src.url}`;
-        promises[key] = getDataFromSource(ctx, src);
+        promises[key] ??= getDataFromSource(ctx, src);
     }
     const data = await promiseAllObj(promises);
     return sources.map(src => data[`${src.format}:${src.url}`]);

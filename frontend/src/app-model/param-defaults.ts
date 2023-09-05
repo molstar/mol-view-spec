@@ -90,7 +90,6 @@ export const Defaults = {
     'focus': {
     },
     'transform': {
-        transformation: null,
         rotation: null,
         translation: null,
     },

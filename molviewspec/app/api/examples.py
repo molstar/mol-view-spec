@@ -312,51 +312,20 @@ async def testing_transforms_example(id: str = "1cbs"):
         model
         .model_structure()
         .transform(rotation=(
-            0, 1, 0, # this row is a column, because of column-major convention
+            0, 1, 0, # this is a column, because of column-major convention
             -1, 0, 0,
             0, 0, 1,
         ), translation=(70, 5, 0))
         .representation(color="green")
     )
-    rotZ90_ = (
-        model
-        .model_structure()
-        .transform(transformation=(
-            0, 1, 0, 0,
-            -1, 0, 0, 0,
-            0, 0, 1, 0,
-            70, -30, 0, 1,
-        ))
-        .representation(color="cyan")
-    )
-    combination = (
-        model
-        .model_structure()
-        .transform(
-            # transformation to be applied before rotation and translation
-            transformation=(
-                1, 0, 0, 0,
-                0, 0, 1, 0,
-                0, -1, 0, 0,
-                0, 0, 0, 1,
-            ),
-            rotation=(
-                0, 0, -1,
-                0, 1, 0,
-                1, 0, 0,
-                ),
-            translation=(60, 50, 40)
-        ).representation(color="red")
-    )
     combination_ = (
         model
         .model_structure()
         .transform(
-            transformation=(
-                1, 0, 0, 0,
-                0, 0, 1, 0,
-                0, -1, 0, 0,
-                0, 0, 0, 1,
+            rotation=(
+                1, 0, 0,
+                0, 0, 1,
+                0, -1, 0,
             ),
         )
         .transform(
@@ -368,16 +337,6 @@ async def testing_transforms_example(id: str = "1cbs"):
             translation=(60, 20, 40)
         ).representation(color="orange")
         # Currently transforms applied in opposite order, TODO fix
-    )
-    rotY180 = (
-        model
-        .model_structure()
-        .transform(rotation=(
-            -1, 0, 0,
-            0, 1, 0,
-            0, 0, -1,
-        ), translation=(130, 0, 50))
-        .representation(color="magenta")
     )
     return JSONResponse(builder.get_state())
 
