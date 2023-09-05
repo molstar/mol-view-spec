@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Sequence
 
 from molviewspec.nodes import (
@@ -62,6 +63,11 @@ class Root(_Base):
 
     def get_state(self) -> State:
         return State(version=VERSION, root=self._node)
+
+    def save_state(self, *, destination: str):
+        state = self.get_state()
+        with open(destination, "w") as out:
+            out.write(json.dumps(state, indent=2))
 
     def camera(
         self,
