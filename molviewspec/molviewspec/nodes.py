@@ -200,9 +200,6 @@ class FocusInlineParams(Params):
 
 
 class TransformParams(Params):
-    transformation: NotRequired[tuple[float, ...]]
-    """4x4 matrix in a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, 
-    to be multiplied from the left"""
     rotation: NotRequired[tuple[float, ...]]
     """In a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied 
     from the left"""

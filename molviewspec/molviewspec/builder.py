@@ -292,13 +292,9 @@ class Structure(_Base):
     def transform(
         self,
         *,
-        transformation: Sequence[float],
         rotation: Sequence[float],
         translation: Sequence[float],
     ) -> Structure:
-        transformation = tuple(transformation)
-        if len(transformation) != 16:
-            raise ValueError(f"Parameter `transformation` must have length 16")
         rotation = tuple(rotation)
         if len(rotation) != 9:
             raise ValueError(f"Parameter `rotation` must have length 9")
