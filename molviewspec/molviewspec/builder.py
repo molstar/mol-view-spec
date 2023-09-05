@@ -82,7 +82,7 @@ class Root(_Base):
         self._add_child(node)
         return self
 
-    def canvas(self, *, background_color: ColorT | None = None) -> "Root":
+    def canvas(self, *, background_color: ColorT | None = None) -> Root:
         params = make_params(CanvasParams, locals())
         node = Node(kind="canvas", params=params)
         self._add_child(node)
@@ -93,7 +93,7 @@ class Root(_Base):
         self._add_child(node)
         return Download(node=node, root=self._root)
 
-    def generic_visuals(self) -> "GenericVisuals":
+    def generic_visuals(self) -> GenericVisuals:
         node = Node(kind="generic-visuals")
         self._add_child(node)
         return GenericVisuals(node=node, root=self._root)
@@ -117,7 +117,7 @@ class Parse(_Base):
         model_index: int | None = None,  # TODO default candidate
         block_index: int | None = None,  # TODO default candidate
         block_header: str | None = None,
-    ) -> "Structure":
+    ) -> Structure:
         """
         Create a structure for the deposited coordinates.
         :param model_index: 0-based model index in case multiple NMR frames are present
@@ -325,10 +325,7 @@ class Structure(_Base):
         det3x3 = math.fabs(
             a00 * (a11 * a22 - a12 * a21) - a01 * (a10 * a22 - a12 * a20) + a02 * (a10 * a21 - a11 * a20)
         )
-        if not math.isclose(det3x3, 1, abs_tol=eps):
-            return False
-
-        return True
+        return math.isclose(det3x3, 1, abs_tol=eps)
 
     def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> Representation:
         params = make_params(RepresentationParams, locals())
@@ -344,7 +341,7 @@ class Representation(_Base):
         self._add_child(node)
         return self
 
-    def color_from_url(self, *, schema: SchemaT, url: str, format: str) -> "Representation":
+    def color_from_url(self, *, schema: SchemaT, url: str, format: str) -> Representation:
         params = make_params(ColorUrlParams, locals())
         node = Node(kind="color-from-url", params=params)
         self._add_child(node)
@@ -366,7 +363,7 @@ class GenericVisuals(_Base):
         color: ColorT,
         label: str | None = None,
         tooltip: str | None = None,
-    ) -> "GenericVisuals":
+    ) -> GenericVisuals:
         params = make_params(SphereParams, locals())
         node = Node(kind="sphere", params=params)
         self._add_child(node)
@@ -381,7 +378,7 @@ class GenericVisuals(_Base):
         color: ColorT,
         label: str | None = None,
         tooltip: str | None = None,
-    ) -> "GenericVisuals":
+    ) -> GenericVisuals:
         params = make_params(LineParams, locals())
         node = Node(kind="line", params=params)
         self._add_child(node)
