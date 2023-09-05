@@ -103,6 +103,28 @@ async def symmetry_example(id: str):
     return JSONResponse(builder.get_state())
 
 
+@router.get("/transform/{id}")
+async def transform_example():
+    """
+    Superimpose 2 structures by transforming one of them.
+    """
+    builder = Root()
+    (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/4hhb_updated.cif")
+        .parse(format="mmcif")
+        .model_structure()
+    )
+    (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1oj6_updated.cif")
+        .parse(format="mmcif")
+        .model_structure()
+        .transform(
+            rotation=[-0.72, -0.33, -0.61, 0.36, 0.57, -0.74, 0.59, -0.75, -0.30], translation=[-12.54, 46.79, 94.50]
+        )
+    )
+    return JSONResponse(builder.get_state())
+
+
 @router.get("/validation/{id}")
 async def validation_example(id: str):
     """
