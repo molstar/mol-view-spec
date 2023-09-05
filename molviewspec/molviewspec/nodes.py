@@ -10,6 +10,8 @@ KindT = Literal[
     "color-from-cif",
     "color-from-url",
     "component",
+    "component-from-cif",
+    "component-from-url",
     "download",
     "focus",
     "generic-visuals",
@@ -103,10 +105,6 @@ class ComponentExpression(TypedDict):  # Feel free to rename (this used to be In
     # Not sure if group_id should be here (it makes sense in data from JSON/CIF, but not for inline)
 
 
-class ComponentParams(Params):
-    selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression]
-
-
 RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
 ColorNamesT = Literal["white", "gray", "black", "red", "orange", "yellow", "green", "cyan", "blue", "magenta"]
 ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
@@ -153,6 +151,18 @@ class _DataFromCifParams(Params):
     block_header: NotRequired[str]
     block_index: NotRequired[int]
     schema: SchemaT
+
+
+class ComponentInlineParams(Params):
+    selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression]
+
+
+class ComponentUrlParams(_DataFromUrlParams):
+    pass
+
+
+class ComponentCifCategoryParams(_DataFromCifParams):
+    pass
 
 
 class ColorInlineParams(Params):

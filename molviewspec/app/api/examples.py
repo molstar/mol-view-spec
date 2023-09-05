@@ -42,10 +42,8 @@ async def label_example(id: str):
     whole.representation()
 
     # label some residues with custom text
-    selection1 = structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=120))
-    selection1.label(text="Residue 1")
-    selection2 = structure.component(selector=ComponentExpression(label_asym_id="C", label_seq_id=271))
-    selection2.label(text="Residue 2")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=120)).label(text="Residue 1")
+    structure.component(selector=ComponentExpression(label_asym_id="C", label_seq_id=271)).label(text="Residue 2")
     whole.label_from_cif(schema="residue", category_name="my_custom_cif_category")
 
     return JSONResponse(builder.get_state())

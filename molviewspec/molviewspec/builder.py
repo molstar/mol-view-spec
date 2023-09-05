@@ -11,9 +11,11 @@ from molviewspec.nodes import (
     ColorInlineParams,
     ColorT,
     ColorUrlParams,
+    ComponentCifCategoryParams,
     ComponentExpression,
-    ComponentParams,
+    ComponentInlineParams,
     ComponentSelectorT,
+    ComponentUrlParams,
     DownloadParams,
     FocusInlineParams,
     LabelCifCategoryParams,
@@ -202,10 +204,40 @@ class Structure(_Base):
     def component(
         self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
     ) -> Structure:
-        params: ComponentParams = {"selector": selector}
+        params: ComponentInlineParams = {"selector": selector}
         node = Node(kind="component", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
+
+    def component_from_url(
+        self,
+        *,
+        url: str,
+        format: SchemaFormatT,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
+        params = make_params(ComponentUrlParams, locals())
+        node = Node(kind="component-from-url", params=params)
+        self._add_child(node)
+        return self
+
+    def component_from_cif(
+        self,
+        *,
+        category_name: str,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
+        params = make_params(ComponentCifCategoryParams, locals())
+        node = Node(kind="component-from-cif", params=params)
+        self._add_child(node)
+        return self
 
     def label(self, *, text: str) -> Structure:
         params = make_params(LabelInlineParams, locals())
