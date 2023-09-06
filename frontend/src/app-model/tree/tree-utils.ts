@@ -1,9 +1,7 @@
-import { deepEqual } from 'molstar/lib/mol-util';
-
 import { canonicalJsonString, formatObject, omitObjectKeys, pickObjectKeys } from '../utils';
 import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getParams } from './generic';
 import { MolstarKind, MolstarNode, MolstarTree } from './molstar-nodes';
-import { MVSKind, MVSTree } from './mvs-nodes';
+import { MVSTree } from './mvs-nodes';
 import { ParseFormatMvsToMolstar } from './param-types';
 
 
@@ -138,6 +136,12 @@ const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
             { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
         ] satisfies MolstarNode[];
     },
+    'transform': (node) => {
+        return [
+            { kind: 'transforms' },
+            { kind: node.kind, params: node.params },
+        ];
+    },
     'color-from-url': (node, parent) => {
         const newParams: ParamsOfKind<SubTree<MolstarTree>, 'color-from-url'> = { ...node.params };
         if (parent?.kind === 'representation' && parent.params.color !== undefined) {
@@ -151,8 +155,8 @@ const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
         ] satisfies MolstarNode[];
     },
 };
-/** Node kinds that it makes sense to condense () */
-const molstarNodesToCondense = new Set<MolstarKind>(['download', 'raw', 'parse', 'trajectory', 'model'] satisfies MolstarKind[]);
+/** Node kinds that it makes sense to condense */
+const molstarNodesToCondense = new Set<MolstarKind>(['download', 'raw', 'parse', 'trajectory', 'model', 'transforms'] satisfies MolstarKind[]);
 
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {

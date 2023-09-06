@@ -27,6 +27,8 @@ export const MolstarTreeSchema = TreeSchema('root',
         },
         'model': pickObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
         'structure': omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
+        /** Just to collect multiple transform nodes */
+        'transforms': {},
         'color-from-url': {
             ...MVSTreeSchema.paramsSchemas['color-from-url'],
             background: MVSTreeSchema.paramsSchemas.representation.color,

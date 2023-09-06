@@ -1,3 +1,4 @@
+import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { Download, ParseCif } from 'molstar/lib/mol-plugin-state/transforms/data';
 import { CustomModelProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
@@ -8,18 +9,15 @@ import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 import { AnnotationColorThemeProps, decodeColor } from './cif-color-extension/color';
+import { rowToExpression, rowsToExpression } from './cif-color-extension/helpers/selections';
 import { AnnotationSource, AnnotationSpec } from './cif-color-extension/prop';
+import { CustomLabelProps } from './custom-label-extension/representation';
 import { Defaults } from './param-defaults';
 import { SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { canonicalJsonString, formatObject } from './utils';
-import { CustomLabelProps } from './custom-label-extension/representation';
-import { Expression } from 'molstar/lib/mol-script/language/expression';
-import { rowToExpression, rowsToExpression } from './cif-color-extension/helpers/selections';
-import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expression-formatter';
-import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -66,9 +64,9 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             return undefined;
         }
     },
-    model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'model'>, context: MolstarLoadingContext): StateObjectSelector {
+    model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'model'>, context: MolstarLoadingContext): StateObjectSelector {
         const distinctSpecs: { [key: string]: AnnotationSpec } = {};
-        dfs<SubTree<MolstarTree>>(node, n => {
+        dfs(node, n => {
             if (n.kind === 'color-from-url') {
                 const cifCategories: AnnotationSpec['cifCategories'] = n.params.category_name ?
                     {
@@ -176,23 +174,23 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }).selector;
         return msTarget;
     },
+    transforms(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'transforms'>, context: MolstarLoadingContext): StateObjectSelector {
+        let result = msTarget;
+        for (const transform of getChildren(node)) {
+            if (transform.kind !== 'transform' || !transform.params) continue;
+            const { rotation, translation } = transform.params;
+            const matrix = transformFromRotationTranslation(rotation, translation);
+            result = update.to(result).apply(TransformStructureConformation, { transform: { name: 'matrix', params: { data: matrix } } }).selector;
+        }
+        return result;
+    },
     transform(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'transform'>, context: MolstarLoadingContext): StateObjectSelector {
-        const { rotation, translation } = getParams(node);
-        const T = transformFromRotationTranslation(rotation, translation);
-        const res = update.to(msTarget).apply(TransformStructureConformation, { transform: { name: 'matrix', params: { data: T } } }).selector;
-        console.log('transform:', msTarget.ref, '->', res.ref)
-        return res;
+        // do nothing, all transforms are applied in 'transforms' node
+        return msTarget;
     },
 };
 
-function transformFromArray(transformation: number[] | null | undefined): Mat4 | undefined {
-    if (!transformation) return undefined;
-    if (transformation.length !== 16) throw new Error(`'transformation' param for 'transform' node must be array of 16 elements, found ${transformation}`);
-    const T = Mat4.fromArray(Mat4(), transformation, 0);
-    if (!Mat4.isRotationAndTranslation(T)) throw new Error(`'transformation' param for 'transform' node is not a valid 4x4 rotation+translation matrix: ${transformation} (last row is not [0,0,0,1])`);
-    return T;
-}
-
+/** Return a 4x4 matrix representing rotation + translation */
 function transformFromRotationTranslation(rotation: number[] | null | undefined, translation: number[] | null | undefined): Mat4 {
     if (rotation && rotation.length !== 9) throw new Error(`'rotation' param for 'transform' node must be array of 9 elements, found ${rotation}`);
     if (translation && translation.length !== 3) throw new Error(`'translation' param for 'transform' node must be array of 3 elements, found ${translation}`);
@@ -240,7 +238,7 @@ function colorThemeForColorNode(node: MolstarNode<'representation' | 'color' | '
 }
 function makeNearestColorMap(root: MolstarTree) {
     const map = new Map<MolstarNode, MolstarNode<'representation' | 'color' | 'color-from-url' | 'color-from-cif'>>();
-    dfs<MolstarTree>(root, undefined, (node, parent) => {
+    dfs(root, undefined, (node, parent) => {
         if (!map.has(node)) {
             switch (node.kind) {
                 case 'representation':
@@ -254,25 +252,16 @@ function makeNearestColorMap(root: MolstarTree) {
             map.set(parent, map.get(node)!);
         }
     });
-    dfs<MolstarTree>(root, (node, parent) => {
+    dfs(root, (node, parent) => {
         if (parent && map.has(parent)) {
             map.set(node, map.get(parent)!);
         }
     });
-    // DEBUG:
-    // dfs<MolstarTree>(root, node => {
-    //     const info = map.get(node);
-    //     if (info) {
-    //         ((node.params ??= {}) as any).C = info.kind + canonicalJsonString(info.params);
-    //     }
-    // });
-    // console.log('makeNearestColorMap:')
-    // console.log(treeToString(root))
     return map;
 }
 function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure' | 'component'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
     const items: Partial<CustomLabelProps>['items'] = [];
-    for (const child of getChildren(node as SubTree<MolstarTree>)) {
+    for (const child of getChildren(node)) {
         if (child.kind === 'label') {
             const p = getParams(child);
             const item: CustomLabelProps['items'][number] = {
@@ -285,14 +274,14 @@ function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObje
     }
     let annotationId: string | undefined = undefined;
     let color: string | undefined = undefined;
-    dfs<SubTree<MolstarTree>>(node, n => {
+    dfs(node, n => {
         if (n.kind === 'color-from-url') {
             annotationId ??= context.annotationMap?.get(n);
             color ??= n.params.background;
         }
     });
     if (!color) {
-        dfs<SubTree<MolstarTree>>(node, n => {
+        dfs(node, n => {
             if (n.kind === 'representation') color ??= n.params.color;
         });
     }
@@ -329,7 +318,7 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
     const update = plugin.build();
     const mapping = new Map<SubTree<MolstarTree>, StateObjectSelector | undefined>(); // TODO remove undefined
     const context: MolstarLoadingContext = {};
-    dfs<MolstarTree>(tree, (node, parent) => {
+    dfs(tree, (node, parent) => {
         console.log('Visit', node.kind, formatObject(getParams(node)));
         if (node.kind === 'root') {
             const msRoot = update.toRoot().selector;

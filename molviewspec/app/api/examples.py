@@ -258,9 +258,11 @@ async def testing_formats_example():
 
 @router.get("/testing/structures")
 async def testing_structures_example():
-    """Return state with deposited model for 1og2 (dimer, white),
+    """
+    Return state with deposited model for 1og2 (dimer, white),
     two assemblies for 1og5 (monomers, red and blue);
-    and three models for 1wrf (NMR conformations)"""
+    and three models for 1wrf (NMR conformations)
+    """
     builder = Root()
     entry = (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1og2_updated.cif")
@@ -293,11 +295,15 @@ async def testing_structures_example():
 
 @router.get("/testing/transforms")
 async def testing_transforms_example(id: str = "1cbs"):
-    """TODO docstring"""
+    """
+    Return state demonstrating different transforms:
+    1cbs in original conformation (white), moved (blue), rotated +90 deg around Z (green),
+    and rotated twice(+90 deg around X then +90 deg around Y, orange)
+    """
     builder = Root()
     structure_url = _url_for_testing_local_bcif(id)
     model = builder.download(url=structure_url).parse(format="bcif")
-    orig = (
+    original = (
         model
         .model_structure()
         .representation(color="white")
@@ -305,38 +311,33 @@ async def testing_transforms_example(id: str = "1cbs"):
     moved = (
         model
         .model_structure()
-        .transform(translation=(0, -30, 0))
+        .transform(translation=(0, -40, 0))
         .representation(color="blue")
     )
-    rotZ90 = (
+    rotatedZ90 = (
         model
         .model_structure()
         .transform(rotation=(
-            0, 1, 0, # this is a column, because of column-major convention
+            0, 1, 0,  # this is a column, because of column-major convention
             -1, 0, 0,
             0, 0, 1,
-        ), translation=(70, 5, 0))
+        ), translation=(80, 5, 0))
         .representation(color="green")
     )
-    combination_ = (
+    combination = (
         model
         .model_structure()
-        .transform(
-            rotation=(
-                1, 0, 0,
-                0, 0, 1,
-                0, -1, 0,
-            ),
-        )
-        .transform(
-            rotation=(
-                0, 0, -1,
-                0, 1, 0,
-                1, 0, 0,
-            ),
-            translation=(60, 20, 40)
-        ).representation(color="orange")
-        # Currently transforms applied in opposite order, TODO fix
+        .transform(rotation=(  # rotateX90
+            1, 0, 0,
+            0, 0, 1,
+            0, -1, 0,
+        ))
+        .transform(rotation=(  # rotateY90
+            0, 0, -1,
+            0, 1, 0,
+            1, 0, 0,
+        ), translation=(40, 10, 40))
+        .representation(color="orange")
     )
     return JSONResponse(builder.get_state())
 
