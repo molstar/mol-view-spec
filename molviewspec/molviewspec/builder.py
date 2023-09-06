@@ -1,5 +1,8 @@
 from __future__ import annotations
-from typing import Sequence, TypeVar
+
+import json
+import math
+from typing import Sequence
 
 from molviewspec.nodes import (
     CameraParams,
@@ -8,9 +11,11 @@ from molviewspec.nodes import (
     ColorInlineParams,
     ColorT,
     ColorUrlParams,
-    ComponentParams,
+    ComponentCifCategoryParams,
     ComponentExpression,
+    ComponentInlineParams,
     ComponentSelectorT,
+    ComponentUrlParams,
     DownloadParams,
     FocusInlineParams,
     LabelCifCategoryParams,
@@ -22,9 +27,9 @@ from molviewspec.nodes import (
     ParseParams,
     RepresentationParams,
     RepresentationTypeT,
+    SchemaFormatT,
     SchemaT,
     SphereParams,
-    SchemaFormatT,
     State,
     StructureParams,
     TooltipCifCategoryParams,
@@ -32,18 +37,13 @@ from molviewspec.nodes import (
     TooltipUrlParams,
     TransformParams,
 )
+from molviewspec.params_utils import make_params
 
-VERSION = 4
+VERSION = 5
 
 
 def create_builder() -> Root:
     return Root()
-
-
-def _assign_params(params: dict, type: TypeVar, lcs: dict):
-    for k in type.__annotations__.keys():
-        if k in lcs and lcs.get(k) is not None:
-            params[k] = lcs.get(k)
 
 
 class _Base:
@@ -67,6 +67,11 @@ class Root(_Base):
     def get_state(self) -> State:
         return State(version=VERSION, root=self._node)
 
+    def save_state(self, *, destination: str):
+        state = self.get_state()
+        with open(destination, "w") as out:
+            out.write(json.dumps(state, indent=2))
+
     def camera(
         self,
         *,
@@ -74,17 +79,13 @@ class Root(_Base):
         direction: tuple[float, float, float] | None,
         radius: float | None,
     ):
-        lcs = locals()
-        params: CameraParams = {}
-        _assign_params(params, CameraParams, lcs)
+        params = make_params(CameraParams, locals())
         node = Node(kind="camera", params=params)
         self._add_child(node)
         return self
 
-    def canvas(self, *, background_color: ColorT | None = None) -> "Root":
-        lcs = locals()
-        params: CanvasParams = {}
-        _assign_params(params, CanvasParams, lcs)
+    def canvas(self, *, background_color: ColorT | None = None) -> Root:
+        params = make_params(CanvasParams, locals())
         node = Node(kind="canvas", params=params)
         self._add_child(node)
         return self
@@ -94,7 +95,7 @@ class Root(_Base):
         self._add_child(node)
         return Download(node=node, root=self._root)
 
-    def generic_visuals(self) -> "GenericVisuals":
+    def generic_visuals(self) -> GenericVisuals:
         node = Node(kind="generic-visuals")
         self._add_child(node)
         return GenericVisuals(node=node, root=self._root)
@@ -105,9 +106,7 @@ class Root(_Base):
 class Download(_Base):
     # TODO defaults in signature makes them more obvious to users but this can't accommodate more complex cases
     def parse(self, *, format: ParseFormatT) -> Parse:
-        lcs = locals()
-        params: ParseParams = {}
-        _assign_params(params, ParseParams, lcs)
+        params = make_params(ParseParams, locals())
         node = Node(kind="parse", params=params)
         self._add_child(node)
         return Parse(node=node, root=self._root)
@@ -120,16 +119,14 @@ class Parse(_Base):
         model_index: int | None = None,  # TODO default candidate
         block_index: int | None = None,  # TODO default candidate
         block_header: str | None = None,
-    ) -> "Structure":
+    ) -> Structure:
         """
         Create a structure for the deposited coordinates.
         :param model_index: 0-based model index in case multiple NMR frames are present
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        lcs = locals()
-        params: StructureParams = {"kind": "model"}
-        _assign_params(params, StructureParams, lcs)
+        params = make_params(StructureParams, locals(), kind="model")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -151,11 +148,9 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        lcs = locals()
-        params: StructureParams = {"kind": "assembly"}
-        _assign_params(params, StructureParams, lcs)
         if assembly_id is None and assembly_index is None:
-            params["assembly_index"] = 0
+            assembly_index = 0
+        params = make_params(StructureParams, locals(), kind="assembly")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -175,18 +170,16 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        lcs = locals()
-        params: StructureParams = {"kind": "symmetry"}
-        _assign_params(params, StructureParams, lcs)
+        params = make_params(StructureParams, locals(), kind="symmetry")
         if ijk_min is None:
-            params["ijk_min"] = [-1, -1, -1]
+            params["ijk_min"] = (-1, -1, -1)
         if ijk_max is None:
-            params["ijk_max"] = [1, 1, 1]
+            params["ijk_max"] = (1, 1, 1)
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
 
-    def symmetry_mate_structure(
+    def symmetry_mates_structure(
         self,
         *,
         radius: float | None = None,
@@ -199,9 +192,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        lcs = locals()
-        params: StructureParams = {"kind": "symmetry-mates"}
-        _assign_params(params, StructureParams, lcs)
+        params = make_params(StructureParams, locals(), kind="symmetry-mates")
         if radius is None:
             params["radius"] = 5.0
         node = Node(kind="structure", params=params)
@@ -210,82 +201,112 @@ class Parse(_Base):
 
 
 class Structure(_Base):
-    def component(self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all") -> Structure:
-        params: ComponentParams = {"selector": selector}
+    def component(
+        self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
+    ) -> Structure:
+        params: ComponentInlineParams = {"selector": selector}
         node = Node(kind="component", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
 
+    def component_from_url(
+        self,
+        *,
+        url: str,
+        format: SchemaFormatT,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
+        params = make_params(ComponentUrlParams, locals())
+        node = Node(kind="component-from-url", params=params)
+        self._add_child(node)
+        return self
+
+    def component_from_cif(
+        self,
+        *,
+        category_name: str,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
+        params = make_params(ComponentCifCategoryParams, locals())
+        node = Node(kind="component-from-cif", params=params)
+        self._add_child(node)
+        return self
+
     def label(self, *, text: str) -> Structure:
-        lcs = locals()
-        params: LabelInlineParams = {}
-        _assign_params(params, LabelInlineParams, lcs)
+        params = make_params(LabelInlineParams, locals())
         node = Node(kind="label", params=params)
         self._add_child(node)
         return self
 
-    def label_from_url(self, *,
-                       url: str,
-                       format: SchemaFormatT,
-                       category_name: str | None = None,
-                       field_name: str | None = None,
-                       block_header: str | None = None,
-                       block_index: int | None = None,
-                       schema: SchemaT
-                       ) -> Structure:
-        lcs = locals()
-        params: LabelUrlParams = {}
-        _assign_params(params, LabelUrlParams, lcs)
+    def label_from_url(
+        self,
+        *,
+        url: str,
+        format: SchemaFormatT,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
+        params = make_params(LabelUrlParams, locals())
         node = Node(kind="label-from-url", params=params)
         self._add_child(node)
         return self
 
-    def label_from_cif(self, *,
-                       category_name: str,
-                       field_name: str | None = None,
-                       block_header: str | None = None,
-                       block_index: int | None = None,
-                       schema: SchemaT) -> Structure:
-        lcs = locals()
-        params: LabelCifCategoryParams = {}
-        _assign_params(params, LabelCifCategoryParams, lcs)
+    def label_from_cif(
+        self,
+        *,
+        category_name: str,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
+        params = make_params(LabelCifCategoryParams, locals())
         node = Node(kind="label-from-cif", params=params)
         self._add_child(node)
         return self
 
     def tooltip(self, *, text: str) -> Structure:
-        lcs = locals()
-        params: TooltipInlineParams = {}
-        _assign_params(params, TooltipInlineParams, lcs)
+        params = make_params(TooltipInlineParams, locals())
         node = Node(kind="tooltip", params=params)
         self._add_child(node)
         return self
 
-    def tooltip_from_url(self, *,
-                         url: str,
-                         format: SchemaFormatT,
-                         category_name: str | None = None,
-                         field_name: str | None = None,
-                         block_header: str | None = None,
-                         block_index: int | None = None,
-                         schema: SchemaT
-                         ) -> Structure:
-        lcs = locals()
-        params: TooltipUrlParams = {}
-        _assign_params(params, TooltipUrlParams, lcs)
+    def tooltip_from_url(
+        self,
+        *,
+        url: str,
+        format: SchemaFormatT,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
+        params = make_params(TooltipUrlParams, locals())
         node = Node(kind="tooltip-from-url", params=params)
         self._add_child(node)
         return self
 
-    def tooltip_from_cif(self, *,
-                         category_name: str,
-                         field_name: str | None = None,
-                         block_header: str | None = None,
-                         block_index: int | None = None,
-                         schema: SchemaT) -> Structure:
-        lcs = locals()
-        params: TooltipCifCategoryParams = {}
-        _assign_params(params, TooltipCifCategoryParams, lcs)
+    def tooltip_from_cif(
+        self,
+        *,
+        category_name: str,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        schema: SchemaT,
+    ) -> Structure:
+        params = make_params(TooltipCifCategoryParams, locals())
         node = Node(kind="tooltip-from-cif", params=params)
         self._add_child(node)
         return self
@@ -296,9 +317,7 @@ class Structure(_Base):
         :return: this builder
         """
         # TODO other focus flavors based on CIF/JSON?
-        lcs = locals()
-        params: FocusInlineParams = {}
-        _assign_params(params, FocusInlineParams, lcs)
+        params = make_params(FocusInlineParams, locals())
         node = Node(kind="focus", params=params)
         self._add_child(node)
         return self
@@ -306,33 +325,42 @@ class Structure(_Base):
     def transform(
         self,
         *,
-        transformation: Sequence[float] | None = None,
-        rotation: Sequence[float] | None = None,
-        translation: tuple[float, float, float] | None = None,
+        rotation: Sequence[float],
+        translation: Sequence[float],
     ) -> Structure:
-        if transformation is not None:
-            transformation = tuple(transformation)
-            if len(transformation) != 16:
-                raise ValueError(f"Parameter `transformation` must have lenght 16")
-        if rotation is not None:
-            rotation = tuple(rotation)
-            if len(rotation) != 9:
-                raise ValueError(f"Parameter `rotation` must have lenght 9")
-        if translation is not None:
-            translation = tuple(translation)
-            if len(translation) != 3:
-                raise ValueError(f"Parameter `translation` must have lenght 3")
-        lcs = locals()
-        params: TransformParams = {}
-        _assign_params(params, TransformParams, lcs)
+        # guard against multiple transforms getting registered -- TODO factor out as general purpose validation?
+        if "children" in self._node and list(filter(lambda c: c["kind"] == "transform", self._node["children"])):
+            raise ValueError(
+                f"Only a single `transform` node can be registered per structure, compose them if you need to chain transforms"
+            )
+
+        rotation = tuple(rotation)
+        if len(rotation) != 9:
+            raise ValueError(f"Parameter `rotation` must have length 9")
+        if not self._is_rotation_matrix(rotation):
+            raise ValueError(f"Parameter `rotation` must be a rotation matrix")
+        translation = tuple(translation)
+
+        if len(translation) != 3:
+            raise ValueError(f"Parameter `translation` must have length 3")
+
+        params = make_params(TransformParams, locals())
         node = Node(kind="transform", params=params)
         self._add_child(node)
         return self
 
+    # TODO factor out as general purpose validation?
+    @staticmethod
+    def _is_rotation_matrix(t: tuple[float], eps: float = 0.005):
+        a00, a01, a02, a10, a11, a12, a20, a21, a22 = t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
+
+        det3x3 = math.fabs(
+            a00 * (a11 * a22 - a12 * a21) - a01 * (a10 * a22 - a12 * a20) + a02 * (a10 * a21 - a11 * a20)
+        )
+        return math.isclose(det3x3, 1, abs_tol=eps)
+
     def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> Representation:
-        lcs = locals()
-        params: RepresentationParams = {}
-        _assign_params(params, RepresentationParams, lcs)
+        params = make_params(RepresentationParams, locals())
         node = Node(kind="representation", params=params)
         self._add_child(node)
         return Representation(node=node, root=self._root)
@@ -340,25 +368,19 @@ class Structure(_Base):
 
 class Representation(_Base):
     def color_from_cif(self, *, schema: SchemaT, category_name: str) -> Representation:
-        lcs = locals()
-        params: ColorCifCategoryParams = {}
-        _assign_params(params, ColorCifCategoryParams, lcs)
+        params = make_params(ColorCifCategoryParams, locals())
         node = Node(kind="color-from-cif", params=params)
         self._add_child(node)
         return self
 
-    def color_from_url(self, *, schema: SchemaT, url: str, format: str) -> "Representation":
-        lcs = locals()
-        params: ColorUrlParams = {}
-        _assign_params(params, ColorUrlParams, lcs)
+    def color_from_url(self, *, schema: SchemaT, url: str, format: str) -> Representation:
+        params = make_params(ColorUrlParams, locals())
         node = Node(kind="color-from-url", params=params)
         self._add_child(node)
         return self
 
     def color(self, *, color: ColorT) -> Representation:
-        lcs = locals()
-        params: ColorInlineParams = {}
-        _assign_params(params, ColorInlineParams, lcs)
+        params = make_params(ColorInlineParams, locals())
         node = Node(kind="color", params=params)
         self._add_child(node)
         return self
@@ -373,10 +395,8 @@ class GenericVisuals(_Base):
         color: ColorT,
         label: str | None = None,
         tooltip: str | None = None,
-    ) -> "GenericVisuals":
-        lcs = locals()
-        params: SphereParams = {}
-        _assign_params(params, SphereParams, lcs)
+    ) -> GenericVisuals:
+        params = make_params(SphereParams, locals())
         node = Node(kind="sphere", params=params)
         self._add_child(node)
         return self
@@ -390,10 +410,8 @@ class GenericVisuals(_Base):
         color: ColorT,
         label: str | None = None,
         tooltip: str | None = None,
-    ) -> "GenericVisuals":
-        lcs = locals()
-        params: LineParams = {}
-        _assign_params(params, LineParams, lcs)
+    ) -> GenericVisuals:
+        params = make_params(LineParams, locals())
         node = Node(kind="line", params=params)
         self._add_child(node)
         return self
