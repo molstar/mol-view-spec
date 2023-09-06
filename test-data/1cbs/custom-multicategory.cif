@@ -35,8 +35,9 @@ _color.type_symbol
 _color.label_atom_id
 _color.tooltip
 _color.color
-A . . . polymer '#00AA00'
-B . . . ligand '#AA00AA'
+_color.secondary_color
+A . . . polymer green orange
+B . . . ligand blue yellow
 
 loop_
 _black_is_good.label_asym_id 
@@ -45,5 +46,5 @@ _black_is_good.type_symbol
 _black_is_good.label_atom_id
 _black_is_good.tooltip
 _black_is_good.color
-A . . . polymer '#000000'
-B . . . ligand '#000000'
+A . . . polymer black
+B . . . ligand black

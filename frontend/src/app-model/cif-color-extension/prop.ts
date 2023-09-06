@@ -13,16 +13,16 @@ import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-proper
 import { CustomPropertyDescriptor } from 'molstar/lib/mol-model/custom-property';
 import { Model } from 'molstar/lib/mol-model/structure';
 import { StructureElement } from 'molstar/lib/mol-model/structure/structure';
-import { UUID } from 'molstar/lib/mol-util';
+import { UUID, deepEqual } from 'molstar/lib/mol-util';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
+import { PD_MaybeString } from '../pd-extension';
 import { Json, extend, pickObjectKeys, promiseAllObj } from '../utils';
+import { rangesForeach } from './helpers/atom-ranges';
 import { createIndicesAndSortings } from './helpers/indexing';
 import { atomQualifies, getAtomRangesForRow } from './helpers/selections';
 import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from './schemas';
-import { rangesForeach } from './helpers/atom-ranges';
-import { PD_MaybeInteger, PD_MaybeString } from '../pd-extension';
 
 
 /** Allowed values for the annotation format parameter */
@@ -110,15 +110,15 @@ export class Annotations {
 
 /** Main class for processing annotation */
 export class Annotation {
-    /** Store `ElementIndex` -> `AnnotationRow` mapping for each `Model` */
-    private indexedModels = new Map<UUID, (AnnotationRow | undefined)[]>();
+    /** Store mapping `ElementIndex` -> annotation row index for each `Model`, -1 means no row applies */
+    private indexedModels = new Map<UUID, number[]>();
 
     constructor(
         public data: AnnotationData,
         public schema: AnnotationSchema,
     ) { }
 
-    /** Create a new `Annotation` based on specification `spec`. Use `data` if provided, otherwise download the data. */
+    /** Create a new `Annotation` based on specification `spec`. Use `file` if provided, otherwise download the file. */
     static async fromSpec(ctx: CustomProperty.Context, spec: AnnotationSpec, file?: AnnotationFile): Promise<Annotation> {
         file ??= await getFileFromSource(ctx, spec);
         let data: AnnotationData;
@@ -165,14 +165,20 @@ export class Annotation {
         return result;
     }
 
-    /** Return AnnotationRow assigned to location `loc`, if any */
-    getAnnotationForLocation(loc: StructureElement.Location): AnnotationRow | undefined {
+    /** Return value of field `fieldName` assigned to location `loc`, if any */
+    getValueForLocation(loc: StructureElement.Location, fieldName: string): string | undefined {
         const indexedModel = this.getIndexedModel(loc.unit.model);
-        return indexedModel[loc.element];
+        const iRow = indexedModel[loc.element];
+        switch (this.data.format) {
+            case 'json':
+                return getValueFromJson(iRow, fieldName, this.data.data);
+            case 'cif':
+                return getValueFromCif(iRow, fieldName, this.data.data);
+        }
     }
 
     /** Return cached `ElementIndex` -> `AnnotationRow` mapping for `Model` (or create it if not cached yet) */
-    private getIndexedModel(model: Model): (AnnotationRow | undefined)[] {
+    private getIndexedModel(model: Model): number[] {
         const key = model.id;
         if (!this.indexedModels.has(key)) {
             const result = this.getRowForEachAtom(model);
@@ -182,14 +188,15 @@ export class Annotation {
     }
 
     /** Create `ElementIndex` -> `AnnotationRow` mapping for `Model` */
-    private getRowForEachAtom(model: Model): (AnnotationRow | undefined)[] {
+    private getRowForEachAtom(model: Model): number[] {
         const indices = createIndicesAndSortings(model);
         const nAtoms = model.atomicHierarchy.atoms._rowCount;
-        const result: (AnnotationRow | undefined)[] = Array(nAtoms).fill(undefined);
+        const result: number[] = Array(nAtoms).fill(-1);
         console.time('fill');
-        for (const row of this.getRows()) {
-            const atomRanges = getAtomRangesForRow(model, row, indices);
-            rangesForeach(atomRanges, (from, to) => result.fill(row, from, to));
+        const rows = this.getRows();
+        for (let i = 0, nRows = rows.length; i < nRows; i++) {
+            const atomRanges = getAtomRangesForRow(model, rows[i], indices);
+            rangesForeach(atomRanges, (from, to) => result.fill(i, from, to));
         }
         console.timeEnd('fill');
         return result;
@@ -206,19 +213,22 @@ export class Annotation {
     }
 }
 
-function getValueFromJson<T>(rowIndex: number, columnName: string, data: Json): T | undefined {
+function getValueFromJson<T>(rowIndex: number, fieldName: string, data: Json): T | undefined {
     const js = data as any;
     if (Array.isArray(js)) {
         const row = js[rowIndex] ?? {};
-        return row[columnName];
+        return row[fieldName];
     } else {
-        const column = js[columnName] ?? [];
+        const column = js[fieldName] ?? [];
         return column[rowIndex];
     }
 }
-// function getValueFromCif<T>(rowIndex: number, columnName: string, data: CifFile, categoryNames: string[] | undefined): T | undefined {
-// }
-
+function getValueFromCif(rowIndex: number, fieldName: string, data: CifCategory): string | undefined {
+    const column = data.getField(fieldName);
+    if (!column) return undefined;
+    if (column.valueKind(rowIndex) !== Column.ValueKind.Present) return undefined;
+    return column.str(rowIndex);
+}
 
 function getRowsFromJson(data: Json, schema: AnnotationSchema): AnnotationRow[] {
     const js = data as any;

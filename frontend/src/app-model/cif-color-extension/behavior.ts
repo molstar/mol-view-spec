@@ -34,7 +34,7 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean, showToolt
                         if (!location.unit.model.customProperties.hasReference(this.provider.descriptor)) return undefined; // somehow this line disables this label after colorTheme has been changed (magic)
                         const annots = AnnotationsProvider.get(location.unit.model).value;
                         if (!annots) return undefined;
-                        const tooltips = annots.getAllAnnotations().map(annot => annot.getAnnotationForLocation(location)?.tooltip).filter(tooltip => !!tooltip);
+                        const tooltips = annots.getAllAnnotations().map(annot => annot.getValueForLocation(location, 'tooltip')).filter(tooltip => !!tooltip); // TODO do not hardcode 'tooltip'
                         return (tooltips.length > 0) ? tooltips.join(' | ') : undefined;
                     default:
                         return undefined;

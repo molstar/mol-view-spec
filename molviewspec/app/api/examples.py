@@ -462,6 +462,7 @@ async def testing_color_cif_multicategory_example():
         format="cif",
         block_index=1,
         category_name="color",
+        field_name="secondary_color"
     )
     structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
         schema="atom",

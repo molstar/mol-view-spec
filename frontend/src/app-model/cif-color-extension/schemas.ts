@@ -57,30 +57,25 @@ export const CIFAnnotationSchema = {
     atom_id: int,
     /** 0-base index of the atom in the source data */
     atom_index: int,
-
-    color: str,
-    tooltip: str,
 } satisfies Table.Schema;
 
-/** Represents a set of criteria for selection of atoms in a model (`all-atomic` schema) + `color` and `tooltip`.
+/** Represents a set of criteria for selection of atoms in a model (`all-atomic` schema).
  * Missing/undefined values mean than we do not care about that specific atom property. */
 export type AnnotationRow = Partial<Table.Row<typeof CIFAnnotationSchema>>
 
 
-const CommonFields = ['color', 'tooltip'] as const;
-
 /** Allowed fields (i.e. CIF columns or JSON keys) for each annotation schema
  * (other fields will just be ignored) */
 export const FieldsForSchemas = {
-    'whole-structure': [...CommonFields],
-    'entity': ['label_entity_id', ...CommonFields],
-    'chain': ['label_entity_id', 'label_asym_id', ...CommonFields],
-    'auth-chain': ['auth_asym_id', ...CommonFields],
-    'residue': ['label_entity_id', 'label_asym_id', 'label_seq_id', ...CommonFields],
-    'auth-residue': ['auth_asym_id', 'auth_seq_id', 'pdbx_PDB_ins_code', ...CommonFields],
-    'residue-range': ['label_entity_id', 'label_asym_id', 'beg_label_seq_id', 'end_label_seq_id', ...CommonFields],
-    'auth-residue-range': ['auth_asym_id', 'beg_auth_seq_id', 'end_auth_seq_id', 'pdbx_PDB_ins_code', ...CommonFields],
-    'atom': ['label_entity_id', 'label_asym_id', 'label_seq_id', 'label_atom_id', 'type_symbol', 'atom_id', 'atom_index', ...CommonFields],
-    'auth-atom': ['auth_asym_id', 'auth_seq_id', 'pdbx_PDB_ins_code', 'auth_atom_id', 'type_symbol', 'atom_id', 'atom_index', ...CommonFields],
+    'whole-structure': [],
+    'entity': ['label_entity_id'],
+    'chain': ['label_entity_id', 'label_asym_id'],
+    'auth-chain': ['auth_asym_id'],
+    'residue': ['label_entity_id', 'label_asym_id', 'label_seq_id'],
+    'auth-residue': ['auth_asym_id', 'auth_seq_id', 'pdbx_PDB_ins_code'],
+    'residue-range': ['label_entity_id', 'label_asym_id', 'beg_label_seq_id', 'end_label_seq_id'],
+    'auth-residue-range': ['auth_asym_id', 'beg_auth_seq_id', 'end_auth_seq_id', 'pdbx_PDB_ins_code'],
+    'atom': ['label_entity_id', 'label_asym_id', 'label_seq_id', 'label_atom_id', 'type_symbol', 'atom_id', 'atom_index'],
+    'auth-atom': ['auth_asym_id', 'auth_seq_id', 'pdbx_PDB_ins_code', 'auth_atom_id', 'type_symbol', 'atom_id', 'atom_index'],
     'all-atomic': Object.keys(CIFAnnotationSchema) as (keyof typeof CIFAnnotationSchema)[],
 } satisfies { [schema in AnnotationSchema]: (keyof typeof CIFAnnotationSchema)[] };

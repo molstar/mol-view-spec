@@ -149,8 +149,9 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             colorTheme: {
                 name: 'annotation',
                 params: {
-                    background: decodeColor(node.params.background),
                     annotationId: context.annotationMap?.get(node),
+                    fieldName: node.params.field_name ?? Defaults['color-from-url'].field_name,
+                    background: decodeColor(node.params.background),
                 } satisfies Partial<AnnotationColorThemeProps>
             }
         }));
