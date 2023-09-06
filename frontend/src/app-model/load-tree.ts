@@ -68,7 +68,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         const distinctSpecs: { [key: string]: AnnotationSpec } = {};
         dfs(node, n => {
             if (n.kind === 'color-from-url') {
-                const block: AnnotationSpec['cifBlock'] = n.params.block_header ?
+                const block: AnnotationSpec['cifBlock'] = isDefined(n.params.block_header) ?
                     { name: 'header', params: { header: n.params.block_header } }
                     : isDefined(n.params.block_index) ?
                         { name: 'index', params: { index: n.params.block_index ?? 0 } }

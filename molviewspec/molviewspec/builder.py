@@ -367,13 +367,15 @@ class Structure(_Base):
 
 
 class Representation(_Base):
-    def color_from_cif(self, *, schema: SchemaT, category_name: str) -> Representation:
+    def color_from_cif(self, *, schema: SchemaT, category_name: str,
+                       field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
         params = make_params(ColorCifCategoryParams, locals())
         node = Node(kind="color-from-cif", params=params)
         self._add_child(node)
         return self
 
-    def color_from_url(self, *, schema: SchemaT, url: str, format: str) -> Representation:
+    def color_from_url(self, *, schema: SchemaT, url: str, format: str, category_name: str | None = None,
+                       field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
         params = make_params(ColorUrlParams, locals())
         node = Node(kind="color-from-url", params=params)
         self._add_child(node)

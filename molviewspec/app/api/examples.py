@@ -325,16 +325,18 @@ async def testing_structures_example():
     model_2 = cif_1wrf.model_structure(model_index=2).component().representation(color="blue")
     return JSONResponse(builder.get_state())
 
+
 @router.get("/testing/transforms")
 async def testing_transforms_example(id: str = "1cbs"):
     """
     Return state demonstrating different transforms:
     1cbs in original conformation (white), moved (blue), rotated +90 deg around Z (green),
-    and rotated twice(+90 deg around X then +90 deg around Y, orange)
+    # and rotated twice(+90 deg around X then +90 deg around Y, orange)
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif(id)
     model = builder.download(url=structure_url).parse(format="bcif")
+    eye = (1, 0, 0, 0, 1, 0, 0, 0, 1)
     original = (
         model
         .model_structure()
@@ -343,7 +345,7 @@ async def testing_transforms_example(id: str = "1cbs"):
     moved = (
         model
         .model_structure()
-        .transform(translation=(0, -40, 0))
+        .transform(rotation=eye, translation=(0, -40, 0))
         .representation(color="blue")
     )
     rotatedZ90 = (
@@ -356,21 +358,22 @@ async def testing_transforms_example(id: str = "1cbs"):
         ), translation=(80, 5, 0))
         .representation(color="green")
     )
-    combination = (
-        model
-        .model_structure()
-        .transform(rotation=(  # rotateX90
-            1, 0, 0,
-            0, 0, 1,
-            0, -1, 0,
-        ))
-        .transform(rotation=(  # rotateY90
-            0, 0, -1,
-            0, 1, 0,
-            1, 0, 0,
-        ), translation=(40, 10, 40))
-        .representation(color="orange")
-    )
+    # Right now builder prohibits multiple transforms, but frontend supports them
+    # combination = (
+    #     model
+    #     .model_structure()
+    #     .transform(rotation=(  # rotateX90
+    #         1, 0, 0,
+    #         0, 0, 1,
+    #         0, -1, 0,
+    #     ), translation=(0, 0, 0))
+    #     .transform(rotation=(  # rotateY90
+    #         0, 0, -1,
+    #         0, 1, 0,
+    #         1, 0, 0,
+    #     ), translation=(40, 10, 40))
+    #     .representation(color="orange")
+    # )
     return JSONResponse(builder.get_state())
 
 
@@ -441,6 +444,31 @@ async def testing_color_cif_example():
         schema="atom",
         url=annotation_url,
         format="cif",
+    )
+    return JSONResponse(builder.get_state())
+
+@router.get("/testing/color_multicategory_cif")
+async def testing_color_cif_multicategory_example():
+    """
+    An example with CIF-encoded coloring.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif("1cbs")
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom-multicategory.cif"
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+        schema="atom",
+        url=annotation_url,
+        format="cif",
+        block_index=1,
+        category_name="color",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="atom",
+        url=annotation_url,
+        format="cif",
+        block_header="block2",
+        category_name="black_is_good",
     )
     return JSONResponse(builder.get_state())
 
@@ -578,7 +606,7 @@ async def testing_labels_example(id="1h9t"):
     structure.component(selector=ComponentExpression(label_asym_id='F')).label(text='Chloride')
     structure.component(selector=ComponentExpression(label_asym_id='G')).label(text='Chloride')
     structure.component(selector=ComponentExpression(label_asym_id='I')).label(text='Chloride')
-    
+
     structure.component(selector=ComponentExpression(label_asym_id='A', label_seq_id=57)).label(text='Ligand binding')
     structure.component(selector=ComponentExpression(label_asym_id='A', label_seq_id=67)).label(text='Ligand binding')
     structure.component(selector=ComponentExpression(label_asym_id='A', label_seq_id=121)).label(text='Ligand binding')

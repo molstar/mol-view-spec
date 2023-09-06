@@ -35,6 +35,7 @@ function Main() {
         components: 'http://localhost:9000/api/v1/examples/testing/components',
         'colors-rainbow 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
         'colors-cif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_cif',
+        'colors-cif-multicategory 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_multicategory_cif',
         'colors-bcif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_bcif',
         'colors-small 2bvk': 'http://localhost:9000/api/v1/examples/testing/color_small',
         'colors-domains 1h9t': 'http://localhost:9000/api/v1/examples/testing/color_domains',
