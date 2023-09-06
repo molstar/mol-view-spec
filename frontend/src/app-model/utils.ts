@@ -218,3 +218,15 @@ export function distinct<T extends Json>(values: T[]): T[] {
     }
     return result;
 }
+
+
+/** Return `true` if `value` is not `undefined` or `null`.
+ * Prefer this over `value !== undefined`
+ * (for maybe if we want to allow `null` in `AnnotationRow` in the future) */
+export function isDefined<T>(value: T | undefined | null): value is T {
+    return value !== undefined && value !== null;
+}
+/** Return `true` if at least one of `values` is not `undefined` or `null`. */
+export function isAnyDefined(...values: any[]): boolean {
+    return values.some(v => isDefined(v));
+}

@@ -15,6 +15,7 @@ import { TextBuilder } from 'molstar/lib/mol-geo/geometry/text/text-builder';
 import { ElementIterator, eachSerialElement, getSerialElementLoci } from 'molstar/lib/mol-repr/structure/visual/util/element';
 // import { ColorNames } from '../../../mol-util/color/names';
 // import { Vec3 } from '../../../mol-math/linear-algebra';
+import { SortedArray } from 'molstar/lib/mol-data/int';
 import { Sphere3D } from 'molstar/lib/mol-math/geometry';
 import { BoundaryHelper } from 'molstar/lib/mol-math/geometry/boundary-helper';
 import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
@@ -28,9 +29,9 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { AtomRanges, rangesMap } from '../cif-color-extension/helpers/atom-ranges';
 import { IndicesAndSortings, createIndicesAndSortings } from '../cif-color-extension/helpers/indexing';
 import { atomQualifies, getAtomRangesForRow } from '../cif-color-extension/helpers/selections';
-import { extend, omitObjectKeys } from '../utils';
-import { SortedArray } from 'molstar/lib/mol-data/int';
 import { AnnotationRow } from '../cif-color-extension/schemas';
+import { PD_MaybeInteger, PD_MaybeString } from '../pd-extension';
+import { extend, omitObjectKeys } from '../utils';
 
 
 export const CustomLabelTextParams = {
@@ -371,30 +372,4 @@ function boundarySphereApproximation(flatCoords: readonly number[]): Sphere3D {
         if (sqDist > maxSqDist) maxSqDist = sqDist;
     }
     return { center: Vec3.create(cumX, cumY, cumZ), radius: maxSqDist ** 0.5 };
-}
-
-
-/** The magic with negative zero looks crazy, but it's needed if we want to be able to write negative numbers, LOL. Please help if you know a better solution. */
-function parseMaybeInt(input: string): number | undefined {
-    if (input.trim() === '-') return -0;
-    const num = parseInt(input);
-    return isNaN(num) ? undefined : num;
-}
-function stringifyMaybeInt(num: number | undefined): string {
-    if (num === undefined) return '';
-    if (Object.is(num, -0)) return '-';
-    return num.toString();
-}
-function PD_MaybeInteger(defaultValue?: number, info?: PD.Info): PD.Base<number | undefined> {
-    return PD.Converted<number | undefined, PD.Text>(stringifyMaybeInt, parseMaybeInt, PD.Text(stringifyMaybeInt(defaultValue), info));
-}
-
-function parseMaybeString(input: string): string | undefined {
-    return input === '' ? undefined : input;
-}
-function stringifyMaybeString(str: string | undefined): string {
-    return str === undefined ? '' : str;
-}
-function PD_MaybeString(defaultValue?: string, info?: PD.Info): PD.Base<string | undefined> {
-    return PD.Converted<string | undefined, PD.Text>(stringifyMaybeString, parseMaybeString, PD.Text(stringifyMaybeString(defaultValue), info));
 }

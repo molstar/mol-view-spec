@@ -10,7 +10,7 @@ import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder'
 import { Expression } from 'molstar/lib/mol-script/language/expression';
 import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expression-formatter';
 
-import { extend, filterInPlace, range } from '../../utils';
+import { extend, filterInPlace, isAnyDefined, isDefined, range } from '../../utils';
 import { AtomRanges, addRange, emptyRanges, singleRange } from '../helpers/atom-ranges';
 import { AnnotationRow } from '../schemas';
 import { IndicesAndSortings, getKeysWithValue, getKeysWithValueInRange } from './indexing';
@@ -66,17 +66,6 @@ export function getAtomRangesForRow(model: Model, row: AnnotationRow, indices: I
     return ranges;
 }
 
-
-/** Return `true` if `value` is not `undefined` or `null`.
- * Prefer this over `value !== undefined`
- * (for maybe if we want to allow `null` in `AnnotationRow` in the future) */
-function isDefined<T>(value: T | undefined | null): value is T {
-    return value !== undefined && value !== null;
-}
-/** Return `true` if at least one of `values` is not `undefined` or `null`. */
-function isAnyDefined(...values: any[]): boolean {
-    return values.some(v => isDefined(v));
-}
 
 
 /** Return an array of chain indexes which satisfy criteria given by `row` */

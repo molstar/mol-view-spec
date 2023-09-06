@@ -10,14 +10,14 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 import { AnnotationColorThemeProps, decodeColor } from './cif-color-extension/color';
 import { rowToExpression, rowsToExpression } from './cif-color-extension/helpers/selections';
-import { AnnotationSource, AnnotationSpec } from './cif-color-extension/prop';
+import { AnnotationSpec } from './cif-color-extension/prop';
 import { CustomLabelProps } from './custom-label-extension/representation';
 import { Defaults } from './param-defaults';
 import { SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
-import { canonicalJsonString, formatObject } from './utils';
+import { canonicalJsonString, formatObject, isDefined } from './utils';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -68,7 +68,12 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         const distinctSpecs: { [key: string]: AnnotationSpec } = {};
         dfs(node, n => {
             if (n.kind === 'color-from-url') {
-                const spec: Omit<AnnotationSpec, 'id'> = { url: n.params.url, format: n.params.format, schema: n.params.schema, cifCategory: n.params.category_name ?? '' };
+                const block: AnnotationSpec['cifBlock'] = n.params.block_header ?
+                    { name: 'header', params: { header: n.params.block_header } }
+                    : isDefined(n.params.block_index) ?
+                        { name: 'index', params: { index: n.params.block_index ?? 0 } }
+                        : { name: 'first', params: {} };
+                const spec: Omit<AnnotationSpec, 'id'> = { url: n.params.url, format: n.params.format, schema: n.params.schema, cifBlock: block, cifCategory: n.params.category_name ?? undefined };
                 const key = canonicalJsonString(spec as any);
                 distinctSpecs[key] ??= { ...spec, id: UUID.create22() };
                 (context.annotationMap ??= new Map()).set(n, distinctSpecs[key].id);
@@ -291,17 +296,6 @@ function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObje
     }
 }
 
-
-/** Remove duplicates from annotation sources. Throw error if a single URL is listed twice with different formats. */
-function distinctAnnotationSources(sources: AnnotationSource[]) {
-    const seen: { [url: string]: AnnotationSource } = {};
-    for (const source of sources) {
-        const older = seen[source.url];
-        if (older && older.format !== source.format) throw new Error('One annotation source URL cannot be listed with different formats.');
-        if (!older) seen[source.url] = source;
-    }
-    return Object.values(seen);
-}
 
 export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
     const update = plugin.build();
