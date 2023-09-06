@@ -9,7 +9,7 @@ _color.label_atom_id
 _color.tooltip
 _color.color
 # polymer
-A . . . polymer '#121212'
+A . . . polymer '#AAAAAA'
 # REA ligand 
 B . . . ligand  '#FF0000'
 B . C . ligand  '#0044FF'

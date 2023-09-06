@@ -36,15 +36,7 @@ export const AnnotationsParams = {
             url: PD.Text(''),
             format: AnnotationFormat.PDSelect(),
             schema: AnnotationSchema.PDSelect(),
-            cifCategories: PD.MappedStatic('all', {
-                all: PD.EmptyGroup(),
-                selected: PD.Group({
-                    list: PD.ObjectList(
-                        { categoryName: PD.Text() },
-                        obj => obj.categoryName
-                    ),
-                })
-            }),
+            cifCategory: PD.Text(),
             id: PD.Text('', { description: 'Arbitrary identifier that can be referenced by AnnotationColorTheme' }),
         },
         obj => obj.id
@@ -115,15 +107,15 @@ export class Annotation {
     constructor(
         public data: AnnotationData,
         public schema: AnnotationSchema,
-        public cifCategories: string[] | undefined,
+        public cifCategory: string | undefined,
     ) { }
 
     /** Create a new `Annotation` based on specification `spec`. Use `data` if provided, otherwise download the data. */
     static async fromSpec(ctx: CustomProperty.Context, spec: AnnotationSpec, data?: AnnotationData): Promise<Annotation> {
         data ??= await getDataFromSource(ctx, spec);
         const schema = spec.schema;
-        const cifCategories = spec.cifCategories.name === 'selected' ? spec.cifCategories.params.list.map(o => o.categoryName) : undefined;
-        return new Annotation(data, schema, cifCategories);
+        const cifCategory = spec.cifCategory !== '' ? spec.cifCategory : undefined;
+        return new Annotation(data, schema, cifCategory);
     }
 
     /** Reference implementation of `getAnnotationForLocation`, just for checking, DO NOT USE DIRECTLY */
@@ -177,10 +169,23 @@ export class Annotation {
                 return getRowsFromJson(this.data.data, this.schema);
             case 'cif':
             case 'bcif':
-                return getRowsFromCif(this.data.data, this.cifCategories, this.schema);
+                return getRowsFromCif(this.data.data, this.cifCategory, this.schema);
         }
     }
 }
+
+function getValueFromJson<T>(rowIndex: number, columnName: string, data: Json): T | undefined {
+    const js = data as any;
+    if (Array.isArray(js)) {
+        const row = js[rowIndex] ?? {};
+        return row[columnName];
+    } else {
+        const column = js[columnName] ?? [];
+        return column[rowIndex];
+    }
+}
+// function getValueFromCif<T>(rowIndex: number, columnName: string, data: CifFile, categoryNames: string[] | undefined): T | undefined {
+// }
 
 
 function getRowsFromJson(data: Json, schema: AnnotationSchema): AnnotationRow[] {
@@ -209,22 +214,19 @@ function getRowsFromJson(data: Json, schema: AnnotationSchema): AnnotationRow[] 
     }
 }
 
-function getRowsFromCif(data: CifFile, categoryNames: string[] | undefined, schema: AnnotationSchema): AnnotationRow[] {
+function getRowsFromCif(data: CifFile, categoryName: string | undefined, schema: AnnotationSchema): AnnotationRow[] {
     const rows: AnnotationRow[] = [];
     if (data.blocks.length === 0) throw new Error('No block in CIF');
     const block = data.blocks[0]; // TODO block header or index should be passed from somewhere
-    categoryNames ??= Object.keys(block.categories);
-    for (const categoryName of categoryNames) {
-        const category = block.categories[categoryName];
-        if (!category) {
-            console.error(`CIF category ${categoryName} not found`);
-            continue;
-        }
-        if (!category.getField('color')) continue;
-        const cifSchema = pickObjectKeys(CIFAnnotationSchema, FieldsForSchemas[schema]);
-        const table = toTable(cifSchema, category);
-        extend(rows, getRowsFromTable(table)); // Avoiding Table.getRows(table) as it replaces . and ? fields by 0 or ''
+    categoryName ??= Object.keys(block.categories)[0];
+    if (!categoryName) throw new Error('There are no categories in CIF block');
+    const category = block.categories[categoryName];
+    if (!category) {
+        throw new Error(`CIF category ${categoryName} not found`);
     }
+    const cifSchema = pickObjectKeys(CIFAnnotationSchema, FieldsForSchemas[schema]);
+    const table = toTable(cifSchema, category);
+    extend(rows, getRowsFromTable(table)); // Avoiding Table.getRows(table) as it replaces . and ? fields by 0 or ''
     return rows;
 }
 

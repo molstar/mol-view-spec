@@ -68,18 +68,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         const distinctSpecs: { [key: string]: AnnotationSpec } = {};
         dfs(node, n => {
             if (n.kind === 'color-from-url') {
-                const cifCategories: AnnotationSpec['cifCategories'] = n.params.category_name ?
-                    {
-                        name: 'selected',
-                        params: {
-                            list: [{ categoryName: n.params.category_name }]
-                        }
-                    }
-                    : {
-                        name: 'all',
-                        params: {}
-                    };
-                const spec: Omit<AnnotationSpec, 'id'> = { url: n.params.url, format: n.params.format, schema: n.params.schema, cifCategories };
+                const spec: Omit<AnnotationSpec, 'id'> = { url: n.params.url, format: n.params.format, schema: n.params.schema, cifCategory: n.params.category_name ?? '' };
                 const key = canonicalJsonString(spec as any);
                 distinctSpecs[key] ??= { ...spec, id: UUID.create22() };
                 (context.annotationMap ??= new Map()).set(n, distinctSpecs[key].id);
