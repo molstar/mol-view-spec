@@ -11,8 +11,8 @@ import { Expression } from 'molstar/lib/mol-script/language/expression';
 import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expression-formatter';
 
 import { extend, filterInPlace, isAnyDefined, isDefined, range } from '../../utils';
-import { AtomRanges, addRange, emptyRanges, singleRange } from '../helpers/atom-ranges';
-import { AnnotationRow } from '../schemas';
+import { AtomRanges, addRange, emptyRanges, singleRange } from './atom-ranges';
+import { AnnotationRow } from '../helpers/schemas';
 import { IndicesAndSortings, getKeysWithValue, getKeysWithValueInRange } from './indexing';
 
 

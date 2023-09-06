@@ -13,16 +13,16 @@ import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-proper
 import { CustomPropertyDescriptor } from 'molstar/lib/mol-model/custom-property';
 import { Model } from 'molstar/lib/mol-model/structure';
 import { StructureElement } from 'molstar/lib/mol-model/structure/structure';
-import { UUID, deepEqual } from 'molstar/lib/mol-util';
+import { UUID } from 'molstar/lib/mol-util';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { PD_MaybeString } from '../pd-extension';
-import { Json, extend, pickObjectKeys, promiseAllObj } from '../utils';
-import { rangesForeach } from './helpers/atom-ranges';
-import { createIndicesAndSortings } from './helpers/indexing';
-import { atomQualifies, getAtomRangesForRow } from './helpers/selections';
-import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from './schemas';
+import { PD_MaybeString } from '../helpers/param-definition';
+import { Json, extend, pickObjectKeys, promiseAllObj } from '../../utils';
+import { rangesForeach } from '../helpers/atom-ranges';
+import { createIndicesAndSortings } from '../helpers/indexing';
+import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
+import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from '../helpers/schemas';
 
 
 /** Allowed values for the annotation format parameter */

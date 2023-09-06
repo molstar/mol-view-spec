@@ -5,8 +5,8 @@ import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
 import { BehaviorSubject } from 'rxjs';
 
-import { Annotation } from './cif-color-extension/behavior';
-import { CustomLabel } from './custom-label-extension/behavior';
+import { Annotation } from './molstar-extensions/color-from-url-extension/behavior';
+import { CustomLabel } from './molstar-extensions/custom-label-extension/behavior';
 import { loadMVSTree } from './load-tree';
 import { MVSTree } from './tree/mvs-nodes';
 import { treeToString } from './tree/tree-utils';

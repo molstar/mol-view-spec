@@ -26,12 +26,12 @@ import { VisualContext } from 'molstar/lib/mol-repr/visual';
 import { Theme } from 'molstar/lib/mol-theme/theme';
 import { UUID, deepEqual } from 'molstar/lib/mol-util';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
-import { AtomRanges, rangesMap } from '../cif-color-extension/helpers/atom-ranges';
-import { IndicesAndSortings, createIndicesAndSortings } from '../cif-color-extension/helpers/indexing';
-import { atomQualifies, getAtomRangesForRow } from '../cif-color-extension/helpers/selections';
-import { AnnotationRow } from '../cif-color-extension/schemas';
-import { PD_MaybeInteger, PD_MaybeString } from '../pd-extension';
-import { extend, omitObjectKeys } from '../utils';
+import { AtomRanges, rangesMap } from '../helpers/atom-ranges';
+import { IndicesAndSortings, createIndicesAndSortings } from '../helpers/indexing';
+import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
+import { AnnotationRow } from '../helpers/schemas';
+import { PD_MaybeInteger, PD_MaybeString } from '../helpers/param-definition';
+import { extend, omitObjectKeys } from '../../utils';
 
 
 export const CustomLabelTextParams = {

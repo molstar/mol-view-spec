@@ -8,10 +8,10 @@ import { UUID } from 'molstar/lib/mol-util';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
-import { AnnotationColorThemeProps, decodeColor } from './cif-color-extension/color';
-import { rowToExpression, rowsToExpression } from './cif-color-extension/helpers/selections';
-import { AnnotationSpec } from './cif-color-extension/prop';
-import { CustomLabelProps } from './custom-label-extension/representation';
+import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
+import { rowToExpression, rowsToExpression } from './molstar-extensions/helpers/selections';
+import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
+import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
 import { Defaults } from './param-defaults';
 import { SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
