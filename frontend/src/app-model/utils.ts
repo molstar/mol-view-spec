@@ -230,3 +230,7 @@ export function isDefined<T>(value: T | undefined | null): value is T {
 export function isAnyDefined(...values: any[]): boolean {
     return values.some(v => isDefined(v));
 }
+/** Return filtered array containing all original elements except `undefined` or `null`. */
+export function filterDefined<T>(elements: (T | undefined | null)[]): T[] {
+    return elements.filter(x => x !== undefined && x !== null) as T[];
+}
