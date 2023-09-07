@@ -1,3 +1,5 @@
+import { hashString } from 'molstar/lib/mol-data/util';
+
 
 export function formatObject(obj: {} | undefined) {
     if (!obj) return 'undefined';
@@ -233,4 +235,10 @@ export function isAnyDefined(...values: any[]): boolean {
 /** Return filtered array containing all original elements except `undefined` or `null`. */
 export function filterDefined<T>(elements: (T | undefined | null)[]): T[] {
     return elements.filter(x => x !== undefined && x !== null) as T[];
+}
+
+/** Create an 8-hex-character hash for a given input string, e.g. 'spanish inquisition' -> 'bd65e59a' */
+export function stringHash(input: string): string {
+    const uint32hash = hashString(input) >>> 0; // >>>0 converts to uint32, LOL
+    return uint32hash.toString(16).padStart(8, '0');
 }

@@ -447,6 +447,7 @@ async def testing_color_cif_example():
     )
     return JSONResponse(builder.get_state())
 
+
 @router.get("/testing/color_multicategory_cif")
 async def testing_color_cif_multicategory_example():
     """
@@ -513,7 +514,7 @@ async def testing_color_small_example():
 
 
 @router.get("/testing/color_domains")
-async def testing_color_domains_example():
+async def testing_color_domains_example(colors: bool = True, tooltips: bool = False):
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
@@ -523,21 +524,30 @@ async def testing_color_domains_example():
         .parse(format="mmcif")
         .model_structure()
     )
-    structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
-        schema="all-atomic",
-        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
-        format="json",
-    )
-    structure.component(selector="nucleic").representation(type="ball-and-stick", color="white").color_from_url(
-        schema="all-atomic",
-        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
-        format="json",
-    )
-    structure.component(selector="ion").representation(type="surface").color_from_url(
-        schema="all-atomic",
-        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
-        format="json",
-    )
+    reprs = [
+        structure.component(selector="protein").representation(type="cartoon", color="white"),
+        structure.component(selector="nucleic").representation(type="ball-and-stick", color="white"),
+        structure.component(selector="ion").representation(type="surface"),
+    ]
+    if colors:
+        for repr in reprs:
+            repr.color_from_url(
+                schema="all-atomic",
+                url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+                format="json",
+            )
+    if tooltips:
+        structure.tooltip_from_url(
+            schema="all-atomic",
+            url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+            format="json",
+        )
+        structure.tooltip_from_url(
+            schema="all-atomic",
+            url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+            format="json",
+            field_name="label_asym_id",
+        )
     return JSONResponse(builder.get_state())
 
 

@@ -38,8 +38,9 @@ export const AnnotationTooltipsProvider: CustomStructureProperty.Provider<Annota
     isApplicable: (data: Structure) => data.root === data,
     obtain: async (ctx: CustomProperty.Context, data: Structure, props: Partial<AnnotationTooltipsProps>) => {
         const fullProps = { ...PD.getDefaultValues(AnnotationTooltipsParams), ...props };
+        for (const model of data.models) await AnnotationsProvider.attach(ctx, model); // TODO I should probably detach somewhere but I have nooooo idea where
         return { value: fullProps } satisfies CustomProperty.Data<AnnotationTooltipsProps>;
-    }
+    },
 });
 
 

@@ -1,23 +1,23 @@
 import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { Download, ParseCif } from 'molstar/lib/mol-plugin-state/transforms/data';
-import { CustomModelProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
+import { CustomModelProperties, CustomStructureProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
-import { UUID } from 'molstar/lib/mol-util';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
-import { rowToExpression, rowsToExpression } from './molstar-extensions/helpers/selections';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
+import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
+import { rowToExpression, rowsToExpression } from './molstar-extensions/helpers/selections';
 import { Defaults } from './param-defaults';
 import { SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
-import { canonicalJsonString, formatObject, isDefined } from './utils';
+import { canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -26,7 +26,7 @@ export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.
 
 interface MolstarLoadingContext {
     /** Maps 'color-from-url' nodes to annotationId they should reference */
-    annotationMap?: Map<MolstarNode<'color-from-url'>, string>,
+    annotationMap?: Map<MolstarNode<'color-from-url' | 'tooltip-from-url'>, string>,
     /** Maps each node (on 'structure' or lower level) than model to its nearest node with color information */
     nearestColorMap?: Map<MolstarNode, MolstarNode<'representation' | 'color' | 'color-from-url' | 'color-from-cif'>>,
 }
@@ -65,22 +65,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }
     },
     model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'model'>, context: MolstarLoadingContext): StateObjectSelector {
-        const distinctSpecs: { [key: string]: AnnotationSpec } = {};
-        dfs(node, n => {
-            if (n.kind === 'color-from-url') {
-                const block: AnnotationSpec['cifBlock'] = isDefined(n.params.block_header) ?
-                    { name: 'header', params: { header: n.params.block_header } }
-                    : isDefined(n.params.block_index) ?
-                        { name: 'index', params: { index: n.params.block_index ?? 0 } }
-                        : { name: 'first', params: {} };
-                const spec: Omit<AnnotationSpec, 'id'> = { url: n.params.url, format: n.params.format, schema: n.params.schema, cifBlock: block, cifCategory: n.params.category_name ?? undefined };
-                const key = canonicalJsonString(spec as any);
-                distinctSpecs[key] ??= { ...spec, id: UUID.create22() };
-                (context.annotationMap ??= new Map()).set(n, distinctSpecs[key].id);
-            }
-        });
-        const annotations = Object.values(distinctSpecs);
-        console.log('annotationSources:', annotations);
+        const annotations = collectAnnotationReferences(node, context);
         return update.to(msTarget)
             .apply(ModelFromTrajectory, {
                 modelIndex: getParams(node).model_index ?? Defaults.structure.model_index,
@@ -89,7 +74,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
                 properties: { annotations: { annotations: annotations } }
             }).selector;
     },
-    structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'structure'>, context: MolstarLoadingContext): StateObjectSelector {
+    structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext): StateObjectSelector {
         const params = getParams(node);
         let result: StateObjectSelector;
         switch (params.kind) {
@@ -106,6 +91,19 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             default:
                 throw new Error(`NotImplementedError: Loading action for "structure" node, kind "${params.kind}"`);
         }
+        let tooltips: AnnotationTooltipsProps['tooltips'] = [];
+        dfs(node, n => {
+            if (n.kind === 'tooltip-from-url') {
+                const annotationId = context.annotationMap?.get(n);
+                if (annotationId) {
+                    tooltips.push({ annotationId, fieldName: n.params.field_name ?? Defaults['tooltip-from-url'].field_name });
+                };
+            }
+        });
+        tooltips = distinct(tooltips);
+        update.to(result).apply(CustomStructureProperties, {
+            properties: { 'annotation-tooltips': { tooltips } }
+        });
         // const assembly = params.assembly_id ?? Defaults.structure.assembly_id;
         // return update.to(msTarget).apply(StructureFromModel, {
         //     type: assembly
@@ -198,6 +196,32 @@ function transformFromRotationTranslation(rotation: number[] | null | undefined,
     }
     if (!Mat4.isRotationAndTranslation(T)) throw new Error(`'rotation' param for 'transform' is not a valid rotation matrix: ${rotation}`);
     return T;
+}
+
+/** Collect distinct annotation specs from all nodes in `tree` and set context.annotationMap[node] to respective annotationIds */
+function collectAnnotationReferences(tree: SubTree<MolstarTree>, context: MolstarLoadingContext): AnnotationSpec[] {
+    const distinctSpecs: { [key: string]: AnnotationSpec } = {};
+    dfs(tree, node => {
+        let spec: Omit<AnnotationSpec, 'id'> | undefined = undefined;
+        switch (node.kind) {
+            case 'color-from-url':
+            case 'tooltip-from-url':
+                const p = node.params;
+                const block: AnnotationSpec['cifBlock'] = isDefined(p.block_header) ?
+                    { name: 'header', params: { header: p.block_header } }
+                    : isDefined(p.block_index) ?
+                        { name: 'index', params: { index: p.block_index ?? 0 } }
+                        : { name: 'first', params: {} };
+                spec = { url: p.url, format: p.format, schema: p.schema, cifBlock: block, cifCategory: p.category_name ?? undefined };
+                break;
+        }
+        if (spec) {
+            const key = canonicalJsonString(spec as any);
+            distinctSpecs[key] ??= { ...spec, id: stringHash(key) };
+            (context.annotationMap ??= new Map()).set(node, distinctSpecs[key].id);
+        }
+    });
+    return Object.values(distinctSpecs);
 }
 
 function colorThemeForColorNode(node: MolstarNode<'representation' | 'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext) {
