@@ -328,12 +328,6 @@ class Structure(_Base):
         rotation: Sequence[float],
         translation: Sequence[float],
     ) -> Structure:
-        # guard against multiple transforms getting registered -- TODO factor out as general purpose validation?
-        if "children" in self._node and list(filter(lambda c: c["kind"] == "transform", self._node["children"])):
-            raise ValueError(
-                f"Only a single `transform` node can be registered per structure, compose them if you need to chain transforms"
-            )
-
         rotation = tuple(rotation)
         if len(rotation) != 9:
             raise ValueError(f"Parameter `rotation` must have length 9")
