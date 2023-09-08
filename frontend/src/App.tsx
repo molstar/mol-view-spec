@@ -36,6 +36,7 @@ function Main() {
         'colors rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
         'colors cif': 'http://localhost:9000/api/v1/examples/testing/color_cif',
         'colors cif multicategory': 'http://localhost:9000/api/v1/examples/testing/color_multicategory_cif',
+        'colors same cif': 'http://localhost:9000/api/v1/examples/testing/color_same_cif',
         'colors bcif': 'http://localhost:9000/api/v1/examples/testing/color_bcif',
         'colors small': 'http://localhost:9000/api/v1/examples/testing/color_small',
         'colors domains': 'http://localhost:9000/api/v1/examples/testing/color_domains',

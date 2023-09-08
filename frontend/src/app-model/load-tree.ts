@@ -225,10 +225,8 @@ function collectAnnotationReferences(tree: SubTree<MolstarTree>, context: Molsta
                 const p = node.params;
                 const block: AnnotationSpec['cifBlock'] = isDefined(p.block_header) ?
                     { name: 'header', params: { header: p.block_header } }
-                    : isDefined(p.block_index) ?
-                        { name: 'index', params: { index: p.block_index ?? 0 } }
-                        : { name: 'first', params: {} };
-                spec = { url: p.url, format: p.format, schema: p.schema, cifBlock: block, cifCategory: p.category_name ?? undefined };
+                    : { name: 'index', params: { index: p.block_index ?? 0 } }
+                spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: block, cifCategory: p.category_name ?? undefined };
                 break;
         }
         if (spec) {
@@ -387,6 +385,7 @@ async function focusCameraNode(plugin: PluginContext, params: ParamsOfKind<Molst
 /** Return unit vector as close to y as possible but perpendicular to `direction`: direction×y×direction / (|direction|**2).
  * Return -z if `direction` is parallel to y. */
 function autoUp(direction: Vec3): Vec3 {
+    // return Vec3.create(0,1,0);
     const q = 1 / Vec3.squaredMagnitude(direction);
     let up = Vec3.create(0, q, 0);
     up = Vec3.cross(up, Vec3.cross(up, direction, up), direction);

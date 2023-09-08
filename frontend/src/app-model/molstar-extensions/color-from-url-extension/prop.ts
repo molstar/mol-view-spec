@@ -8,6 +8,7 @@ import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers
 import { Column, Table } from 'molstar/lib/mol-data/db';
 import { CIF, CifBlock, CifCategory, CifFile } from 'molstar/lib/mol-io/reader/cif';
 import { toTable } from 'molstar/lib/mol-io/reader/cif/schema';
+import { MmcifFormat } from 'molstar/lib/mol-model-formats/structure/mmcif';
 import { CustomModelProperty } from 'molstar/lib/mol-model-props/common/custom-model-property';
 import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { CustomPropertyDescriptor } from 'molstar/lib/mol-model/custom-property';
@@ -17,12 +18,12 @@ import { UUID } from 'molstar/lib/mol-util';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { PD_MaybeString } from '../helpers/param-definition';
-import { Json, extend, pickObjectKeys, promiseAllObj } from '../../utils';
+import { Json, canonicalJsonString, extend, pickObjectKeys, promiseAllObj } from '../../utils';
 import { rangesForeach } from '../helpers/atom-ranges';
 import { createIndicesAndSortings } from '../helpers/indexing';
-import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
+import { PD_MaybeString } from '../helpers/param-definition';
 import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from '../helpers/schemas';
+import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
 
 
 /** Allowed values for the annotation format parameter */
@@ -34,11 +35,15 @@ const AnnotationFormatTypes = { json: 'string', cif: 'string', bcif: 'binary' } 
 export const AnnotationsParams = {
     annotations: PD.ObjectList(
         {
-            url: PD.Text(''),
-            format: AnnotationFormat.PDSelect(),
+            source: PD.MappedStatic('source-cif', {
+                'source-cif': PD.EmptyGroup(),
+                'url': PD.Group({
+                    url: PD.Text(''),
+                    format: AnnotationFormat.PDSelect(),
+                }),
+            }),
             schema: AnnotationSchema.PDSelect(),
-            cifBlock: PD.MappedStatic('first', {
-                first: PD.EmptyGroup(),
+            cifBlock: PD.MappedStatic('index', {
                 index: PD.Group({ index: PD.Numeric(0, { min: 0, step: 1 }, { description: '0-based index of the block' }) }),
                 header: PD.Group({ header: PD.Text(undefined, { description: 'Block header' }) }),
             }, { description: 'Specify which CIF block contains annotation data (only relevant when format=cif or format=bcif)' }),
@@ -57,7 +62,7 @@ export type AnnotationsProps = PD.Values<AnnotationsParams>
 export type AnnotationSpec = AnnotationsProps['annotations'][number]
 
 /** Describes the source of an annotation file */
-type AnnotationSource = { url: string, format: AnnotationFormat }
+type AnnotationSource = { kind: 'url', url: string, format: AnnotationFormat } | { kind: 'source-cif' }
 
 /** Data file with one or more (in case of CIF) annotations */
 type AnnotationFile = { format: 'json', data: Json } | { format: 'cif', data: CifFile }
@@ -79,7 +84,7 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
     obtain: async (ctx: CustomProperty.Context, data: Model, props: Partial<AnnotationsProps>) => {
         props = { ...PD.getDefaultValues(AnnotationsParams), ...props };
         const specs: AnnotationSpec[] = props.annotations ?? [];
-        const annots = await Annotations.fromSpecs(ctx, specs);
+        const annots = await Annotations.fromSpecs(ctx, specs, data);
         console.log('obtain: annotation sources:', props.annotations);
         console.log('obtain: annotation data:', annots);
         return { value: annots } satisfies CustomProperty.Data<Annotations>;
@@ -90,8 +95,9 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
 /** Represents multiple annotations retrievable by their ID */
 export class Annotations {
     private constructor(private dict: { [id: string]: Annotation }) { }
-    static async fromSpecs(ctx: CustomProperty.Context, specs: AnnotationSpec[]): Promise<Annotations> {
-        const data = await getFileFromSources(ctx, specs);
+    static async fromSpecs(ctx: CustomProperty.Context, specs: AnnotationSpec[], model?: Model): Promise<Annotations> {
+        const sources: AnnotationSource[] = specs.map(annotationSourceFromSpec);
+        const data = await getFileFromSources(ctx, sources, model);
         const dict: { [id: string]: Annotation } = {};
         for (let i = 0; i < specs.length; i++) {
             const spec = specs[i];
@@ -120,7 +126,7 @@ export class Annotation {
 
     /** Create a new `Annotation` based on specification `spec`. Use `file` if provided, otherwise download the file. */
     static async fromSpec(ctx: CustomProperty.Context, spec: AnnotationSpec, file?: AnnotationFile): Promise<Annotation> {
-        file ??= await getFileFromSource(ctx, spec);
+        file ??= await getFileFromSource(ctx, annotationSourceFromSpec(spec));
         let data: AnnotationData;
         switch (file.format) {
             case 'json':
@@ -139,9 +145,6 @@ export class Annotation {
                     case 'index':
                         block = file.data.blocks[blockSpec.params.index];
                         if (!block) throw new Error(`CIF block with index ${blockSpec.params.index} not found`);
-                        break;
-                    case 'first':
-                        block = file.data.blocks[0];
                         break;
                 }
                 const categoryName = spec.cifCategory ?? Object.keys(block.categories)[0];
@@ -283,31 +286,61 @@ function getRowsFromTable<S extends Table.Schema>(table: Table<S>): Partial<Tabl
 }
 
 
-async function getFileFromSource(ctx: CustomProperty.Context, source: AnnotationSource): Promise<AnnotationFile> {
-    const url = Asset.getUrlAsset(ctx.assetManager, source.url);
-    const dataType = AnnotationFormatTypes[source.format];
-    const dataWrapper = await ctx.assetManager.resolve(url, dataType).runInContext(ctx.runtime);
-    const rawData = dataWrapper.data;
-    if (!rawData) throw new Error('Missing data');
-    switch (source.format) {
-        case 'json':
-            const json = JSON.parse(rawData as string) as Json;
-            return { format: 'json', data: json };
-        case 'cif':
-        case 'bcif':
-            const parsed = await CIF.parse(rawData).run();
-            if (parsed.isError) throw new Error(`Failed to parse ${source.format}`);
-            return { format: 'cif', data: parsed.result };
+async function getFileFromSource(ctx: CustomProperty.Context, source: AnnotationSource, model?: Model): Promise<AnnotationFile> {
+    switch (source.kind) {
+        case 'source-cif':
+            return { format: 'cif', data: getFileFromModel(model) };
+        case 'url':
+            const url = Asset.getUrlAsset(ctx.assetManager, source.url);
+            const dataType = AnnotationFormatTypes[source.format];
+            const dataWrapper = await ctx.assetManager.resolve(url, dataType).runInContext(ctx.runtime);
+            const rawData = dataWrapper.data;
+            if (!rawData) throw new Error('Missing data');
+            switch (source.format) {
+                case 'json':
+                    const json = JSON.parse(rawData as string) as Json;
+                    return { format: 'json', data: json };
+                case 'cif':
+                case 'bcif':
+                    const parsed = await CIF.parse(rawData).run();
+                    if (parsed.isError) throw new Error(`Failed to parse ${source.format}`);
+                    return { format: 'cif', data: parsed.result };
+            }
     }
 }
 /** Like `sources.map(s => getFileFromSource(ctx, s))`
  * but downloads a repeating source only once. */
-async function getFileFromSources(ctx: CustomProperty.Context, sources: AnnotationSource[]): Promise<AnnotationFile[]> {
+async function getFileFromSources(ctx: CustomProperty.Context, sources: AnnotationSource[], model?: Model): Promise<AnnotationFile[]> {
     const promises: { [key: string]: Promise<AnnotationFile> } = {};
     for (const src of sources) {
-        const key = `${src.format}:${src.url}`;
-        promises[key] ??= getFileFromSource(ctx, src);
+        const key = canonicalJsonString(src);
+        promises[key] ??= getFileFromSource(ctx, src, model);
     }
     const data = await promiseAllObj(promises);
-    return sources.map(src => data[`${src.format}:${src.url}`]);
+    return sources.map(src => data[canonicalJsonString(src)]);
+}
+
+function getFileFromModel(model?: Model): CifFile {
+    if (model && MmcifFormat.is(model.sourceData)) {
+        if (model.sourceData.data.file) {
+            return model.sourceData.data.file;
+        } else {
+            const frame = model.sourceData.data.frame;
+            const block = CifBlock(Array.from(frame.categoryNames), frame.categories, frame.header)
+            const file = CifFile([block]);
+            return file;
+        }
+    } else {
+        console.warn('Could not get CifFile from Model, returning empty CifFile');
+        return CifFile([]);
+    }
+}
+
+function annotationSourceFromSpec(s: AnnotationSpec): AnnotationSource {
+    switch (s.source.name) {
+        case 'url':
+            return { kind: 'url', ...s.source.params };
+        case 'source-cif':
+            return { kind: 'source-cif' };
+    }
 }

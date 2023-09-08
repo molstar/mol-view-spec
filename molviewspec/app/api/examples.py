@@ -474,6 +474,34 @@ async def testing_color_cif_multicategory_example():
     )
     return JSONResponse(builder.get_state())
 
+@router.get("/testing/color_same_cif")
+async def testing_color_same_cif_example():
+    """
+    Color from the same CIF as structure
+    """
+    builder = Root()
+    structure_url = f"http://0.0.0.0:9000/api/v1/examples/data/1cbs/molecule-and-cif-annotations"
+    structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+        schema="all-atomic",
+        url=structure_url,
+        format="cif",
+        block_index=0,
+        category_name="mvs_test_chain_label_annotation",
+        field_name="color"
+    )
+    structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
+        schema="all-atomic",
+        url=structure_url,
+        format="cif",
+        block_index=0,
+        category_name="mvs_test_chain_label_annotation",
+        field_name="color"
+    )
+    return JSONResponse(builder.get_state())
+
+
 
 @router.get("/testing/color_bcif")
 async def testing_color_bcif_example():
