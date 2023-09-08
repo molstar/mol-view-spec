@@ -578,8 +578,9 @@ async def testing_focus_example():
     An example for 'focus' node.
     """
     builder = Root()
+    position, direction, radius = _target_spherical_to_pdr((17,21,27), phi=-30, theta=15, radius=100)
+    builder.camera(position=position, direction=direction, radius=radius)  # sets orientation, but position will be overwritten by focus
     structure_url = _url_for_testing_local_bcif("1cbs")
-    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.cif"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon", color="orange")
     structure.component(selector="ligand").focus().representation(type="ball-and-stick", color="green")
@@ -592,11 +593,11 @@ async def testing_camera_example():
     An example for 'camera' node.
     """
     builder = Root()
-    structure_url = _url_for_testing_local_bcif("1hra")
+    structure_url = _url_for_testing_local_bcif("1cbs")
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon", color="orange")
     structure.component(selector="ligand").representation(type="ball-and-stick", color="green")
-    position, direction, radius = _target_spherical_to_pdr((0,0,0), phi=30, theta=30, radius=400)
+    position, direction, radius = _target_spherical_to_pdr((17,21,27), phi=30, theta=15, radius=100)
     builder.camera(position=position, direction=direction, radius=radius)
     return JSONResponse(builder.get_state())
 
