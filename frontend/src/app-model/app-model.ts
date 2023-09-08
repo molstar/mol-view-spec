@@ -37,7 +37,7 @@ export class AppModel {
             },
             canvas3d: {
                 camera: {
-                    helper: { axes: { name: 'off', params: {} } }
+                    // helper: { axes: { name: 'off', params: {} } }
                 }
             },
             config: [
@@ -69,6 +69,10 @@ export class AppModel {
             this.status.next('error');
             throw err;
         }
+    }
+    printCamera() {
+        const snapshot = this.plugin?.canvas3d?.camera.getSnapshot();
+        console.log('printCamera:', snapshot);
     }
 }
 

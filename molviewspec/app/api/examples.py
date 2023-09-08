@@ -572,6 +572,42 @@ async def testing_color_validation_example(id: str = "1tqn"):
     )
     return JSONResponse(builder.get_state())
 
+@router.get("/testing/focus")
+async def testing_focus_example():
+    """
+    An example for 'focus' node.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif("1cbs")
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.cif"
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon", color="orange")
+    structure.component(selector="ligand").focus().representation(type="ball-and-stick", color="green")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/camera")
+async def testing_camera_example():
+    """
+    An example for 'camera' node.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif("1hra")
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon", color="orange")
+    structure.component(selector="ligand").representation(type="ball-and-stick", color="green")
+    position, direction, radius = _target_spherical_to_pdr((0,0,0), phi=30, theta=30, radius=400)
+    builder.camera(position=position, direction=direction, radius=radius)
+    return JSONResponse(builder.get_state())
+
+def _target_spherical_to_pdr(target: tuple[float, float, float], phi: float = 0, theta: float = 0, radius: float = 100):
+    import math
+    x, y, z = target
+    phi, theta = math.radians(phi), math.radians(theta)
+    direction = (-math.sin(phi) * math.cos(theta), -math.sin(theta), -math.cos(phi) * math.cos(theta))
+    position = (x-direction[0]*radius, y-direction[1]*radius, z-direction[2]*radius)
+    return position, direction, radius
+
 
 # TODO test labels
 

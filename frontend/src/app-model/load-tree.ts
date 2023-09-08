@@ -1,4 +1,5 @@
 import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
+import { Loci } from 'molstar/lib/mol-model/loci';
 import { Download, ParseCif } from 'molstar/lib/mol-plugin-state/transforms/data';
 import { CustomModelProperties, CustomStructureProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
@@ -7,17 +8,22 @@ import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
+import { Camera } from 'molstar/lib/mol-canvas3d/camera';
+import { Structure } from 'molstar/lib/mol-model/structure';
+import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
+import { deepEqual } from 'molstar/lib/mol-util';
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
 import { rowToExpression, rowsToExpression } from './molstar-extensions/helpers/selections';
 import { Defaults } from './param-defaults';
-import { SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
+import { ParamsOfKind, SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
+import { Sphere3D } from 'molstar/lib/mol-math/geometry';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -29,6 +35,7 @@ interface MolstarLoadingContext {
     annotationMap?: Map<MolstarNode<'color-from-url' | 'tooltip-from-url'>, string>,
     /** Maps each node (on 'structure' or lower level) than model to its nearest node with color information */
     nearestColorMap?: Map<MolstarNode, MolstarNode<'representation' | 'color' | 'color-from-url' | 'color-from-cif'>>,
+    focus?: { kind: 'focus', selector: StateObjectSelector } | { kind: 'camera', params: ParamsOfKind<MolstarTree, 'camera'> }
 }
 
 export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>, MolstarLoadingContext> } = {
@@ -181,6 +188,14 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         // do nothing, all transforms are applied in 'transforms' node
         return msTarget;
     },
+    focus(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'focus'>, context: MolstarLoadingContext): StateObjectSelector {
+        context.focus = { kind: 'focus', selector: msTarget };
+        return msTarget;
+    },
+    camera(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'camera'>, context: MolstarLoadingContext): StateObjectSelector {
+        context.focus = { kind: 'camera', params: node.params };
+        return msTarget;
+    },
 };
 
 /** Return a 4x4 matrix representing rotation + translation */
@@ -321,6 +336,70 @@ function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObje
     }
 }
 
+/** Defined in `molstar/lib/mol-plugin-state/manager/camera.ts` but private */
+const DefaultCameraFocusOptions = {
+    minRadius: 5,
+    extraRadius: 4,
+};
+
+async function focusStructureNode(plugin: PluginContext, nodeSelector: StateObjectSelector, directionVector: [number, number, number] = [0, 0, -1]) {
+    const cell = plugin.state.data.cells.get(nodeSelector.ref);
+    const structure = cell?.obj?.data;
+    if (!structure) {
+        console.warn('Focus: no structure');
+        return;
+    }
+    if (!(structure instanceof Structure)) {
+        console.warn('Focus: cannot apply to a non-structure node');
+        return;
+    }
+    console.log('focus:', nodeSelector, structure.atomicResidueCount, structure, structure instanceof PluginContext, typeof structure);
+    const boundingSphere = Loci.getBoundingSphere(Structure.Loci(structure));
+    console.log('focus sphere:', boundingSphere);
+    if (boundingSphere && plugin.canvas3d) {
+        // cannot use plugin.canvas3d.camera.getFocus with up+direction, because it sometimes flips orientation
+        const target = boundingSphere.center;
+        const sphereRadius = Math.max(boundingSphere.radius + DefaultCameraFocusOptions.extraRadius, DefaultCameraFocusOptions.minRadius);
+        const distance = getFocusDistance(plugin.canvas3d.camera, boundingSphere.center, sphereRadius) ?? 100;
+        const direction = Vec3.create(...directionVector);
+        Vec3.setMagnitude(direction, direction, distance);
+        const position = Vec3.sub(Vec3(), target, direction);
+        const up = autoUp(direction);
+        console.log('target', ...target, 'position', ...position, 'direction', ...direction, 'up', ...up, 'distance', distance);
+        const snapshot: Partial<Camera.Snapshot> = { target, position, up, radius: sphereRadius };
+        await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
+        // await PluginCommands.Camera.Focus(plugin, { center: boundingSphere.center, radius: boundingSphere.radius }); // this could not set orientation
+    }
+}
+async function focusCameraNode(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'camera'>) {
+    const radius = params.radius;
+    const position = Vec3.create(...params.position);
+    const direction = Vec3.create(...params.direction);
+    Vec3.setMagnitude(direction, direction, radius);
+    const target = Vec3.add(Vec3(), position, direction);
+    const up = autoUp(direction);
+    console.log('target', ...target, 'position', ...position, 'direction', ...direction, 'up', ...up);
+    const snapshot: Partial<Camera.Snapshot> = { target, position, up };
+    await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
+}
+
+/** Return unit vector as close to y as possible but perpendicular to `direction`: direction×y×direction / (|direction|**2).
+ * Return -z if `direction` is parallel to y. */
+function autoUp(direction: Vec3): Vec3 {
+    const q = 1 / Vec3.squaredMagnitude(direction);
+    let up = Vec3.create(0, q, 0);
+    up = Vec3.cross(up, Vec3.cross(up, direction, up), direction);
+    if (Vec3.isZero(up)) {
+        return Vec3.set(up, 0, 0, -1);
+    } else {
+        return Vec3.normalize(up, up);
+    }
+}
+function getFocusDistance(camera: Camera, center: Vec3, radius: number) {
+    const p = camera.getFocus(center, radius);
+    if (!p.position || !p.target) return undefined;
+    return Vec3.distance(p.position, p.target);
+}
 
 export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
     const update = plugin.build();
@@ -354,6 +433,22 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
     });
     // console.log(mapping);
     await update.commit();
+    // await new Promise<void>(resolve => setTimeout(resolve, 1000));
+    switch (context.focus?.kind) {
+        case 'focus':
+            await focusStructureNode(plugin, context.focus.selector);
+            break;
+        case 'camera':
+            await focusCameraNode(plugin, context.focus.params);
+            // TODO WTF
+            // TODO if there's camera and focus, take target and radius from focus + direction from camera?
+            break;
+    }
+    // await PluginCommands.Camera.SetSnapshot(plugin, { snapshot: { radius: 5000, radiusMax: 5000, clipFar: false }, durationMs: 1000 });
+    // await PluginCommands.Camera.SetSnapshot(plugin, { snapshot: { target: Vec3.create(0, 0, 0), position: Vec3.create(0, 0, 5000) } });
+
+    // plugin.managers.camera.setSnapshot({ target: Vec3.create(0, 0, 0), position: Vec3.create(0, 0, 5000) });
+    // await plugin.managers.camera.setSnapshot({ radius: 1000 });
 }
 
 export async function loadMVSTree(plugin: PluginContext, tree: MVSTree, deletePrevious: boolean) {

@@ -44,6 +44,8 @@ function Main() {
         'colors validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn',
         'colors validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q',
         'labels': 'http://localhost:9000/api/v1/examples/testing/labels',
+        'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
+        'camera': 'http://localhost:9000/api/v1/examples/testing/camera',
     };
 
     return (
@@ -79,6 +81,9 @@ function Main() {
                             <pre style={{ margin: 5 }}>{loadedTree}</pre>
                         </div>
                     </>}
+                </div>
+                <div>
+                    <Button onClick={() => model.printCamera()}>Print camera</Button>
                 </div>
             </div>
         </div>

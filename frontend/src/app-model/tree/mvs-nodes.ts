@@ -118,6 +118,11 @@ export const MVSTreeSchema = TreeSchema('root',
         'canvas': {
             background_color: RequiredField(ColorT),
         },
+        'camera': {
+            position: RequiredField(Vector3),
+            direction: RequiredField(Vector3),
+            radius: RequiredField(float),
+        },
     }
 );
 

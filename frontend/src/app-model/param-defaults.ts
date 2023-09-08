@@ -94,8 +94,9 @@ export const Defaults = {
         translation: null,
     },
     'canvas': {
-    }
-
+    },
+    'camera': {
+    },
 } satisfies { [kind in MVSKind]: DefaultsFor<(typeof MVSTreeSchema)['paramsSchemas'][kind]> };
 // TODO mandatory params don't need to be here
 // TODO apply default to MVS tree (before conversion), not Molstar tree
