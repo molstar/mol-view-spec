@@ -217,9 +217,12 @@ class TransformParams(Params):
 
 
 class CameraParams(Params):
+    target: tuple[float, float, float]
+    """What to look at"""
     position: tuple[float, float, float]
-    direction: tuple[float, float, float]
-    radius: float
+    """The position of the camera"""
+    up: NotRequired[tuple[float, float, float]]
+    """Controls the rotation around the vector between target and position"""
 
 
 class CanvasParams(Params):

@@ -75,11 +75,13 @@ class Root(_Base):
     def camera(
         self,
         *,
-        position: tuple[float, float, float] | None,
-        direction: tuple[float, float, float] | None,
-        radius: float | None,
+        target: tuple[float, float, float],
+        position: tuple[float, float, float],
+        up: tuple[float, float, float] | None = None,
     ):
         params = make_params(CameraParams, locals())
+        if up is None:
+            params["up"] = (0, 1, 0)
         node = Node(kind="camera", params=params)
         self._add_child(node)
         return self
