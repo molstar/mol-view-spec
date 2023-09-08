@@ -112,7 +112,6 @@ ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
 
 class RepresentationParams(Params):
     type: RepresentationTypeT
-    color: NotRequired[ColorT]
 
 
 SchemaT = Literal[
@@ -165,9 +164,8 @@ class ComponentCifCategoryParams(_DataFromCifParams):
     pass
 
 
-class ColorInlineParams(Params):
+class ColorInlineParams(ComponentInlineParams):
     color: ColorT
-    # schema and other stuff not needed here, the color will be applied on the whole parent Structure or Component
 
 
 class ColorUrlParams(_DataFromUrlParams):

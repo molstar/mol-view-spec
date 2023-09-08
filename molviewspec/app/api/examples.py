@@ -44,7 +44,7 @@ async def label_example(id: str):
     # label some residues with custom text
     structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=120)).label(text="Residue 1")
     structure.component(selector=ComponentExpression(label_asym_id="C", label_seq_id=271)).label(text="Residue 2")
-    whole.label_from_cif(schema="residue", category_name="my_custom_cif_category")
+    structure.label_from_cif(schema="residue", category_name="my_custom_cif_category")
 
     return JSONResponse(builder.get_state())
 
@@ -61,15 +61,39 @@ async def color_example(id: str):
         .model_structure()
     )
 
-    structure.component(selector="protein").representation(type="cartoon", color="white")
+    structure.component(selector="protein").representation(type="cartoon").color(color="white")
 
     active_site = structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=64))
-    active_site.representation(type="ball-and-stick", color="red")
+    active_site.representation(type="ball-and-stick").color(color="red")
     active_site.tooltip(text="Active Site")
 
     structure.component(selector="ligand").representation(type="ball-and-stick").color_from_cif(
         schema="residue", category_name="my_custom_cif_category"
     )
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/component")
+async def component_example():
+    """
+    Define components by referencing selection expression from a URL. This will select the protein chain A and render it
+    in cartoon representation and select the REA ligand in chain B, which will be depicted in ball-and-stick
+    representation.
+    """
+    builder = Root()
+    structure = (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif")
+        .parse(format="mmcif")
+        .model_structure()
+    )
+
+    structure.component_from_url(
+        schema="chain", url=f"/data/1cbs/components.cif", format="cif", category_name="mvs_test_component1"
+    ).representation(type="cartoon").color(color="blue")
+    structure.component_from_url(
+        schema="chain", url=f"/data/1cbs/components.cif", format="cif", category_name="mvs_test_component2"
+    ).representation(type="ball-and-stick").color(color="yellow")
+
     return JSONResponse(builder.get_state())
 
 
@@ -101,10 +125,10 @@ async def symmetry_example(id: str):
     return JSONResponse(builder.get_state())
 
 
-@router.get("/transform/{id}")
+@router.get("/transform")
 async def transform_example():
     """
-    Superimpose 2 structures by transforming one of them.
+    Superimpose 4hhb and 1oj6 by transforming the latter.
     """
     builder = Root()
     (
@@ -136,7 +160,8 @@ async def validation_example(id: str):
         .parse(format="mmcif")
         .assembly_structure()
         .component()
-        .representation(color="#ffffff")
+        .representation()
+        .color(color="#ffffff")
         .color_from_url(schema="residue", url=f"/data/{id.lower()}/validation", format="json")
     )
     return JSONResponse(builder.get_state())
@@ -269,21 +294,24 @@ async def testing_formats_example():
         .parse(format="mmcif")
         .model_structure()
         .component()
-        .representation(color="white")
+        .representation()
+        .color(color="white")
     )
     parse_bcif = (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/2nnj.bcif")
         .parse(format="bcif")
         .model_structure()
         .component()
-        .representation(color="blue")
+        .representation()
+        .color(color="blue")
     )
     parse_pdb = (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1akd.ent")
         .parse(format="pdb")
         .model_structure()
         .component()
-        .representation(color="red")
+        .representation()
+        .color(color="red")
     )
     return JSONResponse(builder.get_state())
 
@@ -299,28 +327,31 @@ async def testing_structures_example():
         .parse(format="mmcif")
         .model_structure()
         .component()
-        .representation(color="white")
+        .representation()
+        .color(color="white")
     )
     assembly_1 = (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1og5_updated.cif")
         .parse(format="mmcif")
         .assembly_structure(assembly_id="1")
         .component()
-        .representation(color="red")
+        .representation()
+        .color(color="red")
     )
     assembly_2 = (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1og5_updated.cif")
         .parse(format="mmcif")
         .assembly_structure(assembly_id="2")
         .component()
-        .representation(color="blue")
+        .representation()
+        .color(color="blue")
     )
     cif_1wrf = builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1wrf_updated.cif").parse(
         format="mmcif"
     )
-    model_0 = cif_1wrf.model_structure(model_index=0).component().representation(color="white")
-    model_1 = cif_1wrf.model_structure(model_index=1).component().representation(color="red")
-    model_2 = cif_1wrf.model_structure(model_index=2).component().representation(color="blue")
+    model_0 = cif_1wrf.model_structure(model_index=0).component().representation().color(color="white")
+    model_1 = cif_1wrf.model_structure(model_index=1).component().representation().color(color="red")
+    model_2 = cif_1wrf.model_structure(model_index=2).component().representation().color(color="blue")
     # TODO check model indexing convention (0- or 1-based)
     return JSONResponse(builder.get_state())
 
@@ -335,12 +366,14 @@ async def testing_components_example():
     )
     (
         structure.component(selector="protein")
-        .representation(type="surface", color="white")
-        .color(schema="residue", label_asym_id="A", label_seq_id=64, color="red")
+        .representation(type="surface")
+        .color(color="white")
+        .color(selector=ComponentExpression(label_asym_id="A", label_seq_id=64), color="red")
     )
     (
         structure.component(selector="nucleic")
-        .representation(type="cartoon", color="red")
+        .representation(type="cartoon")
+        .color(color="red")
         .color_from_cif(schema="residue", category_name="my_custom_cif_category")
     )
     # structure2 = (
@@ -363,7 +396,7 @@ async def testing_color_rainbow_example():
         .parse(format="mmcif")
         .model_structure()
     )
-    structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
+    structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_url(
         schema="all-atomic",
         url="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow",
         format="json",
@@ -385,12 +418,12 @@ async def testing_color_cif_example():
     structure_url = _url_for_testing_local_bcif("1cbs")
     annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.cif"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
-    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+    structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_url(
         schema="atom",
         url=annotation_url,
         format="cif",
     )
-    structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
+    structure.component(selector="ligand").representation(type="ball-and-stick").color(color="white").color_from_url(
         schema="atom",
         url=annotation_url,
         format="cif",
@@ -407,12 +440,12 @@ async def testing_color_bcif_example():
     structure_url = _url_for_testing_local_bcif("1cbs")
     annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.bcif"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
-    structure.component(selector="polymer").representation(type="cartoon", color="white").color_from_url(
+    structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_url(
         schema="atom",
         url=annotation_url,
         format="bcif",
     )
-    structure.component(selector="ligand").representation(type="ball-and-stick", color="white").color_from_url(
+    structure.component(selector="ligand").representation(type="ball-and-stick").color(color="white").color_from_url(
         schema="atom",
         url=annotation_url,
         format="bcif",
@@ -428,7 +461,7 @@ async def testing_color_small_example():
     builder = Root()
     structure_url = _url_for_testing_local_bcif("2bvk")
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
-    structure.component(selector="all").representation(type="ball-and-stick", color="white").color_from_url(
+    structure.component(selector="all").representation(type="ball-and-stick").color(color="white").color_from_url(
         schema="all-atomic",
         url="http://0.0.0.0:9000/api/v1/examples/data/2bvk/json/atoms",
         format="json",
@@ -447,12 +480,12 @@ async def testing_color_domains_example():
         .parse(format="mmcif")
         .model_structure()
     )
-    structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
+    structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_url(
         schema="all-atomic",
         url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
         format="json",
     )
-    structure.component(selector="nucleic").representation(type="ball-and-stick", color="white").color_from_url(
+    structure.component(selector="nucleic").representation(type="ball-and-stick").color(color="white").color_from_url(
         schema="all-atomic",
         url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
         format="json",
@@ -474,12 +507,12 @@ async def testing_color_validation_example(id: str = "1tqn"):
     # structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}.bcif"
     structure_url = _url_for_testing_local_bcif(id)
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
-    structure.component(selector="protein").representation(type="cartoon", color="green").color_from_url(
+    structure.component(selector="protein").representation(type="cartoon").color(color="green").color_from_url(
         schema="residue",
         url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
         format="json",
     )
-    structure.component(selector="ligand").representation(type="ball-and-stick", color="green").color_from_url(
+    structure.component(selector="ligand").representation(type="ball-and-stick").color(color="green").color_from_url(
         schema="residue",
         url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
         format="json",
@@ -498,12 +531,12 @@ async def testing_labels_example(id="1h9t"):
     builder = Root()
     structure_url = _url_for_testing_local_bcif(id)
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
-    structure.component(selector="protein").representation(type="cartoon", color="white").color_from_url(
+    structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_url(
         schema="all-atomic",
         url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
         format="json",
     )
-    structure.component(selector="nucleic").representation(type="ball-and-stick", color="white").color_from_url(
+    structure.component(selector="nucleic").representation(type="ball-and-stick").color(color="white").color_from_url(
         schema="all-atomic",
         url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
         format="json",
@@ -513,42 +546,46 @@ async def testing_labels_example(id="1h9t"):
         url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
         format="json",
     )
-    structure.label(text="DNA-binding", schema="all-atomic", label_asym_id="A", beg_label_seq_id=9, end_label_seq_id=83)
-    structure.label(text="DNA-binding", schema="all-atomic", label_asym_id="B", beg_label_seq_id=9, end_label_seq_id=83)
-    structure.label(
-        text="Acyl-CoA\nbinding", schema="all-atomic", label_asym_id="A", beg_label_seq_id=84, end_label_seq_id=231
+    structure.component(selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=9, end_label_seq_id=83)).label(
+        text="DNA-binding"
     )
-    structure.label(
-        text="Acyl-CoA binding", schema="all-atomic", label_asym_id="B", beg_label_seq_id=84, end_label_seq_id=231
+    structure.component(selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=9, end_label_seq_id=83)).label(
+        text="DNA-binding"
     )
-    structure.label(text="DNA X", schema="all-atomic", label_asym_id="C")
-    structure.label(text="DNA Y", schema="all-atomic", label_asym_id="D")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=84, end_label_seq_id=231)
+    ).label(text="Acyl-CoA\nbinding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=84, end_label_seq_id=231)
+    ).label(text="Acyl-CoA binding")
+    structure.component(selector=ComponentExpression(label_asym_id="C")).label(text="DNA X")
+    structure.component(selector=ComponentExpression(label_asym_id="D")).label(text="DNA Y")
 
-    structure.label(text="DNA Y O5'", schema="all-atomic", label_asym_id="D", atom_id=4016)
-    structure.label(text="DNA Y O3'", schema="all-atomic", label_asym_id="D", atom_id=4391)
-    structure.label(text="Gold", schema="all-atomic", label_asym_id="E")
-    structure.label(text="Gold", schema="all-atomic", label_asym_id="H")
-    structure.label(text="Chloride", schema="all-atomic", label_asym_id="F")
-    structure.label(text="Chloride", schema="all-atomic", label_asym_id="G")
-    structure.label(text="Chloride", schema="all-atomic", label_asym_id="I")
+    structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4016)).label(text="DNA Y O5'")
+    structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4391)).label(text="DNA Y O3'")
+    structure.component(selector=ComponentExpression(label_asym_id="E")).label(text="Gold")
+    structure.component(selector=ComponentExpression(label_asym_id="H")).label(text="Gold")
+    structure.component(selector=ComponentExpression(label_asym_id="F")).label(text="Chloride")
+    structure.component(selector=ComponentExpression(label_asym_id="G")).label(text="Chloride")
+    structure.component(selector=ComponentExpression(label_asym_id="I")).label(text="Chloride")
 
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="A", label_seq_id=57)
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="A", label_seq_id=67)
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="A", label_seq_id=121)
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="A", label_seq_id=125)
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="A", label_seq_id=129)
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="A", label_seq_id=178)
-    structure.label(
-        text="Ligand binding", schema="all-atomic", label_asym_id="A", beg_label_seq_id=203, end_label_seq_id=205
-    )
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="B", label_seq_id=67)
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="B", label_seq_id=121)
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="B", label_seq_id=125)
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="B", label_seq_id=129)
-    structure.label(text="Ligand binding", schema="all-atomic", label_asym_id="B", label_seq_id=178)
-    structure.label(
-        text="Ligand binding", schema="all-atomic", label_asym_id="B", beg_label_seq_id=203, end_label_seq_id=205
-    )
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=57)).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=67)).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=121)).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=125)).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=129)).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=178)).label(text="Ligand binding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=203, end_label_seq_id=205)
+    ).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=67)).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=121)).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=125)).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=129)).label(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=178)).label(text="Ligand binding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=203, end_label_seq_id=205)
+    ).label(text="Ligand binding")
     return JSONResponse(builder.get_state())
 
 

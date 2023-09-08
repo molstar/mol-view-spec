@@ -39,7 +39,7 @@ from molviewspec.nodes import (
 )
 from molviewspec.params_utils import make_params
 
-VERSION = 5
+VERSION = 6
 
 
 def create_builder() -> Root:
@@ -205,11 +205,11 @@ class Parse(_Base):
 class Structure(_Base):
     def component(
         self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
-    ) -> Structure:
+    ) -> Component:
         params: ComponentInlineParams = {"selector": selector}
         node = Node(kind="component", params=params)
         self._add_child(node)
-        return Structure(node=node, root=self._root)
+        return Component(node=node, root=self._root)
 
     def component_from_url(
         self,
@@ -221,11 +221,11 @@ class Structure(_Base):
         block_header: str | None = None,
         block_index: int | None = None,
         schema: SchemaT,
-    ) -> Structure:
+    ) -> Component:
         params = make_params(ComponentUrlParams, locals())
         node = Node(kind="component-from-url", params=params)
         self._add_child(node)
-        return self
+        return Component(node=node, root=self._root)
 
     def component_from_cif(
         self,
@@ -235,17 +235,11 @@ class Structure(_Base):
         block_header: str | None = None,
         block_index: int | None = None,
         schema: SchemaT,
-    ) -> Structure:
+    ) -> Component:
         params = make_params(ComponentCifCategoryParams, locals())
         node = Node(kind="component-from-cif", params=params)
         self._add_child(node)
-        return self
-
-    def label(self, *, text: str) -> Structure:
-        params = make_params(LabelInlineParams, locals())
-        node = Node(kind="label", params=params)
-        self._add_child(node)
-        return self
+        return Component(node=node, root=self._root)
 
     def label_from_url(
         self,
@@ -274,12 +268,6 @@ class Structure(_Base):
     ) -> Structure:
         params = make_params(LabelCifCategoryParams, locals())
         node = Node(kind="label-from-cif", params=params)
-        self._add_child(node)
-        return self
-
-    def tooltip(self, *, text: str) -> Structure:
-        params = make_params(TooltipInlineParams, locals())
-        node = Node(kind="tooltip", params=params)
         self._add_child(node)
         return self
 
@@ -313,17 +301,6 @@ class Structure(_Base):
         self._add_child(node)
         return self
 
-    def focus(self) -> Structure:
-        """
-        Focus on this structure or component.
-        :return: this builder
-        """
-        # TODO other focus flavors based on CIF/JSON?
-        params = make_params(FocusInlineParams, locals())
-        node = Node(kind="focus", params=params)
-        self._add_child(node)
-        return self
-
     def transform(
         self,
         *,
@@ -347,7 +324,7 @@ class Structure(_Base):
 
     # TODO factor out as general purpose validation?
     @staticmethod
-    def _is_rotation_matrix(t: tuple[float], eps: float = 0.005):
+    def _is_rotation_matrix(t: Sequence[float], eps: float = 0.005):
         a00, a01, a02, a10, a11, a12, a20, a21, a22 = t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
 
         det3x3 = math.fabs(
@@ -355,11 +332,36 @@ class Structure(_Base):
         )
         return math.isclose(det3x3, 1, abs_tol=eps)
 
-    def representation(self, *, type: RepresentationTypeT = "cartoon", color: ColorT | None = None) -> Representation:
+
+class Component(_Base):
+    def representation(self, *, type: RepresentationTypeT = "cartoon") -> Representation:
         params = make_params(RepresentationParams, locals())
         node = Node(kind="representation", params=params)
         self._add_child(node)
         return Representation(node=node, root=self._root)
+
+    def label(self, *, text: str) -> Component:
+        params = make_params(LabelInlineParams, locals())
+        node = Node(kind="label", params=params)
+        self._add_child(node)
+        return self
+
+    def tooltip(self, *, text: str) -> Component:
+        params = make_params(TooltipInlineParams, locals())
+        node = Node(kind="tooltip", params=params)
+        self._add_child(node)
+        return self
+
+    def focus(self) -> Component:
+        """
+        Focus on this structure or component.
+        :return: this builder
+        """
+        # TODO other focus flavors based on CIF/JSON?
+        params = make_params(FocusInlineParams, locals())
+        node = Node(kind="focus", params=params)
+        self._add_child(node)
+        return self
 
 
 class Representation(_Base):
@@ -375,7 +377,9 @@ class Representation(_Base):
         self._add_child(node)
         return self
 
-    def color(self, *, color: ColorT) -> Representation:
+    def color(
+        self, *, color: ColorT, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
+    ) -> Representation:
         params = make_params(ColorInlineParams, locals())
         node = Node(kind="color", params=params)
         self._add_child(node)
