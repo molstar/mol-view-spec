@@ -30,7 +30,7 @@ export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.
 
 interface MolstarLoadingContext {
     /** Maps 'color-from-url' nodes to annotationId they should reference */
-    annotationMap?: Map<MolstarNode<'color-from-url' | 'tooltip-from-url'>, string>,
+    annotationMap?: Map<MolstarNode<'color-from-url' | 'color-from-cif' | 'tooltip-from-url' | 'tooltip-from-cif'>, string>,
     /** Maps each node (on 'structure' or lower level) than model to its nearest node with color information */
     nearestColorMap?: Map<MolstarNode, MolstarNode<'representation' | 'color' | 'color-from-url' | 'color-from-cif'>>,
     // focus?: { kind: 'focus', selector: StateObjectSelector } | { kind: 'camera', params: ParamsOfKind<MolstarTree, 'camera'> }
@@ -150,14 +150,14 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
     'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
         update.to(msTarget).update(old => ({
             ...old,
-            colorTheme: {
-                name: 'annotation',
-                params: {
-                    annotationId: context.annotationMap?.get(node),
-                    fieldName: node.params.field_name ?? Defaults['color-from-url'].field_name,
-                    background: decodeColor(node.params.background),
-                } satisfies Partial<AnnotationColorThemeProps>
-            }
+            colorTheme: colorThemeForColorNode(node, context),
+        }));
+        return msTarget;
+    },
+    'color-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
+        update.to(msTarget).update(old => ({
+            ...old,
+            colorTheme: colorThemeForColorNode(node, context),
         }));
         return msTarget;
     },
@@ -223,10 +223,12 @@ function collectAnnotationReferences(tree: SubTree<MolstarTree>, context: Molsta
             case 'color-from-url':
             case 'tooltip-from-url':
                 const p = node.params;
-                const block: AnnotationSpec['cifBlock'] = isDefined(p.block_header) ?
-                    { name: 'header', params: { header: p.block_header } }
-                    : { name: 'index', params: { index: p.block_index ?? 0 } }
-                spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: block, cifCategory: p.category_name ?? undefined };
+                spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
+                break;
+            case 'color-from-cif':
+            case 'tooltip-from-cif':
+                const q = node.params;
+                spec = { source: { name: 'source-cif', params: {} }, schema: q.schema, cifBlock: blockSpec(q.block_header, q.block_index), cifCategory: q.category_name ?? undefined };
                 break;
         }
         if (spec) {
@@ -238,16 +240,24 @@ function collectAnnotationReferences(tree: SubTree<MolstarTree>, context: Molsta
     return Object.values(distinctSpecs);
 }
 
+function blockSpec(header: string | null | undefined, index: number | null | undefined): AnnotationSpec['cifBlock'] {
+    if (isDefined(header)) {
+        return { name: 'header', params: { header: header } };
+    } else {
+        return { name: 'index', params: { index: index ?? 0 } };
+    }
+}
+
 function colorThemeForColorNode(node: MolstarNode<'representation' | 'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext) {
     let annotationId: string | undefined = undefined;
+    let fieldName: string | undefined = undefined;
     let color: string | undefined = undefined;
     switch (node?.kind) {
         case 'color-from-url':
-            annotationId = context.annotationMap?.get(node);
-            color = node.params.background;
-            break;
         case 'color-from-cif':
-            console.error('Not implemented: label color from color-from-cif node');
+            annotationId = context.annotationMap?.get(node);
+            fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
+            color = node.params.background;
             break;
         case 'color':
             color = node.params.color;
@@ -260,7 +270,7 @@ function colorThemeForColorNode(node: MolstarNode<'representation' | 'color' | '
     if (annotationId) {
         return {
             name: 'annotation',
-            params: { background: decodeColor(color), annotationId: annotationId, } satisfies Partial<AnnotationColorThemeProps>
+            params: { annotationId, fieldName, background: decodeColor(color) } satisfies Partial<AnnotationColorThemeProps>
         };
     } else {
         return {

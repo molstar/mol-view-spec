@@ -34,6 +34,6 @@ _mvs_test_auth_residue_range_annotation.color
 # polymer
 A 1 . 137 . polymer '#121212'
 # REA ligand
-B 200 . 200 . ligand '#FF0000'
+A 200 . 200 . ligand '#FF0000'
 
 #
