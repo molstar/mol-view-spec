@@ -10,7 +10,7 @@ described by its parent node.
 The corresponding MolViewSpec tree is provided in JSON and may look like this:
 ```json
 {
-  "version": 5,
+  "version": 6,
   "root": {
     "kind": "root",
     "children": [
@@ -66,7 +66,7 @@ Every tree starts with a single `root` node, which contains all nodes in a struc
 ```json
 {
   "root": {},
-  "version": 5
+  "version": 6
 }
 ```
 

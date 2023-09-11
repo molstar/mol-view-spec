@@ -112,7 +112,6 @@ ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
 
 class RepresentationParams(Params):
     type: RepresentationTypeT
-    color: NotRequired[ColorT]
 
 
 SchemaT = Literal[
@@ -165,9 +164,8 @@ class ComponentCifCategoryParams(_DataFromCifParams):
     pass
 
 
-class ColorInlineParams(Params):
+class ColorInlineParams(ComponentInlineParams):
     color: ColorT
-    # schema and other stuff not needed here, the color will be applied on the whole parent Structure or Component
 
 
 class ColorUrlParams(_DataFromUrlParams):
@@ -217,9 +215,12 @@ class TransformParams(Params):
 
 
 class CameraParams(Params):
+    target: tuple[float, float, float]
+    """What to look at"""
     position: tuple[float, float, float]
-    direction: tuple[float, float, float]
-    radius: float
+    """The position of the camera"""
+    up: NotRequired[tuple[float, float, float]]
+    """Controls the rotation around the vector between target and position"""
 
 
 class CanvasParams(Params):

@@ -1,0 +1,14 @@
+# Test annotations #
+
+# Component Selection
+loop_
+_mvs_test_component1.label_asym_id
+_mvs_test_component1.label_entity_id
+# polymer
+A .
+
+loop_
+_mvs_test_component1.label_asym_id
+_mvs_test_component1.label_entity_id
+# REA ligand
+B .
