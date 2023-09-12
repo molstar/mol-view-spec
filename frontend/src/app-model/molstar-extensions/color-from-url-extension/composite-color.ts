@@ -11,6 +11,7 @@ import { ThemeDataContext } from 'molstar/lib/mol-theme/theme';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
+import { stringToWords } from 'molstar/lib/mol-util/string';
 
 
 /** Special value that can be used as color with null-like semantic (i.e. "no color provided").
@@ -46,7 +47,7 @@ export function makeCompositeColorThemeParams(colorThemeRegistry: ColorTheme.Reg
                     colorThemeInfo),
                 selection: PD.Select('all', [['all', 'All']]),
             },
-            obj => obj.theme.name),
+            obj => stringToWords(obj.theme.name)),
         background: PD.Color(DefaultBackgroundColor, { description: 'Color for elements where no layer applies' }),
     };
 }

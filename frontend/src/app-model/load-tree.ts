@@ -10,6 +10,7 @@ import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
+import { CompositeColorThemeParams, CompositeColorThemeProps } from './molstar-extensions/color-from-url-extension/composite-color';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
@@ -151,11 +152,16 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
                 ...old,
                 colorTheme: colorThemeForColorNode(children[0], context),
             }));
-        } else if (children.length === 2 && children[0].kind === 'color' && (!isDefined(children[0].params.selector) || children[0].params.selector === 'all')) {
-            const background = children[0].params.color;
+        } else {
+            const layers: CompositeColorThemeProps['layers'] = children.map(c => ({ theme: colorThemeForColorNode(c, context), selection: 'all' })); // TODO real selection, not 'all'
             update.to(msTarget).update(old => ({
                 ...old,
-                colorTheme: colorThemeForColorNode(children[1], context, background),
+                colorTheme: {
+                    name: 'composite',
+                    params: {
+                        layers,
+                    }
+                },
             }));
         }
         return msTarget;
@@ -260,7 +266,7 @@ function blockSpec(header: string | null | undefined, index: number | null | und
     }
 }
 
-function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext, backgroundColor?: string) {
+function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext) {
     let annotationId: string | undefined = undefined;
     let fieldName: string | undefined = undefined;
     let color: string | undefined = undefined;
@@ -274,11 +280,10 @@ function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | '
             color = node.params.color;
             break;
     }
-    color ??= backgroundColor ?? DefaultColor;
     if (annotationId) {
         return {
             name: 'annotation',
-            params: { annotationId, fieldName, background: decodeColor(color) } satisfies Partial<AnnotationColorThemeProps>
+            params: { annotationId, fieldName } satisfies Partial<AnnotationColorThemeProps>
         };
     } else {
         return {
@@ -332,7 +337,6 @@ function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObje
     const colorTheme = annotationId ? {
         name: 'annotation',
         params: {
-            background: decodeColor(color),
             annotationId: annotationId,
         } satisfies Partial<AnnotationColorThemeProps>
     } : { name: 'uniform', params: { value: decodeColor(color) } };
