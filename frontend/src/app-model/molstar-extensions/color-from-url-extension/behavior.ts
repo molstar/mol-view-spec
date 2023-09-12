@@ -4,15 +4,13 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { Loci } from 'molstar/lib/mol-model/loci';
-import { StructureElement } from 'molstar/lib/mol-model/structure';
-import { LociLabelProvider } from 'molstar/lib/mol-plugin-state/manager/loci-label';
 import { PluginBehavior } from 'molstar/lib/mol-plugin/behavior/behavior';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
 import { AnnotationColorThemeProvider } from './color';
 import { AnnotationsProvider } from './prop';
 import { AnnotationTooltipsLabelProvider, AnnotationTooltipsProvider } from './tooltips-prop';
+import { makeCompositeColorThemeProvider } from './composite-color';
 
 
 /** Registers color theme "Annotation", related custom model property, and loci labels */
@@ -24,11 +22,14 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean }>({
         description: 'Custom annotation data'
     },
     ctor: class extends PluginBehavior.Handler<{ autoAttach: boolean }> {
+        private readonly compositeColorThemeProvider = makeCompositeColorThemeProvider(this.ctx.representation.structure.themes.colorThemeRegistry);
+
         register(): void {
             this.ctx.customModelProperties.register(AnnotationsProvider, this.params.autoAttach);
             this.ctx.customStructureProperties.register(AnnotationTooltipsProvider, true);
             this.ctx.managers.lociLabels.addProvider(AnnotationTooltipsLabelProvider);
             this.ctx.representation.structure.themes.colorThemeRegistry.add(AnnotationColorThemeProvider);
+            this.ctx.representation.structure.themes.colorThemeRegistry.add(this.compositeColorThemeProvider);
         }
         update(p: { autoAttach: boolean }) {
             const updated = this.params.autoAttach !== p.autoAttach;
@@ -41,6 +42,7 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean }>({
             this.ctx.customStructureProperties.unregister(AnnotationTooltipsProvider.descriptor.name);
             this.ctx.managers.lociLabels.removeProvider(AnnotationTooltipsLabelProvider);
             this.ctx.representation.structure.themes.colorThemeRegistry.remove(AnnotationColorThemeProvider);
+            this.ctx.representation.structure.themes.colorThemeRegistry.remove(this.compositeColorThemeProvider);
         }
     },
     params: () => ({

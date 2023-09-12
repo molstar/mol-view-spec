@@ -31,7 +31,7 @@ export type AnnotationColorThemeProps = PD.Values<AnnotationColorThemeParams>
 /** Return color theme that assigns colors based on an annotation file.
  * The annotation file itself is handled by a custom model property (`AnnotationsProvider`),
  * the color theme then just uses this property. */
-export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<AnnotationColorThemeParams>): ColorTheme<AnnotationColorThemeParams> {
+export function AnnotationColorTheme(ctx: ThemeDataContext, props: AnnotationColorThemeProps): ColorTheme<AnnotationColorThemeParams> {
     let color: LocationColor = () => props.background;
 
     if (ctx.structure && !ctx.structure.isEmpty && ctx.structure.models[0].customProperties.has(AnnotationsProvider.descriptor)) {
@@ -84,7 +84,7 @@ export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorTh
     ensureCustomProperties: {
         attach: (ctx: CustomProperty.Context, data: ThemeDataContext) => data.structure ? AnnotationsProvider.attach(ctx, data.structure.models[0], undefined, true) : Promise.resolve(),
         detach: (data) => data.structure && AnnotationsProvider.ref(data.structure.models[0], false),
-    }
+    },
 };
 
 
