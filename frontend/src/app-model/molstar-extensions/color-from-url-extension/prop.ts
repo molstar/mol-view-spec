@@ -326,7 +326,7 @@ function getFileFromModel(model?: Model): CifFile {
             return model.sourceData.data.file;
         } else {
             const frame = model.sourceData.data.frame;
-            const block = CifBlock(Array.from(frame.categoryNames), frame.categories, frame.header)
+            const block = CifBlock(Array.from(frame.categoryNames), frame.categories, frame.header);
             const file = CifFile([block]);
             return file;
         }

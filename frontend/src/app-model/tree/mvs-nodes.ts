@@ -79,10 +79,11 @@ export const MVSTreeSchema = TreeSchema('root',
         },
         'representation': {
             type: RequiredField(RepresentationTypeT),
-            color: OptionalField(ColorT),
+            // color: OptionalField(ColorT),
         },
         'color': {
             color: RequiredField(ColorT),
+            selector: OptionalField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
         'color-from-url': {
             ..._DataFromUrlParams,
@@ -119,9 +120,9 @@ export const MVSTreeSchema = TreeSchema('root',
             background_color: RequiredField(ColorT),
         },
         'camera': {
+            target: RequiredField(Vector3),
             position: RequiredField(Vector3),
-            direction: RequiredField(Vector3),
-            radius: RequiredField(float),
+            up: OptionalField(Vector3),
         },
     }
 );

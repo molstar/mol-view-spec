@@ -31,11 +31,11 @@ export const MolstarTreeSchema = TreeSchema('root',
         'transforms': {},
         'color-from-url': {
             ...MVSTreeSchema.paramsSchemas['color-from-url'],
-            background: MVSTreeSchema.paramsSchemas.representation.color,
+            // background: OptionalField(ColorT),
         },
         'color-from-cif': {
             ...MVSTreeSchema.paramsSchemas['color-from-cif'],
-            background: MVSTreeSchema.paramsSchemas.representation.color,
+            // background: OptionalField(ColorT),
         },
     }
 );

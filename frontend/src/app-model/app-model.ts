@@ -101,7 +101,7 @@ const TEST_DATA: MVSTree = {
                                     'kind': 'component', 'params': { 'selector': 'protein' },
                                     'children': [
                                         {
-                                            'kind': 'representation', 'params': { 'type': 'cartoon', 'color': 'white' },
+                                            'kind': 'representation', 'params': { 'type': 'cartoon' },
                                             'children': [
                                                 {
                                                     'kind': 'color', 'params': { 'color': 'red' }

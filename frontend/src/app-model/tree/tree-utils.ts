@@ -142,18 +142,15 @@ const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
             { kind: node.kind, params: node.params },
         ];
     },
-    'color-from-url': (node, parent) => {
-        const newParams: ParamsOfKind<SubTree<MolstarTree>, 'color-from-url'> = { ...node.params };
-        if (parent?.kind === 'representation' && parent.params.color !== undefined) {
-            newParams.background = parent.params.color;
-        }
-        return [
-            { kind: 'color-from-url', params: newParams }
-            // { kind: 'trajectory', params: { ...pickObjectKeys(parent.params, ['format']), ...pickObjectKeys(node.params, ['block_header', 'block_index']) } },
-            // { kind: 'model', params: pickObjectKeys(node.params, ['model_index']) },
-            // { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
-        ] satisfies MolstarNode[];
-    },
+    // 'color-from-url': (node, parent) => {
+    //     const newParams: ParamsOfKind<SubTree<MolstarTree>, 'color-from-url'> = { ...node.params };
+    //     if (parent?.kind === 'representation' && parent.params.color !== undefined) {
+    //         newParams.background = parent.params.color;
+    //     }
+    //     return [
+    //         { kind: 'color-from-url', params: newParams }
+    //     ] satisfies MolstarNode[];
+    // },
 };
 /** Node kinds that it makes sense to condense */
 const molstarNodesToCondense = new Set<MolstarKind>(['download', 'raw', 'parse', 'trajectory', 'model', 'transforms'] satisfies MolstarKind[]);

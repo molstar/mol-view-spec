@@ -1,3 +1,4 @@
+import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { MVSKind, MVSTreeSchema } from './tree/mvs-nodes';
 import { DefaultsFor } from './tree/params-schema';
 
@@ -43,9 +44,10 @@ export const Defaults = {
         selector: 'all',
     },
     representation: {
-        color: 'white',
+        // color: 'white',
     },
     'color': {
+        selector: 'all',
     },
     'color-from-url': {
         category_name: null,
@@ -96,7 +98,10 @@ export const Defaults = {
     'canvas': {
     },
     'camera': {
+        up: [0, 1, 0],
     },
 } satisfies { [kind in MVSKind]: DefaultsFor<(typeof MVSTreeSchema)['paramsSchemas'][kind]> };
 // TODO mandatory params don't need to be here
 // TODO apply default to MVS tree (before conversion), not Molstar tree
+
+export const DefaultColor = 'white';
