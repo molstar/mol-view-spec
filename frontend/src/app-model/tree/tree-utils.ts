@@ -136,9 +136,27 @@ const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
             { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
         ] satisfies MolstarNode[];
     },
-    'transform': (node) => {
+    'transform': node => {
         return [
             { kind: 'transforms' },
+            { kind: node.kind, params: node.params },
+        ];
+    },
+    'color': node => {
+        return [
+            { kind: 'colors' },
+            { kind: node.kind, params: node.params },
+        ];
+    },
+    'color-from-cif': node => {
+        return [
+            { kind: 'colors' },
+            { kind: node.kind, params: node.params },
+        ];
+    },
+    'color-from-url': node => {
+        return [
+            { kind: 'colors' },
             { kind: node.kind, params: node.params },
         ];
     },
@@ -153,7 +171,7 @@ const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
     // },
 };
 /** Node kinds that it makes sense to condense */
-const molstarNodesToCondense = new Set<MolstarKind>(['download', 'raw', 'parse', 'trajectory', 'model', 'transforms'] satisfies MolstarKind[]);
+const molstarNodesToCondense = new Set<MolstarKind>(['download', 'raw', 'parse', 'trajectory', 'model', 'transforms', 'colors'] satisfies MolstarKind[]);
 
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {

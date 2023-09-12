@@ -144,20 +144,36 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             // colorTheme: color ? { name: 'uniform', params: { value: Color(ColorNames[color as keyof ColorNames] ?? ColorNames.white) } } : undefined,
         }).selector;
     },
-    'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
-        update.to(msTarget).update(old => ({
-            ...old,
-            colorTheme: colorThemeForColorNode(node, context),
-        }));
+    colors(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'colors'>, context: MolstarLoadingContext): StateObjectSelector {
+        const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-cif' || c.kind === 'color-from-url') as MolstarNode<'color' | 'color-from-cif' | 'color-from-url'>[];
+        if (children.length === 1) {
+            update.to(msTarget).update(old => ({
+                ...old,
+                colorTheme: colorThemeForColorNode(children[0], context),
+            }));
+        } else if (children.length === 2 && children[0].kind === 'color' && (!isDefined(children[0].params.selector) || children[0].params.selector === 'all')) {
+            const background = children[0].params.color;
+            update.to(msTarget).update(old => ({
+                ...old,
+                colorTheme: colorThemeForColorNode(children[1], context, background),
+            }));
+        }
         return msTarget;
     },
-    'color-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
-        update.to(msTarget).update(old => ({
-            ...old,
-            colorTheme: colorThemeForColorNode(node, context),
-        }));
-        return msTarget;
-    },
+    // 'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
+    //     update.to(msTarget).update(old => ({
+    //         ...old,
+    //         colorTheme: colorThemeForColorNode(node, context),
+    //     }));
+    //     return msTarget;
+    // },
+    // 'color-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
+    //     update.to(msTarget).update(old => ({
+    //         ...old,
+    //         colorTheme: colorThemeForColorNode(node, context),
+    //     }));
+    //     return msTarget;
+    // },
     label(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
         const item: CustomLabelProps['items'][number] = {
             text: node.params.text,
@@ -193,6 +209,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         return msTarget;
     },
 };
+
 
 /** Return a 4x4 matrix representing rotation + translation */
 function transformFromRotationTranslation(rotation: number[] | null | undefined, translation: number[] | null | undefined): Mat4 {
@@ -243,7 +260,7 @@ function blockSpec(header: string | null | undefined, index: number | null | und
     }
 }
 
-function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext) {
+function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext, backgroundColor?: string) {
     let annotationId: string | undefined = undefined;
     let fieldName: string | undefined = undefined;
     let color: string | undefined = undefined;
@@ -257,7 +274,7 @@ function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | '
             color = node.params.color;
             break;
     }
-    color ??= DefaultColor;
+    color ??= backgroundColor ?? DefaultColor;
     if (annotationId) {
         return {
             name: 'annotation',

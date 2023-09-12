@@ -434,18 +434,12 @@ async def testing_components_example() -> MVSResponse:
         structure.component(selector="protein")
         .representation(type="surface")
         .color(color="white")
-        .color(selector=ComponentExpression(label_asym_id="A", label_seq_id=64), color="red")
     )
     (
         structure.component(selector="nucleic")
         .representation(type="cartoon")
         .color(color="red")
     )
-    # structure2 = (
-    #     builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
-    #     .parse(format="mmcif")
-    #     .model_structure()
-    # )
     # TODO add all component types to this example
     return JSONResponse(builder.get_state())
 
