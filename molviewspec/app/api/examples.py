@@ -1,16 +1,23 @@
+import math
 import requests
 from fastapi import APIRouter
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
+from typing import TypeAlias
 
 from app.config import settings
 from molviewspec.builder import Root
 from molviewspec.nodes import ComponentExpression
 
+
+MVSResponse: TypeAlias = Response
+"""Response containing a MVS tree (as JSON)"""
+
+
 router = APIRouter()
 
 
 @router.get("/load/{id}")
-async def download_example(id: str):
+async def download_example(id: str) -> MVSResponse:
     """
     Download a minimal example that visualizes a given PDB entry in cartoon representation.
     """
@@ -26,7 +33,7 @@ async def download_example(id: str):
 
 
 @router.get("/label/{id}")
-async def label_example(id: str):
+async def label_example(id: str) -> MVSResponse:
     """
     The minimal example enriched by custom labels and labels read from the CIF source file.
     """
@@ -50,7 +57,7 @@ async def label_example(id: str):
 
 
 @router.get("/color/{id}")
-async def color_example(id: str):
+async def color_example(id: str) -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
@@ -74,7 +81,7 @@ async def color_example(id: str):
 
 
 @router.get("/component")
-async def component_example():
+async def component_example() -> MVSResponse:
     """
     Define components by referencing selection expression from a URL. This will select the protein chain A and render it
     in cartoon representation and select the REA ligand in chain B, which will be depicted in ball-and-stick
@@ -98,7 +105,7 @@ async def component_example():
 
 
 @router.get("/symmetry-mates/{id}")
-async def symmetry_mates_example(id: str):
+async def symmetry_mates_example(id: str) -> MVSResponse:
     """
     Add symmetry mates within a distance threshold.
     """
@@ -112,7 +119,7 @@ async def symmetry_mates_example(id: str):
 
 
 @router.get("/symmetry/{id}")
-async def symmetry_example(id: str):
+async def symmetry_example(id: str) -> MVSResponse:
     """
     Create symmetry mates by specifying Miller indices.
     """
@@ -126,7 +133,7 @@ async def symmetry_example(id: str):
 
 
 @router.get("/transform")
-async def transform_example():
+async def transform_example() -> MVSResponse:
     """
     Superimpose 4hhb and 1oj6 by transforming the latter.
     """
@@ -148,7 +155,7 @@ async def transform_example():
 
 
 @router.get("/validation/{id}")
-async def validation_example(id: str):
+async def validation_example(id: str) -> MVSResponse:
     """
     Color a structure by annotation data in JSON.
     :param id: the entry to process
@@ -168,7 +175,7 @@ async def validation_example(id: str):
 
 
 @router.get("/generic-visuals")
-async def generic_visuals():
+async def generic_visuals() -> MVSResponse:
     """
     Create a scene using generic visuals.
     :return: view spec of a scene leveraging generic visuals/primitives
@@ -190,7 +197,7 @@ async def generic_visuals():
 
 
 @router.get("/data/{id}/molecule")
-async def cif_data_molecule(id: str):
+async def cif_data_molecule(id: str) -> Response:
     """
     Download the content of `molecule.cif`.
     """
@@ -199,7 +206,7 @@ async def cif_data_molecule(id: str):
 
 
 @router.get("/data/{id}/cif-annotations")
-async def cif_data_annotation(id: str):
+async def cif_data_annotation(id: str) -> Response:
     """
     Download the content of `annotations.cif`.
     """
@@ -208,7 +215,7 @@ async def cif_data_annotation(id: str):
 
 
 @router.get("/data/{id}/molecule-and-cif-annotations")
-async def cif_data_molecule_and_annotation(id: str):
+async def cif_data_molecule_and_annotation(id: str) -> Response:
     """
     Get a mmCIF structure file with the contents of `annotations.cif` concatenated to the end.
     """
@@ -218,7 +225,7 @@ async def cif_data_molecule_and_annotation(id: str):
 
 
 @router.get("/data/{id}/json-annotations")
-async def json_list(id: str):
+async def json_list(id: str) -> Response:
     """
     Lists all available JSON annotations for a given `id`.
     """
@@ -228,7 +235,7 @@ async def json_list(id: str):
 
 
 @router.get("/data/{id}/json/{name}")
-async def json_data(id: str, name: str):
+async def json_data(id: str, name: str) -> Response:
     """
     Download a specific JSON file. Use the `data/{id}/json-annotations` endpoint to discover available files.
     """
@@ -237,7 +244,7 @@ async def json_data(id: str, name: str):
 
 
 @router.get("/data/{id}/file/{filename}")
-async def file(id: str, filename: str):
+async def file(id: str, filename: str) -> Response:
     """
     Download a specific file. (Mostly for testing)
     """
@@ -246,7 +253,7 @@ async def file(id: str, filename: str):
 
 
 @router.get("/data/{id}/validation")
-async def validation_data(id: str):
+async def validation_data(id: str) -> Response:
     """
     Fetches PDBe validation data for an entry and composes a JSON color instruction.
     :param id: entry to process
@@ -286,7 +293,7 @@ async def validation_data(id: str):
 
 
 @router.get("/testing/formats")
-async def testing_formats_example():
+async def testing_formats_example() -> MVSResponse:
     """Return state with three proteins loaded in mmCIF, binaryCIF, and PDB format"""
     builder = Root()
     parse_cif = (
@@ -317,10 +324,12 @@ async def testing_formats_example():
 
 
 @router.get("/testing/structures")
-async def testing_structures_example():
-    """Return state with deposited model for 1og2 (dimer, white),
+async def testing_structures_example() -> MVSResponse:
+    """
+    Return state with deposited model for 1og2 (dimer, white),
     two assemblies for 1og5 (monomers, red and blue);
-    and three models for 1wrf (NMR conformations)"""
+    and three models for 1wrf (NMR conformations)
+    """
     builder = Root()
     entry = (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1og2_updated.cif")
@@ -349,15 +358,71 @@ async def testing_structures_example():
     cif_1wrf = builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1wrf_updated.cif").parse(
         format="mmcif"
     )
+    # model_0 = cif_1wrf.model_structure(model_index=0).component().representation(color="white")
+    # model_1 = cif_1wrf.model_structure(model_index=1).component().representation(color="red")
+    # model_2 = cif_1wrf.model_structure(model_index=2).component().representation(color="blue")
     model_0 = cif_1wrf.model_structure(model_index=0).component().representation().color(color="white")
     model_1 = cif_1wrf.model_structure(model_index=1).component().representation().color(color="red")
     model_2 = cif_1wrf.model_structure(model_index=2).component().representation().color(color="blue")
-    # TODO check model indexing convention (0- or 1-based)
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/transforms")
+async def testing_transforms_example(id: str = "1cbs") -> MVSResponse:
+    """
+    Return state demonstrating different transforms:
+    1cbs in original conformation (white), moved (blue), rotated +90 deg around Z (green),
+    # and rotated twice(+90 deg around X then +90 deg around Y, orange)
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    model = builder.download(url=structure_url).parse(format="bcif")
+    original = (
+        model
+        .model_structure()
+        .component(selector="all")
+        .representation().color(color="white")
+    )
+    moved = (
+        model
+        .model_structure()
+        .transform(translation=(0, -40, 0))
+        .component(selector="all")
+        .representation().color(color="blue")
+    )
+    rotatedZ90 = (
+        model
+        .model_structure()
+        .transform(rotation=(
+            0, 1, 0,  # this is a column, because of column-major convention
+            -1, 0, 0,
+            0, 0, 1,
+        ), translation=(80, 5, 0))
+        .component(selector="all")
+        .representation().color(color="green")
+    )
+    # Right now builder prohibits multiple transforms, but frontend supports them
+    combination = (
+        model
+        .model_structure()
+        .transform(rotation=(  # rotateX90
+            1, 0, 0,
+            0, 0, 1,
+            0, -1, 0,
+        ))
+        .transform(rotation=(  # rotateY90
+            0, 0, -1,
+            0, 1, 0,
+            1, 0, 0,
+        ), translation=(40, 10, 40))
+        .component(selector="all")
+        .representation().color(color="orange")
+    )
     return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/components")
-async def testing_components_example():
+async def testing_components_example() -> MVSResponse:
     builder = Root()
     structure = (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/8h0v_updated.cif")
@@ -368,25 +433,40 @@ async def testing_components_example():
         structure.component(selector="protein")
         .representation(type="surface")
         .color(color="white")
-        .color(selector=ComponentExpression(label_asym_id="A", label_seq_id=64), color="red")
     )
     (
         structure.component(selector="nucleic")
         .representation(type="cartoon")
         .color(color="red")
-        .color_from_cif(schema="residue", category_name="my_custom_cif_category")
     )
-    # structure2 = (
-    #     builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/????_updated.cif")
-    #     .parse(format="mmcif")
-    #     .model_structure()
-    # )
     # TODO add all component types to this example
     return JSONResponse(builder.get_state())
 
 
+@router.get("/testing/color_from_cif")
+async def testing_color_from_cif_example() -> MVSResponse:
+    """
+    Color from the same CIF as structure
+    """
+    builder = Root()
+    structure_url = f"http://0.0.0.0:9000/api/v1/examples/data/1cbs/molecule-and-cif-annotations"
+    structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_cif(
+        schema="all-atomic",
+        category_name="mvs_test_chain_label_annotation",
+    )
+    structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    structure.component(selector="ligand").representation(type="ball-and-stick").color(color="white").color_from_cif(
+        schema="all-atomic",
+        block_header="1CBS",
+        category_name="mvs_test_chain_label_annotation",
+        field_name="color"
+    )
+    return JSONResponse(builder.get_state())
+
+
 @router.get("/testing/color_rainbow")
-async def testing_color_rainbow_example():
+async def testing_color_rainbow_example() -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
@@ -410,7 +490,7 @@ async def testing_color_rainbow_example():
 
 
 @router.get("/testing/color_cif")
-async def testing_color_cif_example():
+async def testing_color_cif_example() -> MVSResponse:
     """
     An example with CIF-encoded coloring.
     """
@@ -431,8 +511,35 @@ async def testing_color_cif_example():
     return JSONResponse(builder.get_state())
 
 
+@router.get("/testing/color_multicategory_cif")
+async def testing_color_cif_multicategory_example() -> MVSResponse:
+    """
+    An example with CIF-encoded coloring.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif("1cbs")
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom-multicategory.cif"
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_url(
+        schema="atom",
+        url=annotation_url,
+        format="cif",
+        block_index=1,
+        category_name="color",
+        field_name="secondary_color"
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick").color(color="white").color_from_url(
+        schema="atom",
+        url=annotation_url,
+        format="cif",
+        block_header="block2",
+        category_name="black_is_good",
+    )
+    return JSONResponse(builder.get_state())
+
+
 @router.get("/testing/color_bcif")
-async def testing_color_bcif_example():
+async def testing_color_bcif_example() -> MVSResponse:
     """
     An example with BCIF-encoded coloring.
     """
@@ -454,7 +561,7 @@ async def testing_color_bcif_example():
 
 
 @router.get("/testing/color_small")
-async def testing_color_small_example():
+async def testing_color_small_example() -> MVSResponse:
     """
     An example with a small structure coloring applied down to atom level.
     """
@@ -470,7 +577,7 @@ async def testing_color_small_example():
 
 
 @router.get("/testing/color_domains")
-async def testing_color_domains_example():
+async def testing_color_domains_example(colors: bool = True, tooltips: bool = False) -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
@@ -480,31 +587,39 @@ async def testing_color_domains_example():
         .parse(format="mmcif")
         .model_structure()
     )
-    structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_url(
-        schema="all-atomic",
-        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
-        format="json",
-    )
-    structure.component(selector="nucleic").representation(type="ball-and-stick").color(color="white").color_from_url(
-        schema="all-atomic",
-        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
-        format="json",
-    )
-    structure.component(selector="ion").representation(type="surface").color_from_url(
-        schema="all-atomic",
-        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
-        format="json",
-    )
+    reprs = [
+        structure.component(selector="protein").representation(type="cartoon").color(color="white"),
+        structure.component(selector="nucleic").representation(type="ball-and-stick").color(color="white"),
+        structure.component(selector="ion").representation(type="surface"),
+    ]
+    if colors:
+        for repr in reprs:
+            repr.color_from_url(
+                schema="all-atomic",
+                url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+                format="json",
+            )
+    if tooltips:
+        structure.tooltip_from_url(
+            schema="all-atomic",
+            url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+            format="json",
+        )
+        structure.tooltip_from_url(
+            schema="all-atomic",
+            url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+            format="json",
+            field_name="label_asym_id",
+        )
     return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_validation")
-async def testing_color_validation_example(id: str = "1tqn"):
+async def testing_color_validation_example(id: str = "1tqn") -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
-    # structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}.bcif"
     structure_url = _url_for_testing_local_bcif(id)
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="protein").representation(type="cartoon").color(color="green").color_from_url(
@@ -520,11 +635,97 @@ async def testing_color_validation_example(id: str = "1tqn"):
     return JSONResponse(builder.get_state())
 
 
+@router.get("/testing/color_multilayer")
+async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
+    """
+    An example with different representations and coloring for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    (
+        structure
+        .component(selector="protein")
+        .representation(type="cartoon")
+        .color(color="#00dd00", selector=[ComponentExpression(beg_label_seq_id=1, end_label_seq_id=176),
+                                        ComponentExpression(beg_label_seq_id=242)])
+        .color_from_url(
+            schema="residue",
+            url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
+            format="json",
+        ).color(color="magenta", selector=[ComponentExpression(beg_label_seq_id=50, end_label_seq_id=63),
+                                           ComponentExpression(beg_auth_seq_id=373, end_auth_seq_id=376),
+                                           ComponentExpression(beg_auth_seq_id=393, end_auth_seq_id=396)])
+        .color(color="blue", selector=ComponentExpression(label_seq_id=52))
+        .color(color="blue", selector=ComponentExpression(label_seq_id=61))
+        .color(color="blue", selector=ComponentExpression(label_seq_id=354))
+        .color(color="blue", selector=ComponentExpression(label_seq_id=373))
+    )
+    (
+        structure
+        .component(selector="ligand")
+        .representation(type="ball-and-stick")
+        .color(color="gray")
+        .color(color="blue", selector=[ComponentExpression(type_symbol="N")])
+        .color(color="red", selector=[ComponentExpression(type_symbol="O")])
+        .color(color="yellow", selector=[ComponentExpression(type_symbol="S")])
+        .color(color="#AA0022", selector=[ComponentExpression(type_symbol="FE")])
+    )
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/focus")
+async def testing_focus_example() -> MVSResponse:
+    """
+    An example for 'focus' node.
+    """
+    builder = Root()
+    target, position, up = _target_spherical_to_tpu((17, 21, 27), phi=-30, theta=15, radius=100)
+    builder.camera(target=target, position=position, up=up)  # sets orientation, but position will be overwritten by focus
+    structure_url = _url_for_testing_local_bcif("1cbs")
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon").color(color="orange")
+    structure.component(selector="ligand").focus().representation(type="ball-and-stick").color(color="green")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/camera")
+async def testing_camera_example() -> MVSResponse:
+    """
+    An example for 'camera' node.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif("1cbs")
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon").color(color="orange")
+    structure.component(selector="ligand").representation(type="ball-and-stick").color(color="green")
+    target, position, up = _target_spherical_to_tpu((17, 21, 27), phi=30, theta=15, radius=100)
+    builder.camera(target=target, position=position, up=up)
+    return JSONResponse(builder.get_state())
+
+
+def _target_spherical_to_pdr(target: tuple[float, float, float], phi: float = 0, theta: float = 0, radius: float = 100):
+    x, y, z = target
+    phi, theta = math.radians(phi), math.radians(theta)
+    direction = (-math.sin(phi) * math.cos(theta), -math.sin(theta), -math.cos(phi) * math.cos(theta))
+    position = (x-direction[0]*radius, y-direction[1]*radius, z-direction[2]*radius)
+    return position, direction, radius
+
+
+def _target_spherical_to_tpu(target: tuple[float, float, float], phi: float = 0, theta: float = 0, radius: float = 100):
+    x, y, z = target
+    phi, theta = math.radians(phi), math.radians(theta)
+    direction = (-math.sin(phi) * math.cos(theta), -math.sin(theta), -math.cos(phi) * math.cos(theta))
+    position = (x-direction[0]*radius, y-direction[1]*radius, z-direction[2]*radius)
+    up = (0, 1, 0)
+    return target, position, up
+
+
 # TODO test labels
 
 
 @router.get("/testing/labels")
-async def testing_labels_example(id="1h9t"):
+async def testing_labels_example(id="1h9t") -> MVSResponse:
     """
     An example with different labels for polymer and non-polymer chains.
     """
@@ -590,7 +791,7 @@ async def testing_labels_example(id="1h9t"):
 
 
 @router.get("/testing/local_bcif/{id}")
-async def testing_local_bcif(id: str):
+async def testing_local_bcif(id: str) -> Response:
     """Return a PDB structure in BCIF cached on local server (obtain from PDBe and cache if not present)"""
     print("testing_local_bcif", id)
     result_file = settings.TEST_DATA_DIR / "tmp" / f"{id}.bcif"
@@ -606,6 +807,6 @@ async def testing_local_bcif(id: str):
     return FileResponse(result_file, media_type="application/octet-stream")
 
 
-def _url_for_testing_local_bcif(id: str):
+def _url_for_testing_local_bcif(id: str) -> str:
     """Return URL for `testing_local_bcif` endpoint"""
     return f"http://0.0.0.0:9000/api/v1/examples/testing/local_bcif/{id}"

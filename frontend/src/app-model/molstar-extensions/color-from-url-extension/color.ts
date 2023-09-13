@@ -18,8 +18,9 @@ import { AnnotationsProvider } from './prop';
 
 /** Parameter definition for color theme "Annotation" */
 export const AnnotationColorThemeParams = {
-    background: PD.Color(ColorNames.gainsboro, { description: 'Color for elements without annotation' }),
     annotationId: PD.Text('', { description: 'Reference to "Annotation" custom model property' }),
+    fieldName: PD.Text('color', { description: 'Annotation field (column) from which to take color values' }),
+    background: PD.Color(ColorNames.gainsboro, { description: 'Color for elements without annotation' }),
 };
 export type AnnotationColorThemeParams = typeof AnnotationColorThemeParams
 
@@ -30,7 +31,7 @@ export type AnnotationColorThemeProps = PD.Values<AnnotationColorThemeParams>
 /** Return color theme that assigns colors based on an annotation file.
  * The annotation file itself is handled by a custom model property (`AnnotationsProvider`),
  * the color theme then just uses this property. */
-export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<AnnotationColorThemeParams>): ColorTheme<AnnotationColorThemeParams> {
+export function AnnotationColorTheme(ctx: ThemeDataContext, props: AnnotationColorThemeProps): ColorTheme<AnnotationColorThemeParams> {
     let color: LocationColor = () => props.background;
 
     if (ctx.structure && !ctx.structure.isEmpty && ctx.structure.models[0].customProperties.has(AnnotationsProvider.descriptor)) {
@@ -40,8 +41,7 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: PD.Values<Ann
         if (annot) {
             const colorForStructureElementLocation = (location: StructureElement.Location) => {
                 // if (annot.getAnnotationForLocation(location)?.color !== annot.getAnnotationForLocation_Reference(location)?.color) throw new Error('AssertionError');
-                const annotationRow = annot.getAnnotationForLocation(location);
-                return decodeColor(annotationRow?.color) ?? props.background;
+                return decodeColor(annot?.getValueForLocation(location, props.fieldName)) ?? props.background;
             };
             const auxLocation = StructureElement.Location.create(ctx.structure);
 
@@ -84,7 +84,7 @@ export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorTh
     ensureCustomProperties: {
         attach: (ctx: CustomProperty.Context, data: ThemeDataContext) => data.structure ? AnnotationsProvider.attach(ctx, data.structure.models[0], undefined, true) : Promise.resolve(),
         detach: (data) => data.structure && AnnotationsProvider.ref(data.structure.models[0], false),
-    }
+    },
 };
 
 

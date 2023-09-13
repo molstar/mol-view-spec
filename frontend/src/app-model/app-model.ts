@@ -5,11 +5,12 @@ import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
 import { BehaviorSubject } from 'rxjs';
 
-import { Annotation } from './cif-color-extension/behavior';
-import { CustomLabel } from './custom-label-extension/behavior';
+import { Annotation } from './molstar-extensions/color-from-url-extension/behavior';
+import { CustomLabel } from './molstar-extensions/custom-label-extension/behavior';
 import { loadMVSTree } from './load-tree';
 import { MVSTree } from './tree/mvs-nodes';
 import { treeToString } from './tree/tree-utils';
+import { MultilayerColorTheme } from './molstar-extensions/multilayer-color-theme-extension/behavior';
 
 
 export class AppModel {
@@ -21,6 +22,7 @@ export class AppModel {
     async initPlugin(target: HTMLDivElement) {
         const defaultSpec = DefaultPluginUISpec();
         defaultSpec.behaviors.push(PluginSpec.Behavior(Annotation));
+        defaultSpec.behaviors.push(PluginSpec.Behavior(MultilayerColorTheme));
         defaultSpec.behaviors.push(PluginSpec.Behavior(CustomLabel));
         this.plugin = await createPluginUI(target, {
             ...defaultSpec,
@@ -37,7 +39,7 @@ export class AppModel {
             },
             canvas3d: {
                 camera: {
-                    helper: { axes: { name: 'off', params: {} } }
+                    // helper: { axes: { name: 'off', params: {} } }
                 }
             },
             config: [
@@ -70,6 +72,10 @@ export class AppModel {
             throw err;
         }
     }
+    printCamera() {
+        const snapshot = this.plugin?.canvas3d?.camera.getSnapshot();
+        console.log('printCamera:', snapshot);
+    }
 }
 
 async function getTreeFromUrl(url: string): Promise<{ version: number, root: MVSTree }> {
@@ -97,10 +103,10 @@ const TEST_DATA: MVSTree = {
                                     'kind': 'component', 'params': { 'selector': 'protein' },
                                     'children': [
                                         {
-                                            'kind': 'representation', 'params': { 'type': 'cartoon', 'color': 'white' },
+                                            'kind': 'representation', 'params': { 'type': 'cartoon' },
                                             'children': [
                                                 {
-                                                    'kind': 'color-from-inline', 'params': { 'schema': 'residue', 'label_asym_id': 'A', 'label_seq_id': 64, 'color': 'red' }
+                                                    'kind': 'color', 'params': { 'color': 'red' }
                                                 }
                                             ]
                                         }

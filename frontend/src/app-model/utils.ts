@@ -1,3 +1,5 @@
+import { hashString } from 'molstar/lib/mol-data/util';
+
 
 export function formatObject(obj: {} | undefined) {
     if (!obj) return 'undefined';
@@ -43,7 +45,7 @@ export function range(start: number, end?: number): number[] {
  * Equivalent to `dst.push(...src)`, but avoids storing element on call stack. Faster that `extend` from Underscore.js.
  * `extend(a, a)` will double the array
  */
-export function extend<T>(dst: T[], src: readonly T[]): void {
+export function extend<T>(dst: T[], src: ArrayLike<T>): void {
     const offset = dst.length;
     const nCopy = src.length;
     dst.length += nCopy;
@@ -217,4 +219,26 @@ export function distinct<T extends Json>(values: T[]): T[] {
         }
     }
     return result;
+}
+
+
+/** Return `true` if `value` is not `undefined` or `null`.
+ * Prefer this over `value !== undefined`
+ * (for maybe if we want to allow `null` in `AnnotationRow` in the future) */
+export function isDefined<T>(value: T | undefined | null): value is T {
+    return value !== undefined && value !== null;
+}
+/** Return `true` if at least one of `values` is not `undefined` or `null`. */
+export function isAnyDefined(...values: any[]): boolean {
+    return values.some(v => isDefined(v));
+}
+/** Return filtered array containing all original elements except `undefined` or `null`. */
+export function filterDefined<T>(elements: (T | undefined | null)[]): T[] {
+    return elements.filter(x => x !== undefined && x !== null) as T[];
+}
+
+/** Create an 8-hex-character hash for a given input string, e.g. 'spanish inquisition' -> 'bd65e59a' */
+export function stringHash(input: string): string {
+    const uint32hash = hashString(input) >>> 0; // >>>0 converts to uint32, LOL
+    return uint32hash.toString(16).padStart(8, '0');
 }

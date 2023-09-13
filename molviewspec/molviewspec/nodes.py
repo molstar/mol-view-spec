@@ -125,6 +125,7 @@ SchemaT = Literal[
     "auth-residue-range",
     "atom",
     "auth-atom",
+    "all-atomic",
 ]
 SchemaFormatT = Literal["cif", "bcif", "json"]
 

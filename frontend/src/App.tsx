@@ -31,15 +31,23 @@ function Main() {
         // color: 'http://localhost:9000/api/v1/examples/color/1cbs',
         formats: 'http://localhost:9000/api/v1/examples/testing/formats',
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
+        transforms: 'http://localhost:9000/api/v1/examples/testing/transforms',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
-        'colors-rainbow 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
-        'colors-cif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_cif',
-        'colors-bcif 1cbs': 'http://localhost:9000/api/v1/examples/testing/color_bcif',
-        'colors-small 2bvk': 'http://localhost:9000/api/v1/examples/testing/color_small',
-        'colors-domains 1h9t': 'http://localhost:9000/api/v1/examples/testing/color_domains',
-        'colors-validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn',
-        'colors-validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q',
-        'labels 1h9t': 'http://localhost:9000/api/v1/examples/testing/labels',
+        'colors-from-cif': 'http://localhost:9000/api/v1/examples/testing/color_from_cif',
+        'colors rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
+        'colors cif': 'http://localhost:9000/api/v1/examples/testing/color_cif',
+        'colors cif multicategory': 'http://localhost:9000/api/v1/examples/testing/color_multicategory_cif',
+        'colors bcif': 'http://localhost:9000/api/v1/examples/testing/color_bcif',
+        'colors small': 'http://localhost:9000/api/v1/examples/testing/color_small',
+        'colors domains': 'http://localhost:9000/api/v1/examples/testing/color_domains',
+        'tooltips domains': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=false&tooltips=true',
+        'colors+tooltips domains': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=true&tooltips=true',
+        'colors validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn',
+        'colors validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q',
+        'colors multilayer': 'http://localhost:9000/api/v1/examples/testing/color_multilayer?id=1tqn',
+        'labels': 'http://localhost:9000/api/v1/examples/testing/labels',
+        'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
+        'camera': 'http://localhost:9000/api/v1/examples/testing/camera',
     };
 
     return (
@@ -75,6 +83,9 @@ function Main() {
                             <pre style={{ margin: 5 }}>{loadedTree}</pre>
                         </div>
                     </>}
+                </div>
+                <div>
+                    <Button onClick={() => model.printCamera()}>Print camera</Button>
                 </div>
             </div>
         </div>

@@ -15,6 +15,7 @@ import { TextBuilder } from 'molstar/lib/mol-geo/geometry/text/text-builder';
 import { ElementIterator, eachSerialElement, getSerialElementLoci } from 'molstar/lib/mol-repr/structure/visual/util/element';
 // import { ColorNames } from '../../../mol-util/color/names';
 // import { Vec3 } from '../../../mol-math/linear-algebra';
+import { SortedArray } from 'molstar/lib/mol-data/int';
 import { Sphere3D } from 'molstar/lib/mol-math/geometry';
 import { BoundaryHelper } from 'molstar/lib/mol-math/geometry/boundary-helper';
 import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
@@ -25,12 +26,12 @@ import { VisualContext } from 'molstar/lib/mol-repr/visual';
 import { Theme } from 'molstar/lib/mol-theme/theme';
 import { UUID, deepEqual } from 'molstar/lib/mol-util';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
-import { AtomRanges, rangesMap } from '../cif-color-extension/helpers/atom-ranges';
-import { IndicesAndSortings, createIndicesAndSortings } from '../cif-color-extension/helpers/indexing';
-import { atomQualifies, getAtomRangesForRow } from '../cif-color-extension/helpers/selections';
-import { extend, omitObjectKeys } from '../utils';
-import { SortedArray } from 'molstar/lib/mol-data/int';
-import { AnnotationRow } from '../cif-color-extension/schemas';
+import { AtomRanges, rangesMap } from '../helpers/atom-ranges';
+import { IndicesAndSortings, createIndicesAndSortings } from '../helpers/indexing';
+import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
+import { AnnotationRow } from '../helpers/schemas';
+import { PD_MaybeInteger, PD_MaybeString } from '../helpers/param-definition';
+import { extend, omitObjectKeys } from '../../utils';
 
 
 export const CustomLabelTextParams = {
@@ -115,12 +116,12 @@ export function CustomLabelTextVisual(materialId: number): ComplexVisual<CustomL
 }
 
 function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme, props: CustomLabelTextProps, text?: Text): Text {
-    console.time('createLabelText');
+    // console.time('createLabelText');
     // const result =  createChainText(ctx, structure, theme, props, text);
     // const result =  createResidueText(ctx, structure, theme, props, text);
     // const result =  createElementText(ctx, structure, theme, props, text);
     const result = createSingleText(ctx, structure, theme, props, text);
-    console.timeEnd('createLabelText');
+    // console.timeEnd('createLabelText');
     return result;
 }
 
@@ -258,10 +259,10 @@ function createSingleText(ctx: VisualContext, structure: Structure, theme: Theme
                 builder.add(item.text, tmpVec[0], tmpVec[1], tmpVec[2], scale, scale, 0);
                 break;
             case 'selection':
-                console.time('addLabelItem');
+                // console.time('addLabelItem');
                 const p = textPropsForSelection(structure, theme, item.position.params);
                 if (p) builder.add(item.text, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
-                console.timeEnd('addLabelItem');
+                // console.timeEnd('addLabelItem');
                 break;
         }
     }
@@ -371,30 +372,4 @@ function boundarySphereApproximation(flatCoords: readonly number[]): Sphere3D {
         if (sqDist > maxSqDist) maxSqDist = sqDist;
     }
     return { center: Vec3.create(cumX, cumY, cumZ), radius: maxSqDist ** 0.5 };
-}
-
-
-/** The magic with negative zero looks crazy, but it's needed if we want to be able to write negative numbers, LOL. Please help if you know a better solution. */
-function parseMaybeInt(input: string): number | undefined {
-    if (input.trim() === '-') return -0;
-    const num = parseInt(input);
-    return isNaN(num) ? undefined : num;
-}
-function stringifyMaybeInt(num: number | undefined): string {
-    if (num === undefined) return '';
-    if (Object.is(num, -0)) return '-';
-    return num.toString();
-}
-function PD_MaybeInteger(defaultValue?: number, info?: PD.Info): PD.Base<number | undefined> {
-    return PD.Converted<number | undefined, PD.Text>(stringifyMaybeInt, parseMaybeInt, PD.Text(stringifyMaybeInt(defaultValue), info));
-}
-
-function parseMaybeString(input: string): string | undefined {
-    return input === '' ? undefined : input;
-}
-function stringifyMaybeString(str: string | undefined): string {
-    return str === undefined ? '' : str;
-}
-function PD_MaybeString(defaultValue?: string, info?: PD.Info): PD.Base<string | undefined> {
-    return PD.Converted<string | undefined, PD.Text>(stringifyMaybeString, parseMaybeString, PD.Text(stringifyMaybeString(defaultValue), info));
 }

@@ -5,8 +5,7 @@ import { MolstarParseFormatT } from './param-types';
 import { RequiredField, bool } from './params-schema';
 
 
-export const MolstarTreeSchema = TreeSchema(
-    'root',
+export const MolstarTreeSchema = TreeSchema('root',
     {
         ...MVSTreeSchema.paramsSchemas,
         'download': {
@@ -28,10 +27,18 @@ export const MolstarTreeSchema = TreeSchema(
         },
         'model': pickObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
         'structure': omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
+        /** Just to collect multiple transform nodes */
+        'transforms': {},
+        /** Just to collect multiple color* nodes */
+        'colors': {},
         'color-from-url': {
             ...MVSTreeSchema.paramsSchemas['color-from-url'],
-            background: MVSTreeSchema.paramsSchemas.representation.color,
-        }
+            // background: OptionalField(ColorT),
+        },
+        'color-from-cif': {
+            ...MVSTreeSchema.paramsSchemas['color-from-cif'],
+            // background: OptionalField(ColorT),
+        },
     }
 );
 

@@ -1,0 +1,50 @@
+data_block1
+
+# Test annotations #
+
+# Chain Annotation (label)
+loop_
+_color.label_asym_id 
+_color.label_entity_id 
+_color.type_symbol
+_color.label_atom_id
+_color.tooltip
+_color.color
+# polymer
+A . . . polymer '#AAAAAA'
+# REA ligand 
+B . . . ligand  '#FF0000'
+B . C . ligand  '#0044FF'
+B . . C2 ligand  '#00FFFF'
+
+
+data_block2
+
+# Chain Annotation (label)
+loop_
+_weather_forecast.day
+_weather_forecast.temperature
+monday 20
+tuesday 20
+wednesday 0
+
+loop_
+_color.label_asym_id 
+_color.label_entity_id 
+_color.type_symbol
+_color.label_atom_id
+_color.tooltip
+_color.color
+_color.secondary_color
+A . . . polymer green orange
+B . . . ligand blue yellow
+
+loop_
+_black_is_good.label_asym_id 
+_black_is_good.label_entity_id 
+_black_is_good.type_symbol
+_black_is_good.label_atom_id
+_black_is_good.tooltip
+_black_is_good.color
+A . . . polymer black
+B . . . ligand black

@@ -304,18 +304,19 @@ class Structure(_Base):
     def transform(
         self,
         *,
-        rotation: Sequence[float],
-        translation: Sequence[float],
+        rotation: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
     ) -> Structure:
-        rotation = tuple(rotation)
-        if len(rotation) != 9:
-            raise ValueError(f"Parameter `rotation` must have length 9")
-        if not self._is_rotation_matrix(rotation):
-            raise ValueError(f"Parameter `rotation` must be a rotation matrix")
-        translation = tuple(translation)
-
-        if len(translation) != 3:
-            raise ValueError(f"Parameter `translation` must have length 3")
+        if rotation is not None:
+            rotation = tuple(rotation)
+            if len(rotation) != 9:
+                raise ValueError(f"Parameter `rotation` must have length 9")
+            if not self._is_rotation_matrix(rotation):
+                raise ValueError(f"Parameter `rotation` must be a rotation matrix")
+        if translation is not None:
+            translation = tuple(translation)
+            if len(translation) != 3:
+                raise ValueError(f"Parameter `translation` must have length 3")
 
         params = make_params(TransformParams, locals())
         node = Node(kind="transform", params=params)
@@ -365,13 +366,15 @@ class Component(_Base):
 
 
 class Representation(_Base):
-    def color_from_cif(self, *, schema: SchemaT, category_name: str) -> Representation:
+    def color_from_cif(self, *, schema: SchemaT, category_name: str,
+                       field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
         params = make_params(ColorCifCategoryParams, locals())
         node = Node(kind="color-from-cif", params=params)
         self._add_child(node)
         return self
 
-    def color_from_url(self, *, schema: SchemaT, url: str, format: str) -> Representation:
+    def color_from_url(self, *, schema: SchemaT, url: str, format: str, category_name: str | None = None,
+                       field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
         params = make_params(ColorUrlParams, locals())
         node = Node(kind="color-from-url", params=params)
         self._add_child(node)

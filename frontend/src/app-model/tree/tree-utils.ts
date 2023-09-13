@@ -1,8 +1,6 @@
-import { deepEqual } from 'molstar/lib/mol-util';
-
-import { formatObject, omitObjectKeys, pickObjectKeys } from '../utils';
-import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree } from './generic';
-import { MolstarNode, MolstarTree } from './molstar-nodes';
+import { canonicalJsonString, formatObject, omitObjectKeys, pickObjectKeys } from '../utils';
+import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getParams } from './generic';
+import { MolstarKind, MolstarNode, MolstarTree } from './molstar-nodes';
 import { MVSTree } from './mvs-nodes';
 import { ParseFormatMvsToMolstar } from './param-types';
 
@@ -44,7 +42,11 @@ export function copyTree<T extends Tree>(root: T): T {
     return convertTree(root, {}) as T;
 }
 
-export function convertTree<A extends Tree, B extends Tree>(root: A, conversions: { [kind in Kind<SubTree<A>>]?: (node: SubTreeOfKind<A, kind>, parent?: SubTree<A>) => SubTree<B>[] }): SubTree<B> {
+type ConversionRules<A extends Tree, B extends Tree> = {
+    [kind in Kind<SubTree<A>>]?: (node: SubTreeOfKind<A, kind>, parent?: SubTree<A>) => SubTree<B>[]
+};
+
+export function convertTree<A extends Tree, B extends Tree>(root: A, conversions: ConversionRules<A, B>): SubTree<B> {
     const mapping = new Map<SubTree<A>, SubTree<B>>();
     let convertedRoot: SubTree<B>;
     dfs<A>(root, (node, parent) => {
@@ -75,13 +77,22 @@ export function convertTree<A extends Tree, B extends Tree>(root: A, conversions
     return convertedRoot!;
 }
 
-export function condenseTree<T extends Tree>(root: T): T {
+/** Create a copy of the tree where twins (siblings of the same kind with the same params) are merged into one node.
+ * Applies only to the node kinds listed in `condenseNodes` (or all if undefined) except node kinds in `skipNodes`. */
+export function condenseTree<T extends Tree>(root: T, condenseNodes?: Set<Kind<Tree>>, skipNodes?: Set<Kind<Tree>>): T {
+    const map = new Map<string, SubTree<T>>();
     const result = copyTree(root);
-    dfs<T>(result, (node, parent) => {
+    dfs<T>(result, node => {
+        map.clear();
         const newChildren: SubTree<T>[] = [];
         for (const child of node.children ?? []) {
-            const twin = newChildren.find(sibling => sibling.kind === child.kind && deepEqual(sibling.params, child.params));
-            // Using .find could be inefficient when their are too many children. TODO implement using a set, if we expect big numbers of children (e.g. one label per each residue?)
+            let twin: SubTree<T> | undefined = undefined;
+            const doApply = (!condenseNodes || condenseNodes.has(child.kind)) && !skipNodes?.has(child.kind);
+            if (doApply) {
+                const key = child.kind + canonicalJsonString(getParams(child));
+                twin = map.get(key);
+                if (!twin) map.set(key, child);
+            }
             if (twin) {
                 (twin.children ??= []).push(...child.children ?? []);
             } else {
@@ -94,54 +105,78 @@ export function condenseTree<T extends Tree>(root: T): T {
 }
 
 
+const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
+    'download': node => [],
+    'raw': node => [],
+    'parse': (node, parent) => {
+        const { format, is_binary } = ParseFormatMvsToMolstar[node.params.format];
+        const convertedNode: MolstarNode<'parse'> = { kind: 'parse', params: { ...node.params, format } };
+        switch (parent?.kind) {
+            case 'download':
+                return [
+                    { kind: 'download', params: { ...parent.params, is_binary } },
+                    convertedNode,
+                ] satisfies MolstarNode[];
+            case 'raw':
+                return [
+                    { kind: 'raw', params: { ...parent.params, is_binary } },
+                    convertedNode,
+                ] satisfies MolstarNode[];
+            default:
+                console.warn('"parse" node is not being converted, this is suspicious');
+                return [convertedNode] satisfies MolstarNode[];
+        }
+    },
+    'structure': (node, parent) => {
+        if (parent?.kind !== 'parse') throw new Error('Parent of "structure" must be "parse".');
+        const { format } = ParseFormatMvsToMolstar[parent.params.format];
+        return [
+            { kind: 'trajectory', params: { format, ...pickObjectKeys(node.params, ['block_header', 'block_index']) } },
+            { kind: 'model', params: pickObjectKeys(node.params, ['model_index']) },
+            { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
+        ] satisfies MolstarNode[];
+    },
+    'transform': node => {
+        return [
+            { kind: 'transforms' },
+            { kind: node.kind, params: node.params },
+        ];
+    },
+    'color': node => {
+        return [
+            { kind: 'colors' },
+            { kind: node.kind, params: node.params },
+        ];
+    },
+    'color-from-cif': node => {
+        return [
+            { kind: 'colors' },
+            { kind: node.kind, params: node.params },
+        ];
+    },
+    'color-from-url': node => {
+        return [
+            { kind: 'colors' },
+            { kind: node.kind, params: node.params },
+        ];
+    },
+    // 'color-from-url': (node, parent) => {
+    //     const newParams: ParamsOfKind<SubTree<MolstarTree>, 'color-from-url'> = { ...node.params };
+    //     if (parent?.kind === 'representation' && parent.params.color !== undefined) {
+    //         newParams.background = parent.params.color;
+    //     }
+    //     return [
+    //         { kind: 'color-from-url', params: newParams }
+    //     ] satisfies MolstarNode[];
+    // },
+};
+/** Node kinds that it makes sense to condense */
+const molstarNodesToCondense = new Set<MolstarKind>(['download', 'raw', 'parse', 'trajectory', 'model', 'transforms', 'colors'] satisfies MolstarKind[]);
+
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
-    const converted = convertTree<MVSTree, MolstarTree>(mvsTree, {
-        'download': node => [],
-        'raw': node => [],
-        'parse': (node, parent) => {
-            const { format, is_binary } = ParseFormatMvsToMolstar[node.params.format];
-            const convertedNode: MolstarNode<'parse'> = { kind: 'parse', params: { ...node.params, format } };
-            switch (parent?.kind) {
-                case 'download':
-                    return [
-                        { kind: 'download', params: { ...parent.params, is_binary } },
-                        convertedNode,
-                    ] satisfies MolstarNode[];
-                case 'raw':
-                    return [
-                        { kind: 'raw', params: { ...parent.params, is_binary } },
-                        convertedNode,
-                    ] satisfies MolstarNode[];
-                default:
-                    console.warn('"parse" node is not being converted, this is suspicious');
-                    return [convertedNode] satisfies MolstarNode[];
-            }
-        },
-        'structure': (node, parent) => {
-            if (parent?.kind !== 'parse') throw new Error('Parent of "structure" must be "parse".');
-            const { format } = ParseFormatMvsToMolstar[parent.params.format];
-            return [
-                { kind: 'trajectory', params: { format, ...pickObjectKeys(node.params, ['block_header', 'block_index']) } },
-                { kind: 'model', params: pickObjectKeys(node.params, ['model_index']) },
-                { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
-            ] satisfies MolstarNode[];
-        },
-        'color-from-url': (node, parent) => {
-            const newParams: ParamsOfKind<SubTree<MolstarTree>, 'color-from-url'> = { ...node.params };
-            if (parent?.kind === 'representation' && parent.params.color !== undefined) {
-                newParams.background = parent.params.color;
-            }
-            return [
-                { kind: 'color-from-url', params: newParams }
-                // { kind: 'trajectory', params: { ...pickObjectKeys(parent.params, ['format']), ...pickObjectKeys(node.params, ['block_header', 'block_index']) } },
-                // { kind: 'model', params: pickObjectKeys(node.params, ['model_index']) },
-                // { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
-            ] satisfies MolstarNode[];
-        },
-    });
-    const condensed = condenseTree<MolstarTree>(converted as MolstarTree);
-    // TODO think if for all node kinds it makes sense to condense?
-    // (e.g. how would we make 2 structures from same cif, one of them rotated)
+    const converted = convertTree<MVSTree, MolstarTree>(mvsTree, mvsToMolstarConversionRules);
+    if (converted.kind !== 'root') throw new Error("Root's type is not 'root' after conversion from MVS tree to Molstar tree.");
+    const condensed = condenseTree<MolstarTree>(converted, molstarNodesToCondense);
     return condensed;
 }
