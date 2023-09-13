@@ -377,7 +377,6 @@ async def testing_transforms_example(id: str = "1cbs") -> MVSResponse:
     builder = Root()
     structure_url = _url_for_testing_local_bcif(id)
     model = builder.download(url=structure_url).parse(format="bcif")
-    eye = (1, 0, 0, 0, 1, 0, 0, 0, 1)
     original = (
         model
         .model_structure()
@@ -387,7 +386,7 @@ async def testing_transforms_example(id: str = "1cbs") -> MVSResponse:
     moved = (
         model
         .model_structure()
-        .transform(rotation=eye, translation=(0, -40, 0))
+        .transform(translation=(0, -40, 0))
         .component(selector="all")
         .representation().color(color="blue")
     )
@@ -410,7 +409,7 @@ async def testing_transforms_example(id: str = "1cbs") -> MVSResponse:
             1, 0, 0,
             0, 0, 1,
             0, -1, 0,
-        ), translation=(0, 0, 0))
+        ))
         .transform(rotation=(  # rotateY90
             0, 0, -1,
             0, 1, 0,

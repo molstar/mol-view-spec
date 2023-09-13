@@ -304,18 +304,19 @@ class Structure(_Base):
     def transform(
         self,
         *,
-        rotation: Sequence[float],
-        translation: Sequence[float],
+        rotation: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
     ) -> Structure:
-        rotation = tuple(rotation)
-        if len(rotation) != 9:
-            raise ValueError(f"Parameter `rotation` must have length 9")
-        if not self._is_rotation_matrix(rotation):
-            raise ValueError(f"Parameter `rotation` must be a rotation matrix")
-        translation = tuple(translation)
-
-        if len(translation) != 3:
-            raise ValueError(f"Parameter `translation` must have length 3")
+        if rotation is not None:
+            rotation = tuple(rotation)
+            if len(rotation) != 9:
+                raise ValueError(f"Parameter `rotation` must have length 9")
+            if not self._is_rotation_matrix(rotation):
+                raise ValueError(f"Parameter `rotation` must be a rotation matrix")
+        if translation is not None:
+            translation = tuple(translation)
+            if len(translation) != 3:
+                raise ValueError(f"Parameter `translation` must have length 3")
 
         params = make_params(TransformParams, locals())
         node = Node(kind="transform", params=params)
