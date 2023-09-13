@@ -14,13 +14,13 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
 import { AnnotationsProvider } from './prop';
-import { NoColor } from './composite-color';
 
 
 /** Parameter definition for color theme "Annotation" */
 export const AnnotationColorThemeParams = {
     annotationId: PD.Text('', { description: 'Reference to "Annotation" custom model property' }),
     fieldName: PD.Text('color', { description: 'Annotation field (column) from which to take color values' }),
+    background: PD.Color(ColorNames.gainsboro, { description: 'Color for elements without annotation' }),
 };
 export type AnnotationColorThemeParams = typeof AnnotationColorThemeParams
 
@@ -32,7 +32,7 @@ export type AnnotationColorThemeProps = PD.Values<AnnotationColorThemeParams>
  * The annotation file itself is handled by a custom model property (`AnnotationsProvider`),
  * the color theme then just uses this property. */
 export function AnnotationColorTheme(ctx: ThemeDataContext, props: AnnotationColorThemeProps): ColorTheme<AnnotationColorThemeParams> {
-    let color: LocationColor = () => NoColor;
+    let color: LocationColor = () => props.background;
 
     if (ctx.structure && !ctx.structure.isEmpty && ctx.structure.models[0].customProperties.has(AnnotationsProvider.descriptor)) {
         const annots = AnnotationsProvider.get(ctx.structure.models[0]).value;
@@ -41,7 +41,7 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: AnnotationCol
         if (annot) {
             const colorForStructureElementLocation = (location: StructureElement.Location) => {
                 // if (annot.getAnnotationForLocation(location)?.color !== annot.getAnnotationForLocation_Reference(location)?.color) throw new Error('AssertionError');
-                return decodeColor(annot?.getValueForLocation(location, props.fieldName)) ?? NoColor;
+                return decodeColor(annot?.getValueForLocation(location, props.fieldName)) ?? props.background;
             };
             const auxLocation = StructureElement.Location.create(ctx.structure);
 
@@ -54,7 +54,7 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: AnnotationCol
                     auxLocation.element = location.aUnit.elements[location.aIndex];
                     return colorForStructureElementLocation(auxLocation);
                 }
-                return NoColor;
+                return props.background;
             };
         } else {
             console.error(`Annotation source "${props.annotationId}" not present`);

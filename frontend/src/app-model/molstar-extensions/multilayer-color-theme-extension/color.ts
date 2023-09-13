@@ -37,8 +37,8 @@ const DefaultBackgroundColor = ColorNames.white;
 const StaticSelectorChoice = new Choice(mapArrToObj(StaticStructureComponentTypes, t => capitalize(t)), 'all');
 
 
-/** Parameter definition for color theme "Composite" */
-export function makeCompositeColorThemeParams(colorThemeRegistry: ColorTheme.Registry, ctx: ThemeDataContext) {
+/** Parameter definition for color theme "Multilayer" */
+export function makeMultilayerColorThemeParams(colorThemeRegistry: ColorTheme.Registry, ctx: ThemeDataContext) {
     const colorThemeInfo = {
         help: (value: { name: string, params: {} }) => {
             const { name, params } = value;
@@ -47,7 +47,7 @@ export function makeCompositeColorThemeParams(colorThemeRegistry: ColorTheme.Reg
             return { description: ct.description, legend: ct.legend };
         }
     };
-    const nestedThemeTypes = colorThemeRegistry.types.filter(([name, label, category]) => name !== COMPOSITE_COLOR_THEME_NAME && colorThemeRegistry.get(name).isApplicable(ctx)); // Adding 'composite' theme itself would cause infinite recursion
+    const nestedThemeTypes = colorThemeRegistry.types.filter(([name, label, category]) => name !== MULTILAYER_COLOR_THEME_NAME && colorThemeRegistry.get(name).isApplicable(ctx)); // Adding 'multilayer' theme itself would cause infinite recursion
     return {
         layers: PD.ObjectList(
             {
@@ -68,16 +68,16 @@ export function makeCompositeColorThemeParams(colorThemeRegistry: ColorTheme.Reg
         background: PD.Color(DefaultBackgroundColor, { description: 'Color for elements where no layer applies' }),
     };
 }
-export type CompositeColorThemeParams = ReturnType<typeof makeCompositeColorThemeParams>
+export type MultilayerColorThemeParams = ReturnType<typeof makeMultilayerColorThemeParams>
 
-/** Parameter values for color theme "Composite" */
-export type CompositeColorThemeProps = PD.Values<CompositeColorThemeParams>
+/** Parameter values for color theme "Multilayer" */
+export type MultilayerColorThemeProps = PD.Values<MultilayerColorThemeParams>
 
-export const DefaultCompositeColorThemeProps: CompositeColorThemeProps = { layers: [], background: DefaultBackgroundColor };
+export const DefaultMultilayerColorThemeProps: MultilayerColorThemeProps = { layers: [], background: DefaultBackgroundColor };
 
 
 /** Parameter values for defining a structure selection */
-export type Selector = CompositeColorThemeProps['layers'][number]['selection']
+export type Selector = MultilayerColorThemeProps['layers'][number]['selection']
 
 export const SelectorAll = { name: 'static', params: 'all' } satisfies Selector;
 
@@ -88,7 +88,7 @@ export function isSelectorAll(props: Selector): props is typeof SelectorAll {
 
 /** Return color theme that assigns colors based on a list of nested color themes (layers).
  * The last layer in the list whose selection covers the given location and which provides a valid (non-negative) color value will be used. */
-export function CompositeColorTheme(ctx: ThemeDataContext, props: CompositeColorThemeProps, colorThemeRegistry: ColorTheme.Registry): ColorTheme<CompositeColorThemeParams> {
+function makeMultilayerColorTheme(ctx: ThemeDataContext, props: MultilayerColorThemeProps, colorThemeRegistry: ColorTheme.Registry): ColorTheme<MultilayerColorThemeParams> {
     const colorLayers: { color: LocationColor, elementSet: ElementSet | undefined }[] = []; // undefined elementSet means 'all'
     for (let i = props.layers.length - 1; i >= 0; i--) { // iterate from end to get top layer first, bottom layer last
         const layer = props.layers[i];
@@ -139,7 +139,7 @@ export function CompositeColorTheme(ctx: ThemeDataContext, props: CompositeColor
     if (ctx.structure) benchmarkColorFunction(color, ctx.structure);
 
     return {
-        factory: (ctx_, props_) => CompositeColorTheme(ctx_, props_, colorThemeRegistry),
+        factory: (ctx_, props_) => makeMultilayerColorTheme(ctx_, props_, colorThemeRegistry),
         granularity: 'group',
         preferSmoothing: true,
         color: color,
@@ -149,17 +149,17 @@ export function CompositeColorTheme(ctx: ThemeDataContext, props: CompositeColor
 }
 
 
-const COMPOSITE_COLOR_THEME_NAME = 'composite';
+const MULTILAYER_COLOR_THEME_NAME = 'multilayer';
 
-/** A thingy that is needed to register color theme "Composite" */
-export function makeCompositeColorThemeProvider(colorThemeRegistry: ColorTheme.Registry): ColorTheme.Provider<CompositeColorThemeParams, 'composite'> {
+/** A thingy that is needed to register color theme "Multilayer" */
+export function makeMultilayerColorThemeProvider(colorThemeRegistry: ColorTheme.Registry): ColorTheme.Provider<MultilayerColorThemeParams, 'multilayer'> {
     return {
-        name: COMPOSITE_COLOR_THEME_NAME,
-        label: 'Composite',
+        name: MULTILAYER_COLOR_THEME_NAME,
+        label: 'Multi-layer',
         category: ColorTheme.Category.Misc,
-        factory: (ctx, props) => CompositeColorTheme(ctx, props, colorThemeRegistry),
-        getParams: (ctx: ThemeDataContext) => makeCompositeColorThemeParams(colorThemeRegistry, ctx),
-        defaultValues: DefaultCompositeColorThemeProps,
+        factory: (ctx, props) => makeMultilayerColorTheme(ctx, props, colorThemeRegistry),
+        getParams: (ctx: ThemeDataContext) => makeMultilayerColorThemeParams(colorThemeRegistry, ctx),
+        defaultValues: DefaultMultilayerColorThemeProps,
         isApplicable: (ctx: ThemeDataContext) => true,
     };
 }

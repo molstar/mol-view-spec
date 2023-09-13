@@ -10,6 +10,7 @@ import { CustomLabel } from './molstar-extensions/custom-label-extension/behavio
 import { loadMVSTree } from './load-tree';
 import { MVSTree } from './tree/mvs-nodes';
 import { treeToString } from './tree/tree-utils';
+import { MultilayerColorTheme } from './molstar-extensions/multilayer-color-theme-extension/behavior';
 
 
 export class AppModel {
@@ -21,6 +22,7 @@ export class AppModel {
     async initPlugin(target: HTMLDivElement) {
         const defaultSpec = DefaultPluginUISpec();
         defaultSpec.behaviors.push(PluginSpec.Behavior(Annotation));
+        defaultSpec.behaviors.push(PluginSpec.Behavior(MultilayerColorTheme));
         defaultSpec.behaviors.push(PluginSpec.Behavior(CustomLabel));
         this.plugin = await createPluginUI(target, {
             ...defaultSpec,

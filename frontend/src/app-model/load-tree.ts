@@ -10,7 +10,7 @@ import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
-import { CompositeColorThemeProps, Selector, SelectorAll } from './molstar-extensions/color-from-url-extension/composite-color';
+import { MultilayerColorThemeProps, NoColor, Selector, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
@@ -135,13 +135,13 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
                 colorTheme: colorThemeForColorNode(children[0], context),
             }));
         } else {
-            const layers: CompositeColorThemeProps['layers'] = children.map(
+            const layers: MultilayerColorThemeProps['layers'] = children.map(
                 c => ({ theme: colorThemeForColorNode(c, context), selection: componentPropsFromSelector(c.kind === 'color' ? c.params.selector : undefined) })
             );
             update.to(msTarget).update(old => ({
                 ...old,
                 colorTheme: {
-                    name: 'composite',
+                    name: 'multilayer',
                     params: {
                         layers,
                     }
@@ -279,7 +279,7 @@ function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | '
     if (annotationId) {
         return {
             name: 'annotation',
-            params: { annotationId, fieldName } satisfies Partial<AnnotationColorThemeProps>
+            params: { annotationId, fieldName, background: NoColor } satisfies Partial<AnnotationColorThemeProps>
         };
     } else {
         return {
