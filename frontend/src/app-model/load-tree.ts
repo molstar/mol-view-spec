@@ -10,7 +10,7 @@ import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
-import { CompositeColorThemeParams, CompositeColorThemeProps } from './molstar-extensions/color-from-url-extension/composite-color';
+import { CompositeColorThemeProps, Selector, SelectorAll } from './molstar-extensions/color-from-url-extension/composite-color';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
@@ -108,41 +108,23 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         update.to(result).apply(CustomStructureProperties, {
             properties: { 'annotation-tooltips': { tooltips } }
         });
-        // const assembly = params.assembly_id ?? Defaults.structure.assembly_id;
-        // return update.to(msTarget).apply(StructureFromModel, {
-        //     type: assembly
-        //         ? { name: 'assembly', params: { id: assembly } }
-        //         : { name: 'model', params: {} },
-        // }).selector;
         // loadAllLabelsFromSubtree(update, result, node, context);
         return result;
     },
     component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component'>): StateObjectSelector {
         const selector = getParams(node).selector ?? Defaults.component.selector;
-        if (typeof selector === 'string') {
-            return update.to(msTarget).apply(StructureComponent, {
-                type: { name: 'static', params: selector },
-                label: selector,
-            }).selector;
-        } else {
-            // TODO implement this using bundles? or not? I don't know
-            const expression = Array.isArray(selector) ? rowsToExpression(selector) : rowToExpression(selector);
-            return update.to(msTarget).apply(StructureComponent, {
-                type: { name: 'expression', params: expression },
-                nullIfEmpty: false,
-                label: canonicalJsonString(selector),
-            }).selector;
-        }
-        // TODO check with 'all' and other other selectors
+        return update.to(msTarget).apply(StructureComponent, {
+            type: componentPropsFromSelector(selector),
+            label: canonicalJsonString(selector),
+            nullIfEmpty: false,
+        }).selector;
     },
     representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>): StateObjectSelector {
         const mvsType = getParams(node).type;
         const type = (mvsType === 'surface') ? 'gaussian-surface' : mvsType;
         const typeParams = (type === 'ball-and-stick') ? { sizeFactor: 0.5, sizeAspectRatio: 0.5 } : {};
-        // const color = getParams(node).color ?? Defaults.representation.color;
         return update.to(msTarget).apply(StructureRepresentation3D, {
             type: { name: type, params: typeParams },
-            // colorTheme: color ? { name: 'uniform', params: { value: Color(ColorNames[color as keyof ColorNames] ?? ColorNames.white) } } : undefined,
         }).selector;
     },
     colors(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'colors'>, context: MolstarLoadingContext): StateObjectSelector {
@@ -153,7 +135,9 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
                 colorTheme: colorThemeForColorNode(children[0], context),
             }));
         } else {
-            const layers: CompositeColorThemeProps['layers'] = children.map(c => ({ theme: colorThemeForColorNode(c, context), selection: 'all' })); // TODO real selection, not 'all'
+            const layers: CompositeColorThemeProps['layers'] = children.map(
+                c => ({ theme: colorThemeForColorNode(c, context), selection: componentPropsFromSelector(c.kind === 'color' ? c.params.selector : undefined) })
+            );
             update.to(msTarget).update(old => ({
                 ...old,
                 colorTheme: {
@@ -266,6 +250,18 @@ function blockSpec(header: string | null | undefined, index: number | null | und
     }
 }
 
+function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'component'>['selector']): Selector {
+    if (selector === undefined) {
+        return SelectorAll;
+    } else if (typeof selector === 'string') {
+        return { name: 'static', params: selector };
+    } else if (Array.isArray(selector)) {
+        return { name: 'expression', params: rowsToExpression(selector) };
+    } else {
+        return { name: 'expression', params: rowToExpression(selector) };
+    }
+}
+
 function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext) {
     let annotationId: string | undefined = undefined;
     let fieldName: string | undefined = undefined;
@@ -314,6 +310,7 @@ function makeNearestColorMap(root: MolstarTree) {
     });
     return map;
 }
+
 function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure' | 'component'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
     const items: Partial<CustomLabelProps>['items'] = [];
     for (const child of getChildren(node)) {
@@ -438,6 +435,8 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
         await focusStructureNode(plugin, context.focus.focusTarget, context.focus.camera);
     } else if (context.focus?.camera) {
         await focusCameraNode(plugin, context.focus.camera);
+    } else {
+        // TODO reset axes+zoom
     }
 }
 

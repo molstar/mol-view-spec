@@ -621,7 +621,6 @@ async def testing_color_validation_example(id: str = "1tqn") -> MVSResponse:
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
-    # structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}.bcif"
     structure_url = _url_for_testing_local_bcif(id)
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="protein").representation(type="cartoon").color(color="green").color_from_url(
@@ -633,6 +632,45 @@ async def testing_color_validation_example(id: str = "1tqn") -> MVSResponse:
         schema="residue",
         url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
         format="json",
+    )
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/color_multilayer")
+async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
+    """
+    An example with different representations and coloring for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    (
+        structure
+        .component(selector="protein")
+        .representation(type="cartoon")
+        .color(color="#00dd00", selector=[ComponentExpression(beg_label_seq_id=1, end_label_seq_id=176),
+                                        ComponentExpression(beg_label_seq_id=242)])
+        .color_from_url(
+            schema="residue",
+            url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
+            format="json",
+        ).color(color="magenta", selector=[ComponentExpression(beg_label_seq_id=50, end_label_seq_id=63),
+                                           ComponentExpression(beg_auth_seq_id=373, end_auth_seq_id=376),
+                                           ComponentExpression(beg_auth_seq_id=393, end_auth_seq_id=396)])
+        .color(color="blue", selector=ComponentExpression(label_seq_id=52))
+        .color(color="blue", selector=ComponentExpression(label_seq_id=61))
+        .color(color="blue", selector=ComponentExpression(label_seq_id=354))
+        .color(color="blue", selector=ComponentExpression(label_seq_id=373))
+    )
+    (
+        structure
+        .component(selector="ligand")
+        .representation(type="ball-and-stick")
+        .color(color="gray")
+        .color(color="blue", selector=[ComponentExpression(type_symbol="N")])
+        .color(color="red", selector=[ComponentExpression(type_symbol="O")])
+        .color(color="yellow", selector=[ComponentExpression(type_symbol="S")])
+        .color(color="#AA0022", selector=[ComponentExpression(type_symbol="FE")])
     )
     return JSONResponse(builder.get_state())
 

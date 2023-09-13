@@ -44,6 +44,7 @@ function Main() {
         'colors+tooltips domains': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=true&tooltips=true',
         'colors validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn',
         'colors validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q',
+        'colors multilayer': 'http://localhost:9000/api/v1/examples/testing/color_multilayer?id=1tqn',
         'labels': 'http://localhost:9000/api/v1/examples/testing/labels',
         'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
         'camera': 'http://localhost:9000/api/v1/examples/testing/camera',

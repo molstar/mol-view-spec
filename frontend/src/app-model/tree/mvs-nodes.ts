@@ -1,5 +1,5 @@
 import { NodeForTree, TreeFor, TreeSchema } from './generic';
-import { ColorT, ComponentExpression, ComponentSelectorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
+import { ColorT, ComponentExpression, ComponentSelectorT, HexColorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
 import { OptionalField, RequiredField, float, int, list, nullable, str, tuple, union } from './params-schema';
 
 
@@ -82,7 +82,7 @@ export const MVSTreeSchema = TreeSchema('root',
             // color: OptionalField(ColorT),
         },
         'color': {
-            color: RequiredField(ColorT),
+            color: RequiredField(union([ColorT, HexColorT])),
             selector: OptionalField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
         'color-from-url': {

@@ -45,7 +45,7 @@ export function range(start: number, end?: number): number[] {
  * Equivalent to `dst.push(...src)`, but avoids storing element on call stack. Faster that `extend` from Underscore.js.
  * `extend(a, a)` will double the array
  */
-export function extend<T>(dst: T[], src: readonly T[]): void {
+export function extend<T>(dst: T[], src: ArrayLike<T>): void {
     const offset = dst.length;
     const nCopy = src.length;
     dst.length += nCopy;

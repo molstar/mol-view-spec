@@ -43,6 +43,22 @@ export const Vector3 = tuple([float, float, float]);
 
 export const Matrix = list(float);
 
+/** Hexadecimal color string, e.g. '#FF1100' */
+export type HexColorString = string & { '@type': 'HexColorString' }
+
+const hexColorRegex = /^#[0-9A-F]{6}$/i;
+
+export function isHexColorString(str: any): str is HexColorString {
+    return typeof str === 'string' && hexColorRegex.test(str);
+}
+
+export const HexColorT = new t.Type<HexColorString>(
+    'HexColorT',
+    ((value: any) => typeof value === 'string') as any,
+    (value, ctx) => isHexColorString(value) ? { _tag: 'Right', right: value } : { _tag: 'Left', left: [{ value: value, context: ctx, message: `${value} is not a valid hex color string (like #FF1100)` }] },
+    value => value
+);
+
 
 /** Convert `format` parameter of `parse` node in MVS tree
  * into `format` and `is_binary` parameters in Molstar tree */
