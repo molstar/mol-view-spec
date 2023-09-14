@@ -13,7 +13,7 @@ import { CustomModelProperty } from 'molstar/lib/mol-model-props/common/custom-m
 import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { CustomPropertyDescriptor } from 'molstar/lib/mol-model/custom-property';
 import { Model } from 'molstar/lib/mol-model/structure';
-import { StructureElement } from 'molstar/lib/mol-model/structure/structure';
+import { Structure, StructureElement } from 'molstar/lib/mol-model/structure/structure';
 import { UUID } from 'molstar/lib/mol-util';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
@@ -91,6 +91,20 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
     }
 });
 
+export function getAnnotationForStructure(structure: Structure, annotationId: string): { annotation: Annotation, model: Model } | { annotation: undefined, model: undefined } {
+    if (structure.isEmpty) return { annotation: undefined, model: undefined };
+    for (const model of structure.models) {
+        if (model.customProperties.has(AnnotationsProvider.descriptor)) {
+            const annots = AnnotationsProvider.get(model).value;
+            const annotation = annots?.getAnnotation(annotationId);
+            if (annotation) {
+                return { annotation, model };
+            }
+        }
+    }
+    return { annotation: undefined, model: undefined };
+}
+
 
 /** Represents multiple annotations retrievable by their ID */
 export class Annotations {
@@ -118,6 +132,7 @@ export class Annotations {
 export class Annotation {
     /** Store mapping `ElementIndex` -> annotation row index for each `Model`, -1 means no row applies */
     private indexedModels = new Map<UUID, number[]>();
+    private rows: AnnotationRow[] | undefined = undefined;
 
     constructor(
         public data: AnnotationData,
@@ -172,11 +187,23 @@ export class Annotation {
     getValueForLocation(loc: StructureElement.Location, fieldName: string): string | undefined {
         const indexedModel = this.getIndexedModel(loc.unit.model);
         const iRow = indexedModel[loc.element];
+        return this.getValueForRow(iRow, fieldName);
+        // switch (this.data.format) {
+        //     case 'json':
+        //         return getValueFromJson(iRow, fieldName, this.data.data);
+        //     case 'cif':
+        //         return getValueFromCif(iRow, fieldName, this.data.data);
+        // }
+    }
+    /** Return value of field `fieldName` assigned to `i`-th annotation row, if any */
+    getValueForRow(i: number, fieldName: string): string | undefined {
         switch (this.data.format) {
             case 'json':
-                return getValueFromJson(iRow, fieldName, this.data.data);
+                const value = getValueFromJson(i, fieldName, this.data.data);
+                if (value === undefined || typeof value === 'string') return value;
+                else return `${value}`;
             case 'cif':
-                return getValueFromCif(iRow, fieldName, this.data.data);
+                return getValueFromCif(i, fieldName, this.data.data);
         }
     }
 
@@ -206,13 +233,17 @@ export class Annotation {
     }
 
     /** Parse and return all annotation rows in this annotation */
-    private getRows(): AnnotationRow[] {
+    private _getRows(): AnnotationRow[] {
         switch (this.data.format) {
             case 'json':
                 return getRowsFromJson(this.data.data, this.schema);
             case 'cif':
                 return getRowsFromCif(this.data.data, this.schema);
         }
+    }
+    /** Parse and return all annotation rows in this annotation, or return cached result if available */
+    getRows(): AnnotationRow[] {
+        return this.rows ??= this._getRows();
     }
 }
 
