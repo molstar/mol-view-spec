@@ -58,7 +58,7 @@ function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme,
     for (let i = 0; i < rows.length; i++) {
         const p = textPropsForSelection(structure, theme.size.size, rows[i]);
         if (!p) continue;
-        let text = annotation?.getValueForRow(i, props.fieldName);
+        const text = annotation?.getValueForRow(i, props.fieldName);
         if (text === undefined) continue;
         builder.add(text, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
     }

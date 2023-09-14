@@ -46,6 +46,7 @@ function Main() {
         'colors validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q',
         'colors multilayer': 'http://localhost:9000/api/v1/examples/testing/color_multilayer?id=1tqn',
         'labels': 'http://localhost:9000/api/v1/examples/testing/labels',
+        'labels from url': 'http://localhost:9000/api/v1/examples/testing/labels_from_url',
         'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
         'camera': 'http://localhost:9000/api/v1/examples/testing/camera',
     };

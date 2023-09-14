@@ -648,7 +648,7 @@ async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
         .component(selector="protein")
         .representation(type="cartoon")
         .color(color="#00dd00", selector=[ComponentExpression(beg_label_seq_id=1, end_label_seq_id=176),
-                                        ComponentExpression(beg_label_seq_id=242)])
+                                          ComponentExpression(beg_label_seq_id=242)])
         .color_from_url(
             schema="residue",
             url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
@@ -787,6 +787,37 @@ async def testing_labels_example(id="1h9t") -> MVSResponse:
     structure.component(
         selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=203, end_label_seq_id=205)
     ).label(text="Ligand binding")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/labels_from_url")
+async def testing_labels_from_url_example(id="1h9t") -> MVSResponse:
+    """
+    An example with different labels for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains"
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    protein = structure.component(selector="protein")
+    protein.representation(type="cartoon").color(color="white").color_from_url(
+        schema="all-atomic",
+        url=annotation_url,
+        format="json",
+    )
+    nucleic = structure.component(selector="nucleic")
+    nucleic.representation(type="ball-and-stick").color(color="white").color_from_url(
+        schema="all-atomic",
+        url=annotation_url,
+        format="json",
+    )
+    ion = structure.component(selector="ion")
+    ion.representation(type="surface").color_from_url(
+        schema="all-atomic",
+        url=annotation_url,
+        format="json",
+    )
+    structure.label_from_url(url=annotation_url, format="json", schema="all-atomic", field_name="tooltip")
     return JSONResponse(builder.get_state())
 
 

@@ -33,7 +33,7 @@ export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.
 
 interface MolstarLoadingContext {
     /** Maps 'color-from-url' nodes to annotationId they should reference */
-    annotationMap?: Map<MolstarNode<'color-from-url' | 'color-from-cif' | 'tooltip-from-url' | 'tooltip-from-cif'>, string>,
+    annotationMap?: Map<MolstarNode<'color-from-url' | 'color-from-cif' | 'tooltip-from-url' | 'tooltip-from-cif' | 'label-from-url' | 'label-from-cif'>, string>,
     /** Maps each node (on 'structure' or lower level) than model to its nearest node with color information */
     nearestColorMap?: Map<MolstarNode, MolstarNode<'color' | 'color-from-url' | 'color-from-cif'>>,
     focus?: { camera?: ParamsOfKind<MolstarTree, 'camera'>, focusTarget?: StateObjectSelector }
@@ -154,20 +154,6 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }
         return msTarget;
     },
-    // 'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
-    //     update.to(msTarget).update(old => ({
-    //         ...old,
-    //         colorTheme: colorThemeForColorNode(node, context),
-    //     }));
-    //     return msTarget;
-    // },
-    // 'color-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
-    //     update.to(msTarget).update(old => ({
-    //         ...old,
-    //         colorTheme: colorThemeForColorNode(node, context),
-    //     }));
-    //     return msTarget;
-    // },
     label(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
         const item: CustomLabelProps['items'][number] = {
             text: node.params.text,
@@ -178,7 +164,15 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             type: { name: 'custom-label', params: { items: [item] } },
             colorTheme: colorThemeForColorNode(nearestColorNode, context),
         }).selector;
-        return msTarget;
+    },
+    'label-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
+        const annotationId = context.annotationMap?.get(node);
+        const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
+        const nearestColorNode = context.nearestColorMap?.get(node);
+        return update.to(msTarget).apply(StructureRepresentation3D, {
+            type: { name: 'annotation-label', params: { annotationId, fieldName } },
+            colorTheme: colorThemeForColorNode(nearestColorNode, context),
+        }).selector;
     },
     transforms(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'transforms'>, context: MolstarLoadingContext): StateObjectSelector {
         let result = msTarget;
@@ -228,11 +222,13 @@ function collectAnnotationReferences(tree: SubTree<MolstarTree>, context: Molsta
         switch (node.kind) {
             case 'color-from-url':
             case 'tooltip-from-url':
+            case 'label-from-url':
                 const p = node.params;
                 spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
                 break;
             case 'color-from-cif':
             case 'tooltip-from-cif':
+            case 'label-from-cif':
                 const q = node.params;
                 spec = { source: { name: 'source-cif', params: {} }, schema: q.schema, cifBlock: blockSpec(q.block_header, q.block_index), cifCategory: q.category_name ?? undefined };
                 break;
