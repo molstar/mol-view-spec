@@ -84,9 +84,9 @@ function Main() {
                         </div>
                     </>}
                 </div>
-                <div>
+                {/* <div>
                     <Button onClick={() => model.printCamera()}>Print camera</Button>
-                </div>
+                </div> */}
             </div>
         </div>
     );

@@ -1,26 +1,30 @@
-import { Camera } from 'molstar/lib/mol-canvas3d/camera';
+/**
+ * Copyright (c) 2023 mol* contributors, licensed under MIT, See LICENSE file for more info.
+ *
+ * @author Adam Midlik <midlik@gmail.com>
+ */
+
 import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
-import { Loci } from 'molstar/lib/mol-model/loci';
-import { Structure } from 'molstar/lib/mol-model/structure';
 import { Download, ParseCif } from 'molstar/lib/mol-plugin-state/transforms/data';
 import { CustomModelProperties, CustomStructureProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
-import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 
+
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
-import { MultilayerColorThemeProps, NoColor, Selector, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
 import { rowToExpression, rowsToExpression } from './molstar-extensions/helpers/selections';
+import { MultilayerColorThemeProps, NoColor, Selector, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
 import { DefaultColor, Defaults } from './param-defaults';
 import { ParamsOfKind, SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
+import { focusCameraNode, focusStructureNode } from './focus';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -347,59 +351,6 @@ function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObje
     }
 }
 
-/** Defined in `molstar/lib/mol-plugin-state/manager/camera.ts` but private */
-const DefaultCameraFocusOptions = {
-    minRadius: 5,
-    extraRadius: 4,
-};
-
-async function focusStructureNode(plugin: PluginContext, nodeSelector: StateObjectSelector, cameraParams?: ParamsOfKind<MolstarTree, 'camera'>) {
-    const cell = plugin.state.data.cells.get(nodeSelector.ref);
-    const structure = cell?.obj?.data;
-    if (!structure) {
-        console.warn('Focus: no structure');
-        return;
-    }
-    if (!(structure instanceof Structure)) {
-        console.warn('Focus: cannot apply to a non-structure node');
-        return;
-    }
-    console.log('focus:', nodeSelector, structure.atomicResidueCount, structure, structure instanceof PluginContext, typeof structure);
-    const boundingSphere = Loci.getBoundingSphere(Structure.Loci(structure));
-    console.log('focus sphere:', boundingSphere);
-    if (boundingSphere && plugin.canvas3d) {
-        // cannot use plugin.canvas3d.camera.getFocus with up+direction, because it sometimes flips orientation
-        const target = boundingSphere.center;
-        const sphereRadius = Math.max(boundingSphere.radius + DefaultCameraFocusOptions.extraRadius, DefaultCameraFocusOptions.minRadius);
-        const distance = getFocusDistance(plugin.canvas3d.camera, boundingSphere.center, sphereRadius) ?? 100;
-        const direction = Vec3.create(0, 0, -1);
-        if (cameraParams) {
-            Vec3.sub(direction, Vec3.create(...cameraParams.target), Vec3.create(...cameraParams.position));
-        }
-        Vec3.setMagnitude(direction, direction, distance);
-        const position = Vec3.sub(Vec3(), target, direction);
-        const up = Vec3.create(...cameraParams?.up ?? Defaults.camera.up);
-        console.log('target', ...target, 'position', ...position, 'direction', ...direction, 'up', ...up, 'distance', distance);
-        const snapshot: Partial<Camera.Snapshot> = { target, position, up, radius: sphereRadius };
-        await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
-        // await PluginCommands.Camera.Focus(plugin, { center: boundingSphere.center, radius: boundingSphere.radius }); // this could not set orientation
-    }
-}
-async function focusCameraNode(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'camera'>) {
-    const target = Vec3.create(...params.target);
-    const position = Vec3.create(...params.position);
-    const up = Vec3.create(...params.up ?? Defaults.camera.up);
-    console.log('target', ...target, 'position', ...position, 'up', ...up);
-    const snapshot: Partial<Camera.Snapshot> = { target, position, up };
-    await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
-}
-
-function getFocusDistance(camera: Camera, center: Vec3, radius: number) {
-    const p = camera.getFocus(center, radius);
-    if (!p.position || !p.target) return undefined;
-    return Vec3.distance(p.position, p.target);
-}
-
 export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
     const update = plugin.build();
     const mapping = new Map<SubTree<MolstarTree>, StateObjectSelector | undefined>(); // TODO remove undefined
@@ -436,7 +387,7 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
     } else if (context.focus?.camera) {
         await focusCameraNode(plugin, context.focus.camera);
     } else {
-        // TODO reset axes+zoom
+        await focusStructureNode(plugin, undefined, undefined);
     }
 }
 
