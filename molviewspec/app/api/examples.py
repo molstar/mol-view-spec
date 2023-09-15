@@ -615,23 +615,38 @@ async def testing_color_domains_example(colors: bool = True, tooltips: bool = Fa
 
 
 @router.get("/testing/color_validation")
-async def testing_color_validation_example(id: str = "1tqn") -> MVSResponse:
+async def testing_color_validation_example(id: str = "1tqn", tooltips: bool = False, labels: bool = False) -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif(id)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="protein").representation(type="cartoon").color(color="green").color_from_url(
         schema="residue",
-        url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
+        url=annotation_url,
         format="json",
     )
     structure.component(selector="ligand").representation(type="ball-and-stick").color(color="green").color_from_url(
         schema="residue",
-        url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
+        url=annotation_url,
         format="json",
     )
+    if tooltips:
+        structure.tooltip_from_url(
+            schema="all-atomic",
+            url=annotation_url,
+            format="json",
+            field_name="tooltip",
+        )
+    if labels:
+        structure.label_from_url(
+            schema="all-atomic",
+            url=annotation_url,
+            format="json",
+            field_name="tooltip",
+        )
     return JSONResponse(builder.get_state())
 
 

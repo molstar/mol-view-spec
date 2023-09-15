@@ -11,7 +11,7 @@ import { Expression } from 'molstar/lib/mol-script/language/expression';
 import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expression-formatter';
 
 import { extend, filterInPlace, isAnyDefined, isDefined, range } from '../../utils';
-import { AtomRanges, addRange, emptyRanges, mergeRanges, singleRange } from './atom-ranges';
+import { AtomRanges, addRange, emptyRanges, unionOfRanges, singleRange } from './atom-ranges';
 import { AnnotationRow } from '../helpers/schemas';
 import { IndicesAndSortings, getKeysWithValue, getKeysWithValueInRange } from './indexing';
 
@@ -69,7 +69,7 @@ export function getAtomRangesForRow(model: Model, row: AnnotationRow, indices: I
 /** Return atom ranges in `model` which satisfy criteria given by any of `rows` (atoms that satisfy more rows are still included only once) */
 export function getAtomRangesForRows(model: Model, rows: AnnotationRow | AnnotationRow[], indices: IndicesAndSortings): AtomRanges {
     if (Array.isArray(rows)) {
-        return mergeRanges(rows.map(row => getAtomRangesForRow(model, row, indices)));
+        return unionOfRanges(rows.map(row => getAtomRangesForRow(model, row, indices)));
     } else {
         return getAtomRangesForRow(model, rows, indices);
     }

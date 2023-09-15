@@ -8,12 +8,12 @@ import { SortedArray } from 'molstar/lib/mol-data/int';
 import { Sphere3D } from 'molstar/lib/mol-math/geometry';
 import { BoundaryHelper } from 'molstar/lib/mol-math/geometry/boundary-helper';
 import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
-import { Model, Structure, StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure';
+import { ElementIndex, Model, Structure, StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure';
 import { Theme } from 'molstar/lib/mol-theme/theme';
 import { UUID } from 'molstar/lib/mol-util';
 
 import { extend } from '../../utils';
-import { AtomRanges, mergeRanges } from './atom-ranges';
+import { AtomRanges, selectAtomsInRanges, unionOfRanges } from './atom-ranges';
 import { IndicesAndSortings, createIndicesAndSortings } from './indexing';
 import { AnnotationRow } from './schemas';
 import { getAtomRangesForRow, getAtomRangesForRows } from './selections';
@@ -29,10 +29,12 @@ interface TextProps {
 const tmpVec = Vec3();
 const tmpArray: number[] = [];
 const boundaryHelper = new BoundaryHelper('98');
+const outAtoms: ElementIndex[] = [];
+const outFirstAtomIndex: { value?: number } = {};
 
 // TODO find a smart place to store these (maybe model._dynamicPropertyData? or compute once before creating all labels?)
 const modelIndices: { [id: UUID]: IndicesAndSortings } = {};
-function getModelIndices(model: Model): IndicesAndSortings {
+export function getModelIndices(model: Model): IndicesAndSortings {
     return modelIndices[model.id] ??= createIndicesAndSortings(model);
 }
 export function textPropsForSelection(structure: Structure, sizeFunction: (location: StructureElement.Location) => number, rows: AnnotationRow | AnnotationRow[]): TextProps | undefined {
@@ -48,35 +50,22 @@ export function textPropsForSelection(structure: Structure, sizeFunction: (locat
     for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
         const unit = units[iUnit];
         const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRows(unit.model, rows, getModelIndices(unit.model));
-        const pos = unit.conformation.position;
-        const { elements } = unit;
+        const position = unit.conformation.position;
         loc.unit = unit;
-        let iRange = SortedArray.findPredecessorIndex(SortedArray.ofSortedArray(ranges.to), elements[0] + 1);
-        const nRanges = ranges.from.length;
-        for (let iAtom = 0, nAtoms = elements.length; iAtom < nAtoms; iAtom++) {
-            loc.element = elements[iAtom];
-            // const qualifiesC = atomQualifies(loc.unit.model, loc.element, row);
-            while (iRange < nRanges && ranges.to[iRange] <= loc.element) iRange++;
-            const qualifies = iRange < nRanges && ranges.from[iRange] <= loc.element;
-            // if (qualifies !== qualifiesC) throw new Error('AssertionError')
-            if (qualifies) {
-                pos(loc.element, tmpVec);
-                extend(tmpArray, tmpVec);
-                group ??= structure.serialMapping.cumulativeUnitElementCount[iUnit] + iAtom;
-                atomSize ??= sizeFunction(loc);
-                includedAtoms++;
-                if (type_symbol(loc) !== 'H') includedHeavyAtoms++;
-            };
+        selectAtomsInRanges(unit.elements, ranges, outAtoms, outFirstAtomIndex);
+        for (const atom of outAtoms) {
+            loc.element = atom;
+            position(atom, tmpVec);
+            extend(tmpArray, tmpVec);
+            group ??= structure.serialMapping.cumulativeUnitElementCount[iUnit] + outFirstAtomIndex.value!;
+            atomSize ??= sizeFunction(loc);
+            includedAtoms++;
+            if (type_symbol(loc) !== 'H') includedHeavyAtoms++;
         }
     }
-    // console.timeEnd('select atoms');
-    // console.log('includedAtoms:', includedAtoms)
     if (includedAtoms > 0) {
-        // console.time('boundarySphere');
         const { center, radius } = (includedAtoms > 1) ? boundarySphere(tmpArray) : { center: Vec3.fromArray(Vec3(), tmpArray, 0), radius: 1.1 * atomSize! };
-        // console.timeEnd('boundarySphere')
         const scale = (includedHeavyAtoms || includedAtoms) ** (1 / 3);
-        if (includedAtoms === 1) console.log('radius:', radius, 'atomSize:', atomSize);
         return { center, radius, scale, group: group! };
     }
 }

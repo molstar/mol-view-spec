@@ -1,4 +1,4 @@
-import { AtomRanges, mergeRanges } from '../atom-ranges';
+import { AtomRanges, unionOfRanges } from '../atom-ranges';
 
 
 describe('mergeRanges', () => {
@@ -19,7 +19,7 @@ describe('mergeRanges', () => {
             from: [-10, 0, 11, 20, 37, 40, 51, 60, 80, 200, 205, 300],
             to: [-5, 10, 15, 30, 39, 50, 55, 70, 90, 202, 210, 305],
         } as AtomRanges;
-        expect(mergeRanges([a, b, c])).toEqual(result);
+        expect(unionOfRanges([a, b, c])).toEqual(result);
     });
     it('mergeRanges overlapping', async () => {
         const a = {
@@ -38,7 +38,7 @@ describe('mergeRanges', () => {
             from: [-10, 20, 37, 51, 60, 200, 300],
             to: [15, 30, 50, 55, 90, 220, 305],
         } as AtomRanges;
-        expect(mergeRanges([a, b, c])).toEqual(result);
+        expect(unionOfRanges([a, b, c])).toEqual(result);
     });
 });
 
