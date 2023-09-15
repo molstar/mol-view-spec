@@ -31,6 +31,10 @@ const { str, int } = Column.Schema;
 
 /** Definition of `all-atomic` schema for CIF (other atomic schemas are subschemas of this one) */
 export const CIFAnnotationSchema = {
+    /** Tag for grouping multiple annotation rows with the same `group_id` (e.g. to show one label for two chains);
+     * if the `group_id` is not given, the row is processed separately */
+    group_id: str,
+
     label_entity_id: str,
     label_asym_id: str,
     auth_asym_id: str,

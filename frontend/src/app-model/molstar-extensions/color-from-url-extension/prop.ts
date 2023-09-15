@@ -18,7 +18,7 @@ import { UUID } from 'molstar/lib/mol-util';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { Json, canonicalJsonString, extend, pickObjectKeys, promiseAllObj } from '../../utils';
+import { Json, canonicalJsonString, extend, pickObjectKeys, promiseAllObj, range } from '../../utils';
 import { rangesForeach } from '../helpers/atom-ranges';
 import { createIndicesAndSortings } from '../helpers/indexing';
 import { PD_MaybeString } from '../helpers/param-definition';
@@ -375,3 +375,52 @@ function annotationSourceFromSpec(s: AnnotationSpec): AnnotationSource {
             return { kind: 'source-cif' };
     }
 }
+
+interface GroupedArray<T> {
+    /** Number of groups */
+    count: number,
+    /** Get size of i-th group as `offsets[i+1]-offsets[i]`.
+     * Get j-th element in i-th group as `grouped[offsets[i]+j]` */
+    offsets: number[],
+    /** Get j-th element in i-th group as `grouped[offsets[i]+j]` */
+    grouped: T[],
+}
+/** Return row indices grouped by `row.group_id`. Rows with `row.group_id===undefined` are treated as separate groups. */
+export function groupRows(rows: AnnotationRow[]): GroupedArray<number> {
+    let counter = 0;
+    const groupMap = new Map<string, number>();
+    const groups: number[] = [];
+    for (let i = 0; i < rows.length; i++) {
+        const group_id = rows[i].group_id;
+        if (group_id === undefined) {
+            groups.push(counter++);
+        } else {
+            const groupIndex = groupMap.get(group_id);
+            if (groupIndex === undefined) {
+                groupMap.set(group_id, counter);
+                groups.push(counter);
+                counter++;
+            } else {
+                groups.push(groupIndex);
+            }
+        }
+    }
+    const rowIndices = range(rows.length).sort((i, j) => groups[i] - groups[j]);
+    const offsets: number[] = [];
+    for (let i = 0; i < rows.length; i++) {
+        if (i === 0 || groups[rowIndices[i]] !== groups[rowIndices[i - 1]]) offsets.push(i);
+    }
+    offsets.push(rowIndices.length);
+    return { count: offsets.length - 1, offsets, grouped: rowIndices };
+}
+export function testGroupRows() {
+    const rows = [{ label: 'A' }, { label: 'B', group_id: 1 }, { label: 'C', group_id: 'x' }, { label: 'D', group_id: 1 }, { label: 'E' }, { label: 'F' }, { label: 'G', group_id: 'x' }, { label: 'H', group_id: 'x' }] as any as AnnotationRow[];
+    const { count, offsets, grouped } = groupRows(rows);
+    for (let i = 0; i < count; i++) {
+        console.log('Group', i);
+        for (let j = offsets[i], stop = offsets[i + 1]; j < stop; j++) {
+            console.log('   ', rows[grouped[j]]);
+        }
+    }
+}
+// TODO turn into a proper jest test

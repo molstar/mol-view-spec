@@ -6,7 +6,6 @@
 
 import { Text } from 'molstar/lib/mol-geo/geometry/text/text';
 import { TextBuilder } from 'molstar/lib/mol-geo/geometry/text/text-builder';
-import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { Structure } from 'molstar/lib/mol-model/structure';
 import { ComplexTextVisual, ComplexVisual } from 'molstar/lib/mol-repr/structure/complex-visual';
 import * as Original from 'molstar/lib/mol-repr/structure/visual/label-text';
@@ -14,14 +13,12 @@ import { ElementIterator, eachSerialElement, getSerialElementLoci } from 'molsta
 import { VisualUpdateState } from 'molstar/lib/mol-repr/util';
 import { VisualContext } from 'molstar/lib/mol-repr/visual';
 import { Theme } from 'molstar/lib/mol-theme/theme';
-import { deepEqual } from 'molstar/lib/mol-util';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
 import { omitObjectKeys } from '../../utils';
 import { textPropsForSelection } from '../helpers/label-text';
-import { PD_MaybeInteger, PD_MaybeString } from '../helpers/param-definition';
-import { getAnnotationForStructure } from './prop';
+import { getAnnotationForStructure, groupRows } from './prop';
 
 
 export const AnnotationLabelTextParams = {
@@ -47,21 +44,22 @@ export function AnnotationLabelTextVisual(materialId: number): ComplexVisual<Ann
     }, materialId);
 }
 
-const tmpVec = Vec3();
-
 function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme, props: AnnotationLabelTextProps, text?: Text): Text {
     const { annotation } = getAnnotationForStructure(structure, props.annotationId);
     const rows = annotation?.getRows() ?? [];
+    const { count, offsets, grouped } = groupRows(rows);
     console.log('annotation:', annotation);
-    const count = rows.length;
     const builder = TextBuilder.create(props, count, count / 2, text);
-    for (let i = 0; i < rows.length; i++) {
-        const p = textPropsForSelection(structure, theme.size.size, rows[i]);
+    for (let iGroup = 0; iGroup < count; iGroup++) {
+        console.log('Group', iGroup);
+        const iFirstRowInGroup = grouped[offsets[iGroup]];
+        const labelText = annotation!.getValueForRow(iFirstRowInGroup, props.fieldName);
+        if (!labelText) continue;
+        const rowsInGroup = grouped.slice(offsets[iGroup], offsets[iGroup + 1]).map(j => rows[j]);
+        console.log('   ', ...rowsInGroup);
+        const p = textPropsForSelection(structure, theme.size.size, rowsInGroup);
         if (!p) continue;
-        const text = annotation?.getValueForRow(i, props.fieldName);
-        if (text === undefined) continue;
-        builder.add(text, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
+        builder.add(labelText, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
     }
-
     return builder.getText();
 }

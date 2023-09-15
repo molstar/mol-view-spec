@@ -791,13 +791,13 @@ async def testing_labels_example(id="1h9t") -> MVSResponse:
 
 
 @router.get("/testing/labels_from_url")
-async def testing_labels_from_url_example(id="1h9t") -> MVSResponse:
+async def testing_labels_from_url_example(id="1h9t", annotation_name="domains") -> MVSResponse:
     """
     An example with different labels for polymer and non-polymer chains.
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif(id)
-    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains"
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/{annotation_name}"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     protein = structure.component(selector="protein")
     protein.representation(type="cartoon").color(color="white").color_from_url(

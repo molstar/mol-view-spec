@@ -5,6 +5,7 @@
  */
 
 import { ElementIndex } from 'molstar/lib/mol-model/structure';
+import { extend, range } from '../../utils';
 
 
 /** Represents a collection of disjoint atom ranges in a model.
@@ -50,5 +51,30 @@ export function rangesMap<T>(ranges: AtomRanges, func: (from: ElementIndex, to: 
     const n = ranges.from.length;
     const result: T[] = new Array(n);
     for (let i = 0; i < n; i++) result[i] = func(ranges.from[i], ranges.to[i]);
+    return result;
+}
+
+export function mergeRanges(ranges: AtomRanges[]): AtomRanges {
+    const concat = emptyRanges();
+    for (const r of ranges) {
+        extend(concat.from, r.from);
+        extend(concat.to, r.to);
+    }
+    const indices = range(concat.from.length).sort((i, j) => concat.from[i] - concat.from[j]); // sort by start of range
+    const result = emptyRanges();
+    let last = -1;
+    for (const i of indices) {
+        const from = concat.from[i];
+        const to = concat.to[i];
+        if (last >= 0 && from <= result.to[last]) {
+            if (to > result.to[last]) {
+                result.to[last] = to;
+            }
+        } else {
+            result.from.push(from);
+            result.to.push(to);
+            last++;
+        }
+    }
     return result;
 }

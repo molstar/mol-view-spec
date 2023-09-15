@@ -13,10 +13,10 @@ import { Theme } from 'molstar/lib/mol-theme/theme';
 import { UUID } from 'molstar/lib/mol-util';
 
 import { extend } from '../../utils';
-import { AtomRanges } from './atom-ranges';
+import { AtomRanges, mergeRanges } from './atom-ranges';
 import { IndicesAndSortings, createIndicesAndSortings } from './indexing';
 import { AnnotationRow } from './schemas';
-import { getAtomRangesForRow } from './selections';
+import { getAtomRangesForRow, getAtomRangesForRows } from './selections';
 
 
 interface TextProps {
@@ -35,7 +35,7 @@ const modelIndices: { [id: UUID]: IndicesAndSortings } = {};
 function getModelIndices(model: Model): IndicesAndSortings {
     return modelIndices[model.id] ??= createIndicesAndSortings(model);
 }
-export function textPropsForSelection(structure: Structure, sizeFunction: (location: StructureElement.Location) => number, row: AnnotationRow): TextProps | undefined {
+export function textPropsForSelection(structure: Structure, sizeFunction: (location: StructureElement.Location) => number, rows: AnnotationRow | AnnotationRow[]): TextProps | undefined {
     const loc = StructureElement.Location.create(structure);
     const { units } = structure;
     const { type_symbol } = StructureProperties.atom;
@@ -45,19 +45,9 @@ export function textPropsForSelection(structure: Structure, sizeFunction: (locat
     let group: number | undefined = undefined;
     let atomSize: number | undefined = undefined;
     const rangesByModel: { [modelId: UUID]: AtomRanges } = {};
-    // {
-    //     // Just a debugging block for timing, TODO remove
-    //     console.time('get ranges');
-    //     for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
-    //         const unit = units[iUnit];
-    //         rangesByModel[unit.model.id] ??= getAtomRangesForRow(unit.model, row, getModelIndices(unit.model));
-    //     }
-    //     console.timeEnd('get ranges');
-    // }
-    // console.time('select atoms');
     for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
         const unit = units[iUnit];
-        const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRow(unit.model, row, getModelIndices(unit.model));
+        const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRows(unit.model, rows, getModelIndices(unit.model));
         const pos = unit.conformation.position;
         const { elements } = unit;
         loc.unit = unit;

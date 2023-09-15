@@ -5,34 +5,22 @@
  */
 
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
-// import { VisualUpdateState } from '../../../mol-repr/util';
-// import { VisualContext } from '../../../mol-repr/visual';
-import { Model, Structure, StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure';
-// import { Theme } from '../../../mol-theme/theme';
+import { Structure } from 'molstar/lib/mol-model/structure';
 import { Text } from 'molstar/lib/mol-geo/geometry/text/text';
 import { TextBuilder } from 'molstar/lib/mol-geo/geometry/text/text-builder';
-// import { ComplexTextVisual, ComplexTextParams, ComplexVisual } from '../complex-visual';
 import { ElementIterator, eachSerialElement, getSerialElementLoci } from 'molstar/lib/mol-repr/structure/visual/util/element';
-// import { ColorNames } from '../../../mol-util/color/names';
-// import { Vec3 } from '../../../mol-math/linear-algebra';
-import { SortedArray } from 'molstar/lib/mol-data/int';
-import { Sphere3D } from 'molstar/lib/mol-math/geometry';
-import { BoundaryHelper } from 'molstar/lib/mol-math/geometry/boundary-helper';
 import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { ComplexTextVisual, ComplexVisual } from 'molstar/lib/mol-repr/structure/complex-visual';
 import * as Original from 'molstar/lib/mol-repr/structure/visual/label-text';
 import { VisualUpdateState } from 'molstar/lib/mol-repr/util';
 import { VisualContext } from 'molstar/lib/mol-repr/visual';
 import { Theme } from 'molstar/lib/mol-theme/theme';
-import { UUID, deepEqual } from 'molstar/lib/mol-util';
+import { deepEqual } from 'molstar/lib/mol-util';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
-import { AtomRanges, rangesMap } from '../helpers/atom-ranges';
-import { IndicesAndSortings, createIndicesAndSortings } from '../helpers/indexing';
-import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
-import { AnnotationRow } from '../helpers/schemas';
-import { PD_MaybeInteger, PD_MaybeString } from '../helpers/param-definition';
-import { extend, omitObjectKeys } from '../../utils';
+
+import { omitObjectKeys } from '../../utils';
 import { textPropsForSelection } from '../helpers/label-text';
+import { PD_MaybeInteger, PD_MaybeString } from '../helpers/param-definition';
 
 
 export const CustomLabelTextParams = {
