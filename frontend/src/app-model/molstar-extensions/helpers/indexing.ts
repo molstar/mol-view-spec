@@ -23,8 +23,13 @@ export interface IndicesAndSortings {
     atomsByIndex: BasicReadonlyMap<number, ElementIndex>,
 }
 
+/** Create `IndicesAndSortings` for a model (or use a cached value) */
+export function getIndicesAndSortings(model: Model): IndicesAndSortings {
+    return model._dynamicPropertyData['indices-and-sortings'] ??= createIndicesAndSortings(model);
+}
+
 /** Create `IndicesAndSortings` for a model */
-export function createIndicesAndSortings(model: Model): IndicesAndSortings {
+function createIndicesAndSortings(model: Model): IndicesAndSortings {
     const h = model.atomicHierarchy;
     const nAtoms = h.atoms._rowCount;
     const nResidues = h.residues._rowCount;

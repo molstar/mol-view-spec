@@ -20,7 +20,7 @@ import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
 import { Json, canonicalJsonString, extend, pickObjectKeys, promiseAllObj, range } from '../../utils';
 import { rangesForeach } from '../helpers/atom-ranges';
-import { createIndicesAndSortings } from '../helpers/indexing';
+import { getIndicesAndSortings } from '../helpers/indexing';
 import { PD_MaybeString } from '../helpers/param-definition';
 import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from '../helpers/schemas';
 import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
@@ -219,16 +219,14 @@ export class Annotation {
 
     /** Create `ElementIndex` -> `AnnotationRow` mapping for `Model` */
     private getRowForEachAtom(model: Model): number[] {
-        const indices = createIndicesAndSortings(model);
+        const indices = getIndicesAndSortings(model);
         const nAtoms = model.atomicHierarchy.atoms._rowCount;
         const result: number[] = Array(nAtoms).fill(-1);
-        console.time('fill');
         const rows = this.getRows();
         for (let i = 0, nRows = rows.length; i < nRows; i++) {
             const atomRanges = getAtomRangesForRow(model, rows[i], indices);
             rangesForeach(atomRanges, (from, to) => result.fill(i, from, to));
         }
-        console.timeEnd('fill');
         return result;
     }
 

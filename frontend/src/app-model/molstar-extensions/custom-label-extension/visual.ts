@@ -81,11 +81,9 @@ export const CustomLabelTextParams = {
     // residueScale: PD.Numeric(1, { min: 0, max: 20, step: 0.1 }),
     // elementScale: PD.Numeric(0.5, { min: 0, max: 20, step: 0.1 }),
 };
-// export const CustomLabelTextParams = Original.LabelTextParams;
 
 export type CustomLabelTextParams = typeof CustomLabelTextParams
 export type CustomLabelTextProps = PD.Values<CustomLabelTextParams>
-// export type CustomLabelLevels = CustomLabelTextProps['level']
 
 export function CustomLabelTextVisual(materialId: number): ComplexVisual<CustomLabelTextParams> {
     return ComplexTextVisual<CustomLabelTextParams>({
@@ -96,15 +94,9 @@ export function CustomLabelTextVisual(materialId: number): ComplexVisual<CustomL
         eachLocation: eachSerialElement,
         setUpdateState: (state: VisualUpdateState, newProps: PD.Values<CustomLabelTextParams>, currentProps: PD.Values<CustomLabelTextParams>) => {
             state.createGeometry = !deepEqual(newProps.items, currentProps.items);
-            // state.createGeometry = newProps.text !== currentProps.text;
-            // state.createGeometry ||= newProps.x !== currentProps.x;
-            // state.createGeometry ||= newProps.y !== currentProps.y;
-            // state.createGeometry ||= newProps.z !== currentProps.z;
         }
     }, materialId);
 }
-
-const tmpVec = Vec3();
 
 function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme, props: CustomLabelTextProps, text?: Text): Text {
     const count = props.items.length;
@@ -113,18 +105,14 @@ function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme,
         let scale: number;
         switch (item.position.name) {
             case 'x_y_z':
-                Vec3.set(tmpVec, item.position.params.x, item.position.params.y, item.position.params.z);
                 scale = item.position.params.scale;
-                builder.add(item.text, tmpVec[0], tmpVec[1], tmpVec[2], scale, scale, 0);
+                builder.add(item.text, item.position.params.x, item.position.params.y, item.position.params.z, scale, scale, 0);
                 break;
             case 'selection':
-                // console.time('addLabelItem');
                 const p = textPropsForSelection(structure, theme.size.size, item.position.params);
                 if (p) builder.add(item.text, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
-                // console.timeEnd('addLabelItem');
                 break;
         }
     }
-
     return builder.getText();
 }

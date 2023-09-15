@@ -4,19 +4,17 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { SortedArray } from 'molstar/lib/mol-data/int';
 import { Sphere3D } from 'molstar/lib/mol-math/geometry';
 import { BoundaryHelper } from 'molstar/lib/mol-math/geometry/boundary-helper';
 import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { ElementIndex, Model, Structure, StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure';
-import { Theme } from 'molstar/lib/mol-theme/theme';
 import { UUID } from 'molstar/lib/mol-util';
 
 import { extend } from '../../utils';
-import { AtomRanges, selectAtomsInRanges, unionOfRanges } from './atom-ranges';
-import { IndicesAndSortings, createIndicesAndSortings } from './indexing';
+import { AtomRanges, selectAtomsInRanges } from './atom-ranges';
+import { getIndicesAndSortings } from './indexing';
 import { AnnotationRow } from './schemas';
-import { getAtomRangesForRow, getAtomRangesForRows } from './selections';
+import { getAtomRangesForRows } from './selections';
 
 
 interface TextProps {
@@ -32,12 +30,7 @@ const boundaryHelper = new BoundaryHelper('98');
 const outAtoms: ElementIndex[] = [];
 const outFirstAtomIndex: { value?: number } = {};
 
-// TODO find a smart place to store these (maybe model._dynamicPropertyData? or compute once before creating all labels?)
-const modelIndices: { [id: UUID]: IndicesAndSortings } = {};
-export function getModelIndices(model: Model): IndicesAndSortings {
-    return modelIndices[model.id] ??= createIndicesAndSortings(model);
-}
-export function textPropsForSelection(structure: Structure, sizeFunction: (location: StructureElement.Location) => number, rows: AnnotationRow | AnnotationRow[]): TextProps | undefined {
+export function textPropsForSelection(structure: Structure, sizeFunction: (location: StructureElement.Location) => number, rows: AnnotationRow | AnnotationRow[], onlyInModel?: Model): TextProps | undefined {
     const loc = StructureElement.Location.create(structure);
     const { units } = structure;
     const { type_symbol } = StructureProperties.atom;
@@ -49,7 +42,8 @@ export function textPropsForSelection(structure: Structure, sizeFunction: (locat
     const rangesByModel: { [modelId: UUID]: AtomRanges } = {};
     for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
         const unit = units[iUnit];
-        const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRows(unit.model, rows, getModelIndices(unit.model));
+        if (onlyInModel && unit.model.id !== onlyInModel.id) continue;
+        const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRows(unit.model, rows, getIndicesAndSortings(unit.model));
         const position = unit.conformation.position;
         loc.unit = unit;
         selectAtomsInRanges(unit.elements, ranges, outAtoms, outFirstAtomIndex);

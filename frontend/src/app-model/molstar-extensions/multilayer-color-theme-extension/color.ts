@@ -136,7 +136,7 @@ function makeMultilayerColorTheme(ctx: ThemeDataContext, props: MultilayerColorT
         }
         return props.background;
     };
-    if (ctx.structure) benchmarkColorFunction(color, ctx.structure);
+    // if (ctx.structure) benchmarkColorFunction(color, ctx.structure);
 
     return {
         factory: (ctx_, props_) => makeMultilayerColorTheme(ctx_, props_, colorThemeRegistry),
