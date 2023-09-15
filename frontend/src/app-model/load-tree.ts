@@ -10,8 +10,9 @@ import { CustomModelProperties, CustomStructureProperties, ModelFromTrajectory, 
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
+import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-
+import { focusCameraNode, focusStructureNode } from './focus';
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
@@ -24,7 +25,6 @@ import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
-import { focusCameraNode, focusStructureNode } from './focus';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -34,14 +34,14 @@ export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.
 interface MolstarLoadingContext {
     /** Maps 'color-from-url' nodes to annotationId they should reference */
     annotationMap?: Map<MolstarNode<'color-from-url' | 'color-from-cif' | 'tooltip-from-url' | 'tooltip-from-cif' | 'label-from-url' | 'label-from-cif'>, string>,
-    /** Maps each node (on 'structure' or lower level) than model to its nearest node with color information */
-    nearestColorMap?: Map<MolstarNode, MolstarNode<'color' | 'color-from-url' | 'color-from-cif'>>,
+    /** Maps each node (on 'structure' or lower level) to its nearest 'colors' node */
+    nearestColorMap?: Map<MolstarNode, MolstarNode<'colors'>>,
     focus?: { camera?: ParamsOfKind<MolstarTree, 'camera'>, focusTarget?: StateObjectSelector }
 }
 
 export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>, MolstarLoadingContext> } = {
     root(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'root'>, context: MolstarLoadingContext): StateObjectSelector {
-        context.nearestColorMap = makeNearestColorMap(node);
+        context.nearestColorMap = makeNearestColorsMap(node);
         return msTarget;
     },
     download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'download'>): StateObjectSelector {
@@ -132,26 +132,10 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }).selector;
     },
     colors(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'colors'>, context: MolstarLoadingContext): StateObjectSelector {
-        const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-cif' || c.kind === 'color-from-url') as MolstarNode<'color' | 'color-from-cif' | 'color-from-url'>[];
-        if (children.length === 1) {
-            update.to(msTarget).update(old => ({
-                ...old,
-                colorTheme: colorThemeForColorNode(children[0], context),
-            }));
-        } else {
-            const layers: MultilayerColorThemeProps['layers'] = children.map(
-                c => ({ theme: colorThemeForColorNode(c, context), selection: componentPropsFromSelector(c.kind === 'color' ? c.params.selector : undefined) })
-            );
-            update.to(msTarget).update(old => ({
-                ...old,
-                colorTheme: {
-                    name: 'multilayer',
-                    params: {
-                        layers,
-                    }
-                },
-            }));
-        }
+        update.to(msTarget).update(old => ({
+            ...old,
+            colorTheme: colorThemeForColorNode(node, context),
+        }));
         return msTarget;
     },
     label(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
@@ -174,6 +158,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             colorTheme: colorThemeForColorNode(nearestColorNode, context),
         }).selector;
     },
+    // TODO labels-from-cif
     transforms(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'transforms'>, context: MolstarLoadingContext): StateObjectSelector {
         let result = msTarget;
         for (const transform of getChildren(node)) {
@@ -183,10 +168,6 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             result = update.to(result).apply(TransformStructureConformation, { transform: { name: 'matrix', params: { data: matrix } } }).selector;
         }
         return result;
-    },
-    transform(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'transform'>, context: MolstarLoadingContext): StateObjectSelector {
-        // do nothing, all transforms are applied in 'transforms' node
-        return msTarget;
     },
     focus(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'focus'>, context: MolstarLoadingContext): StateObjectSelector {
         (context.focus ??= {}).focusTarget = msTarget; // keep other params
@@ -262,7 +243,21 @@ function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'compon
     }
 }
 
-function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext) {
+function colorThemeForColorNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-cif' | 'color-from-url' | 'colors'> | undefined, context: MolstarLoadingContext): PD.NamedParams<any, string> {
+    if (node?.kind === 'colors') {
+        const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-cif' || c.kind === 'color-from-url') as MolstarNode<'color' | 'color-from-cif' | 'color-from-url'>[];
+        if (children.length === 1) {
+            return colorThemeForColorNode(children[0], context);
+        } else {
+            const layers: MultilayerColorThemeProps['layers'] = children.map(
+                c => ({ theme: colorThemeForColorNode(c, context), selection: componentPropsFromSelector(c.kind === 'color' ? c.params.selector : undefined) })
+            );
+            return {
+                name: 'multilayer',
+                params: { layers },
+            };
+        }
+    }
     let annotationId: string | undefined = undefined;
     let fieldName: string | undefined = undefined;
     let color: string | undefined = undefined;
@@ -279,30 +274,27 @@ function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | '
     if (annotationId) {
         return {
             name: 'annotation',
-            params: { annotationId, fieldName, background: NoColor } satisfies Partial<AnnotationColorThemeProps>
+            params: { annotationId, fieldName, background: NoColor } satisfies Partial<AnnotationColorThemeProps>,
         };
     } else {
         return {
             name: 'uniform',
-            params: { value: decodeColor(color) }
+            params: { value: decodeColor(color) },
         };
     }
 }
-function makeNearestColorMap(root: MolstarTree) {
-    const map = new Map<MolstarNode, MolstarNode<'color' | 'color-from-url' | 'color-from-cif'>>();
+function makeNearestColorsMap(root: MolstarTree) {
+    const map = new Map<MolstarNode, MolstarNode<'colors'>>();
+    // Propagate up:
     dfs(root, undefined, (node, parent) => {
-        if (!map.has(node)) {
-            switch (node.kind) {
-                case 'color':
-                case 'color-from-url':
-                case 'color-from-cif':
-                    map.set(node, node);
-            }
+        if (node.kind === 'colors') {
+            map.set(node, node);
         }
-        if (node.kind !== 'structure' && map.has(node) && parent && !map.has(parent)) {
+        if (node.kind !== 'structure' && map.has(node) && parent && !map.has(parent)) { // do not propagate above the lowest structure node
             map.set(parent, map.get(node)!);
         }
     });
+    // Propagate down:
     dfs(root, (node, parent) => {
         if (parent && map.has(parent)) {
             map.set(node, map.get(parent)!);
