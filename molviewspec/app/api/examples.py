@@ -455,7 +455,6 @@ async def testing_color_from_cif_example() -> MVSResponse:
         schema="all-atomic",
         category_name="mvs_test_chain_label_annotation",
     )
-    structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
     structure.component(selector="ligand").representation(type="ball-and-stick").color(color="white").color_from_cif(
         schema="all-atomic",
         block_header="1CBS",
@@ -833,6 +832,28 @@ async def testing_labels_from_url_example(id="1h9t", annotation_name="domains") 
         format="json",
     )
     structure.label_from_url(url=annotation_url, format="json", schema="all-atomic", field_name="tooltip")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/labels_from_cif")
+async def testing_labels_from_cif_example() -> MVSResponse:
+    """
+    Labels from the same CIF as structure
+    """
+    builder = Root()
+    structure_url = f"http://0.0.0.0:9000/api/v1/examples/data/1cbs/molecule-and-cif-annotations"
+    structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_cif(
+        schema="all-atomic",
+        category_name="mvs_test_chain_label_annotation",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick").color(color="white").color_from_cif(
+        schema="all-atomic",
+        block_header="1CBS",
+        category_name="mvs_test_chain_label_annotation",
+        field_name="color"
+    )
+    structure.label_from_cif(schema="all-atomic", category_name="mvs_test_chain_label_annotation", field_name="tooltip")
     return JSONResponse(builder.get_state())
 
 

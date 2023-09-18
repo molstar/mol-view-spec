@@ -150,15 +150,13 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }).selector;
     },
     'label-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
-        const annotationId = context.annotationMap?.get(node);
-        const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
-        const nearestColorNode = context.nearestColorMap?.get(node);
-        return update.to(msTarget).apply(StructureRepresentation3D, {
-            type: { name: 'annotation-label', params: { annotationId, fieldName } },
-            colorTheme: colorThemeForColorNode(nearestColorNode, context),
-        }).selector;
+        const props = labelRepresentationPropsForNode(node, context);
+        return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
     },
-    // TODO labels-from-cif
+    'label-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
+        const props = labelRepresentationPropsForNode(node, context);
+        return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
+    },
     transforms(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'transforms'>, context: MolstarLoadingContext): StateObjectSelector {
         let result = msTarget;
         for (const transform of getChildren(node)) {
@@ -179,6 +177,8 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
     },
 };
 
+
+type StructureRepresentation3DProps = ReturnType<typeof StructureRepresentation3D['createDefaultParams']>
 
 /** Return a 4x4 matrix representing rotation + translation */
 function transformFromRotationTranslation(rotation: number[] | null | undefined, translation: number[] | null | undefined): Mat4 {
@@ -243,7 +243,17 @@ function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'compon
     }
 }
 
-function colorThemeForColorNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-cif' | 'color-from-url' | 'colors'> | undefined, context: MolstarLoadingContext): PD.NamedParams<any, string> {
+function labelRepresentationPropsForNode(node: MolstarNode<'label-from-url' | 'label-from-cif'>, context: MolstarLoadingContext): Partial<StructureRepresentation3DProps> {
+    const annotationId = context.annotationMap?.get(node);
+    const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
+    const nearestColorNode = context.nearestColorMap?.get(node);
+    return {
+        type: { name: 'annotation-label', params: { annotationId, fieldName } },
+        colorTheme: colorThemeForColorNode(nearestColorNode, context),
+    };
+}
+
+function colorThemeForColorNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-cif' | 'color-from-url' | 'colors'> | undefined, context: MolstarLoadingContext): StructureRepresentation3DProps['colorTheme'] {
     if (node?.kind === 'colors') {
         const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-cif' || c.kind === 'color-from-url') as MolstarNode<'color' | 'color-from-cif' | 'color-from-url'>[];
         if (children.length === 1) {

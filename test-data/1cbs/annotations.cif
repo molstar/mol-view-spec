@@ -7,7 +7,7 @@ _mvs_test_chain_label_annotation.label_entity_id
 _mvs_test_chain_label_annotation.tooltip
 _mvs_test_chain_label_annotation.color
 # polymer
-A . polymer '#121212'
+A . polymer '#AAAAAA'
 # REA ligand 
 B . ligand  '#FF0000'
 
@@ -32,7 +32,7 @@ _mvs_test_auth_residue_range_annotation.end_pdbx_PDB_ins_code
 _mvs_test_auth_residue_range_annotation.tooltip
 _mvs_test_auth_residue_range_annotation.color
 # polymer
-A 1 . 137 . polymer '#121212'
+A 1 . 137 . polymer '#AAAAAA'
 # REA ligand
 A 200 . 200 . ligand '#FF0000'
 

@@ -49,6 +49,7 @@ function Main() {
         'labels from url': 'http://localhost:9000/api/v1/examples/testing/labels_from_url',
         'labels from url grouped': 'http://localhost:9000/api/v1/examples/testing/labels_from_url?annotation_name=domains-grouped',
         'labels from url 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true&labels=true',
+        'labels from cif': 'http://localhost:9000/api/v1/examples/testing/labels_from_cif',
         'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
         'camera': 'http://localhost:9000/api/v1/examples/testing/camera',
     };
