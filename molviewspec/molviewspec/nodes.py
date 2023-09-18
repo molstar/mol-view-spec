@@ -136,7 +136,7 @@ class _DataFromUrlParams(Params):
     category_name: NotRequired[str]
     """Only applies when format is 'cif' or 'bcif'"""
     field_name: NotRequired[str]
-    """Name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip...); the default value is 'color'/'label'/'tooltip' depending on the node type"""
+    """Name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node type"""
     block_header: NotRequired[str]
     """Only applies when format is 'cif' or 'bcif'"""
     block_index: NotRequired[int]
@@ -147,7 +147,7 @@ class _DataFromUrlParams(Params):
 class _DataFromCifParams(Params):
     category_name: str
     field_name: NotRequired[str]
-    """Name of the column in CIF that contains the desired value (color/label/tooltip...); the default value is 'color'/'label'/'tooltip' depending on the node type"""
+    """Name of the column in CIF that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node type"""
     block_header: NotRequired[str]
     block_index: NotRequired[int]
     schema: SchemaT
@@ -158,11 +158,13 @@ class ComponentInlineParams(Params):
 
 
 class ComponentUrlParams(_DataFromUrlParams):
-    pass
+    field_values: NotRequired[list[str]]
+    """Create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows."""
 
 
 class ComponentCifCategoryParams(_DataFromCifParams):
-    pass
+    field_values: NotRequired[list[str]]
+    """Create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows."""
 
 
 class ColorInlineParams(ComponentInlineParams):
@@ -204,8 +206,10 @@ class TooltipCifCategoryParams(_DataFromCifParams):
 
 
 class FocusInlineParams(Params):
-    pass
-    # nothing needed here, the focus will be applied on the whole parent Structure or Component
+    direction: NotRequired[tuple[float, float, float]]
+    """Direction of the view (vector position -> target)"""
+    up: NotRequired[tuple[float, float, float]]
+    """Controls the rotation around the vector between target and position"""
 
 
 class TransformParams(Params):

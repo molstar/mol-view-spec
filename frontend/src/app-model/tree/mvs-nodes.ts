@@ -77,9 +77,16 @@ export const MVSTreeSchema = TreeSchema('root',
         'component': {
             selector: RequiredField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
+        'component-from-url': {
+            ..._DataFromUrlParams,
+            field_values: OptionalField(nullable(list(str))),
+        },
+        'component-from-cif': {
+            ..._DataFromCifParams,
+            field_values: OptionalField(nullable(list(str))),
+        },
         'representation': {
             type: RequiredField(RepresentationTypeT),
-            // color: OptionalField(ColorT),
         },
         'color': {
             color: RequiredField(union([ColorT, HexColorT])),
@@ -110,6 +117,8 @@ export const MVSTreeSchema = TreeSchema('root',
             ..._DataFromCifParams,
         },
         'focus': {
+            direction: OptionalField(Vector3),
+            up: OptionalField(Vector3),
         },
         'transform': {
             /** 3x3 matrix, column major */
