@@ -101,7 +101,7 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }
         let tooltips: AnnotationTooltipsProps['tooltips'] = [];
         dfs(node, n => {
-            if (n.kind === 'tooltip-from-url') {
+            if (n.kind === 'tooltip-from-url' || n.kind==='tooltip-from-cif') {
                 const annotationId = context.annotationMap?.get(n);
                 if (annotationId) {
                     tooltips.push({ annotationId, fieldName: n.params.field_name ?? Defaults['tooltip-from-url'].field_name });

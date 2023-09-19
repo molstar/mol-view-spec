@@ -15,20 +15,20 @@ B . ligand  '#FF0000'
 loop_
 _mvs_test_auth_residue_annotation.auth_asym_id
 _mvs_test_auth_residue_annotation.auth_seq_id
-_mvs_test_auth_residue_annotation.pdbx_PDB_ins_code 
+_mvs_test_auth_residue_annotation.pdbx_PDB_ins_code
 _mvs_test_auth_residue_annotation.tooltip
 _mvs_test_auth_residue_annotation.color
 # not possible to annotate the whole polymer using this
 # REA ligand
-B 200 . ligand  '#FF0000'
+A 200 . ligand  '#FF0000'
 
 # Residue Range Annotation (auth)
 loop_
 _mvs_test_auth_residue_range_annotation.auth_asym_id
 _mvs_test_auth_residue_range_annotation.beg_auth_seq_id
-_mvs_test_auth_residue_range_annotation.beg_pdbx_PDB_ins_code 
+_mvs_test_auth_residue_range_annotation.beg_pdbx_PDB_ins_code
 _mvs_test_auth_residue_range_annotation.end_auth_seq_id
-_mvs_test_auth_residue_range_annotation.end_pdbx_PDB_ins_code 
+_mvs_test_auth_residue_range_annotation.end_pdbx_PDB_ins_code
 _mvs_test_auth_residue_range_annotation.tooltip
 _mvs_test_auth_residue_range_annotation.color
 # polymer

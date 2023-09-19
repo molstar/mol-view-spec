@@ -188,15 +188,10 @@ export class Annotation {
         const indexedModel = this.getIndexedModel(loc.unit.model);
         const iRow = indexedModel[loc.element];
         return this.getValueForRow(iRow, fieldName);
-        // switch (this.data.format) {
-        //     case 'json':
-        //         return getValueFromJson(iRow, fieldName, this.data.data);
-        //     case 'cif':
-        //         return getValueFromCif(iRow, fieldName, this.data.data);
-        // }
     }
     /** Return value of field `fieldName` assigned to `i`-th annotation row, if any */
     getValueForRow(i: number, fieldName: string): string | undefined {
+        if (i < 0) return undefined;
         switch (this.data.format) {
             case 'json':
                 const value = getValueFromJson(i, fieldName, this.data.data);

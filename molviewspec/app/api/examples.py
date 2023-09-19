@@ -444,7 +444,7 @@ async def testing_components_example() -> MVSResponse:
 
 
 @router.get("/testing/color_from_cif")
-async def testing_color_from_cif_example() -> MVSResponse:
+async def testing_color_from_cif_example(tooltips: bool = False) -> MVSResponse:
     """
     Color from the same CIF as structure
     """
@@ -459,8 +459,19 @@ async def testing_color_from_cif_example() -> MVSResponse:
         schema="all-atomic",
         block_header="1CBS",
         category_name="mvs_test_chain_label_annotation",
-        field_name="color"
+        field_name="color",
     )
+    if tooltips:
+        structure.tooltip_from_cif(
+            schema="all-atomic",
+            category_name="mvs_test_chain_label_annotation",
+            field_name="tooltip",
+        )
+        structure.tooltip_from_cif(
+            schema="all-atomic",
+            category_name="mvs_test_chain_label_annotation",
+            field_name="color",
+        )
     return JSONResponse(builder.get_state())
 
 

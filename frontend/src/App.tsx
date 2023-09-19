@@ -42,6 +42,7 @@ function Main() {
         'colors domains': 'http://localhost:9000/api/v1/examples/testing/color_domains',
         'tooltips domains': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=false&tooltips=true',
         'colors+tooltips domains': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=true&tooltips=true',
+        'colors+tooltips from cif': 'http://localhost:9000/api/v1/examples/testing/color_from_cif?tooltips=True',
         'colors validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn&tooltips=true',
         'colors validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true',
         'colors multilayer': 'http://localhost:9000/api/v1/examples/testing/color_multilayer?id=1tqn',
