@@ -699,6 +699,51 @@ async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
     return JSONResponse(builder.get_state())
 
 
+@router.get("/testing/component_from_url")
+async def testing_component_from_url(id: str = "1h9t") -> MVSResponse:
+    """
+    An example with component-from-url.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/domains"
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+    ).representation(type="cartoon")
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values=["Ligand binding site"],
+    ).representation(type="ball-and-stick").color(color="gray").color(selector=ComponentExpression(type_symbol="O"), color="red").color(selector=ComponentExpression(type_symbol="N"), color="blue").color(selector=ComponentExpression(type_symbol="S"), color="yellow")
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values=["DNA X", "DNA Y"],
+    ).representation(type="ball-and-stick")
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values="Chloride",
+    ).representation(type="surface").color(color="green")
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values="Gold",
+    ).representation(type="surface").color(color="orange")
+    return JSONResponse(builder.get_state())
+
+
 @router.get("/testing/focus")
 async def testing_focus_example() -> MVSResponse:
     """

@@ -308,7 +308,7 @@ export function rowToExpression(row: AnnotationRow): Expression {
 
     return MS.struct.generator.atomGroups(propTests);
 }
-export function rowsToExpression(rows: AnnotationRow[]): Expression {
+export function rowsToExpression(rows: readonly AnnotationRow[]): Expression {
     return unionExpression(rows.map(rowToExpression));
 }
 function unionExpression(expressions: Expression[]): Expression {

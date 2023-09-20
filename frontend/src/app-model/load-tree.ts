@@ -10,10 +10,10 @@ import { CustomModelProperties, CustomStructureProperties, ModelFromTrajectory, 
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
-import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
 import { focusCameraNode, focusStructureNode } from './focus';
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
+import { AnnotationStructureComponent } from './molstar-extensions/color-from-url-extension/component-from-annotation';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
@@ -24,20 +24,26 @@ import { ParamsOfKind, SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, ge
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
-import { canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
+import { ElementOfSet, canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
 export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
 
+const AnnotationFromUrlKinds = new Set(['color-from-url', 'component-from-url', 'label-from-url', 'tooltip-from-url'] satisfies MolstarKind[]);
+type AnnotationFromUrlKind = ElementOfSet<typeof AnnotationFromUrlKinds>
+
+const AnnotationFromCifKinds = new Set(['color-from-cif', 'component-from-cif', 'label-from-cif', 'tooltip-from-cif'] satisfies MolstarKind[]);
+type AnnotationFromCifKind = ElementOfSet<typeof AnnotationFromCifKinds>
 
 interface MolstarLoadingContext {
-    /** Maps 'color-from-url' nodes to annotationId they should reference */
-    annotationMap?: Map<MolstarNode<'color-from-url' | 'color-from-cif' | 'tooltip-from-url' | 'tooltip-from-cif' | 'label-from-url' | 'label-from-cif'>, string>,
+    /** Maps `*-from-[url|cif]` nodes to annotationId they should reference */
+    annotationMap?: Map<MolstarNode<AnnotationFromUrlKind | AnnotationFromCifKind>, string>,
     /** Maps each node (on 'structure' or lower level) to its nearest 'colors' node */
     nearestColorMap?: Map<MolstarNode, MolstarNode<'colors'>>,
     focus?: { camera?: ParamsOfKind<MolstarTree, 'camera'>, focusTarget?: StateObjectSelector }
 }
+
 
 export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>, MolstarLoadingContext> } = {
     root(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'root'>, context: MolstarLoadingContext): StateObjectSelector {
@@ -101,10 +107,10 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }
         let tooltips: AnnotationTooltipsProps['tooltips'] = [];
         dfs(node, n => {
-            if (n.kind === 'tooltip-from-url' || n.kind==='tooltip-from-cif') {
+            if (n.kind === 'tooltip-from-url' || n.kind === 'tooltip-from-cif') {
                 const annotationId = context.annotationMap?.get(n);
                 if (annotationId) {
-                    tooltips.push({ annotationId, fieldName: n.params.field_name ?? Defaults['tooltip-from-url'].field_name });
+                    tooltips.push({ annotationId, fieldName: n.params.field_name ?? Defaults[n.kind].field_name });
                 };
             }
         });
@@ -120,6 +126,16 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         return update.to(msTarget).apply(StructureComponent, {
             type: componentPropsFromSelector(selector),
             label: canonicalJsonString(selector),
+            nullIfEmpty: false,
+        }).selector;
+    },
+    'component-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
+        const { field_values } = node.params;
+        const annotationId = context.annotationMap?.get(node);
+        return update.to(msTarget).apply(AnnotationStructureComponent, {
+            annotationId,
+            fieldName: node.params.field_name,
+            fieldValues: field_values ? { name: 'selected', params: field_values.map(v => ({ value: v })) } : { name: 'all', params: {} },
             nullIfEmpty: false,
         }).selector;
     },
@@ -200,19 +216,12 @@ function collectAnnotationReferences(tree: SubTree<MolstarTree>, context: Molsta
     const distinctSpecs: { [key: string]: AnnotationSpec } = {};
     dfs(tree, node => {
         let spec: Omit<AnnotationSpec, 'id'> | undefined = undefined;
-        switch (node.kind) {
-            case 'color-from-url':
-            case 'tooltip-from-url':
-            case 'label-from-url':
-                const p = node.params;
-                spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
-                break;
-            case 'color-from-cif':
-            case 'tooltip-from-cif':
-            case 'label-from-cif':
-                const q = node.params;
-                spec = { source: { name: 'source-cif', params: {} }, schema: q.schema, cifBlock: blockSpec(q.block_header, q.block_index), cifCategory: q.category_name ?? undefined };
-                break;
+        if (AnnotationFromUrlKinds.has(node.kind as any)) {
+            const p = (node as MolstarNode<AnnotationFromUrlKind>).params;
+            spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
+        } else if (AnnotationFromCifKinds.has(node.kind as any)) {
+            const p = (node as MolstarNode<AnnotationFromCifKind>).params;
+            spec = { source: { name: 'source-cif', params: {} }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
         }
         if (spec) {
             const key = canonicalJsonString(spec as any);

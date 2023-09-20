@@ -235,7 +235,7 @@ export class Annotation {
         }
     }
     /** Parse and return all annotation rows in this annotation, or return cached result if available */
-    getRows(): AnnotationRow[] {
+    getRows(): readonly AnnotationRow[] {
         return this.rows ??= this._getRows();
     }
 }
@@ -379,7 +379,7 @@ interface GroupedArray<T> {
     grouped: T[],
 }
 /** Return row indices grouped by `row.group_id`. Rows with `row.group_id===undefined` are treated as separate groups. */
-export function groupRows(rows: AnnotationRow[]): GroupedArray<number> {
+export function groupRows(rows: readonly AnnotationRow[]): GroupedArray<number> {
     let counter = 0;
     const groupMap = new Map<string, number>();
     const groups: number[] = [];
