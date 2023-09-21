@@ -41,7 +41,7 @@ interface MolstarLoadingContext {
     annotationMap?: Map<MolstarNode<AnnotationFromUrlKind | AnnotationFromCifKind>, string>,
     /** Maps each node (on 'structure' or lower level) to its nearest 'representation' node */
     nearestReprMap?: Map<MolstarNode, MolstarNode<'representation'>>,
-    focus?: { camera?: ParamsOfKind<MolstarTree, 'camera'>, focusTarget?: StateObjectSelector }
+    focus?: { kind: 'camera', params: ParamsOfKind<MolstarTree, 'camera'> } | { kind: 'focus', focusTarget: StateObjectSelector, params: ParamsOfKind<MolstarTree, 'focus'> }
 }
 
 
@@ -176,11 +176,11 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         return result;
     },
     focus(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'focus'>, context: MolstarLoadingContext): StateObjectSelector {
-        (context.focus ??= {}).focusTarget = msTarget; // keep other params
+        context.focus = { kind: 'focus', focusTarget: msTarget, params: getParams(node) };
         return msTarget;
     },
     camera(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'camera'>, context: MolstarLoadingContext): StateObjectSelector {
-        context.focus = { camera: { ...node.params }, focusTarget: undefined };
+        context.focus = { kind: 'camera', params: getParams(node) };
         return msTarget;
     },
 };
@@ -404,10 +404,10 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
         }
     });
     await update.commit();
-    if (context.focus?.focusTarget) {
-        await focusStructureNode(plugin, context.focus.focusTarget, context.focus.camera);
-    } else if (context.focus?.camera) {
-        await focusCameraNode(plugin, context.focus.camera);
+    if (context.focus?.kind === 'camera') {
+        await focusCameraNode(plugin, context.focus.params);
+    } else if (context.focus?.kind === 'focus') {
+        await focusStructureNode(plugin, context.focus.focusTarget, context.focus.params);
     } else {
         await focusStructureNode(plugin, undefined, undefined);
     }

@@ -743,6 +743,7 @@ async def testing_component_from_url(id: str = "1h9t") -> MVSResponse:
     ).representation(type="surface").color(color="orange")
     return JSONResponse(builder.get_state())
 
+
 @router.get("/testing/component_from_cif")
 async def testing_component_from_cif(id: str = "1h9t") -> MVSResponse:
     """
@@ -788,12 +789,12 @@ async def testing_focus_example() -> MVSResponse:
     An example for 'focus' node.
     """
     builder = Root()
-    target, position, up = _target_spherical_to_tpu((17, 21, 27), phi=-30, theta=15, radius=100)
-    builder.camera(target=target, position=position, up=up)  # sets orientation, but position will be overwritten by focus
+    position, direction, radius = _target_spherical_to_pdr((17, 21, 27), phi=-30, theta=15, radius=100)
+    up = (0.2, 1, 0)
     structure_url = _url_for_testing_local_bcif("1cbs")
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="orange")
-    structure.component(selector="ligand").focus().representation(type="ball-and-stick").color(color="green")
+    structure.component(selector="ligand").focus(direction=direction, up=up).representation(type="ball-and-stick").color(color="green")
     return JSONResponse(builder.get_state())
 
 
@@ -827,9 +828,6 @@ def _target_spherical_to_tpu(target: tuple[float, float, float], phi: float = 0,
     position = (x-direction[0]*radius, y-direction[1]*radius, z-direction[2]*radius)
     up = (0, 1, 0)
     return target, position, up
-
-
-# TODO test labels
 
 
 @router.get("/testing/labels")

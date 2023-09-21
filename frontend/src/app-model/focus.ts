@@ -37,7 +37,7 @@ export async function focusCameraNode(plugin: PluginContext, params: ParamsOfKin
     await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
 }
 
-export async function focusStructureNode(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, cameraParams?: ParamsOfKind<MolstarTree, 'camera'>) {
+export async function focusStructureNode(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, params: ParamsOfKind<MolstarTree, 'focus'> = {}) {
     let structure: Structure | undefined = undefined;
     if (structureNodeSelector) {
         const cell = plugin.state.data.cells.get(structureNodeSelector.ref);
@@ -51,20 +51,17 @@ export async function focusStructureNode(plugin: PluginContext, structureNodeSel
     const boundingSphere = structure ? Loci.getBoundingSphere(Structure.Loci(structure)) : getPluginBoundingSphere(plugin);
     if (boundingSphere && plugin.canvas3d) {
         // cannot use plugin.canvas3d.camera.getFocus with up+direction, because it sometimes flips orientation
+        // await PluginCommands.Camera.Focus(plugin, { center: boundingSphere.center, radius: boundingSphere.radius }); // this could not set orientation
         const target = boundingSphere.center;
         const extraRadius = structure ? DefaultCameraFocusOptions.extraRadiusForFocus : DefaultCameraFocusOptions.extraRadiusForZoomAll;
         const sphereRadius = Math.max(boundingSphere.radius + extraRadius, DefaultCameraFocusOptions.minRadius);
         const distance = getFocusDistance(plugin.canvas3d.camera, boundingSphere.center, sphereRadius) ?? 100;
-        const direction = Vec3.create(0, 0, -1);
-        if (cameraParams) {
-            Vec3.sub(direction, Vec3.create(...cameraParams.target), Vec3.create(...cameraParams.position));
-        }
+        const direction = Vec3.create(...params.direction ?? Defaults.focus.direction);
         Vec3.setMagnitude(direction, direction, distance);
         const position = Vec3.sub(Vec3(), target, direction);
-        const up = Vec3.create(...(cameraParams?.up ?? Defaults.camera.up));
+        const up = Vec3.create(...params.up ?? Defaults.focus.up);
         const snapshot: Partial<Camera.Snapshot> = { target, position, up, radius: sphereRadius };
         await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
-        // await PluginCommands.Camera.Focus(plugin, { center: boundingSphere.center, radius: boundingSphere.radius }); // this could not set orientation
     }
 }
 
