@@ -719,14 +719,14 @@ async def testing_component_from_url(id: str = "1h9t") -> MVSResponse:
         schema="all-atomic",
         field_name="tooltip",
         field_values=["Ligand binding site"],
-    ).representation(type="ball-and-stick").color(color="gray").color(selector=ComponentExpression(type_symbol="O"), color="red").color(selector=ComponentExpression(type_symbol="N"), color="blue").color(selector=ComponentExpression(type_symbol="S"), color="yellow")
+    ).representation(type="ball-and-stick").color(selector=ComponentExpression(type_symbol="O"), color="red").color(selector=ComponentExpression(type_symbol="N"), color="blue").color(selector=ComponentExpression(type_symbol="S"), color="yellow")
     structure.component_from_url(
         url=annotation_url,
         format="json",
         schema="all-atomic",
         field_name="tooltip",
         field_values=["DNA X", "DNA Y"],
-    ).representation(type="ball-and-stick")
+    ).representation(type="ball-and-stick").color(color="#0066BB")
     structure.component_from_url(
         url=annotation_url,
         format="json",

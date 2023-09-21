@@ -39,15 +39,15 @@ type AnnotationFromCifKind = ElementOfSet<typeof AnnotationFromCifKinds>
 interface MolstarLoadingContext {
     /** Maps `*-from-[url|cif]` nodes to annotationId they should reference */
     annotationMap?: Map<MolstarNode<AnnotationFromUrlKind | AnnotationFromCifKind>, string>,
-    /** Maps each node (on 'structure' or lower level) to its nearest 'colors' node */
-    nearestColorMap?: Map<MolstarNode, MolstarNode<'colors'>>,
+    /** Maps each node (on 'structure' or lower level) to its nearest 'representation' node */
+    nearestReprMap?: Map<MolstarNode, MolstarNode<'representation'>>,
     focus?: { camera?: ParamsOfKind<MolstarTree, 'camera'>, focusTarget?: StateObjectSelector }
 }
 
 
 export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>, MolstarLoadingContext> } = {
     root(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'root'>, context: MolstarLoadingContext): StateObjectSelector {
-        context.nearestColorMap = makeNearestColorsMap(node);
+        context.nearestReprMap = makeNearestReprMap(node);
         return msTarget;
     },
     download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'download'>): StateObjectSelector {
@@ -139,30 +139,24 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             nullIfEmpty: false,
         }).selector;
     },
-    representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>): StateObjectSelector {
+    representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>, context: MolstarLoadingContext): StateObjectSelector {
         const mvsType = getParams(node).type;
         const type = (mvsType === 'surface') ? 'gaussian-surface' : mvsType;
         const typeParams = (type === 'ball-and-stick') ? { sizeFactor: 0.5, sizeAspectRatio: 0.5 } : {};
         return update.to(msTarget).apply(StructureRepresentation3D, {
             type: { name: type, params: typeParams },
+            colorTheme: colorThemeForNode(node, context),
         }).selector;
-    },
-    colors(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'colors'>, context: MolstarLoadingContext): StateObjectSelector {
-        update.to(msTarget).update(old => ({
-            ...old,
-            colorTheme: colorThemeForColorNode(node, context),
-        }));
-        return msTarget;
     },
     label(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
         const item: CustomLabelProps['items'][number] = {
             text: node.params.text,
             position: { name: 'selection', params: {} },
         };
-        const nearestColorNode = context.nearestColorMap?.get(node);
+        const nearestReprNode = context.nearestReprMap?.get(node);
         return update.to(msTarget).apply(StructureRepresentation3D, {
             type: { name: 'custom-label', params: { items: [item] } },
-            colorTheme: colorThemeForColorNode(nearestColorNode, context),
+            colorTheme: colorThemeForNode(nearestReprNode, context),
         }).selector;
     },
     'label-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
@@ -255,21 +249,26 @@ function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'compon
 function labelRepresentationPropsForNode(node: MolstarNode<'label-from-url' | 'label-from-cif'>, context: MolstarLoadingContext): Partial<StructureRepresentation3DProps> {
     const annotationId = context.annotationMap?.get(node);
     const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
-    const nearestColorNode = context.nearestColorMap?.get(node);
+    const nearestReprNode = context.nearestReprMap?.get(node);
     return {
         type: { name: 'annotation-label', params: { annotationId, fieldName } },
-        colorTheme: colorThemeForColorNode(nearestColorNode, context),
+        colorTheme: colorThemeForNode(nearestReprNode, context),
     };
 }
 
-function colorThemeForColorNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-cif' | 'color-from-url' | 'colors'> | undefined, context: MolstarLoadingContext): StructureRepresentation3DProps['colorTheme'] {
-    if (node?.kind === 'colors') {
+function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-cif' | 'color-from-url' | 'representation'> | undefined, context: MolstarLoadingContext): StructureRepresentation3DProps['colorTheme'] {
+    if (node?.kind === 'representation') {
         const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-cif' || c.kind === 'color-from-url') as MolstarNode<'color' | 'color-from-cif' | 'color-from-url'>[];
-        if (children.length === 1) {
-            return colorThemeForColorNode(children[0], context);
+        if (children.length === 0) {
+            return {
+                name: 'uniform',
+                params: { value: decodeColor(DefaultColor) },
+            };
+        } else if (children.length === 1 && appliesColorToWholeRepr(children[0])) {
+            return colorThemeForNode(children[0], context);
         } else {
             const layers: MultilayerColorThemeProps['layers'] = children.map(
-                c => ({ theme: colorThemeForColorNode(c, context), selection: componentPropsFromSelector(c.kind === 'color' ? c.params.selector : undefined) })
+                c => ({ theme: colorThemeForNode(c, context), selection: componentPropsFromSelector(c.kind === 'color' ? c.params.selector : undefined) })
             );
             return {
                 name: 'multilayer',
@@ -302,11 +301,18 @@ function colorThemeForColorNode(node: SubTreeOfKind<MolstarTree, 'color' | 'colo
         };
     }
 }
-function makeNearestColorsMap(root: MolstarTree) {
-    const map = new Map<MolstarNode, MolstarNode<'colors'>>();
+function appliesColorToWholeRepr(node: MolstarNode<'color' | 'color-from-url' | 'color-from-cif'>): boolean {
+    if (node.kind === 'color') {
+        return !isDefined(node.params.selector) || node.params.selector === 'all';
+    } else {
+        return true;
+    }
+}
+function makeNearestReprMap(root: MolstarTree) {
+    const map = new Map<MolstarNode, MolstarNode<'representation'>>();
     // Propagate up:
     dfs(root, undefined, (node, parent) => {
-        if (node.kind === 'colors') {
+        if (node.kind === 'representation') {
             map.set(node, node);
         }
         if (node.kind !== 'structure' && map.has(node) && parent && !map.has(parent)) { // do not propagate above the lowest structure node
