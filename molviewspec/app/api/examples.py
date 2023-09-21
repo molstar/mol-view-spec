@@ -754,8 +754,31 @@ async def testing_component_from_cif(id: str = "1h9t") -> MVSResponse:
     structure.component_from_cif(
         schema="all-atomic",
         category_name="atom_site",
-        field_name="label_entity_id"
     ).representation(type="cartoon")
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+        field_name="label_entity_id",
+        field_values="1",
+    ).representation(type="ball-and-stick").color(color="cyan")
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+        field_name="label_entity_id",
+        field_values=["2", "3"],
+    ).representation(type="ball-and-stick").color(color="blue")
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+        field_name="label_entity_id",
+        field_values=["4"],
+    ).representation(type="surface").color(color="orange")
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+        field_name="label_entity_id",
+        field_values=["5"],
+    ).representation(type="surface").color(color="green")
     return JSONResponse(builder.get_state())
 
 

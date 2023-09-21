@@ -74,7 +74,8 @@ export function createAnnotationStructureComponent(structure: Structure, params:
     let label = params.label;
     if (label === undefined || label === '') {
         if (params.fieldValues.name === 'selected' && params.fieldValues.params.length > 0) {
-            label = canonicalJsonString(params.fieldValues.params[0].value) + (params.fieldValues.params.length > 1 ? '+...' : '');
+            const ellipsis = params.fieldValues.params.length > 1 ? '+...' : '';
+            label = `${params.fieldName}: "${params.fieldValues.params[0].value}"${ellipsis}`;
         } else {
             label = 'Component from Annotation';
         }
