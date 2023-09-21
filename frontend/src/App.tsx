@@ -52,6 +52,7 @@ function Main() {
         'labels from url 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true&labels=true',
         'labels from cif': 'http://localhost:9000/api/v1/examples/testing/labels_from_cif',
         'component from url': 'http://localhost:9000/api/v1/examples/testing/component_from_url',
+        'component from cif': 'http://localhost:9000/api/v1/examples/testing/component_from_cif',
         'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
         'camera': 'http://localhost:9000/api/v1/examples/testing/camera',
     };

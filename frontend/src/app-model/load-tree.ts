@@ -13,7 +13,7 @@ import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 
 import { focusCameraNode, focusStructureNode } from './focus';
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
-import { AnnotationStructureComponent } from './molstar-extensions/color-from-url-extension/component-from-annotation';
+import { AnnotationStructureComponent, AnnotationStructureComponentProps } from './molstar-extensions/color-from-url-extension/component-from-annotation';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
@@ -130,14 +130,12 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }).selector;
     },
     'component-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
-        const { field_values } = node.params;
-        const annotationId = context.annotationMap?.get(node);
-        return update.to(msTarget).apply(AnnotationStructureComponent, {
-            annotationId,
-            fieldName: node.params.field_name,
-            fieldValues: field_values ? { name: 'selected', params: field_values.map(v => ({ value: v })) } : { name: 'all', params: {} },
-            nullIfEmpty: false,
-        }).selector;
+        const props = componentFromUrlOrCifProps(node, context);
+        return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
+    },
+    'component-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
+        const props = componentFromUrlOrCifProps(node, context);
+        return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
     },
     representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>, context: MolstarLoadingContext): StateObjectSelector {
         const mvsType = getParams(node).type;
@@ -160,11 +158,11 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }).selector;
     },
     'label-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
-        const props = labelRepresentationPropsForNode(node, context);
+        const props = labelFromUrlOrCifProps(node, context);
         return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
     },
     'label-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
-        const props = labelRepresentationPropsForNode(node, context);
+        const props = labelFromUrlOrCifProps(node, context);
         return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
     },
     transforms(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'transforms'>, context: MolstarLoadingContext): StateObjectSelector {
@@ -246,13 +244,24 @@ function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'compon
     }
 }
 
-function labelRepresentationPropsForNode(node: MolstarNode<'label-from-url' | 'label-from-cif'>, context: MolstarLoadingContext): Partial<StructureRepresentation3DProps> {
+function labelFromUrlOrCifProps(node: MolstarNode<'label-from-url' | 'label-from-cif'>, context: MolstarLoadingContext): Partial<StructureRepresentation3DProps> {
     const annotationId = context.annotationMap?.get(node);
     const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
     const nearestReprNode = context.nearestReprMap?.get(node);
     return {
         type: { name: 'annotation-label', params: { annotationId, fieldName } },
         colorTheme: colorThemeForNode(nearestReprNode, context),
+    };
+}
+
+function componentFromUrlOrCifProps(node: MolstarNode<'component-from-url' | 'component-from-cif'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
+    const annotationId = context.annotationMap?.get(node);
+    const { field_name, field_values } = node.params;
+    return {
+        annotationId,
+        fieldName: field_name ?? Defaults[node.kind].field_name,
+        fieldValues: field_values ? { name: 'selected', params: field_values.map(v => ({ value: v })) } : { name: 'all', params: {} },
+        nullIfEmpty: false,
     };
 }
 

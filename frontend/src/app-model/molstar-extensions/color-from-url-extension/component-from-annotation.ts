@@ -31,9 +31,6 @@ export const AnnotationStructureComponentParams = {
 export type AnnotationStructureComponentProps = PD.ValuesFor<typeof AnnotationStructureComponentParams>
 
 
-
-// export const MVSTransform: StateTransformer.Builder.Root = StateTransformer.builderFactory('mvs');
-
 export type AnnotationStructureComponent = typeof AnnotationStructureComponent
 export const AnnotationStructureComponent = PluginStateTransform.BuiltIn({
     name: 'structure-component-from-annotation',

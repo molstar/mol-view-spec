@@ -743,6 +743,21 @@ async def testing_component_from_url(id: str = "1h9t") -> MVSResponse:
     ).representation(type="surface").color(color="orange")
     return JSONResponse(builder.get_state())
 
+@router.get("/testing/component_from_cif")
+async def testing_component_from_cif(id: str = "1h9t") -> MVSResponse:
+    """
+    An example with component-from-cif.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+        field_name="label_entity_id"
+    ).representation(type="cartoon")
+    return JSONResponse(builder.get_state())
+
 
 @router.get("/testing/focus")
 async def testing_focus_example() -> MVSResponse:
