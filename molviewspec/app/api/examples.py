@@ -907,17 +907,17 @@ async def testing_tooltips_example(id="1h9t") -> MVSResponse:
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_url(
         schema="all-atomic",
-        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+        url=annotation_url,
         format="json",
     )
     structure.component(selector="nucleic").representation(type="ball-and-stick").color(color="white").color_from_url(
         schema="all-atomic",
-        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+        url=annotation_url,
         format="json",
     )
     structure.component(selector="ion").representation(type="surface").color_from_url(
         schema="all-atomic",
-        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+        url=annotation_url,
         format="json",
     )
     structure.component(selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=9, end_label_seq_id=83)).tooltip(
@@ -932,29 +932,37 @@ async def testing_tooltips_example(id="1h9t") -> MVSResponse:
     structure.component(
         selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=84, end_label_seq_id=231)
     ).tooltip(text="Acyl-CoA binding")
-    
+
     structure.component_from_url(
         url=annotation_url,
         format="json",
         schema="all-atomic",
         field_name="tooltip",
         field_values="DNA X",
-    ).tooltip(text="DNA X")
+    ).tooltip(text="DNA X (this comes from URL)")
     structure.component_from_url(
         url=annotation_url,
         format="json",
         schema="all-atomic",
         field_name="tooltip",
         field_values="DNA Y",
-    ).tooltip(text="DNA Y")
+    ).tooltip(text="DNA Y (this comes from URL)")
+
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name='atom_site',
+        field_name="type_symbol",
+        field_values="CL",
+    ).tooltip(text="Chloride (this comes from CIF)")
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name='atom_site',
+        field_name="type_symbol",
+        field_values="AU",
+    ).tooltip(text="Gold (this comes from CIF)")
 
     structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4016)).tooltip(text="DNA Y O5'")
     structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4391)).tooltip(text="DNA Y O3'")
-    structure.component(selector=ComponentExpression(label_asym_id="E")).tooltip(text="Gold")
-    structure.component(selector=ComponentExpression(label_asym_id="H")).tooltip(text="Gold")
-    structure.component(selector=ComponentExpression(label_asym_id="F")).tooltip(text="Chloride")
-    structure.component(selector=ComponentExpression(label_asym_id="G")).tooltip(text="Chloride")
-    structure.component(selector=ComponentExpression(label_asym_id="I")).tooltip(text="Chloride")
 
     structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=57)).tooltip(text="Ligand binding")
     structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=67)).tooltip(text="Ligand binding")

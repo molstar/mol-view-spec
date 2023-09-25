@@ -11,22 +11,22 @@ import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transfor
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 
+import { StructureComponentParams } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
 import { focusCameraNode, focusStructureNode } from './focus';
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
 import { AnnotationStructureComponent, AnnotationStructureComponentProps } from './molstar-extensions/color-from-url-extension/component-from-annotation';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
+import { CustomTooltipsProps } from './molstar-extensions/custom-tooltip-extension/tooltips-prop';
 import { rowToExpression, rowsToExpression } from './molstar-extensions/helpers/selections';
-import { MultilayerColorThemeProps, NoColor, Selector, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
+import { MultilayerColorThemeProps, NoColor, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
 import { DefaultColor, Defaults } from './param-defaults';
 import { ParamsOfKind, SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { ElementOfSet, canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
-import { CustomTooltipsProps } from './molstar-extensions/custom-tooltip-extension/tooltips-prop';
-import { StructureComponentParams } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -107,41 +107,21 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             default:
                 throw new Error(`NotImplementedError: Loading action for "structure" node, kind "${params.kind}"`);
         }
-        let annotationTooltips: AnnotationTooltipsProps['tooltips'] = [];
-        const inlineTooltips: CustomTooltipsProps['tooltips'] = [];
-        dfs(node, (n, parent) => {
-            if (n.kind === 'tooltip-from-url' || n.kind === 'tooltip-from-cif') {
-                const annotationId = context.annotationMap?.get(n);
-                if (annotationId) {
-                    annotationTooltips.push({ annotationId, fieldName: n.params.field_name ?? Defaults[n.kind].field_name });
-                };
-            } else if (n.kind === 'tooltip') {
-                if (parent?.kind === 'component') {
-                    // TODO what about component-from-url/cif?!
-                    // TODO what about nested components?! (do we want to allow them?) (would require changes in CustomTooltips)
-                    inlineTooltips.push({ text: n.params.text, selector: componentPropsFromSelector(parent.params.selector) });
-                } else if (parent?.kind === 'component-from-url' || parent?.kind === 'component-from-cif') {
-                    const p = componentFromUrlOrCifProps(parent, context);
-                    if (isDefined(p.annotationId) && isDefined(p.fieldName) && isDefined(p.fieldValues)) {
-                        inlineTooltips.push({
-                            text: n.params.text,
-                            selector: { name: 'annotation', params: { annotationId: p.annotationId, fieldName: p.fieldName, fieldValues: p.fieldValues } }
-                        });
-                    }
+        const annotationTooltips = collectAnnotationTooltips(node, context);
+        const inlineTooltips = collectInlineTooltips(node, context);
+        if (annotationTooltips.length + inlineTooltips.length > 0) {
+            update.to(result).apply(CustomStructureProperties, {
+                properties: {
+                    'annotation-tooltips': { tooltips: annotationTooltips },
+                    'custom-tooltips': { tooltips: inlineTooltips },
                 }
-            }
-        });
-        annotationTooltips = distinct(annotationTooltips);
-        update.to(result).apply(CustomStructureProperties, {
-            properties: {
-                'annotation-tooltips': { tooltips: annotationTooltips },
-                'custom-tooltips': { tooltips: inlineTooltips },
-            }
-        });
+            });
+        }
         // loadAllLabelsFromSubtree(update, result, node, context);
         return result;
     },
-    component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component'>): StateObjectSelector {
+    component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component'>): StateObjectSelector | undefined {
+        if (isPhantomComponent(node)) return undefined;
         const selector = getParams(node).selector ?? Defaults.component.selector;
         return update.to(msTarget).apply(StructureComponent, {
             type: componentPropsFromSelector(selector),
@@ -149,11 +129,13 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             nullIfEmpty: false,
         }).selector;
     },
-    'component-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
+    'component-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component-from-url'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
+        if (isPhantomComponent(node)) return undefined;
         const props = componentFromUrlOrCifProps(node, context);
         return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
     },
-    'component-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
+    'component-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component-from-cif'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
+        if (isPhantomComponent(node)) return undefined;
         const props = componentFromUrlOrCifProps(node, context);
         return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
     },
@@ -242,6 +224,52 @@ function collectAnnotationReferences(tree: SubTree<MolstarTree>, context: Molsta
         }
     });
     return Object.values(distinctSpecs);
+}
+
+function collectAnnotationTooltips(tree: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext) {
+    const annotationTooltips: AnnotationTooltipsProps['tooltips'] = [];
+    dfs(tree, node => {
+        if (node.kind === 'tooltip-from-url' || node.kind === 'tooltip-from-cif') {
+            const annotationId = context.annotationMap?.get(node);
+            if (annotationId) {
+                annotationTooltips.push({ annotationId, fieldName: node.params.field_name ?? Defaults[node.kind].field_name });
+            };
+        }
+    });
+    return distinct(annotationTooltips);
+}
+function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext) {
+    const inlineTooltips: CustomTooltipsProps['tooltips'] = [];
+    dfs(tree, (node, parent) => {
+        if (node.kind === 'tooltip') {
+            if (parent?.kind === 'component') {
+                // TODO what about nested components?! (do we want to allow them?) (would require changes here (process spine instead of parent) and in CustomTooltips)
+                inlineTooltips.push({
+                    text: node.params.text,
+                    selector: componentPropsFromSelector(parent.params.selector),
+                });
+            } else if (parent?.kind === 'component-from-url' || parent?.kind === 'component-from-cif') {
+                const p = componentFromUrlOrCifProps(parent, context);
+                if (isDefined(p.annotationId) && isDefined(p.fieldName) && isDefined(p.fieldValues)) {
+                    inlineTooltips.push({
+                        text: node.params.text,
+                        selector: {
+                            name: 'annotation',
+                            params: { annotationId: p.annotationId, fieldName: p.fieldName, fieldValues: p.fieldValues },
+                        },
+                    });
+                }
+            }
+        }
+    });
+    return inlineTooltips;
+}
+
+/** Return `true` for components nodes which only serve for tooltip placement (not to be created in the MolStar object hierarchy) */
+function isPhantomComponent(node: SubTreeOfKind<MolstarTree, 'component' | 'component-from-url' | 'component-from-cif'>) {
+    // return false;
+    return node.children && node.children.every(child => child.kind === 'tooltip' || child.kind === 'tooltip-from-url' || child.kind === 'tooltip-from-cif');
+    // These nodes could theoretically be removed when converting MVS to Molstar tree, but would get very tricky if we allow nested components
 }
 
 function blockSpec(header: string | null | undefined, index: number | null | undefined): AnnotationSpec['cifBlock'] {
