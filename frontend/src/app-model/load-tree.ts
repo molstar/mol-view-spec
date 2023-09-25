@@ -1,43 +1,53 @@
-import { Camera } from 'molstar/lib/mol-canvas3d/camera';
+/**
+ * Copyright (c) 2023 mol* contributors, licensed under MIT, See LICENSE file for more info.
+ *
+ * @author Adam Midlik <midlik@gmail.com>
+ */
+
 import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
-import { Loci } from 'molstar/lib/mol-model/loci';
-import { Structure } from 'molstar/lib/mol-model/structure';
 import { Download, ParseCif } from 'molstar/lib/mol-plugin-state/transforms/data';
 import { CustomModelProperties, CustomStructureProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
-import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 
+import { focusCameraNode, focusStructureNode } from './focus';
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
-import { MultilayerColorThemeProps, NoColor, Selector, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
+import { AnnotationStructureComponent, AnnotationStructureComponentProps } from './molstar-extensions/color-from-url-extension/component-from-annotation';
 import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
 import { rowToExpression, rowsToExpression } from './molstar-extensions/helpers/selections';
+import { MultilayerColorThemeProps, NoColor, Selector, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
 import { DefaultColor, Defaults } from './param-defaults';
 import { ParamsOfKind, SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
-import { canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
+import { ElementOfSet, canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
 export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
 
+const AnnotationFromUrlKinds = new Set(['color-from-url', 'component-from-url', 'label-from-url', 'tooltip-from-url'] satisfies MolstarKind[]);
+type AnnotationFromUrlKind = ElementOfSet<typeof AnnotationFromUrlKinds>
+
+const AnnotationFromCifKinds = new Set(['color-from-cif', 'component-from-cif', 'label-from-cif', 'tooltip-from-cif'] satisfies MolstarKind[]);
+type AnnotationFromCifKind = ElementOfSet<typeof AnnotationFromCifKinds>
 
 interface MolstarLoadingContext {
-    /** Maps 'color-from-url' nodes to annotationId they should reference */
-    annotationMap?: Map<MolstarNode<'color-from-url' | 'color-from-cif' | 'tooltip-from-url' | 'tooltip-from-cif'>, string>,
-    /** Maps each node (on 'structure' or lower level) than model to its nearest node with color information */
-    nearestColorMap?: Map<MolstarNode, MolstarNode<'color' | 'color-from-url' | 'color-from-cif'>>,
-    focus?: { camera?: ParamsOfKind<MolstarTree, 'camera'>, focusTarget?: StateObjectSelector }
+    /** Maps `*-from-[url|cif]` nodes to annotationId they should reference */
+    annotationMap?: Map<MolstarNode<AnnotationFromUrlKind | AnnotationFromCifKind>, string>,
+    /** Maps each node (on 'structure' or lower level) to its nearest 'representation' node */
+    nearestReprMap?: Map<MolstarNode, MolstarNode<'representation'>>,
+    focus?: { kind: 'camera', params: ParamsOfKind<MolstarTree, 'camera'> } | { kind: 'focus', focusTarget: StateObjectSelector, params: ParamsOfKind<MolstarTree, 'focus'> }
 }
+
 
 export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>, MolstarLoadingContext> } = {
     root(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'root'>, context: MolstarLoadingContext): StateObjectSelector {
-        context.nearestColorMap = makeNearestColorMap(node);
+        context.nearestReprMap = makeNearestReprMap(node);
         return msTarget;
     },
     download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'download'>): StateObjectSelector {
@@ -97,10 +107,10 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }
         let tooltips: AnnotationTooltipsProps['tooltips'] = [];
         dfs(node, n => {
-            if (n.kind === 'tooltip-from-url') {
+            if (n.kind === 'tooltip-from-url' || n.kind === 'tooltip-from-cif') {
                 const annotationId = context.annotationMap?.get(n);
                 if (annotationId) {
-                    tooltips.push({ annotationId, fieldName: n.params.field_name ?? Defaults['tooltip-from-url'].field_name });
+                    tooltips.push({ annotationId, fieldName: n.params.field_name ?? Defaults[n.kind].field_name });
                 };
             }
         });
@@ -119,62 +129,41 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             nullIfEmpty: false,
         }).selector;
     },
-    representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>): StateObjectSelector {
+    'component-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
+        const props = componentFromUrlOrCifProps(node, context);
+        return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
+    },
+    'component-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'component-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
+        const props = componentFromUrlOrCifProps(node, context);
+        return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
+    },
+    representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>, context: MolstarLoadingContext): StateObjectSelector {
         const mvsType = getParams(node).type;
         const type = (mvsType === 'surface') ? 'gaussian-surface' : mvsType;
         const typeParams = (type === 'ball-and-stick') ? { sizeFactor: 0.5, sizeAspectRatio: 0.5 } : {};
         return update.to(msTarget).apply(StructureRepresentation3D, {
             type: { name: type, params: typeParams },
+            colorTheme: colorThemeForNode(node, context),
         }).selector;
     },
-    colors(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'colors'>, context: MolstarLoadingContext): StateObjectSelector {
-        const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-cif' || c.kind === 'color-from-url') as MolstarNode<'color' | 'color-from-cif' | 'color-from-url'>[];
-        if (children.length === 1) {
-            update.to(msTarget).update(old => ({
-                ...old,
-                colorTheme: colorThemeForColorNode(children[0], context),
-            }));
-        } else {
-            const layers: MultilayerColorThemeProps['layers'] = children.map(
-                c => ({ theme: colorThemeForColorNode(c, context), selection: componentPropsFromSelector(c.kind === 'color' ? c.params.selector : undefined) })
-            );
-            update.to(msTarget).update(old => ({
-                ...old,
-                colorTheme: {
-                    name: 'multilayer',
-                    params: {
-                        layers,
-                    }
-                },
-            }));
-        }
-        return msTarget;
-    },
-    // 'color-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
-    //     update.to(msTarget).update(old => ({
-    //         ...old,
-    //         colorTheme: colorThemeForColorNode(node, context),
-    //     }));
-    //     return msTarget;
-    // },
-    // 'color-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'color-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
-    //     update.to(msTarget).update(old => ({
-    //         ...old,
-    //         colorTheme: colorThemeForColorNode(node, context),
-    //     }));
-    //     return msTarget;
-    // },
     label(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
         const item: CustomLabelProps['items'][number] = {
             text: node.params.text,
             position: { name: 'selection', params: {} },
         };
-        const nearestColorNode = context.nearestColorMap?.get(node);
+        const nearestReprNode = context.nearestReprMap?.get(node);
         return update.to(msTarget).apply(StructureRepresentation3D, {
             type: { name: 'custom-label', params: { items: [item] } },
-            colorTheme: colorThemeForColorNode(nearestColorNode, context),
+            colorTheme: colorThemeForNode(nearestReprNode, context),
         }).selector;
-        return msTarget;
+    },
+    'label-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
+        const props = labelFromUrlOrCifProps(node, context);
+        return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
+    },
+    'label-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
+        const props = labelFromUrlOrCifProps(node, context);
+        return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
     },
     transforms(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'transforms'>, context: MolstarLoadingContext): StateObjectSelector {
         let result = msTarget;
@@ -186,20 +175,18 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         }
         return result;
     },
-    transform(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'transform'>, context: MolstarLoadingContext): StateObjectSelector {
-        // do nothing, all transforms are applied in 'transforms' node
-        return msTarget;
-    },
     focus(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'focus'>, context: MolstarLoadingContext): StateObjectSelector {
-        (context.focus ??= {}).focusTarget = msTarget; // keep other params
+        context.focus = { kind: 'focus', focusTarget: msTarget, params: getParams(node) };
         return msTarget;
     },
     camera(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'camera'>, context: MolstarLoadingContext): StateObjectSelector {
-        context.focus = { camera: { ...node.params }, focusTarget: undefined };
+        context.focus = { kind: 'camera', params: getParams(node) };
         return msTarget;
     },
 };
 
+
+type StructureRepresentation3DProps = ReturnType<typeof StructureRepresentation3D['createDefaultParams']>
 
 /** Return a 4x4 matrix representing rotation + translation */
 function transformFromRotationTranslation(rotation: number[] | null | undefined, translation: number[] | null | undefined): Mat4 {
@@ -221,17 +208,12 @@ function collectAnnotationReferences(tree: SubTree<MolstarTree>, context: Molsta
     const distinctSpecs: { [key: string]: AnnotationSpec } = {};
     dfs(tree, node => {
         let spec: Omit<AnnotationSpec, 'id'> | undefined = undefined;
-        switch (node.kind) {
-            case 'color-from-url':
-            case 'tooltip-from-url':
-                const p = node.params;
-                spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
-                break;
-            case 'color-from-cif':
-            case 'tooltip-from-cif':
-                const q = node.params;
-                spec = { source: { name: 'source-cif', params: {} }, schema: q.schema, cifBlock: blockSpec(q.block_header, q.block_index), cifCategory: q.category_name ?? undefined };
-                break;
+        if (AnnotationFromUrlKinds.has(node.kind as any)) {
+            const p = (node as MolstarNode<AnnotationFromUrlKind>).params;
+            spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
+        } else if (AnnotationFromCifKinds.has(node.kind as any)) {
+            const p = (node as MolstarNode<AnnotationFromCifKind>).params;
+            spec = { source: { name: 'source-cif', params: {} }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
         }
         if (spec) {
             const key = canonicalJsonString(spec as any);
@@ -262,7 +244,47 @@ function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'compon
     }
 }
 
-function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | 'color-from-url'> | undefined, context: MolstarLoadingContext) {
+function labelFromUrlOrCifProps(node: MolstarNode<'label-from-url' | 'label-from-cif'>, context: MolstarLoadingContext): Partial<StructureRepresentation3DProps> {
+    const annotationId = context.annotationMap?.get(node);
+    const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
+    const nearestReprNode = context.nearestReprMap?.get(node);
+    return {
+        type: { name: 'annotation-label', params: { annotationId, fieldName } },
+        colorTheme: colorThemeForNode(nearestReprNode, context),
+    };
+}
+
+function componentFromUrlOrCifProps(node: MolstarNode<'component-from-url' | 'component-from-cif'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
+    const annotationId = context.annotationMap?.get(node);
+    const { field_name, field_values } = node.params;
+    return {
+        annotationId,
+        fieldName: field_name ?? Defaults[node.kind].field_name,
+        fieldValues: field_values ? { name: 'selected', params: field_values.map(v => ({ value: v })) } : { name: 'all', params: {} },
+        nullIfEmpty: false,
+    };
+}
+
+function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-cif' | 'color-from-url' | 'representation'> | undefined, context: MolstarLoadingContext): StructureRepresentation3DProps['colorTheme'] {
+    if (node?.kind === 'representation') {
+        const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-cif' || c.kind === 'color-from-url') as MolstarNode<'color' | 'color-from-cif' | 'color-from-url'>[];
+        if (children.length === 0) {
+            return {
+                name: 'uniform',
+                params: { value: decodeColor(DefaultColor) },
+            };
+        } else if (children.length === 1 && appliesColorToWholeRepr(children[0])) {
+            return colorThemeForNode(children[0], context);
+        } else {
+            const layers: MultilayerColorThemeProps['layers'] = children.map(
+                c => ({ theme: colorThemeForNode(c, context), selection: componentPropsFromSelector(c.kind === 'color' ? c.params.selector : undefined) })
+            );
+            return {
+                name: 'multilayer',
+                params: { layers },
+            };
+        }
+    }
     let annotationId: string | undefined = undefined;
     let fieldName: string | undefined = undefined;
     let color: string | undefined = undefined;
@@ -279,30 +301,34 @@ function colorThemeForColorNode(node: MolstarNode<'color' | 'color-from-cif' | '
     if (annotationId) {
         return {
             name: 'annotation',
-            params: { annotationId, fieldName, background: NoColor } satisfies Partial<AnnotationColorThemeProps>
+            params: { annotationId, fieldName, background: NoColor } satisfies Partial<AnnotationColorThemeProps>,
         };
     } else {
         return {
             name: 'uniform',
-            params: { value: decodeColor(color) }
+            params: { value: decodeColor(color) },
         };
     }
 }
-function makeNearestColorMap(root: MolstarTree) {
-    const map = new Map<MolstarNode, MolstarNode<'color' | 'color-from-url' | 'color-from-cif'>>();
+function appliesColorToWholeRepr(node: MolstarNode<'color' | 'color-from-url' | 'color-from-cif'>): boolean {
+    if (node.kind === 'color') {
+        return !isDefined(node.params.selector) || node.params.selector === 'all';
+    } else {
+        return true;
+    }
+}
+function makeNearestReprMap(root: MolstarTree) {
+    const map = new Map<MolstarNode, MolstarNode<'representation'>>();
+    // Propagate up:
     dfs(root, undefined, (node, parent) => {
-        if (!map.has(node)) {
-            switch (node.kind) {
-                case 'color':
-                case 'color-from-url':
-                case 'color-from-cif':
-                    map.set(node, node);
-            }
+        if (node.kind === 'representation') {
+            map.set(node, node);
         }
-        if (node.kind !== 'structure' && map.has(node) && parent && !map.has(parent)) {
+        if (node.kind !== 'structure' && map.has(node) && parent && !map.has(parent)) { // do not propagate above the lowest structure node
             map.set(parent, map.get(node)!);
         }
     });
+    // Propagate down:
     dfs(root, (node, parent) => {
         if (parent && map.has(parent)) {
             map.set(node, map.get(parent)!);
@@ -347,59 +373,6 @@ function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObje
     }
 }
 
-/** Defined in `molstar/lib/mol-plugin-state/manager/camera.ts` but private */
-const DefaultCameraFocusOptions = {
-    minRadius: 5,
-    extraRadius: 4,
-};
-
-async function focusStructureNode(plugin: PluginContext, nodeSelector: StateObjectSelector, cameraParams?: ParamsOfKind<MolstarTree, 'camera'>) {
-    const cell = plugin.state.data.cells.get(nodeSelector.ref);
-    const structure = cell?.obj?.data;
-    if (!structure) {
-        console.warn('Focus: no structure');
-        return;
-    }
-    if (!(structure instanceof Structure)) {
-        console.warn('Focus: cannot apply to a non-structure node');
-        return;
-    }
-    console.log('focus:', nodeSelector, structure.atomicResidueCount, structure, structure instanceof PluginContext, typeof structure);
-    const boundingSphere = Loci.getBoundingSphere(Structure.Loci(structure));
-    console.log('focus sphere:', boundingSphere);
-    if (boundingSphere && plugin.canvas3d) {
-        // cannot use plugin.canvas3d.camera.getFocus with up+direction, because it sometimes flips orientation
-        const target = boundingSphere.center;
-        const sphereRadius = Math.max(boundingSphere.radius + DefaultCameraFocusOptions.extraRadius, DefaultCameraFocusOptions.minRadius);
-        const distance = getFocusDistance(plugin.canvas3d.camera, boundingSphere.center, sphereRadius) ?? 100;
-        const direction = Vec3.create(0, 0, -1);
-        if (cameraParams) {
-            Vec3.sub(direction, Vec3.create(...cameraParams.target), Vec3.create(...cameraParams.position));
-        }
-        Vec3.setMagnitude(direction, direction, distance);
-        const position = Vec3.sub(Vec3(), target, direction);
-        const up = Vec3.create(...cameraParams?.up ?? Defaults.camera.up);
-        console.log('target', ...target, 'position', ...position, 'direction', ...direction, 'up', ...up, 'distance', distance);
-        const snapshot: Partial<Camera.Snapshot> = { target, position, up, radius: sphereRadius };
-        await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
-        // await PluginCommands.Camera.Focus(plugin, { center: boundingSphere.center, radius: boundingSphere.radius }); // this could not set orientation
-    }
-}
-async function focusCameraNode(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'camera'>) {
-    const target = Vec3.create(...params.target);
-    const position = Vec3.create(...params.position);
-    const up = Vec3.create(...params.up ?? Defaults.camera.up);
-    console.log('target', ...target, 'position', ...position, 'up', ...up);
-    const snapshot: Partial<Camera.Snapshot> = { target, position, up };
-    await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
-}
-
-function getFocusDistance(camera: Camera, center: Vec3, radius: number) {
-    const p = camera.getFocus(center, radius);
-    if (!p.position || !p.target) return undefined;
-    return Vec3.distance(p.position, p.target);
-}
-
 export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
     const update = plugin.build();
     const mapping = new Map<SubTree<MolstarTree>, StateObjectSelector | undefined>(); // TODO remove undefined
@@ -431,12 +404,12 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
         }
     });
     await update.commit();
-    if (context.focus?.focusTarget) {
-        await focusStructureNode(plugin, context.focus.focusTarget, context.focus.camera);
-    } else if (context.focus?.camera) {
-        await focusCameraNode(plugin, context.focus.camera);
+    if (context.focus?.kind === 'camera') {
+        await focusCameraNode(plugin, context.focus.params);
+    } else if (context.focus?.kind === 'focus') {
+        await focusStructureNode(plugin, context.focus.focusTarget, context.focus.params);
     } else {
-        // TODO reset axes+zoom
+        await focusStructureNode(plugin, undefined, undefined);
     }
 }
 

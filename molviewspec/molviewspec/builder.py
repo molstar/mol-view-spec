@@ -221,7 +221,10 @@ class Structure(_Base):
         block_header: str | None = None,
         block_index: int | None = None,
         schema: SchemaT,
+        field_values: str | list[str] | None = None,
     ) -> Component:
+        if isinstance(field_values, str):
+            field_values = [field_values]
         params = make_params(ComponentUrlParams, locals())
         node = Node(kind="component-from-url", params=params)
         self._add_child(node)
@@ -235,7 +238,10 @@ class Structure(_Base):
         block_header: str | None = None,
         block_index: int | None = None,
         schema: SchemaT,
+        field_values: str | list[str] | None = None,
     ) -> Component:
+        if isinstance(field_values, str):
+            field_values = [field_values]
         params = make_params(ComponentCifCategoryParams, locals())
         node = Node(kind="component-from-cif", params=params)
         self._add_child(node)
@@ -353,12 +359,11 @@ class Component(_Base):
         self._add_child(node)
         return self
 
-    def focus(self) -> Component:
+    def focus(self, *, direction: tuple[float, float, float] | None = None, up: tuple[float, float, float] | None = None) -> Component:
         """
         Focus on this structure or component.
         :return: this builder
         """
-        # TODO other focus flavors based on CIF/JSON?
         params = make_params(FocusInlineParams, locals())
         node = Node(kind="focus", params=params)
         self._add_child(node)

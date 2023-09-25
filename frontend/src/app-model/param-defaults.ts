@@ -43,8 +43,21 @@ export const Defaults = {
     component: {
         selector: 'all',
     },
+    'component-from-url': {
+        category_name: null,
+        field_name: 'component',
+        block_index: null,
+        block_header: null,
+        field_values: null,
+    },
+    'component-from-cif': {
+        category_name: null,
+        field_name: 'component',
+        block_index: null,
+        block_header: null,
+        field_values: null,
+    },
     representation: {
-        // color: 'white',
     },
     'color': {
         selector: 'all',
@@ -90,6 +103,8 @@ export const Defaults = {
         block_header: null,
     },
     'focus': {
+        direction: [0, 0, -1],
+        up: [0, 1, 0],
     },
     'transform': {
         rotation: null,

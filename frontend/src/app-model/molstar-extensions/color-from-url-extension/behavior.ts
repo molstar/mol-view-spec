@@ -10,6 +10,7 @@ import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { AnnotationColorThemeProvider } from './color';
 import { AnnotationsProvider } from './prop';
 import { AnnotationTooltipsLabelProvider, AnnotationTooltipsProvider } from './tooltips-prop';
+import { AnnotationLabelRepresentationProvider } from './label-representation';
 
 
 /** Registers color theme "Annotation", related custom model property, and loci labels */
@@ -26,6 +27,7 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean }>({
             this.ctx.customStructureProperties.register(AnnotationTooltipsProvider, true);
             this.ctx.managers.lociLabels.addProvider(AnnotationTooltipsLabelProvider);
             this.ctx.representation.structure.themes.colorThemeRegistry.add(AnnotationColorThemeProvider);
+            this.ctx.representation.structure.registry.add(AnnotationLabelRepresentationProvider);
         }
         update(p: { autoAttach: boolean }) {
             const updated = this.params.autoAttach !== p.autoAttach;
@@ -38,6 +40,7 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean }>({
             this.ctx.customStructureProperties.unregister(AnnotationTooltipsProvider.descriptor.name);
             this.ctx.managers.lociLabels.removeProvider(AnnotationTooltipsLabelProvider);
             this.ctx.representation.structure.themes.colorThemeRegistry.remove(AnnotationColorThemeProvider);
+            this.ctx.representation.structure.registry.remove(AnnotationLabelRepresentationProvider);
         }
     },
     params: () => ({

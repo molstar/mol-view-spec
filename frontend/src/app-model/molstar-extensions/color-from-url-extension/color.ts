@@ -13,7 +13,7 @@ import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { AnnotationsProvider } from './prop';
+import { AnnotationsProvider, getAnnotationForStructure } from './prop';
 
 
 /** Parameter definition for color theme "Annotation" */
@@ -34,14 +34,12 @@ export type AnnotationColorThemeProps = PD.Values<AnnotationColorThemeParams>
 export function AnnotationColorTheme(ctx: ThemeDataContext, props: AnnotationColorThemeProps): ColorTheme<AnnotationColorThemeParams> {
     let color: LocationColor = () => props.background;
 
-    if (ctx.structure && !ctx.structure.isEmpty && ctx.structure.models[0].customProperties.has(AnnotationsProvider.descriptor)) {
-        const annots = AnnotationsProvider.get(ctx.structure.models[0]).value;
-        console.log('AnnotationColorTheme:', annots);
-        const annot = annots?.getAnnotation(props.annotationId);
-        if (annot) {
+    if (ctx.structure && !ctx.structure.isEmpty) {
+        const { annotation } = getAnnotationForStructure(ctx.structure, props.annotationId);
+        if (annotation) {
             const colorForStructureElementLocation = (location: StructureElement.Location) => {
                 // if (annot.getAnnotationForLocation(location)?.color !== annot.getAnnotationForLocation_Reference(location)?.color) throw new Error('AssertionError');
-                return decodeColor(annot?.getValueForLocation(location, props.fieldName)) ?? props.background;
+                return decodeColor(annotation?.getValueForLocation(location, props.fieldName)) ?? props.background;
             };
             const auxLocation = StructureElement.Location.create(ctx.structure);
 

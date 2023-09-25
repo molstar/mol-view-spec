@@ -444,7 +444,7 @@ async def testing_components_example() -> MVSResponse:
 
 
 @router.get("/testing/color_from_cif")
-async def testing_color_from_cif_example() -> MVSResponse:
+async def testing_color_from_cif_example(tooltips: bool = False) -> MVSResponse:
     """
     Color from the same CIF as structure
     """
@@ -455,13 +455,23 @@ async def testing_color_from_cif_example() -> MVSResponse:
         schema="all-atomic",
         category_name="mvs_test_chain_label_annotation",
     )
-    structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
     structure.component(selector="ligand").representation(type="ball-and-stick").color(color="white").color_from_cif(
         schema="all-atomic",
         block_header="1CBS",
         category_name="mvs_test_chain_label_annotation",
-        field_name="color"
+        field_name="color",
     )
+    if tooltips:
+        structure.tooltip_from_cif(
+            schema="all-atomic",
+            category_name="mvs_test_chain_label_annotation",
+            field_name="tooltip",
+        )
+        structure.tooltip_from_cif(
+            schema="all-atomic",
+            category_name="mvs_test_chain_label_annotation",
+            field_name="color",
+        )
     return JSONResponse(builder.get_state())
 
 
@@ -615,23 +625,38 @@ async def testing_color_domains_example(colors: bool = True, tooltips: bool = Fa
 
 
 @router.get("/testing/color_validation")
-async def testing_color_validation_example(id: str = "1tqn") -> MVSResponse:
+async def testing_color_validation_example(id: str = "1tqn", tooltips: bool = False, labels: bool = False) -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif(id)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="protein").representation(type="cartoon").color(color="green").color_from_url(
         schema="residue",
-        url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
+        url=annotation_url,
         format="json",
     )
     structure.component(selector="ligand").representation(type="ball-and-stick").color(color="green").color_from_url(
         schema="residue",
-        url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
+        url=annotation_url,
         format="json",
     )
+    if tooltips:
+        structure.tooltip_from_url(
+            schema="all-atomic",
+            url=annotation_url,
+            format="json",
+            field_name="tooltip",
+        )
+    if labels:
+        structure.label_from_url(
+            schema="all-atomic",
+            url=annotation_url,
+            format="json",
+            field_name="tooltip",
+        )
     return JSONResponse(builder.get_state())
 
 
@@ -648,7 +673,7 @@ async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
         .component(selector="protein")
         .representation(type="cartoon")
         .color(color="#00dd00", selector=[ComponentExpression(beg_label_seq_id=1, end_label_seq_id=176),
-                                        ComponentExpression(beg_label_seq_id=242)])
+                                          ComponentExpression(beg_label_seq_id=242)])
         .color_from_url(
             schema="residue",
             url=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
@@ -674,18 +699,102 @@ async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
     return JSONResponse(builder.get_state())
 
 
+@router.get("/testing/component_from_url")
+async def testing_component_from_url(id: str = "1h9t") -> MVSResponse:
+    """
+    An example with component-from-url.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/domains"
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+    ).representation(type="cartoon")
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values=["Ligand binding site"],
+    ).representation(type="ball-and-stick").color(selector=ComponentExpression(type_symbol="O"), color="red").color(selector=ComponentExpression(type_symbol="N"), color="blue").color(selector=ComponentExpression(type_symbol="S"), color="yellow")
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values=["DNA X", "DNA Y"],
+    ).representation(type="ball-and-stick").color(color="#0066BB")
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values="Chloride",
+    ).representation(type="surface").color(color="green")
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values="Gold",
+    ).representation(type="surface").color(color="orange")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/component_from_cif")
+async def testing_component_from_cif(id: str = "1h9t") -> MVSResponse:
+    """
+    An example with component-from-cif.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+    ).representation(type="cartoon")
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+        field_name="label_entity_id",
+        field_values="1",
+    ).representation(type="ball-and-stick").color(color="cyan")
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+        field_name="label_entity_id",
+        field_values=["2", "3"],
+    ).representation(type="ball-and-stick").color(color="blue")
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+        field_name="label_entity_id",
+        field_values=["4"],
+    ).representation(type="surface").color(color="orange")
+    structure.component_from_cif(
+        schema="all-atomic",
+        category_name="atom_site",
+        field_name="label_entity_id",
+        field_values=["5"],
+    ).representation(type="surface").color(color="green")
+    return JSONResponse(builder.get_state())
+
+
 @router.get("/testing/focus")
 async def testing_focus_example() -> MVSResponse:
     """
     An example for 'focus' node.
     """
     builder = Root()
-    target, position, up = _target_spherical_to_tpu((17, 21, 27), phi=-30, theta=15, radius=100)
-    builder.camera(target=target, position=position, up=up)  # sets orientation, but position will be overwritten by focus
+    position, direction, radius = _target_spherical_to_pdr((17, 21, 27), phi=-30, theta=15, radius=100)
+    up = (0.2, 1, 0)
     structure_url = _url_for_testing_local_bcif("1cbs")
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="orange")
-    structure.component(selector="ligand").focus().representation(type="ball-and-stick").color(color="green")
+    structure.component(selector="ligand").focus(direction=direction, up=up).representation(type="ball-and-stick").color(color="green")
     return JSONResponse(builder.get_state())
 
 
@@ -719,9 +828,6 @@ def _target_spherical_to_tpu(target: tuple[float, float, float], phi: float = 0,
     position = (x-direction[0]*radius, y-direction[1]*radius, z-direction[2]*radius)
     up = (0, 1, 0)
     return target, position, up
-
-
-# TODO test labels
 
 
 @router.get("/testing/labels")
@@ -787,6 +893,125 @@ async def testing_labels_example(id="1h9t") -> MVSResponse:
     structure.component(
         selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=203, end_label_seq_id=205)
     ).label(text="Ligand binding")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/tooltips")
+async def testing_tooltips_example(id="1h9t") -> MVSResponse:
+    """
+    An example with different labels for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_url(
+        schema="all-atomic",
+        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+        format="json",
+    )
+    structure.component(selector="nucleic").representation(type="ball-and-stick").color(color="white").color_from_url(
+        schema="all-atomic",
+        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+        format="json",
+    )
+    structure.component(selector="ion").representation(type="surface").color_from_url(
+        schema="all-atomic",
+        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+        format="json",
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=9, end_label_seq_id=83)).tooltip(
+        text="DNA-binding"
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=9, end_label_seq_id=83)).tooltip(
+        text="DNA-binding"
+    )
+    structure.component(
+        selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=84, end_label_seq_id=231)
+    ).tooltip(text="Acyl-CoA\nbinding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=84, end_label_seq_id=231)
+    ).tooltip(text="Acyl-CoA binding")
+    structure.component(selector=ComponentExpression(label_asym_id="C")).tooltip(text="DNA X")
+    structure.component(selector=ComponentExpression(label_asym_id="D")).tooltip(text="DNA Y")
+
+    structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4016)).tooltip(text="DNA Y O5'")
+    structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4391)).tooltip(text="DNA Y O3'")
+    structure.component(selector=ComponentExpression(label_asym_id="E")).tooltip(text="Gold")
+    structure.component(selector=ComponentExpression(label_asym_id="H")).tooltip(text="Gold")
+    structure.component(selector=ComponentExpression(label_asym_id="F")).tooltip(text="Chloride")
+    structure.component(selector=ComponentExpression(label_asym_id="G")).tooltip(text="Chloride")
+    structure.component(selector=ComponentExpression(label_asym_id="I")).tooltip(text="Chloride")
+
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=57)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=67)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=121)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=125)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=129)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=178)).tooltip(text="Ligand binding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=203, end_label_seq_id=205)
+    ).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=67)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=121)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=125)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=129)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=178)).tooltip(text="Ligand binding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=203, end_label_seq_id=205)
+    ).tooltip(text="Ligand binding")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/labels_from_url")
+async def testing_labels_from_url_example(id="1h9t", annotation_name="domains") -> MVSResponse:
+    """
+    An example with different labels for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/{annotation_name}"
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    protein = structure.component(selector="protein")
+    protein.representation(type="cartoon").color(color="white").color_from_url(
+        schema="all-atomic",
+        url=annotation_url,
+        format="json",
+    )
+    nucleic = structure.component(selector="nucleic")
+    nucleic.representation(type="ball-and-stick").color(color="white").color_from_url(
+        schema="all-atomic",
+        url=annotation_url,
+        format="json",
+    )
+    ion = structure.component(selector="ion")
+    ion.representation(type="surface").color_from_url(
+        schema="all-atomic",
+        url=annotation_url,
+        format="json",
+    )
+    structure.label_from_url(url=annotation_url, format="json", schema="all-atomic", field_name="tooltip")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/labels_from_cif")
+async def testing_labels_from_cif_example() -> MVSResponse:
+    """
+    Labels from the same CIF as structure
+    """
+    builder = Root()
+    structure_url = f"http://0.0.0.0:9000/api/v1/examples/data/1cbs/molecule-and-cif-annotations"
+    structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_cif(
+        schema="all-atomic",
+        category_name="mvs_test_chain_label_annotation",
+    )
+    structure.component(selector="ligand").representation(type="ball-and-stick").color(color="white").color_from_cif(
+        schema="all-atomic",
+        block_header="1CBS",
+        category_name="mvs_test_chain_label_annotation",
+        field_name="color"
+    )
+    structure.label_from_cif(schema="all-atomic", category_name="mvs_test_chain_label_annotation", field_name="tooltip")
     return JSONResponse(builder.get_state())
 
 

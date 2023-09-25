@@ -242,3 +242,6 @@ export function stringHash(input: string): string {
     const uint32hash = hashString(input) >>> 0; // >>>0 converts to uint32, LOL
     return uint32hash.toString(16).padStart(8, '0');
 }
+
+/** Return type of elements in a set */
+export type ElementOfSet<S> = S extends Set<infer T> ? T : never

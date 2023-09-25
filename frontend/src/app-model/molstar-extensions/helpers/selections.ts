@@ -11,7 +11,7 @@ import { Expression } from 'molstar/lib/mol-script/language/expression';
 import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expression-formatter';
 
 import { extend, filterInPlace, isAnyDefined, isDefined, range } from '../../utils';
-import { AtomRanges, addRange, emptyRanges, singleRange } from './atom-ranges';
+import { AtomRanges, addRange, emptyRanges, unionOfRanges, singleRange } from './atom-ranges';
 import { AnnotationRow } from '../helpers/schemas';
 import { IndicesAndSortings, getKeysWithValue, getKeysWithValueInRange } from './indexing';
 
@@ -66,6 +66,14 @@ export function getAtomRangesForRow(model: Model, row: AnnotationRow, indices: I
     return ranges;
 }
 
+/** Return atom ranges in `model` which satisfy criteria given by any of `rows` (atoms that satisfy more rows are still included only once) */
+export function getAtomRangesForRows(model: Model, rows: AnnotationRow | AnnotationRow[], indices: IndicesAndSortings): AtomRanges {
+    if (Array.isArray(rows)) {
+        return unionOfRanges(rows.map(row => getAtomRangesForRow(model, row, indices)));
+    } else {
+        return getAtomRangesForRow(model, rows, indices);
+    }
+}
 
 
 /** Return an array of chain indexes which satisfy criteria given by `row` */
@@ -300,7 +308,7 @@ export function rowToExpression(row: AnnotationRow): Expression {
 
     return MS.struct.generator.atomGroups(propTests);
 }
-export function rowsToExpression(rows: AnnotationRow[]): Expression {
+export function rowsToExpression(rows: readonly AnnotationRow[]): Expression {
     return unionExpression(rows.map(rowToExpression));
 }
 function unionExpression(expressions: Expression[]): Expression {

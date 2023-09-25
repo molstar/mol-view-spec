@@ -42,10 +42,18 @@ function Main() {
         'colors domains': 'http://localhost:9000/api/v1/examples/testing/color_domains',
         'tooltips domains': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=false&tooltips=true',
         'colors+tooltips domains': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=true&tooltips=true',
-        'colors validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn',
-        'colors validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q',
+        'colors+tooltips from cif': 'http://localhost:9000/api/v1/examples/testing/color_from_cif?tooltips=True',
+        'colors validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn&tooltips=true',
+        'colors validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true',
         'colors multilayer': 'http://localhost:9000/api/v1/examples/testing/color_multilayer?id=1tqn',
         'labels': 'http://localhost:9000/api/v1/examples/testing/labels',
+        'tooltips': 'http://localhost:9000/api/v1/examples/testing/tooltips',
+        'labels from url': 'http://localhost:9000/api/v1/examples/testing/labels_from_url',
+        'labels from url grouped': 'http://localhost:9000/api/v1/examples/testing/labels_from_url?annotation_name=domains-grouped',
+        'labels from url 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true&labels=true',
+        'labels from cif': 'http://localhost:9000/api/v1/examples/testing/labels_from_cif',
+        'component from url': 'http://localhost:9000/api/v1/examples/testing/component_from_url',
+        'component from cif': 'http://localhost:9000/api/v1/examples/testing/component_from_cif',
         'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
         'camera': 'http://localhost:9000/api/v1/examples/testing/camera',
     };
@@ -84,9 +92,9 @@ function Main() {
                         </div>
                     </>}
                 </div>
-                <div>
+                {/* <div>
                     <Button onClick={() => model.printCamera()}>Print camera</Button>
-                </div>
+                </div> */}
             </div>
         </div>
     );
