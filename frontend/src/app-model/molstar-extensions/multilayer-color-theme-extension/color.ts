@@ -36,6 +36,13 @@ const DefaultBackgroundColor = ColorNames.white;
 
 const StaticSelectorChoice = new Choice(mapArrToObj(StaticStructureComponentTypes, t => capitalize(t)), 'all');
 
+export const SelectorParams = PD.MappedStatic('static', { // like StructureComponentParams in molstar/lib/mol-plugin-state/helpers/structure-component
+    static: StaticSelectorChoice.PDSelect(),
+    expression: PD.Value<Expression>(MolScriptBuilder.struct.generator.all),
+    bundle: PD.Value<StructureElement.Bundle>(StructureElement.Bundle.Empty),
+    script: PD.Script({ language: 'mol-script', expression: '(sel.atom.all)' }),
+}, { description: 'Define a part of the structure where this layer applies (use Static:all to apply to the whole structure)' }
+);
 
 /** Parameter definition for color theme "Multilayer" */
 export function makeMultilayerColorThemeParams(colorThemeRegistry: ColorTheme.Registry, ctx: ThemeDataContext) {
@@ -56,12 +63,14 @@ export function makeMultilayerColorThemeParams(colorThemeRegistry: ColorTheme.Re
                     nestedThemeTypes,
                     name => PD.Group<any>(colorThemeRegistry.get(name).getParams({ structure: Structure.Empty })),
                     colorThemeInfo),
-                selection: PD.MappedStatic('static', { // like StructureComponentParams in molstar/lib/mol-plugin-state/helpers/structure-component
-                    static: StaticSelectorChoice.PDSelect(),
-                    expression: PD.Value<Expression>(MolScriptBuilder.struct.generator.all),
-                    bundle: PD.Value<StructureElement.Bundle>(StructureElement.Bundle.Empty),
-                    script: PD.Script({ language: 'mol-script', expression: '(sel.atom.all)' }),
-                }, { description: 'Define a part of the structure where this layer applies (use Static:all to apply to the whole structure)' }),
+                selection: SelectorParams,
+                //  PD.MappedStatic('static', { // like StructureComponentParams in molstar/lib/mol-plugin-state/helpers/structure-component
+                //     static: StaticSelectorChoice.PDSelect(),
+                //     expression: PD.Value<Expression>(MolScriptBuilder.struct.generator.all),
+                //     bundle: PD.Value<StructureElement.Bundle>(StructureElement.Bundle.Empty),
+                //     script: PD.Script({ language: 'mol-script', expression: '(sel.atom.all)' }),
+                // }, { description: 'Define a part of the structure where this layer applies (use Static:all to apply to the whole structure)' }
+                // ),
             },
             obj => stringToWords(obj.theme.name),
             { description: 'A list of layers, each defining a color theme. The last listed layer is the top layer (applies first). If the top layer does not provide color for a location or its selection does not cover the location, the underneath layers will apply.' }),
@@ -78,6 +87,7 @@ export const DefaultMultilayerColorThemeProps: MultilayerColorThemeProps = { lay
 
 /** Parameter values for defining a structure selection */
 export type Selector = MultilayerColorThemeProps['layers'][number]['selection']
+
 
 export const SelectorAll = { name: 'static', params: 'all' } satisfies Selector;
 

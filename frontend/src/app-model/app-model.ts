@@ -11,6 +11,7 @@ import { loadMVSTree } from './load-tree';
 import { MVSTree } from './tree/mvs-nodes';
 import { treeToString } from './tree/tree-utils';
 import { MultilayerColorTheme } from './molstar-extensions/multilayer-color-theme-extension/behavior';
+import { CustomTooltips } from './molstar-extensions/custom-tooltip-extension/behavior';
 
 
 export class AppModel {
@@ -24,6 +25,7 @@ export class AppModel {
         defaultSpec.behaviors.push(PluginSpec.Behavior(Annotation));
         defaultSpec.behaviors.push(PluginSpec.Behavior(MultilayerColorTheme));
         defaultSpec.behaviors.push(PluginSpec.Behavior(CustomLabel));
+        defaultSpec.behaviors.push(PluginSpec.Behavior(CustomTooltips));
         this.plugin = await createPluginUI(target, {
             ...defaultSpec,
             layout: {

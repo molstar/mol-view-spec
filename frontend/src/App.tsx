@@ -47,6 +47,7 @@ function Main() {
         'colors validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true',
         'colors multilayer': 'http://localhost:9000/api/v1/examples/testing/color_multilayer?id=1tqn',
         'labels': 'http://localhost:9000/api/v1/examples/testing/labels',
+        'tooltips': 'http://localhost:9000/api/v1/examples/testing/tooltips',
         'labels from url': 'http://localhost:9000/api/v1/examples/testing/labels_from_url',
         'labels from url grouped': 'http://localhost:9000/api/v1/examples/testing/labels_from_url?annotation_name=domains-grouped',
         'labels from url 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true&labels=true',

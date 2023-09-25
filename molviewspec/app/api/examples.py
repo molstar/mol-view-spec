@@ -896,6 +896,72 @@ async def testing_labels_example(id="1h9t") -> MVSResponse:
     return JSONResponse(builder.get_state())
 
 
+@router.get("/testing/tooltips")
+async def testing_tooltips_example(id="1h9t") -> MVSResponse:
+    """
+    An example with different labels for polymer and non-polymer chains.
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_url(
+        schema="all-atomic",
+        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+        format="json",
+    )
+    structure.component(selector="nucleic").representation(type="ball-and-stick").color(color="white").color_from_url(
+        schema="all-atomic",
+        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+        format="json",
+    )
+    structure.component(selector="ion").representation(type="surface").color_from_url(
+        schema="all-atomic",
+        url="http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/domains",
+        format="json",
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=9, end_label_seq_id=83)).tooltip(
+        text="DNA-binding"
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=9, end_label_seq_id=83)).tooltip(
+        text="DNA-binding"
+    )
+    structure.component(
+        selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=84, end_label_seq_id=231)
+    ).tooltip(text="Acyl-CoA\nbinding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=84, end_label_seq_id=231)
+    ).tooltip(text="Acyl-CoA binding")
+    structure.component(selector=ComponentExpression(label_asym_id="C")).tooltip(text="DNA X")
+    structure.component(selector=ComponentExpression(label_asym_id="D")).tooltip(text="DNA Y")
+
+    structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4016)).tooltip(text="DNA Y O5'")
+    structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4391)).tooltip(text="DNA Y O3'")
+    structure.component(selector=ComponentExpression(label_asym_id="E")).tooltip(text="Gold")
+    structure.component(selector=ComponentExpression(label_asym_id="H")).tooltip(text="Gold")
+    structure.component(selector=ComponentExpression(label_asym_id="F")).tooltip(text="Chloride")
+    structure.component(selector=ComponentExpression(label_asym_id="G")).tooltip(text="Chloride")
+    structure.component(selector=ComponentExpression(label_asym_id="I")).tooltip(text="Chloride")
+
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=57)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=67)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=121)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=125)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=129)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=178)).tooltip(text="Ligand binding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=203, end_label_seq_id=205)
+    ).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=67)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=121)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=125)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=129)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=178)).tooltip(text="Ligand binding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=203, end_label_seq_id=205)
+    ).tooltip(text="Ligand binding")
+    return JSONResponse(builder.get_state())
+
+
 @router.get("/testing/labels_from_url")
 async def testing_labels_from_url_example(id="1h9t", annotation_name="domains") -> MVSResponse:
     """
