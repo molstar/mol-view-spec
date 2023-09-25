@@ -25,6 +25,7 @@ import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree
 import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { ElementOfSet, canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
+import { CustomTooltipsProps } from './molstar-extensions/custom-tooltip-extension/tooltips-prop';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -105,18 +106,28 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             default:
                 throw new Error(`NotImplementedError: Loading action for "structure" node, kind "${params.kind}"`);
         }
-        let tooltips: AnnotationTooltipsProps['tooltips'] = [];
-        dfs(node, n => {
+        let annotationTooltips: AnnotationTooltipsProps['tooltips'] = [];
+        const inlineTooltips: CustomTooltipsProps['tooltips'] = [];
+        dfs(node, (n, parent) => {
             if (n.kind === 'tooltip-from-url' || n.kind === 'tooltip-from-cif') {
                 const annotationId = context.annotationMap?.get(n);
                 if (annotationId) {
-                    tooltips.push({ annotationId, fieldName: n.params.field_name ?? Defaults[n.kind].field_name });
+                    annotationTooltips.push({ annotationId, fieldName: n.params.field_name ?? Defaults[n.kind].field_name });
                 };
+            } else if (n.kind === 'tooltip') {
+                if (parent?.kind === 'component') {
+                    // TODO what about component-from-url/cif?!
+                    // TODO what about nested components?! (do we want to allow them?) (would require changes in CustomTooltips)
+                    inlineTooltips.push({ text: n.params.text, selector: componentPropsFromSelector(parent.params.selector) });
+                }
             }
         });
-        tooltips = distinct(tooltips);
+        annotationTooltips = distinct(annotationTooltips);
         update.to(result).apply(CustomStructureProperties, {
-            properties: { 'annotation-tooltips': { tooltips } }
+            properties: {
+                'annotation-tooltips': { tooltips: annotationTooltips },
+                'custom-tooltips': { tooltips: inlineTooltips },
+            }
         });
         // loadAllLabelsFromSubtree(update, result, node, context);
         return result;

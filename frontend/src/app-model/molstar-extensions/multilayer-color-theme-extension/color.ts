@@ -185,9 +185,9 @@ function substructureFromSelector(structure: Structure, selector: Selector): Str
 }
 
 /** Data structure for fast lookup of a structure element location in a structure */
-type ElementSet = { [modelId: UUID]: SortedArray<ElementIndex> }
+export type ElementSet = { [modelId: UUID]: SortedArray<ElementIndex> }
 
-function elementSetFromSelector(structure: Structure | undefined, selector: Selector): ElementSet {
+export function elementSetFromSelector(structure: Structure | undefined, selector: Selector): ElementSet {
     if (!structure) return {};
     const arrays: { [modelId: UUID]: ElementIndex[] } = {};
     const selection = substructureFromSelector(structure, selector); // using `getAtomRangesForRow` might (might not) be faster here
@@ -204,7 +204,7 @@ function elementSetFromSelector(structure: Structure | undefined, selector: Sele
 }
 
 /** Decide if the element set `set` contains structure element location `location` */
-function elementSetHas(set: ElementSet, location: StructureElement.Location): boolean {
+export function elementSetHas(set: ElementSet, location: StructureElement.Location): boolean {
     const array = set[location.unit.model.id];
     return array ? SortedArray.has(array, location.element) : false;
 }
