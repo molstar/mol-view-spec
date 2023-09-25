@@ -903,6 +903,7 @@ async def testing_tooltips_example(id="1h9t") -> MVSResponse:
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif(id)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/domains"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_url(
         schema="all-atomic",
@@ -931,8 +932,21 @@ async def testing_tooltips_example(id="1h9t") -> MVSResponse:
     structure.component(
         selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=84, end_label_seq_id=231)
     ).tooltip(text="Acyl-CoA binding")
-    structure.component(selector=ComponentExpression(label_asym_id="C")).tooltip(text="DNA X")
-    structure.component(selector=ComponentExpression(label_asym_id="D")).tooltip(text="DNA Y")
+    
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values="DNA X",
+    ).tooltip(text="DNA X")
+    structure.component_from_url(
+        url=annotation_url,
+        format="json",
+        schema="all-atomic",
+        field_name="tooltip",
+        field_values="DNA Y",
+    ).tooltip(text="DNA Y")
 
     structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4016)).tooltip(text="DNA Y O5'")
     structure.component(selector=ComponentExpression(label_asym_id="D", atom_id=4391)).tooltip(text="DNA Y O3'")

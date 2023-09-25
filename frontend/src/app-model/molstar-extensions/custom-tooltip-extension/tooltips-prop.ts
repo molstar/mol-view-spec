@@ -13,8 +13,8 @@ import { filterDefined } from '../../utils';
 export const CustomTooltipsParams = {
     tooltips: PD.ObjectList(
         {
+            text: PD.Text('', { description: 'Text of the tooltip' }),
             selector: SelectorParams,
-            text: PD.Text('tooltip :D', { description: 'Text of the tooltip' }),
         },
         obj => obj.text
     ),
@@ -64,7 +64,6 @@ export const CustomTooltipsLabelProvider = {
                     if (elementSetHas(elements, location)) texts.push(tooltip.text);
                 }
                 return filterDefined(texts).join(' | ');
-            // return '¯\\_(ツ)_/¯';
             default:
                 return undefined;
         }

@@ -8,7 +8,7 @@ import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers
 import { SortedArray } from 'molstar/lib/mol-data/int';
 import { Location } from 'molstar/lib/mol-model/location';
 import { Bond, ElementIndex, Structure, StructureElement } from 'molstar/lib/mol-model/structure';
-import { StaticStructureComponentTypes, createStructureComponent } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
+import { StaticStructureComponentTypes, StructureComponentParams, createStructureComponent } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
 import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 import { MolScriptBuilder } from 'molstar/lib/mol-script/language/builder';
 import { Expression } from 'molstar/lib/mol-script/language/expression';
@@ -20,7 +20,8 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { capitalize, stringToWords } from 'molstar/lib/mol-util/string';
 
-import { extend, mapArrToObj, sortIfNeeded } from '../../utils';
+import { extend, mapArrToObj, omitObjectKeys, pickObjectKeys, sortIfNeeded } from '../../utils';
+import { AnnotationStructureComponentParams, createAnnotationStructureComponent } from '../color-from-url-extension/component-from-annotation';
 
 
 /** Special value that can be used as color with null-like semantic (i.e. "no color provided").
@@ -41,6 +42,7 @@ export const SelectorParams = PD.MappedStatic('static', { // like StructureCompo
     expression: PD.Value<Expression>(MolScriptBuilder.struct.generator.all),
     bundle: PD.Value<StructureElement.Bundle>(StructureElement.Bundle.Empty),
     script: PD.Script({ language: 'mol-script', expression: '(sel.atom.all)' }),
+    annotation: PD.Group(pickObjectKeys(AnnotationStructureComponentParams, ['annotationId', 'fieldName', 'fieldValues'])),
 }, { description: 'Define a part of the structure where this layer applies (use Static:all to apply to the whole structure)' }
 );
 
@@ -176,7 +178,9 @@ export function makeMultilayerColorThemeProvider(colorThemeRegistry: ColorTheme.
 
 
 function substructureFromSelector(structure: Structure, selector: Selector): Structure {
-    const pso = createStructureComponent(structure, { type: selector, label: '', nullIfEmpty: false }, { source: structure });
+    const pso = (selector.name === 'annotation') ?
+        createAnnotationStructureComponent(structure, { ...selector.params, label: '', nullIfEmpty: false }, { source: structure })
+        : createStructureComponent(structure, { type: selector, label: '', nullIfEmpty: false }, { source: structure });
     if (PluginStateObject.Molecule.Structure.is(pso)) {
         return pso.data;
     } else {

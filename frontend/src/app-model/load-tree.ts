@@ -26,6 +26,7 @@ import { MVSTree, MVSTreeSchema } from './tree/mvs-nodes';
 import { convertMvsToMolstar, dfs, treeToString } from './tree/tree-utils';
 import { ElementOfSet, canonicalJsonString, distinct, formatObject, isDefined, stringHash } from './utils';
 import { CustomTooltipsProps } from './molstar-extensions/custom-tooltip-extension/tooltips-prop';
+import { StructureComponentParams } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
 
 
 // TODO once everything is implemented, remove `[]?:` and `undefined` return values
@@ -119,6 +120,14 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
                     // TODO what about component-from-url/cif?!
                     // TODO what about nested components?! (do we want to allow them?) (would require changes in CustomTooltips)
                     inlineTooltips.push({ text: n.params.text, selector: componentPropsFromSelector(parent.params.selector) });
+                } else if (parent?.kind === 'component-from-url' || parent?.kind === 'component-from-cif') {
+                    const p = componentFromUrlOrCifProps(parent, context);
+                    if (isDefined(p.annotationId) && isDefined(p.fieldName) && isDefined(p.fieldValues)) {
+                        inlineTooltips.push({
+                            text: n.params.text,
+                            selector: { name: 'annotation', params: { annotationId: p.annotationId, fieldName: p.fieldName, fieldValues: p.fieldValues } }
+                        });
+                    }
                 }
             }
         });
@@ -243,7 +252,7 @@ function blockSpec(header: string | null | undefined, index: number | null | und
     }
 }
 
-function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'component'>['selector']): Selector {
+function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'component'>['selector']): StructureComponentParams['type'] {
     if (selector === undefined) {
         return SelectorAll;
     } else if (typeof selector === 'string') {
