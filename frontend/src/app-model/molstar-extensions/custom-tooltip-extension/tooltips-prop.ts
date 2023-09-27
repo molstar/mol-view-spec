@@ -5,8 +5,9 @@ import { Loci } from 'molstar/lib/mol-model/loci';
 import { Structure, StructureElement } from 'molstar/lib/mol-model/structure';
 import { LociLabelProvider } from 'molstar/lib/mol-plugin-state/manager/loci-label';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
-import { ElementSet, Selector, SelectorParams, elementSetFromSelector, elementSetHas } from '../multilayer-color-theme-extension/color';
+
 import { filterDefined } from '../../utils';
+import { ElementSet, Selector, SelectorParams, elementSetFromSelector, elementSetHas } from '../multilayer-color-theme-extension/color';
 
 
 /** Parameter definition for custom structure property "CustomTooltips" */
@@ -54,6 +55,7 @@ export const CustomTooltipsLabelProvider = {
     label: (loci: Loci): string | undefined => {
         switch (loci.kind) {
             case 'element-loci':
+                if (!loci.structure.customPropertyDescriptors.hasReference(CustomTooltipsProvider.descriptor)) return undefined;
                 const location = StructureElement.Loci.getFirstLocation(loci);
                 if (!location) return undefined;
                 const tooltipData = CustomTooltipsProvider.get(location.structure).value;

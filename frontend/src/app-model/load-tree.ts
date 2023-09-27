@@ -15,10 +15,10 @@ import { StructureComponentParams } from 'molstar/lib/mol-plugin-state/helpers/s
 import { focusCameraNode, focusStructureNode } from './focus';
 import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
 import { AnnotationStructureComponent, AnnotationStructureComponentProps } from './molstar-extensions/color-from-url-extension/component-from-annotation';
-import { AnnotationSpec } from './molstar-extensions/color-from-url-extension/prop';
-import { AnnotationTooltipsProps } from './molstar-extensions/color-from-url-extension/tooltips-prop';
+import { AnnotationSpec, AnnotationsProvider } from './molstar-extensions/color-from-url-extension/prop';
+import { AnnotationTooltipsProps, AnnotationTooltipsProvider } from './molstar-extensions/color-from-url-extension/tooltips-prop';
 import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
-import { CustomTooltipsProps } from './molstar-extensions/custom-tooltip-extension/tooltips-prop';
+import { CustomTooltipsProps, CustomTooltipsProvider } from './molstar-extensions/custom-tooltip-extension/tooltips-prop';
 import { rowToExpression, rowsToExpression } from './molstar-extensions/helpers/selections';
 import { MultilayerColorThemeProps, NoColor, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
 import { DefaultColor, Defaults } from './param-defaults';
@@ -82,13 +82,20 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
     },
     model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'model'>, context: MolstarLoadingContext): StateObjectSelector {
         const annotations = collectAnnotationReferences(node, context);
-        return update.to(msTarget)
+        const model = update.to(msTarget)
             .apply(ModelFromTrajectory, {
                 modelIndex: getParams(node).model_index ?? Defaults.structure.model_index,
-            })
-            .apply(CustomModelProperties, {
-                properties: { annotations: { annotations: annotations } }
             }).selector;
+        const cmp = update.to(model)
+            .apply(CustomModelProperties, {
+                properties: {
+                    [AnnotationsProvider.descriptor.name]: { annotations }
+                },
+                autoAttach: [
+                    AnnotationsProvider.descriptor.name
+                ],
+            }).selector;
+        return cmp;
     },
     structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext): StateObjectSelector {
         const params = getParams(node);
@@ -112,13 +119,26 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         if (annotationTooltips.length + inlineTooltips.length > 0) {
             update.to(result).apply(CustomStructureProperties, {
                 properties: {
-                    'annotation-tooltips': { tooltips: annotationTooltips },
-                    'custom-tooltips': { tooltips: inlineTooltips },
-                }
+                    [AnnotationTooltipsProvider.descriptor.name]: { tooltips: annotationTooltips },
+                    [CustomTooltipsProvider.descriptor.name]: { tooltips: inlineTooltips },
+                },
+                autoAttach: [
+                    AnnotationTooltipsProvider.descriptor.name,
+                    CustomTooltipsProvider.descriptor.name,
+                ],
             });
         }
         // loadAllLabelsFromSubtree(update, result, node, context);
         return result;
+    },
+    tooltip() {
+        return undefined; // No action needed, already loaded in `structure`
+    },
+    'tooltip-from-url'() {
+        return undefined; // No action needed, already loaded in `structure`
+    },
+    'tooltip-from-cif'() {
+        return undefined; // No action needed, already loaded in `structure`
     },
     component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component'>): StateObjectSelector | undefined {
         if (isPhantomComponent(node)) return undefined;
@@ -147,6 +167,15 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             type: { name: type, params: typeParams },
             colorTheme: colorThemeForNode(node, context),
         }).selector;
+    },
+    color() {
+        return undefined; // No action needed, already loaded in `representation`
+    },
+    'color-from-url'() {
+        return undefined; // No action needed, already loaded in `representation`
+    },
+    'color-from-cif'() {
+        return undefined; // No action needed, already loaded in `representation`
     },
     label(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
         const item: CustomLabelProps['items'][number] = {

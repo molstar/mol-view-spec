@@ -592,9 +592,10 @@ async def testing_color_domains_example(colors: bool = True, tooltips: bool = Fa
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
+    structure_url = _url_for_testing_local_bcif('1h9t')
     structure = (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1h9t_updated.cif")
-        .parse(format="mmcif")
+        builder.download(url=structure_url)
+        .parse(format="bcif")
         .model_structure()
     )
     reprs = [

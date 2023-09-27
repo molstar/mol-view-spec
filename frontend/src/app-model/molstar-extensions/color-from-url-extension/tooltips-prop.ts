@@ -6,8 +6,8 @@ import { Structure, StructureElement } from 'molstar/lib/mol-model/structure';
 import { LociLabelProvider } from 'molstar/lib/mol-plugin-state/manager/loci-label';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { AnnotationsProvider } from './prop';
 import { filterDefined } from '../../utils';
+import { AnnotationsProvider } from './prop';
 
 
 /** Parameter definition for custom structure property "AnnotationTooltips" */
@@ -38,7 +38,6 @@ export const AnnotationTooltipsProvider: CustomStructureProperty.Provider<Annota
     isApplicable: (data: Structure) => data.root === data,
     obtain: async (ctx: CustomProperty.Context, data: Structure, props: Partial<AnnotationTooltipsProps>) => {
         const fullProps = { ...PD.getDefaultValues(AnnotationTooltipsParams), ...props };
-        for (const model of data.models) await AnnotationsProvider.attach(ctx, model); // TODO I should probably detach somewhere but I have nooooo idea where
         return { value: fullProps } satisfies CustomProperty.Data<AnnotationTooltipsProps>;
     },
 });
@@ -49,6 +48,7 @@ export const AnnotationTooltipsLabelProvider = {
     label: (loci: Loci): string | undefined => {
         switch (loci.kind) {
             case 'element-loci':
+                if (!loci.structure.customPropertyDescriptors.hasReference(AnnotationTooltipsProvider.descriptor)) return undefined;
                 const location = StructureElement.Loci.getFirstLocation(loci);
                 if (!location) return undefined;
                 const tooltipProps = AnnotationTooltipsProvider.get(location.structure).value;

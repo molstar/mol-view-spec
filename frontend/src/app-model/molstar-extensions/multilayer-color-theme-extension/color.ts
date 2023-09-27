@@ -8,7 +8,7 @@ import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers
 import { SortedArray } from 'molstar/lib/mol-data/int';
 import { Location } from 'molstar/lib/mol-model/location';
 import { Bond, ElementIndex, Structure, StructureElement } from 'molstar/lib/mol-model/structure';
-import { StaticStructureComponentTypes, StructureComponentParams, createStructureComponent } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
+import { StaticStructureComponentTypes, createStructureComponent } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
 import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 import { MolScriptBuilder } from 'molstar/lib/mol-script/language/builder';
 import { Expression } from 'molstar/lib/mol-script/language/expression';
@@ -20,7 +20,7 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { capitalize, stringToWords } from 'molstar/lib/mol-util/string';
 
-import { extend, mapArrToObj, omitObjectKeys, pickObjectKeys, sortIfNeeded } from '../../utils';
+import { extend, mapArrToObj, pickObjectKeys, sortIfNeeded } from '../../utils';
 import { AnnotationStructureComponentParams, createAnnotationStructureComponent } from '../color-from-url-extension/component-from-annotation';
 
 
@@ -66,13 +66,6 @@ export function makeMultilayerColorThemeParams(colorThemeRegistry: ColorTheme.Re
                     name => PD.Group<any>(colorThemeRegistry.get(name).getParams({ structure: Structure.Empty })),
                     colorThemeInfo),
                 selection: SelectorParams,
-                //  PD.MappedStatic('static', { // like StructureComponentParams in molstar/lib/mol-plugin-state/helpers/structure-component
-                //     static: StaticSelectorChoice.PDSelect(),
-                //     expression: PD.Value<Expression>(MolScriptBuilder.struct.generator.all),
-                //     bundle: PD.Value<StructureElement.Bundle>(StructureElement.Bundle.Empty),
-                //     script: PD.Script({ language: 'mol-script', expression: '(sel.atom.all)' }),
-                // }, { description: 'Define a part of the structure where this layer applies (use Static:all to apply to the whole structure)' }
-                // ),
             },
             obj => stringToWords(obj.theme.name),
             { description: 'A list of layers, each defining a color theme. The last listed layer is the top layer (applies first). If the top layer does not provide color for a location or its selection does not cover the location, the underneath layers will apply.' }),
@@ -108,6 +101,9 @@ function makeMultilayerColorTheme(ctx: ThemeDataContext, props: MultilayerColorT
         if (!themeProvider) {
             console.warn(`Skipping color theme '${layer.theme.name}', cannot find it in registry.`);
             continue;
+        }
+        if (themeProvider.ensureCustomProperties?.attach) {
+            console.warn(`Multilayer color theme: layer "${themeProvider.name}" has ensureCustomProperties.attach method, but Multilayer color theme does not call it. If the layer does not work, make sure you call ensureCustomProperties.attach somewhere.`);
         }
         const theme = themeProvider.factory(ctx, layer.theme.params);
         switch (theme.granularity) {

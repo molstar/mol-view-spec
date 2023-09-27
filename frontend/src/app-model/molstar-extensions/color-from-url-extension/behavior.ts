@@ -24,7 +24,7 @@ export const Annotation = PluginBehavior.create<{ autoAttach: boolean }>({
     ctor: class extends PluginBehavior.Handler<{ autoAttach: boolean }> {
         register(): void {
             this.ctx.customModelProperties.register(AnnotationsProvider, this.params.autoAttach);
-            this.ctx.customStructureProperties.register(AnnotationTooltipsProvider, true);
+            this.ctx.customStructureProperties.register(AnnotationTooltipsProvider, this.params.autoAttach);
             this.ctx.managers.lociLabels.addProvider(AnnotationTooltipsLabelProvider);
             this.ctx.representation.structure.themes.colorThemeRegistry.add(AnnotationColorThemeProvider);
             this.ctx.representation.structure.registry.add(AnnotationLabelRepresentationProvider);

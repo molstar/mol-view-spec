@@ -1,24 +1,5 @@
-import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { MVSKind, MVSTreeSchema } from './tree/mvs-nodes';
 import { DefaultsFor } from './tree/params-schema';
-
-const InlineSchemaDefaults = {
-    label_entity_id: null,
-    label_asym_id: null,
-    auth_asym_id: null,
-    label_seq_id: null,
-    auth_seq_id: null,
-    pdbx_PDB_ins_code: null,
-    beg_label_seq_id: null,
-    end_label_seq_id: null,
-    beg_auth_seq_id: null,
-    end_auth_seq_id: null,
-    atom_id: null,
-    atom_index: null,
-    label_atom_id: null,
-    auth_atom_id: null,
-    type_symbol: null,
-};
 
 
 export const Defaults = {
@@ -116,7 +97,6 @@ export const Defaults = {
         up: [0, 1, 0],
     },
 } satisfies { [kind in MVSKind]: DefaultsFor<(typeof MVSTreeSchema)['paramsSchemas'][kind]> };
-// TODO mandatory params don't need to be here
 // TODO apply default to MVS tree (before conversion), not Molstar tree
 
 export const DefaultColor = 'white';

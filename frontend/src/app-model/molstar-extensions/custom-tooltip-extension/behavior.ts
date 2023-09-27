@@ -20,7 +20,7 @@ export const CustomTooltips = PluginBehavior.create<{ autoAttach: boolean }>({
     },
     ctor: class extends PluginBehavior.Handler<{ autoAttach: boolean }> {
         register(): void {
-            this.ctx.customStructureProperties.register(CustomTooltipsProvider, true);
+            this.ctx.customStructureProperties.register(CustomTooltipsProvider, this.params.autoAttach);
             this.ctx.managers.lociLabels.addProvider(CustomTooltipsLabelProvider);
         }
         unregister() {

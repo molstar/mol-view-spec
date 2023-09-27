@@ -4,7 +4,6 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { CustomProperty } from 'molstar/lib/mol-model-props/common/custom-property';
 import { Location } from 'molstar/lib/mol-model/location';
 import { Bond, StructureElement } from 'molstar/lib/mol-model/structure';
 import { ColorTheme, LocationColor } from 'molstar/lib/mol-theme/color';
@@ -13,7 +12,7 @@ import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { AnnotationsProvider, getAnnotationForStructure } from './prop';
+import { getAnnotationForStructure } from './prop';
 
 
 /** Parameter definition for color theme "Annotation" */
@@ -79,10 +78,6 @@ export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorTh
     getParams: ctx => AnnotationColorThemeParams,
     defaultValues: PD.getDefaultValues(AnnotationColorThemeParams),
     isApplicable: (ctx: ThemeDataContext) => true,
-    ensureCustomProperties: {
-        attach: (ctx: CustomProperty.Context, data: ThemeDataContext) => data.structure ? AnnotationsProvider.attach(ctx, data.structure.models[0], undefined, true) : Promise.resolve(),
-        detach: (data) => data.structure && AnnotationsProvider.ref(data.structure.models[0], false),
-    },
 };
 
 
