@@ -74,8 +74,8 @@ type AnnotationData = { format: 'json', data: Json } | { format: 'cif', data: Ci
 /** Provider for custom model property "Annotations" */
 export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams, Annotations> = CustomModelProperty.createProvider({
     label: 'Annotations',
-    descriptor: CustomPropertyDescriptor<any, any>({
-        name: 'mvs.annotations', // TODO add mvs. everywhere
+    descriptor: CustomPropertyDescriptor({
+        name: 'mvs-annotations',
     }),
     type: 'static',
     defaultParams: AnnotationsParams,

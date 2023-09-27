@@ -52,7 +52,7 @@ export function CustomLabelRepresentation(ctx: RepresentationContext, getParams:
 // }
 
 export const CustomLabelRepresentationProvider = StructureRepresentationProvider({
-    name: 'custom-label',
+    name: 'mvs-custom-label',
     label: 'Custom Label',
     description: 'Displays labels with custom text',
     factory: CustomLabelRepresentation,

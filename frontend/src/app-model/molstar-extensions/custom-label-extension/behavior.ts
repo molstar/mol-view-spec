@@ -12,7 +12,7 @@ import { CustomLabelRepresentationProvider } from './representation';
 
 /** Registers structure representation type "Custom Label" */
 export const CustomLabel = PluginBehavior.create<{ autoAttach: boolean }>({
-    name: 'custom-label',
+    name: 'mvs-custom-label',
     category: 'representation',
     display: {
         name: 'Custom label',

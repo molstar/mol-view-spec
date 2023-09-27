@@ -30,7 +30,7 @@ export type AnnotationTooltipsProps = PD.Values<AnnotationTooltipsParams>
 export const AnnotationTooltipsProvider: CustomStructureProperty.Provider<AnnotationTooltipsParams, AnnotationTooltipsProps> = CustomStructureProperty.createProvider({
     label: 'Annotation Tooltips',
     descriptor: CustomPropertyDescriptor<any, any>({
-        name: 'annotation-tooltips',
+        name: 'mvs-annotation-tooltips',
     }),
     type: 'local',
     defaultParams: AnnotationTooltipsParams,

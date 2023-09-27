@@ -35,7 +35,7 @@ export function AnnotationLabelRepresentation(ctx: RepresentationContext, getPar
 }
 
 export const AnnotationLabelRepresentationProvider = StructureRepresentationProvider({
-    name: 'annotation-label',
+    name: 'mvs-annotation-label',
     label: 'Annotation Label',
     description: 'Displays labels based on annotation custom model property',
     factory: AnnotationLabelRepresentation,

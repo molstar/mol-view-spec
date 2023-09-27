@@ -70,8 +70,8 @@ export function AnnotationColorTheme(ctx: ThemeDataContext, props: AnnotationCol
 
 
 /** A thingy that is needed to register color theme "Annotation" */
-export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorThemeParams, 'annotation'> = {
-    name: 'annotation',
+export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorThemeParams, 'mvs-annotation'> = {
+    name: 'mvs-annotation',
     label: 'Annotation',
     category: ColorTheme.Category.Misc,
     factory: AnnotationColorTheme,

@@ -12,7 +12,7 @@ import { CustomTooltipsProvider, CustomTooltipsLabelProvider } from './tooltips-
 
 /** Registers "Custom Tooltips" custom structure property */
 export const CustomTooltips = PluginBehavior.create<{ autoAttach: boolean }>({
-    name: 'custom-tooltip',
+    name: 'mvs-custom-tooltip',
     category: 'custom-props',
     display: {
         name: 'Custom tooltips',

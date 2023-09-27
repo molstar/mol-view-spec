@@ -6,12 +6,12 @@
 
 import { Structure, StructureSelection } from 'molstar/lib/mol-model/structure';
 import { StructureQueryHelper } from 'molstar/lib/mol-plugin-state/helpers/structure-query';
-import { PluginStateTransform, PluginStateObject as SO } from 'molstar/lib/mol-plugin-state/objects';
+import { PluginStateObject as SO } from 'molstar/lib/mol-plugin-state/objects';
 import { StateObject, StateTransformer } from 'molstar/lib/mol-state';
 import { deepEqual } from 'molstar/lib/mol-util';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { canonicalJsonString, omitObjectKeys } from '../../utils';
+import { omitObjectKeys } from '../../utils';
 import { rowsToExpression } from '../helpers/selections';
 import { getAnnotationForStructure } from './prop';
 
@@ -31,8 +31,10 @@ export const AnnotationStructureComponentParams = {
 export type AnnotationStructureComponentProps = PD.ValuesFor<typeof AnnotationStructureComponentParams>
 
 
+export const MVSTransform = StateTransformer.builderFactory('mvs');
+
 export type AnnotationStructureComponent = typeof AnnotationStructureComponent
-export const AnnotationStructureComponent = PluginStateTransform.BuiltIn({
+export const AnnotationStructureComponent = MVSTransform({
     name: 'structure-component-from-annotation',
     display: { name: 'Annotation Component', description: 'A molecular structure component defined by annotation data.' },
     from: SO.Molecule.Structure,

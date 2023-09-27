@@ -56,7 +56,7 @@ export function makeMultilayerColorThemeParams(colorThemeRegistry: ColorTheme.Re
             return { description: ct.description, legend: ct.legend };
         }
     };
-    const nestedThemeTypes = colorThemeRegistry.types.filter(([name, label, category]) => name !== MULTILAYER_COLOR_THEME_NAME && colorThemeRegistry.get(name).isApplicable(ctx)); // Adding 'multilayer' theme itself would cause infinite recursion
+    const nestedThemeTypes = colorThemeRegistry.types.filter(([name, label, category]) => name !== MultilayerColorThemeName && colorThemeRegistry.get(name).isApplicable(ctx)); // Adding 'multilayer' theme itself would cause infinite recursion
     return {
         layers: PD.ObjectList(
             {
@@ -92,7 +92,10 @@ export function isSelectorAll(props: Selector): props is typeof SelectorAll {
 
 
 /** Return color theme that assigns colors based on a list of nested color themes (layers).
- * The last layer in the list whose selection covers the given location and which provides a valid (non-negative) color value will be used. */
+ * The last layer in the list whose selection covers the given location
+ * and which provides a valid (non-negative) color value will be used.
+ * If a nested theme provider has `ensureCustomProperties` methods, these will not be called automatically
+ * (the caller must ensure that any required custom properties be attached). */
 function makeMultilayerColorTheme(ctx: ThemeDataContext, props: MultilayerColorThemeProps, colorThemeRegistry: ColorTheme.Registry): ColorTheme<MultilayerColorThemeParams> {
     const colorLayers: { color: LocationColor, elementSet: ElementSet | undefined }[] = []; // undefined elementSet means 'all'
     for (let i = props.layers.length - 1; i >= 0; i--) { // iterate from end to get top layer first, bottom layer last
@@ -157,12 +160,12 @@ function makeMultilayerColorTheme(ctx: ThemeDataContext, props: MultilayerColorT
 }
 
 
-const MULTILAYER_COLOR_THEME_NAME = 'multilayer';
+export const MultilayerColorThemeName = 'mvs-multilayer';
 
 /** A thingy that is needed to register color theme "Multilayer" */
-export function makeMultilayerColorThemeProvider(colorThemeRegistry: ColorTheme.Registry): ColorTheme.Provider<MultilayerColorThemeParams, 'multilayer'> {
+export function makeMultilayerColorThemeProvider(colorThemeRegistry: ColorTheme.Registry): ColorTheme.Provider<MultilayerColorThemeParams, typeof MultilayerColorThemeName> {
     return {
-        name: MULTILAYER_COLOR_THEME_NAME,
+        name: MultilayerColorThemeName,
         label: 'Multi-layer',
         category: ColorTheme.Category.Misc,
         factory: (ctx, props) => makeMultilayerColorTheme(ctx, props, colorThemeRegistry),
@@ -171,7 +174,6 @@ export function makeMultilayerColorThemeProvider(colorThemeRegistry: ColorTheme.
         isApplicable: (ctx: ThemeDataContext) => true,
     };
 }
-
 
 function substructureFromSelector(structure: Structure, selector: Selector): Structure {
     const pso = (selector.name === 'annotation') ?

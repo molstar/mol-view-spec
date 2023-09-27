@@ -11,7 +11,7 @@ import { makeMultilayerColorThemeProvider } from './color';
 
 /** Registers color theme "Multilayer" */
 export const MultilayerColorTheme = PluginBehavior.create<{}>({
-    name: 'multilayer-color-theme',
+    name: 'mvs-multilayer-color-theme',
     category: 'misc',
     display: {
         name: 'Multilayer Color Theme',

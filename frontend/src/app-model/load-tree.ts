@@ -5,22 +5,23 @@
  */
 
 import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
+import { StructureComponentParams } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
 import { Download, ParseCif } from 'molstar/lib/mol-plugin-state/transforms/data';
 import { CustomModelProperties, CustomStructureProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 
-import { StructureComponentParams } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
 import { focusCameraNode, focusStructureNode } from './focus';
-import { AnnotationColorThemeProps, decodeColor } from './molstar-extensions/color-from-url-extension/color';
+import { AnnotationColorThemeProps, AnnotationColorThemeProvider, decodeColor } from './molstar-extensions/color-from-url-extension/color';
 import { AnnotationStructureComponent, AnnotationStructureComponentProps } from './molstar-extensions/color-from-url-extension/component-from-annotation';
+import { AnnotationLabelRepresentationProvider } from './molstar-extensions/color-from-url-extension/label-representation';
 import { AnnotationSpec, AnnotationsProvider } from './molstar-extensions/color-from-url-extension/prop';
 import { AnnotationTooltipsProps, AnnotationTooltipsProvider } from './molstar-extensions/color-from-url-extension/tooltips-prop';
-import { CustomLabelProps } from './molstar-extensions/custom-label-extension/representation';
+import { CustomLabelProps, CustomLabelRepresentationProvider } from './molstar-extensions/custom-label-extension/representation';
 import { CustomTooltipsProps, CustomTooltipsProvider } from './molstar-extensions/custom-tooltip-extension/tooltips-prop';
 import { rowToExpression, rowsToExpression } from './molstar-extensions/helpers/selections';
-import { MultilayerColorThemeProps, NoColor, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
+import { MultilayerColorThemeName, MultilayerColorThemeProps, NoColor, SelectorAll } from './molstar-extensions/multilayer-color-theme-extension/color';
 import { DefaultColor, Defaults } from './param-defaults';
 import { ParamsOfKind, SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic';
 import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar-nodes';
@@ -141,7 +142,9 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         return undefined; // No action needed, already loaded in `structure`
     },
     component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component'>): StateObjectSelector | undefined {
-        if (isPhantomComponent(node)) return undefined;
+        if (isPhantomComponent(node)) {
+            return msTarget;
+        }
         const selector = getParams(node).selector ?? Defaults.component.selector;
         return update.to(msTarget).apply(StructureComponent, {
             type: componentPropsFromSelector(selector),
@@ -184,7 +187,10 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         };
         const nearestReprNode = context.nearestReprMap?.get(node);
         return update.to(msTarget).apply(StructureRepresentation3D, {
-            type: { name: 'custom-label', params: { items: [item] } },
+            type: {
+                name: CustomLabelRepresentationProvider.name,
+                params: { items: [item] } satisfies Partial<CustomLabelProps>
+            },
             colorTheme: colorThemeForNode(nearestReprNode, context),
         }).selector;
     },
@@ -326,7 +332,7 @@ function labelFromUrlOrCifProps(node: MolstarNode<'label-from-url' | 'label-from
     const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
     const nearestReprNode = context.nearestReprMap?.get(node);
     return {
-        type: { name: 'annotation-label', params: { annotationId, fieldName } },
+        type: { name: AnnotationLabelRepresentationProvider.name, params: { annotationId, fieldName } },
         colorTheme: colorThemeForNode(nearestReprNode, context),
     };
 }
@@ -357,7 +363,7 @@ function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-fro
                 c => ({ theme: colorThemeForNode(c, context), selection: componentPropsFromSelector(c.kind === 'color' ? c.params.selector : undefined) })
             );
             return {
-                name: 'multilayer',
+                name: MultilayerColorThemeName,
                 params: { layers },
             };
         }
@@ -377,7 +383,7 @@ function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-fro
     }
     if (annotationId) {
         return {
-            name: 'annotation',
+            name: AnnotationColorThemeProvider.name,
             params: { annotationId, fieldName, background: NoColor } satisfies Partial<AnnotationColorThemeProps>,
         };
     } else {
@@ -434,15 +440,20 @@ function loadAllLabelsFromSubtree(update: StateBuilder.Root, msTarget: StateObje
             annotationId ??= context.annotationMap?.get(n);
         }
     });
-    const colorTheme = annotationId ? {
-        name: 'annotation',
-        params: {
-            annotationId: annotationId,
-        } satisfies Partial<AnnotationColorThemeProps>
-    } : { name: 'uniform', params: { value: decodeColor(color) } };
+    const colorTheme = annotationId ?
+        {
+            name: AnnotationColorThemeProvider.name,
+            params: { annotationId } satisfies Partial<AnnotationColorThemeProps>
+        } : {
+            name: 'uniform',
+            params: { value: decodeColor(color) }
+        };
     if (items.length > 0) {
         return update.to(msTarget).apply(StructureRepresentation3D, {
-            type: { name: 'custom-label', params: { items } },
+            type: {
+                name: CustomLabelRepresentationProvider.name,
+                params: { items }
+            },
             colorTheme: colorTheme,
         }).selector;
     } else {

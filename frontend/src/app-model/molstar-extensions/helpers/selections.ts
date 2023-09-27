@@ -8,15 +8,14 @@ import { Column } from 'molstar/lib/mol-data/db';
 import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-model/structure';
 import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder';
 import { Expression } from 'molstar/lib/mol-script/language/expression';
-import { formatMolScript } from 'molstar/lib/commonjs/mol-script/language/expression-formatter';
 
 import { extend, filterInPlace, isAnyDefined, isDefined, range } from '../../utils';
-import { AtomRanges, addRange, emptyRanges, unionOfRanges, singleRange } from './atom-ranges';
 import { AnnotationRow } from '../helpers/schemas';
+import { AtomRanges, addRange, emptyRanges, singleRange, unionOfRanges } from './atom-ranges';
 import { IndicesAndSortings, getKeysWithValue, getKeysWithValueInRange } from './indexing';
 
 
-const EMPTY_ARRAY: readonly any[] = [];
+const EmptyArray: readonly any[] = [];
 
 
 /** Return atom ranges in `model` which satisfy criteria given by `row` */
@@ -81,20 +80,20 @@ function getQualifyingChains(model: Model, row: AnnotationRow, indices: IndicesA
     const { auth_asym_id, label_entity_id, _rowCount: nChains } = model.atomicHierarchy.chains;
     let result: readonly ChainIndex[] | undefined = undefined;
     if (isDefined(row.label_asym_id)) {
-        result = indices.chainsByLabelAsymId.get(row.label_asym_id) ?? EMPTY_ARRAY;
+        result = indices.chainsByLabelAsymId.get(row.label_asym_id) ?? EmptyArray;
     }
     if (isDefined(row.auth_asym_id)) {
         if (result) {
             result = result.filter(i => auth_asym_id.value(i) === row.auth_asym_id);
         } else {
-            result = indices.chainsByAuthAsymId.get(row.auth_asym_id) ?? EMPTY_ARRAY;
+            result = indices.chainsByAuthAsymId.get(row.auth_asym_id) ?? EmptyArray;
         }
     }
     if (isDefined(row.label_entity_id)) {
         if (result) {
             result = result.filter(i => label_entity_id.value(i) === row.label_entity_id);
         } else {
-            result = indices.chainsByLabelEntityId.get(row.label_entity_id) ?? EMPTY_ARRAY;
+            result = indices.chainsByLabelEntityId.get(row.label_entity_id) ?? EmptyArray;
         }
     }
     result ??= range(nChains) as ChainIndex[];
@@ -124,7 +123,7 @@ function getQualifyingResidues(model: Model, row: AnnotationRow, indices: Indice
             if (residuesHere) {
                 residuesHere = residuesHere.filter(i => pdbx_PDB_ins_code.value(i) === row.pdbx_PDB_ins_code);
             } else {
-                residuesHere = indices.residuesByInsCode.get(iChain)!.get(row.pdbx_PDB_ins_code) ?? EMPTY_ARRAY;
+                residuesHere = indices.residuesByInsCode.get(iChain)!.get(row.pdbx_PDB_ins_code) ?? EmptyArray;
             }
         }
         if (isDefined(row.beg_label_seq_id) || isDefined(row.end_label_seq_id)) {

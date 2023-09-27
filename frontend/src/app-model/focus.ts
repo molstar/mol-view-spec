@@ -32,7 +32,6 @@ export async function focusCameraNode(plugin: PluginContext, params: ParamsOfKin
     const target = Vec3.create(...params.target);
     const position = Vec3.create(...params.position);
     const up = Vec3.create(...params.up ?? Defaults.camera.up);
-    console.log('target', ...target, 'position', ...position, 'up', ...up);
     const snapshot: Partial<Camera.Snapshot> = { target, position, up };
     await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
 }

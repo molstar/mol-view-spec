@@ -15,7 +15,7 @@ import { AnnotationLabelRepresentationProvider } from './label-representation';
 
 /** Registers color theme "Annotation", related custom model property, and loci labels */
 export const Annotation = PluginBehavior.create<{ autoAttach: boolean }>({
-    name: 'annotation-prop',
+    name: 'mvs-annotation-prop',
     category: 'custom-props',
     display: {
         name: 'Annotation',

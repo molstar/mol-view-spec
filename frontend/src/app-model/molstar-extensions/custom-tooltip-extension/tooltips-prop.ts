@@ -33,7 +33,7 @@ export type CustomTooltipsData = { selector: Selector, text: string, elementSet?
 export const CustomTooltipsProvider: CustomStructureProperty.Provider<CustomTooltipsParams, CustomTooltipsData> = CustomStructureProperty.createProvider({
     label: 'Custom Tooltips',
     descriptor: CustomPropertyDescriptor<any, any>({
-        name: 'custom-tooltips',
+        name: 'mvs-custom-tooltips',
     }),
     type: 'local',
     defaultParams: CustomTooltipsParams,
