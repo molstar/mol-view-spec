@@ -9,7 +9,7 @@ export const ParseFormatT = choice('mmcif', 'bcif', 'pdb');
 /** `format` parameter values of `parse` node in Molstar tree */
 export const MolstarParseFormatT = choice('cif', 'pdb');
 
-export const StructureKindT = choice('model', 'assembly', 'symmetry', 'crystal-symmetry');
+export const StructureKindT = choice('model', 'assembly', 'symmetry', 'symmetry-mates');
 
 export const ComponentSelectorT = choice('all', 'polymer', 'protein', 'nucleic', 'branched', 'ligand', 'ion', 'water');
 

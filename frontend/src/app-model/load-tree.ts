@@ -10,7 +10,7 @@ import { Download, ParseCif } from 'molstar/lib/mol-plugin-state/transforms/data
 import { CustomModelProperties, CustomStructureProperties, ModelFromTrajectory, StructureComponent, StructureFromModel, TrajectoryFromMmCif, TrajectoryFromPDB, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
-import { StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
+import { StateBuilder, StateObjectSelector, StateTransformer } from 'molstar/lib/mol-state';
 
 import { focusCameraNode, focusStructureNode } from './focus';
 import { AnnotationColorThemeProps, AnnotationColorThemeProvider, decodeColor } from './molstar-extensions/color-from-url-extension/color';
@@ -83,11 +83,10 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
     },
     model(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'model'>, context: MolstarLoadingContext): StateObjectSelector {
         const annotations = collectAnnotationReferences(node, context);
-        const model = update.to(msTarget)
+        return update.to(msTarget)
             .apply(ModelFromTrajectory, {
                 modelIndex: getParams(node).model_index ?? Defaults.structure.model_index,
-            }).selector;
-        const cmp = update.to(model)
+            })
             .apply(CustomModelProperties, {
                 properties: {
                     [AnnotationsProvider.descriptor.name]: { annotations }
@@ -96,25 +95,10 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
                     AnnotationsProvider.descriptor.name
                 ],
             }).selector;
-        return cmp;
     },
     structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext): StateObjectSelector {
-        const params = getParams(node);
-        let result: StateObjectSelector;
-        switch (params.kind) {
-            case 'model':
-                result = update.to(msTarget).apply(StructureFromModel, {
-                    type: { name: 'model', params: {} },
-                }).selector;
-                break;
-            case 'assembly':
-                result = update.to(msTarget).apply(StructureFromModel, {
-                    type: { name: 'assembly', params: { id: params.assembly_id } },
-                }).selector;
-                break;
-            default:
-                throw new Error(`NotImplementedError: Loading action for "structure" node, kind "${params.kind}"`);
-        }
+        const props = structureProps(node);
+        const result = update.to(msTarget).apply(StructureFromModel, props).selector;
         const annotationTooltips = collectAnnotationTooltips(node, context);
         const inlineTooltips = collectInlineTooltips(node, context);
         if (annotationTooltips.length + inlineTooltips.length > 0) {
@@ -223,8 +207,6 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
 };
 
 
-type StructureRepresentation3DProps = ReturnType<typeof StructureRepresentation3D['createDefaultParams']>
-
 /** Return a 4x4 matrix representing rotation + translation */
 function transformFromRotationTranslation(rotation: number[] | null | undefined, translation: number[] | null | undefined): Mat4 {
     if (rotation && rotation.length !== 9) throw new Error(`'rotation' param for 'transform' node must be array of 9 elements, found ${rotation}`);
@@ -315,6 +297,42 @@ function blockSpec(header: string | null | undefined, index: number | null | und
     }
 }
 
+function structureProps(node: MolstarNode<'structure'>): StateTransformer.Params<StructureFromModel> {
+    const params = getParams(node);
+    switch (params.kind) {
+        case 'model':
+            return {
+                type: {
+                    name: 'model',
+                    params: {}
+                }
+            };
+        case 'assembly':
+            return {
+                type: {
+                    name: 'assembly',
+                    params: { id: params.assembly_id }
+                },
+            };
+        case 'symmetry':
+            return {
+                type: {
+                    name: 'symmetry',
+                    params: { ijkMin: params.ijk_min ?? Defaults.structure.ijk_min, ijkMax: params.ijk_max ?? Defaults.structure.ijk_max }
+                },
+            };
+        case 'symmetry-mates':
+            return {
+                type: {
+                    name: 'symmetry-mates',
+                    params: { radius: params.radius ?? Defaults.structure.radius }
+                }
+            };
+        default:
+            throw new Error(`NotImplementedError: Loading action for "structure" node, kind "${params.kind}"`);
+    }
+}
+
 function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'component'>['selector']): StructureComponentParams['type'] {
     if (selector === undefined) {
         return SelectorAll;
@@ -327,7 +345,7 @@ function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'compon
     }
 }
 
-function labelFromUrlOrCifProps(node: MolstarNode<'label-from-url' | 'label-from-cif'>, context: MolstarLoadingContext): Partial<StructureRepresentation3DProps> {
+function labelFromUrlOrCifProps(node: MolstarNode<'label-from-url' | 'label-from-cif'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
     const annotationId = context.annotationMap?.get(node);
     const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
     const nearestReprNode = context.nearestReprMap?.get(node);
@@ -348,7 +366,7 @@ function componentFromUrlOrCifProps(node: MolstarNode<'component-from-url' | 'co
     };
 }
 
-function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-cif' | 'color-from-url' | 'representation'> | undefined, context: MolstarLoadingContext): StructureRepresentation3DProps['colorTheme'] {
+function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-cif' | 'color-from-url' | 'representation'> | undefined, context: MolstarLoadingContext): StateTransformer.Params<StructureRepresentation3D>['colorTheme'] {
     if (node?.kind === 'representation') {
         const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-cif' || c.kind === 'color-from-url') as MolstarNode<'color' | 'color-from-cif' | 'color-from-url'>[];
         if (children.length === 0) {

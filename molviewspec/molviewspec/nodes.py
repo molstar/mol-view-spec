@@ -53,7 +53,7 @@ class ParseParams(Params):
 
 
 class StructureParams(Params):
-    kind: Literal["model", "assembly", "symmetry", "crystal-symmetry"]
+    kind: Literal["model", "assembly", "symmetry", "symmetry-mates"]
     assembly_id: NotRequired[str]
     """Use the name to specify which assembly to load"""
     assembly_index: NotRequired[int]

@@ -327,7 +327,7 @@ async def testing_formats_example() -> MVSResponse:
 async def testing_structures_example() -> MVSResponse:
     """
     Return state with deposited model for 1og2 (dimer, white),
-    two assemblies for 1og5 (monomers, red and blue);
+    two assemblies for 1og5 (monomers, blue and cyan);
     and three models for 1wrf (NMR conformations)
     """
     builder = Root()
@@ -345,7 +345,7 @@ async def testing_structures_example() -> MVSResponse:
         .assembly_structure(assembly_id="1")
         .component()
         .representation()
-        .color(color="red")
+        .color(color="cyan")
     )
     assembly_2 = (
         builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1og5_updated.cif")
@@ -358,12 +358,24 @@ async def testing_structures_example() -> MVSResponse:
     cif_1wrf = builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1wrf_updated.cif").parse(
         format="mmcif"
     )
-    # model_0 = cif_1wrf.model_structure(model_index=0).component().representation(color="white")
-    # model_1 = cif_1wrf.model_structure(model_index=1).component().representation(color="red")
-    # model_2 = cif_1wrf.model_structure(model_index=2).component().representation(color="blue")
-    model_0 = cif_1wrf.model_structure(model_index=0).component().representation().color(color="white")
-    model_1 = cif_1wrf.model_structure(model_index=1).component().representation().color(color="red")
-    model_2 = cif_1wrf.model_structure(model_index=2).component().representation().color(color="blue")
+    model_0 = cif_1wrf.model_structure(model_index=0).component().representation().color(color="#CC0000")
+    model_1 = cif_1wrf.model_structure(model_index=1).component().representation().color(color="#EE7700")
+    model_2 = cif_1wrf.model_structure(model_index=2).component().representation().color(color="#FFFF00")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/testing/symmetry_structures")
+async def testing_symmetry_structures_example(id: str = "1tqn") -> MVSResponse:
+    """
+    Return state with deposited model structure for 1tqn (white),
+    along with symmetry structure (blue) and symmetry-mates structure (green).
+    """
+    builder = Root()
+    structure_url = _url_for_testing_local_bcif(id)
+    model = builder.download(url=structure_url).parse(format="bcif")
+    model.model_structure(model_index=0).component().representation().color(color="white")
+    model.symmetry_structure(ijk_min=(0, 0, 0), ijk_max=(1, 1, 0)).transform(translation=(100, 0, 0)).component().representation().color(color="blue")
+    model.symmetry_mates_structure(radius=40).transform(translation=(-130, 0, 0)).component().representation().color(color="green")
     return JSONResponse(builder.get_state())
 
 

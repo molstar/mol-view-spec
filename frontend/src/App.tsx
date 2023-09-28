@@ -31,6 +31,7 @@ function Main() {
         // color: 'http://localhost:9000/api/v1/examples/color/1cbs',
         formats: 'http://localhost:9000/api/v1/examples/testing/formats',
         structures: 'http://localhost:9000/api/v1/examples/testing/structures',
+        'structures-symmetry': 'http://localhost:9000/api/v1/examples/testing/symmetry_structures',
         transforms: 'http://localhost:9000/api/v1/examples/testing/transforms',
         components: 'http://localhost:9000/api/v1/examples/testing/components',
         'colors-from-cif': 'http://localhost:9000/api/v1/examples/testing/color_from_cif',
