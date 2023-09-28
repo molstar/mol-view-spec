@@ -73,7 +73,10 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
     trajectory(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'trajectory'>): StateObjectSelector | undefined {
         const format = getParams(node).format;
         if (format === 'cif') {
-            return update.to(msTarget).apply(TrajectoryFromMmCif, {}).selector; // TODO apply block_header, block_index
+            return update.to(msTarget).apply(TrajectoryFromMmCif, {
+                blockHeader: node.params.block_header ?? Defaults.structure.block_header ?? '', // Must set to '' because just undefined would get overwritten by createDefaults
+                blockIndex: node.params.block_index ?? Defaults.structure.block_index ?? undefined,
+            }).selector;
         } else if (format === 'pdb') {
             return update.to(msTarget).apply(TrajectoryFromPDB, {}).selector;
         } else {

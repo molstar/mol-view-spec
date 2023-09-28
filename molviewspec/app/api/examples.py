@@ -243,12 +243,12 @@ async def json_data(id: str, name: str) -> Response:
     return FileResponse(path)
 
 
-@router.get("/data/{id}/file/{filename}")
-async def file(id: str, filename: str) -> Response:
+@router.get("/data/file/{filepath:path}")
+async def file(filepath: str) -> Response:
     """
     Download a specific file. (Mostly for testing)
     """
-    path = settings.TEST_DATA_DIR / id / filename
+    path = settings.TEST_DATA_DIR / filepath
     return FileResponse(path)
 
 
@@ -372,10 +372,11 @@ async def testing_symmetry_structures_example(id: str = "1tqn") -> MVSResponse:
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif(id)
-    model = builder.download(url=structure_url).parse(format="bcif")
-    model.model_structure(model_index=0).component().representation().color(color="white")
-    model.symmetry_structure(ijk_min=(0, 0, 0), ijk_max=(1, 1, 0)).transform(translation=(100, 0, 0)).component().representation().color(color="blue")
-    model.symmetry_mates_structure(radius=40).transform(translation=(-130, 0, 0)).component().representation().color(color="green")
+    structure_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs_2nnj_1tqn.cif"
+    model = builder.download(url=structure_url).parse(format="mmcif")
+    model.model_structure(block_header="1TQN", model_index=0).component().representation().color(color="white")
+    model.symmetry_structure(block_index=2, ijk_min=(0, 0, 0), ijk_max=(1, 1, 0)).transform(translation=(100, 0, 0)).component().representation().color(color="blue")
+    model.symmetry_mates_structure(block_index=2, radius=40).transform(translation=(-130, 0, 0)).component().representation().color(color="green")
     return JSONResponse(builder.get_state())
 
 
@@ -518,7 +519,7 @@ async def testing_color_cif_example() -> MVSResponse:
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif("1cbs")
-    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.cif"
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs/custom.cif"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_url(
         schema="atom",
@@ -540,7 +541,7 @@ async def testing_color_cif_multicategory_example() -> MVSResponse:
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif("1cbs")
-    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom-multicategory.cif"
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs/custom-multicategory.cif"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_url(
         schema="atom",
@@ -567,7 +568,7 @@ async def testing_color_bcif_example() -> MVSResponse:
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif("1cbs")
-    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/1cbs/file/custom.bcif"
+    annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs/custom.bcif"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_url(
         schema="atom",

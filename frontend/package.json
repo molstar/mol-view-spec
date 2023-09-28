@@ -13,6 +13,7 @@
     "@types/node": "^16.18.29",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
+    "io-ts": "^2.2.20",
     "molstar": "^3.34.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
