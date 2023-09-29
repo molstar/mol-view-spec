@@ -414,7 +414,6 @@ async def testing_transforms_example(id: str = "1cbs") -> MVSResponse:
         .component(selector="all")
         .representation().color(color="green")
     )
-    # Right now builder prohibits multiple transforms, but frontend supports them
     combination = (
         model
         .model_structure()
@@ -436,23 +435,38 @@ async def testing_transforms_example(id: str = "1cbs") -> MVSResponse:
 
 @router.get("/testing/components")
 async def testing_components_example() -> MVSResponse:
+    """
+    Return state demonstrating different static components
+    (polymer, ligand, ion, water, branched, protein, nucleic)
+    """
     builder = Root()
-    structure = (
-        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/8h0v_updated.cif")
+    struct1 = (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/2nnj_updated.cif")
         .parse(format="mmcif")
         .model_structure()
     )
-    (
-        structure.component(selector="protein")
-        .representation(type="surface")
-        .color(color="white")
+    struct1.component(selector="polymer").representation(type="cartoon").color(color="white")
+    struct1.component(selector="ligand").representation(type="surface").color(color="blue")
+    struct1.component(selector="ion").representation(type="surface").color(color="cyan")
+    struct1.component(selector="water").representation(type="ball-and-stick").color(color="red")
+
+    struct2 = (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/5t3x_updated.cif")
+        .parse(format="mmcif")
+        .model_structure()
+        .transform(translation=(0, 0, -130))
     )
-    (
-        structure.component(selector="nucleic")
-        .representation(type="cartoon")
-        .color(color="red")
+    struct2.component(selector="polymer").representation(type="cartoon").color(color="orange")
+    struct2.component(selector="branched").representation(type="ball-and-stick").color(color="green")
+
+    struct3 = (
+        builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/8h0v_updated.cif")
+        .parse(format="mmcif")
+        .model_structure()
+        .transform(translation=(-70, -100, -170))
     )
-    # TODO add all component types to this example
+    struct3.component(selector="protein").representation(type="surface").color(color="white")
+    struct3.component(selector="nucleic").representation(type="cartoon").color(color="red")
     return JSONResponse(builder.get_state())
 
 
