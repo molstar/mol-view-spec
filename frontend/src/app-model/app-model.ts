@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2023 mol* contributors, licensed under MIT, See LICENSE file for more info.
+ *
+ * @author Adam Midlik <midlik@gmail.com>
+ */
+
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
@@ -5,10 +11,10 @@ import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
 import { BehaviorSubject } from 'rxjs';
 
-import { MolViewSpec } from './molstar-extensions/behavior';
-import { loadMVSTree } from './load-tree';
-import { MVSTree } from './tree/mvs-nodes';
-import { treeToString } from './tree/tree-utils';
+import { MolViewSpec } from './mvs-extension/behavior';
+import { loadMVSTree } from './mvs-extension/load';
+import { MVSTree } from './mvs-extension/tree/mvs/mvs-tree';
+import { treeToString } from './mvs-extension/tree/generic/tree-utils';
 
 
 export class AppModel {
