@@ -13,6 +13,7 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
 import { getAnnotationForStructure } from './prop';
+import { isHexColorString } from '../../tree/param-types';
 
 
 /** Parameter definition for color theme "Annotation" */
@@ -85,8 +86,15 @@ export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorTh
  * Return `undefined` if `colorString` cannot be converted. */
 export function decodeColor(colorString: string | undefined): Color | undefined {
     if (colorString === undefined) return undefined;
-    let result = Color.fromHexStyle(colorString);
-    if (result !== undefined && !isNaN(result)) return result;
+    let result: Color | undefined;
+    if (isHexColorString(colorString)) {
+        if (colorString.length === 4) {
+            // convert short form to full form (#f0f -> #ff00ff)
+            colorString = `#${colorString[1]}${colorString[1]}${colorString[2]}${colorString[2]}${colorString[3]}${colorString[3]}`;
+        }
+        result = Color.fromHexStyle(colorString);
+        if (result !== undefined && !isNaN(result)) return result;
+    }
     result = ColorNames[colorString.toLowerCase() as keyof typeof ColorNames];
     if (result !== undefined) return result;
     return undefined;

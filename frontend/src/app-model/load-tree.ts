@@ -12,7 +12,7 @@ import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transfor
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateBuilder, StateObjectSelector, StateTransformer } from 'molstar/lib/mol-state';
 
-import { focusCameraNode, focusStructureNode } from './focus';
+import { focusCameraNode, focusStructureNode, setCanvas } from './focus';
 import { AnnotationColorThemeProps, AnnotationColorThemeProvider, decodeColor } from './molstar-extensions/color-from-url-extension/color';
 import { AnnotationStructureComponent, AnnotationStructureComponentProps } from './molstar-extensions/color-from-url-extension/component-from-annotation';
 import { AnnotationLabelRepresentationProvider } from './molstar-extensions/color-from-url-extension/label-representation';
@@ -44,7 +44,8 @@ interface MolstarLoadingContext {
     annotationMap?: Map<MolstarNode<AnnotationFromUrlKind | AnnotationFromCifKind>, string>,
     /** Maps each node (on 'structure' or lower level) to its nearest 'representation' node */
     nearestReprMap?: Map<MolstarNode, MolstarNode<'representation'>>,
-    focus?: { kind: 'camera', params: ParamsOfKind<MolstarTree, 'camera'> } | { kind: 'focus', focusTarget: StateObjectSelector, params: ParamsOfKind<MolstarTree, 'focus'> }
+    focus?: { kind: 'camera', params: ParamsOfKind<MolstarTree, 'camera'> } | { kind: 'focus', focusTarget: StateObjectSelector, params: ParamsOfKind<MolstarTree, 'focus'> },
+    canvas?: ParamsOfKind<MolstarTree, 'canvas'>,
 }
 
 
@@ -205,6 +206,10 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
     },
     camera(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'camera'>, context: MolstarLoadingContext): StateObjectSelector {
         context.focus = { kind: 'camera', params: getParams(node) };
+        return msTarget;
+    },
+    canvas(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'canvas'>, context: MolstarLoadingContext): StateObjectSelector {
+        context.canvas = getParams(node);
         return msTarget;
     },
 };
@@ -513,6 +518,8 @@ export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, 
         }
     });
     await update.commit();
+
+    setCanvas(plugin, context.canvas);
     if (context.focus?.kind === 'camera') {
         await focusCameraNode(plugin, context.focus.params);
     } else if (context.focus?.kind === 'focus') {

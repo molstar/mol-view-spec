@@ -809,6 +809,7 @@ async def testing_focus_example() -> MVSResponse:
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="orange")
     structure.component(selector="ligand").focus(direction=direction, up=up).representation(type="ball-and-stick").color(color="green")
+    builder.canvas(background_color='#BBDDFF')
     return JSONResponse(builder.get_state())
 
 
@@ -824,6 +825,7 @@ async def testing_camera_example() -> MVSResponse:
     structure.component(selector="ligand").representation(type="ball-and-stick").color(color="green")
     target, position, up = _target_spherical_to_tpu((17, 21, 27), phi=30, theta=15, radius=100)
     builder.camera(target=target, position=position, up=up)
+    builder.canvas(background_color='black')
     return JSONResponse(builder.get_state())
 
 

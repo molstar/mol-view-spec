@@ -15,7 +15,9 @@ import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateObjectSelector } from 'molstar/lib/mol-state';
+import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
+import { decodeColor } from './molstar-extensions/color-from-url-extension/color';
 import { Defaults } from './param-defaults';
 import { ParamsOfKind } from './tree/generic';
 import { MolstarTree } from './tree/molstar-nodes';
@@ -27,6 +29,8 @@ const DefaultCameraFocusOptions = {
     extraRadiusForFocus: 4,
     extraRadiusForZoomAll: 0,
 };
+const DefaultCanvasBackgroundColor = ColorNames.white;
+
 
 export async function focusCameraNode(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'camera'>) {
     const target = Vec3.create(...params.target);
@@ -92,4 +96,17 @@ function boundingSphereOfSpheres(spheres: Sphere3D[]): Sphere3D {
     boundaryHelper.finishedIncludeStep();
     for (const s of spheres) boundaryHelper.radiusSphere(s);
     return boundaryHelper.getSphere();
+}
+
+export function setCanvas(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'canvas'> | undefined) {
+    const backgroundColor = decodeColor(params?.background_color) ?? DefaultCanvasBackgroundColor;
+    if (backgroundColor !== plugin.canvas3d?.props.renderer.backgroundColor) {
+        plugin.canvas3d?.setProps(old => ({
+            ...old,
+            renderer: {
+                ...old.renderer,
+                backgroundColor: backgroundColor,
+            }
+        }));
+    }
 }

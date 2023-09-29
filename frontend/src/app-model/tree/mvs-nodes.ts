@@ -3,30 +3,6 @@ import { ColorT, ComponentExpression, ComponentSelectorT, HexColorT, Matrix, Par
 import { OptionalField, RequiredField, float, int, list, nullable, str, tuple, union } from './params-schema';
 
 
-const InlineSchemaParams = {
-    label_entity_id: OptionalField(nullable(str)),
-    label_asym_id: OptionalField(nullable(str)),
-    auth_asym_id: OptionalField(nullable(str)),
-    label_seq_id: OptionalField(nullable(int)),
-    auth_seq_id: OptionalField(nullable(int)),
-    pdbx_PDB_ins_code: OptionalField(nullable(str)),
-    beg_label_seq_id: OptionalField(nullable(int)),
-    end_label_seq_id: OptionalField(nullable(int)),
-    beg_auth_seq_id: OptionalField(nullable(int)),
-    end_auth_seq_id: OptionalField(nullable(int)),
-    atom_id: OptionalField(nullable(int)),
-    atom_index: OptionalField(nullable(int)),
-    label_atom_id: OptionalField(nullable(str)),
-    auth_atom_id: OptionalField(nullable(str)),
-    type_symbol: OptionalField(nullable(str)),
-};
-const LabelParams = {
-    schema: RequiredField(SchemaT),
-};
-const ColorParams = {
-    schema: RequiredField(SchemaT),
-};
-
 const _DataFromUrlParams = {
     url: RequiredField(str),
     format: RequiredField(SchemaFormatT),
@@ -126,7 +102,7 @@ export const MVSTreeSchema = TreeSchema('root',
             translation: OptionalField(nullable(Vector3)),
         },
         'canvas': {
-            background_color: RequiredField(ColorT),
+            background_color: RequiredField(union([ColorT, HexColorT])),
         },
         'camera': {
             target: RequiredField(Vector3),

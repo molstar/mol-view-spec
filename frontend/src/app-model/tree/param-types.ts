@@ -46,7 +46,7 @@ export const Matrix = list(float);
 /** Hexadecimal color string, e.g. '#FF1100' */
 export type HexColorString = string & { '@type': 'HexColorString' }
 
-const hexColorRegex = /^#[0-9A-F]{6}$/i;
+const hexColorRegex = /^#([0-9A-F]{3}){1,2}$/i; // matches #FF1100 or #f10
 
 export function isHexColorString(str: any): str is HexColorString {
     return typeof str === 'string' && hexColorRegex.test(str);
