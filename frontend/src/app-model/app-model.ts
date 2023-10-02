@@ -12,7 +12,7 @@ import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
 import { BehaviorSubject } from 'rxjs';
 
 import { MolViewSpec } from './mvs-extension/behavior';
-import { loadMVSTree } from './mvs-extension/load';
+import { loadMVS } from './mvs-extension/load';
 import { MVSTree } from './mvs-extension/tree/mvs/mvs-tree';
 import { treeToString } from './mvs-extension/tree/generic/tree-utils';
 
@@ -56,27 +56,21 @@ export class AppModel {
     public async loadMvsFromUrl(url: string = 'http://localhost:9000/api/v1/examples/load/1cbs') {
         this.status.next('loading');
         try {
-            console.log('foo', this.plugin);
             if (!this.plugin) return;
             this.plugin.behaviors.layout.leftPanelTabName.next('data');
 
-            const { version, root } = await getTreeFromUrl(url);
-            console.log('MVS version:', version);
+            const tree = await getTreeFromUrl(url);
 
             const DELETE_PREVIOUS = true;
-            await loadMVSTree(this.plugin, root, DELETE_PREVIOUS);
+            await loadMVS(this.plugin, tree, DELETE_PREVIOUS);
 
             this.url.next(url);
-            this.tree.next(treeToString(root));
+            this.tree.next(treeToString(tree.root));
             this.status.next('ready');
         } catch (err) {
             this.status.next('error');
             throw err;
         }
-    }
-    printCamera() {
-        const snapshot = this.plugin?.canvas3d?.camera.getSnapshot();
-        console.log('printCamera:', snapshot);
     }
 }
 
@@ -86,71 +80,3 @@ async function getTreeFromUrl(url: string): Promise<{ version: number, root: MVS
     const data = await response.json();
     return data;
 }
-
-const TEST_DATA: MVSTree = {
-    'kind': 'root',
-    'children': [
-        {
-            'kind': 'download', 'params': { 'url': 'https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif' },
-            // 'kind': 'download', 'params': { 'url': 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent' },
-            'children': [
-                {
-                    'kind': 'parse', 'params': { 'format': 'bcif' },
-                    // 'kind': 'parse', 'params': { 'format': 'pdb' },
-                    'children': [
-                        {
-                            'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 0, 'assembly_id': '1' },
-                            'children': [
-                                {
-                                    'kind': 'component', 'params': { 'selector': 'protein' },
-                                    'children': [
-                                        {
-                                            'kind': 'representation', 'params': { 'type': 'cartoon' },
-                                            'children': [
-                                                {
-                                                    'kind': 'color', 'params': { 'color': 'red' }
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    'kind': 'component', 'params': { 'selector': 'ligand' },
-                                    'children': [
-                                        {
-                                            'kind': 'representation', 'params': { 'type': 'ball-and-stick' },
-                                            'children': [
-                                                {
-                                                    'kind': 'color-from-cif', 'params': { 'schema': 'residue', 'category_name': 'my_custom_cif_category' }
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 0, 'assembly_id': '2' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 1, 'assembly_id': '1' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 1, 'assembly_id': '2' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 1, 'assembly_id': '3' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 2, 'assembly_id': '1' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 2, 'assembly_id': '2' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 2, 'assembly_id': '3' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'model', 'model_index': 2 } }
-                    ]
-                }
-            ]
-        },
-        {
-            'kind': 'raw', 'params': { 'data': 'hello' }, 'children': [
-                { 'kind': 'parse', 'params': { 'format': 'pdb' } },
-                { 'kind': 'parse', 'params': { 'format': 'bcif' } },
-                { 'kind': 'parse', 'params': { 'format': 'mmcif' } }
-            ]
-        },
-        {
-            'kind': 'raw', 'params': { 'data': 'ciao' }
-        }
-
-    ]
-};

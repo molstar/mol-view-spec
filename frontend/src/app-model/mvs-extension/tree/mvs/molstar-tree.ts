@@ -29,7 +29,6 @@ export const MolstarTreeSchema = TreeSchema('root',
             format: RequiredField(MolstarParseFormatT),
             block_header: MVSTreeSchema.paramsSchemas.structure.block_header,
             block_index: MVSTreeSchema.paramsSchemas.structure.block_index,
-            // TODO think through and fix trajectory vs parse and model
         },
         'model': pickObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
         'structure': omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
@@ -37,11 +36,9 @@ export const MolstarTreeSchema = TreeSchema('root',
         'transforms': {},
         'color-from-url': {
             ...MVSTreeSchema.paramsSchemas['color-from-url'],
-            // background: OptionalField(ColorT),
         },
         'color-from-cif': {
             ...MVSTreeSchema.paramsSchemas['color-from-cif'],
-            // background: OptionalField(ColorT),
         },
     }
 );
@@ -52,5 +49,3 @@ export type MolstarKind = keyof typeof MolstarTreeSchema.paramsSchemas;
 export type MolstarNode<TKind extends MolstarKind = MolstarKind> = NodeForTree<typeof MolstarTreeSchema, TKind>
 
 export type MolstarTree = TreeFor<typeof MolstarTreeSchema>
-
-console.log('Molstar model params schema:', MolstarTreeSchema.paramsSchemas.model);

@@ -16,18 +16,47 @@ import { AnnotationTooltipsProvider } from './additions/annotation-tooltips-prop
 import { CustomLabelProps, CustomLabelRepresentationProvider } from './additions/custom-label/representation';
 import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { focusCameraNode, focusStructureNode, setCanvas } from './camera';
-import { AnnotationFromCifKind, AnnotationFromUrlKind, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUrlOrCifProps, componentPropsFromSelector, isPhantomComponent, labelFromUrlOrCifProps, makeNearestReprMap, structureProps, transformFromRotationTranslation } from './load-helpers';
-import { ParamsOfKind, SubTree, SubTreeOfKind, Tree, TreeSchema, getChildren, getParams, treeValidationIssues } from './tree/generic/generic';
-import { dfs, treeToString } from './tree/generic/tree-utils';
+import { AnnotationFromCifKind, AnnotationFromUrlKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUrlOrCifProps, componentPropsFromSelector, isPhantomComponent, labelFromUrlOrCifProps, loadTree, makeNearestReprMap, structureProps, transformFromRotationTranslation } from './load-helpers';
+import { ParamsOfKind, SubTreeOfKind, getChildren, getParams, validateTree } from './tree/generic/generic';
 import { convertMvsToMolstar } from './tree/mvs/conversion';
-import { MolstarKind, MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
+import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
 import { MVSTree, MVSTreeSchema } from './tree/mvs/mvs-tree';
 import { Defaults } from './tree/mvs/param-defaults';
-import { canonicalJsonString, formatObject } from './utils';
+import { canonicalJsonString } from './utils';
 
 
-// TODO once everything is implemented, remove `[]?:` and `undefined` return values
-export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
+export interface MVSData {
+    root: MVSTree,
+    version: number,
+}
+
+export async function loadMVS(plugin: PluginContext, data: MVSData | string, deletePrevious: boolean) {
+    if (typeof data === 'string') {
+        data = JSON.parse(data) as MVSData;
+    }
+    // console.log(`MVS tree (v${data.version}):\n${treeToString(data.root)}`);
+    validateTree(MVSTreeSchema, data.root, 'MVS');
+    const molstarTree = convertMvsToMolstar(data.root);
+    // console.log(`Converted MolStar tree:\n${treeToString(molstarTree)}`);
+    validateTree(MolstarTreeSchema, molstarTree, 'Converted Molstar');
+    await loadMolstarTree(plugin, molstarTree, deletePrevious);
+}
+
+async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
+    const context: MolstarLoadingContext = {};
+
+    await loadTree(plugin, tree, MolstarLoadingActions, context, deletePrevious);
+
+    setCanvas(plugin, context.canvas);
+    if (context.focus?.kind === 'camera') {
+        await focusCameraNode(plugin, context.focus.params);
+    } else if (context.focus?.kind === 'focus') {
+        await focusStructureNode(plugin, context.focus.focusTarget, context.focus.params);
+    } else {
+        await focusStructureNode(plugin, undefined, undefined);
+    }
+}
+
 
 export interface MolstarLoadingContext {
     /** Maps `*-from-[url|cif]` nodes to annotationId they should reference */
@@ -39,7 +68,7 @@ export interface MolstarLoadingContext {
 }
 
 
-export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<MolstarNode<kind>, MolstarLoadingContext> } = {
+const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> = {
     root(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'root'>, context: MolstarLoadingContext): StateObjectSelector {
         context.nearestReprMap = makeNearestReprMap(node);
         return msTarget;
@@ -107,18 +136,11 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
                 ],
             });
         }
-        // loadAllLabelsFromSubtree(update, result, node, context);
         return result;
     },
-    tooltip() {
-        return undefined; // No action needed, already loaded in `structure`
-    },
-    'tooltip-from-url'() {
-        return undefined; // No action needed, already loaded in `structure`
-    },
-    'tooltip-from-cif'() {
-        return undefined; // No action needed, already loaded in `structure`
-    },
+    tooltip: undefined, // No action needed, already loaded in `structure`
+    'tooltip-from-url': undefined, // No action needed, already loaded in `structure`
+    'tooltip-from-cif': undefined, // No action needed, already loaded in `structure`
     component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component'>): StateObjectSelector | undefined {
         if (isPhantomComponent(node)) {
             return msTarget;
@@ -149,15 +171,9 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
             colorTheme: colorThemeForNode(node, context),
         }).selector;
     },
-    color() {
-        return undefined; // No action needed, already loaded in `representation`
-    },
-    'color-from-url'() {
-        return undefined; // No action needed, already loaded in `representation`
-    },
-    'color-from-cif'() {
-        return undefined; // No action needed, already loaded in `representation`
-    },
+    color: undefined, // No action needed, already loaded in `structure`
+    'color-from-url': undefined, // No action needed, already loaded in `structure`
+    'color-from-cif': undefined, // No action needed, already loaded in `structure`
     label(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
         const item: CustomLabelProps['items'][number] = {
             text: node.params.text,
@@ -203,70 +219,3 @@ export const MolstarLoadingActions: { [kind in MolstarKind]?: LoadingAction<Mols
         return msTarget;
     },
 };
-
-// TODO define this generically?
-export async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
-    const update = plugin.build();
-    const mapping = new Map<SubTree<MolstarTree>, StateObjectSelector | undefined>(); // TODO remove undefined
-    const context: MolstarLoadingContext = {};
-    dfs(tree, (node, parent) => {
-        console.log('Visit', node.kind, formatObject(getParams(node)));
-        if (node.kind === 'root') {
-            const msRoot = update.toRoot().selector;
-            if (deletePrevious) {
-                update.currentTree.children.get(msRoot.ref).forEach(child => update.delete(child));
-            }
-            const action = MolstarLoadingActions[node.kind] as LoadingAction<typeof node, MolstarLoadingContext> | undefined;
-            const msNode = action?.(update, msRoot, node, context) ?? msRoot;
-            mapping.set(node, msNode);
-        } else {
-            if (!parent) throw new Error(`FormatError: non-root node (${node.kind}) has no parent`);
-            const msTarget = mapping.get(parent);
-            if (!msTarget) {
-                console.warn('No target found for this', node.kind);
-                return;
-            }
-            const action = MolstarLoadingActions[node.kind] as LoadingAction<typeof node, MolstarLoadingContext> | undefined;
-            if (action) {
-                const msNode = action(update, msTarget, node, context);
-                mapping.set(node, msNode);
-            } else {
-                console.warn('No action for node kind', node.kind);
-            }
-        }
-    });
-    await update.commit();
-
-    setCanvas(plugin, context.canvas);
-    if (context.focus?.kind === 'camera') {
-        await focusCameraNode(plugin, context.focus.params);
-    } else if (context.focus?.kind === 'focus') {
-        await focusStructureNode(plugin, context.focus.focusTarget, context.focus.params);
-    } else {
-        await focusStructureNode(plugin, undefined, undefined);
-    }
-}
-
-export async function loadMVSTree(plugin: PluginContext, tree: MVSTree, deletePrevious: boolean) {
-    console.log('MVS tree:');
-    console.log(treeToString(tree));
-    validateTree(MVSTreeSchema, tree, 'MVS');
-    const molstarTree = convertMvsToMolstar(tree);
-    console.log('Converted MolStar tree:');
-    console.log(treeToString(molstarTree));
-    validateTree(MolstarTreeSchema, molstarTree, 'Molstar');
-    await loadMolstarTree(plugin, molstarTree, deletePrevious);
-}
-
-function validateTree(schema: TreeSchema, tree: Tree, label: string) {
-    const issues = treeValidationIssues(schema, tree, { noExtra: true });
-    if (issues) {
-        console.error(label, 'validation issues:');
-        for (const line of issues) {
-            console.error(' ', line);
-        }
-        throw new Error('FormatError');
-    } else {
-        console.warn(label, '- no validation issues.');
-    }
-}

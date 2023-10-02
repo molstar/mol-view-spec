@@ -8,12 +8,11 @@ import { Location } from 'molstar/lib/mol-model/location';
 import { Bond, StructureElement } from 'molstar/lib/mol-model/structure';
 import { ColorTheme, LocationColor } from 'molstar/lib/mol-theme/color';
 import { ThemeDataContext } from 'molstar/lib/mol-theme/theme';
-import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
+import { decodeColor } from '../utils';
 import { getAnnotationForStructure } from './annotation-prop';
-import { isHexColorString } from '../tree/mvs/param-types';
 
 
 /** Parameter definition for color theme "Annotation" */
@@ -80,22 +79,3 @@ export const AnnotationColorThemeProvider: ColorTheme.Provider<AnnotationColorTh
     defaultValues: PD.getDefaultValues(AnnotationColorThemeParams),
     isApplicable: (ctx: ThemeDataContext) => true,
 };
-
-
-/** Convert `colorString` (either color name like 'magenta' or hex code like '#ff00ff') to Color.
- * Return `undefined` if `colorString` cannot be converted. */
-export function decodeColor(colorString: string | undefined): Color | undefined {
-    if (colorString === undefined) return undefined;
-    let result: Color | undefined;
-    if (isHexColorString(colorString)) {
-        if (colorString.length === 4) {
-            // convert short form to full form (#f0f -> #ff00ff)
-            colorString = `#${colorString[1]}${colorString[1]}${colorString[2]}${colorString[2]}${colorString[3]}${colorString[3]}`;
-        }
-        result = Color.fromHexStyle(colorString);
-        if (result !== undefined && !isNaN(result)) return result;
-    }
-    result = ColorNames[colorString.toLowerCase() as keyof typeof ColorNames];
-    if (result !== undefined) return result;
-    return undefined;
-}

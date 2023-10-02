@@ -5,6 +5,9 @@
  */
 
 import { hashString } from 'molstar/lib/mol-data/util';
+import { isHexColorString } from './tree/mvs/param-types';
+import { Color } from 'molstar/lib/mol-util/color';
+import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 
 export function formatObject(obj: {} | undefined) {
@@ -251,3 +254,21 @@ export function stringHash(input: string): string {
 
 /** Return type of elements in a set */
 export type ElementOfSet<S> = S extends Set<infer T> ? T : never
+
+/** Convert `colorString` (either X11 color name like 'magenta' or hex code like '#ff00ff') to Color.
+ * Return `undefined` if `colorString` cannot be converted. */
+export function decodeColor(colorString: string | undefined): Color | undefined {
+    if (colorString === undefined) return undefined;
+    let result: Color | undefined;
+    if (isHexColorString(colorString)) {
+        if (colorString.length === 4) {
+            // convert short form to full form (#f0f -> #ff00ff)
+            colorString = `#${colorString[1]}${colorString[1]}${colorString[2]}${colorString[2]}${colorString[3]}${colorString[3]}`;
+        }
+        result = Color.fromHexStyle(colorString);
+        if (result !== undefined && !isNaN(result)) return result;
+    }
+    result = ColorNames[colorString.toLowerCase() as keyof typeof ColorNames];
+    if (result !== undefined) return result;
+    return undefined;
+}

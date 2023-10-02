@@ -85,8 +85,6 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
         props = { ...PD.getDefaultValues(AnnotationsParams), ...props };
         const specs: AnnotationSpec[] = props.annotations ?? [];
         const annots = await Annotations.fromSpecs(ctx, specs, data);
-        console.log('obtain: annotation sources:', props.annotations);
-        console.log('obtain: annotation data:', annots);
         return { value: annots } satisfies CustomProperty.Data<Annotations>;
     }
 });

@@ -17,10 +17,10 @@ import { PluginContext } from 'molstar/lib/mol-plugin/context';
 import { StateObjectSelector } from 'molstar/lib/mol-state';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
-import { decodeColor } from './additions/annotation-color-theme'; // TODO move elsewhere
 import { Defaults } from './tree/mvs/param-defaults';
 import { ParamsOfKind } from './tree/generic/generic';
 import { MolstarTree } from './tree/mvs/molstar-tree';
+import { decodeColor } from './utils';
 
 
 /** Defined in `molstar/lib/mol-plugin-state/manager/camera.ts` but private */

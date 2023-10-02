@@ -5,6 +5,7 @@
  */
 
 import { ParamsSchema, ValuesFor, paramsValidationIssues } from './params-schema';
+import { treeToString } from './tree-utils';
 
 
 export type Node<TKind extends string = string, TParams extends {} = {}> =
@@ -72,10 +73,22 @@ export function treeValidationIssues(schema: TreeSchema, tree: Tree, options: { 
     const paramsSchema = schema.paramsSchemas[tree.kind];
     if (!paramsSchema) return [`Unknown node kind "${tree.kind}"`];
     const issues = paramsValidationIssues(paramsSchema, getParams(tree), options);
-    if (issues) return [`Invalid parameters for node of kind "${tree.kind}":`, ...issues];
+    if (issues) return [`Invalid parameters for node of kind "${tree.kind}":`, ...issues.map(s => '  ' + s)];
     for (const child of getChildren(tree)) {
         const issues = treeValidationIssues(schema, child, { ...options, anyRoot: true });
         if (issues) return issues;
     }
     return undefined;
+}
+
+export function validateTree(schema: TreeSchema, tree: Tree, label: string): void {
+    const issues = treeValidationIssues(schema, tree, { noExtra: true });
+    if (issues) {
+        console.warn(`Invalid ${label} tree:\n${treeToString(tree)}`);
+        console.error(`${label} tree validation issues:`);
+        for (const line of issues) {
+            console.error(' ', line);
+        }
+        throw new Error('FormatError');
+    }
 }

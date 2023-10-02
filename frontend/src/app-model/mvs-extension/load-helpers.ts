@@ -8,9 +8,10 @@ import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { StructureComponentParams } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
 import { StructureFromModel } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
-import { StateTransformer } from 'molstar/lib/mol-state';
+import { StateBuilder, StateObjectSelector, StateTransformer } from 'molstar/lib/mol-state';
 
-import { AnnotationColorThemeProps, AnnotationColorThemeProvider, decodeColor } from './additions/annotation-color-theme';
+import { PluginContext } from 'molstar/lib/mol-plugin/context';
+import { AnnotationColorThemeProps, AnnotationColorThemeProvider } from './additions/annotation-color-theme';
 import { AnnotationLabelRepresentationProvider } from './additions/annotation-label/representation';
 import { AnnotationSpec } from './additions/annotation-prop';
 import { AnnotationStructureComponentProps } from './additions/annotation-structure-component';
@@ -19,11 +20,40 @@ import { CustomTooltipsProps } from './additions/custom-tooltips-prop';
 import { MultilayerColorThemeName, MultilayerColorThemeProps, NoColor, SelectorAll } from './additions/multilayer-color-theme';
 import { rowToExpression, rowsToExpression } from './helpers/selections';
 import { MolstarLoadingContext } from './load';
-import { ParamsOfKind, SubTree, SubTreeOfKind, getChildren, getParams } from './tree/generic/generic';
+import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getChildren, getParams } from './tree/generic/generic';
 import { dfs } from './tree/generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './tree/mvs/molstar-tree';
 import { DefaultColor, Defaults } from './tree/mvs/param-defaults';
-import { ElementOfSet, canonicalJsonString, distinct, isDefined, stringHash } from './utils';
+import { ElementOfSet, canonicalJsonString, decodeColor, distinct, isDefined, stringHash } from './utils';
+
+
+export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
+
+export type LoadingActions<TTree extends Tree, TContext> = { [kind in Kind<SubTree<TTree>>]?: LoadingAction<SubTreeOfKind<TTree, kind>, TContext> }
+
+export async function loadTree<TTree extends Tree, TContext>(plugin: PluginContext, tree: TTree, loadingActions: LoadingActions<TTree, TContext>, context: TContext, deletePrevious: boolean) {
+    const mapping = new Map<SubTree<TTree>, StateObjectSelector | undefined>();
+    const update = plugin.build();
+    const msRoot = update.toRoot().selector;
+    if (deletePrevious) {
+        update.currentTree.children.get(msRoot.ref).forEach(child => update.delete(child));
+    }
+    dfs<TTree>(tree, (node, parent) => {
+        const kind: Kind<typeof node> = node.kind;
+        const action = loadingActions[kind] as LoadingAction<typeof node, TContext> | undefined;
+        if (action) {
+            const msTarget = parent ? mapping.get(parent) : msRoot;
+            if (msTarget) {
+                const msNode = action(update, msTarget, node, context);
+                mapping.set(node, msNode);
+            } else {
+                console.warn(`No target found for this "${node.kind}" node`);
+                return;
+            }
+        }
+    });
+    await update.commit();
+}
 
 
 export const AnnotationFromUrlKinds = new Set(['color-from-url', 'component-from-url', 'label-from-url', 'tooltip-from-url'] satisfies MolstarKind[]);

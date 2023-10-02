@@ -91,7 +91,7 @@ export function paramsValidationIssues<P extends ParamsSchema, V extends { [k: s
         if (Object.hasOwn(values, key)) {
             const value = values[key];
             const issues = fieldValidationIssues(paramDef, value);
-            if (issues) return [`Invalid type for parameter "${key}":`, ...issues];
+            if (issues) return [`Invalid type for parameter "${key}":`, ...issues.map(s => '  ' + s)];
         } else {
             if (paramDef.required) return [`Missing required parameter "${key}".`];
             if (options.requireAll) return [`Missing optional parameter "${key}".`];

@@ -6,7 +6,7 @@
 
 import * as t from 'io-ts';
 
-import { ValueFor, choice, float, int, list, nullable, str, tuple } from '../generic/params-schema';
+import { ValueFor, choice, float, int, list, nullable, str, tuple, union } from '../generic/params-schema';
 
 
 /** `format` parameter values of `parse` node in MVS tree */
@@ -41,7 +41,7 @@ export const ComponentExpression = t.partial({
 
 export const RepresentationTypeT = choice('ball-and-stick', 'cartoon', 'surface');
 
-export const ColorT = choice('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
+export const ColorNamesT = choice('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
 
 export const SchemaT = choice('whole-structure', 'entity', 'chain', 'auth-chain', 'residue', 'auth-residue', 'residue-range', 'auth-residue-range', 'atom', 'auth-atom', 'all-atomic');
 
@@ -63,6 +63,8 @@ export function isHexColorString(str: any): str is HexColorString {
 export const HexColorT = new t.Type<HexColorString>(
     'HexColorT',
     ((value: any) => typeof value === 'string') as any,
-    (value, ctx) => isHexColorString(value) ? { _tag: 'Right', right: value } : { _tag: 'Left', left: [{ value: value, context: ctx, message: `${value} is not a valid hex color string (like #FF1100)` }] },
+    (value, ctx) => isHexColorString(value) ? { _tag: 'Right', right: value } : { _tag: 'Left', left: [{ value: value, context: ctx, message: `"${value}" is not a valid hex color string` }] },
     value => value
 );
+
+export const ColorT = union([HexColorT, ColorNamesT]);

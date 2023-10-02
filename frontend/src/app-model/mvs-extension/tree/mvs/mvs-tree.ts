@@ -5,7 +5,7 @@
  */
 
 import { NodeForTree, TreeFor, TreeSchema } from '../generic/generic';
-import { ColorT, ComponentExpression, ComponentSelectorT, HexColorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
+import { ColorT, ComponentExpression, ComponentSelectorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
 import { OptionalField, RequiredField, float, int, list, nullable, str, tuple, union } from '../generic/params-schema';
 
 
@@ -71,7 +71,7 @@ export const MVSTreeSchema = TreeSchema('root',
             type: RequiredField(RepresentationTypeT),
         },
         'color': {
-            color: RequiredField(union([ColorT, HexColorT])),
+            color: RequiredField(ColorT),
             selector: OptionalField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
         'color-from-url': {
@@ -108,7 +108,7 @@ export const MVSTreeSchema = TreeSchema('root',
             translation: OptionalField(nullable(Vector3)),
         },
         'canvas': {
-            background_color: RequiredField(union([ColorT, HexColorT])),
+            background_color: RequiredField(ColorT),
         },
         'camera': {
             target: RequiredField(Vector3),
