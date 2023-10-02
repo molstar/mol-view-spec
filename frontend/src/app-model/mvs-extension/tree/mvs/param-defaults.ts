@@ -30,14 +30,14 @@ export const Defaults = {
     component: {
         selector: 'all',
     },
-    'component-from-url': {
+    'component-from-uri': {
         category_name: null,
         field_name: 'component',
         block_index: null,
         block_header: null,
         field_values: null,
     },
-    'component-from-cif': {
+    'component-from-source': {
         category_name: null,
         field_name: 'component',
         block_index: null,
@@ -49,13 +49,13 @@ export const Defaults = {
     'color': {
         selector: 'all',
     },
-    'color-from-url': {
+    'color-from-uri': {
         category_name: null,
         field_name: 'color',
         block_index: null,
         block_header: null,
     },
-    'color-from-cif': {
+    'color-from-source': {
         category_name: null,
         field_name: 'color',
         block_index: null,
@@ -63,13 +63,13 @@ export const Defaults = {
     },
     'label': {
     },
-    'label-from-url': {
+    'label-from-uri': {
         category_name: null,
         field_name: 'label',
         block_index: null,
         block_header: null,
     },
-    'label-from-cif': {
+    'label-from-source': {
         category_name: null,
         field_name: 'label',
         block_index: null,
@@ -77,13 +77,13 @@ export const Defaults = {
     },
     'tooltip': {
     },
-    'tooltip-from-url': {
+    'tooltip-from-uri': {
         category_name: null,
         field_name: 'tooltip',
         block_index: null,
         block_header: null,
     },
-    'tooltip-from-cif': {
+    'tooltip-from-source': {
         category_name: null,
         field_name: 'tooltip',
         block_index: null,

@@ -211,7 +211,7 @@ class Structure(_Base):
         self._add_child(node)
         return Component(node=node, root=self._root)
 
-    def component_from_url(
+    def component_from_uri(
         self,
         *,
         url: str,
@@ -226,11 +226,11 @@ class Structure(_Base):
         if isinstance(field_values, str):
             field_values = [field_values]
         params = make_params(ComponentUrlParams, locals())
-        node = Node(kind="component-from-url", params=params)
+        node = Node(kind="component-from-uri", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
 
-    def component_from_cif(
+    def component_from_source(
         self,
         *,
         category_name: str,
@@ -243,11 +243,11 @@ class Structure(_Base):
         if isinstance(field_values, str):
             field_values = [field_values]
         params = make_params(ComponentCifCategoryParams, locals())
-        node = Node(kind="component-from-cif", params=params)
+        node = Node(kind="component-from-source", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
 
-    def label_from_url(
+    def label_from_uri(
         self,
         *,
         url: str,
@@ -259,11 +259,11 @@ class Structure(_Base):
         schema: SchemaT,
     ) -> Structure:
         params = make_params(LabelUrlParams, locals())
-        node = Node(kind="label-from-url", params=params)
+        node = Node(kind="label-from-uri", params=params)
         self._add_child(node)
         return self
 
-    def label_from_cif(
+    def label_from_source(
         self,
         *,
         category_name: str,
@@ -273,11 +273,11 @@ class Structure(_Base):
         schema: SchemaT,
     ) -> Structure:
         params = make_params(LabelCifCategoryParams, locals())
-        node = Node(kind="label-from-cif", params=params)
+        node = Node(kind="label-from-source", params=params)
         self._add_child(node)
         return self
 
-    def tooltip_from_url(
+    def tooltip_from_uri(
         self,
         *,
         url: str,
@@ -289,11 +289,11 @@ class Structure(_Base):
         schema: SchemaT,
     ) -> Structure:
         params = make_params(TooltipUrlParams, locals())
-        node = Node(kind="tooltip-from-url", params=params)
+        node = Node(kind="tooltip-from-uri", params=params)
         self._add_child(node)
         return self
 
-    def tooltip_from_cif(
+    def tooltip_from_source(
         self,
         *,
         category_name: str,
@@ -303,7 +303,7 @@ class Structure(_Base):
         schema: SchemaT,
     ) -> Structure:
         params = make_params(TooltipCifCategoryParams, locals())
-        node = Node(kind="tooltip-from-cif", params=params)
+        node = Node(kind="tooltip-from-source", params=params)
         self._add_child(node)
         return self
 
@@ -371,17 +371,17 @@ class Component(_Base):
 
 
 class Representation(_Base):
-    def color_from_cif(self, *, schema: SchemaT, category_name: str,
+    def color_from_source(self, *, schema: SchemaT, category_name: str,
                        field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
         params = make_params(ColorCifCategoryParams, locals())
-        node = Node(kind="color-from-cif", params=params)
+        node = Node(kind="color-from-source", params=params)
         self._add_child(node)
         return self
 
-    def color_from_url(self, *, schema: SchemaT, url: str, format: str, category_name: str | None = None,
+    def color_from_uri(self, *, schema: SchemaT, url: str, format: str, category_name: str | None = None,
                        field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
         params = make_params(ColorUrlParams, locals())
-        node = Node(kind="color-from-url", params=params)
+        node = Node(kind="color-from-uri", params=params)
         self._add_child(node)
         return self
 

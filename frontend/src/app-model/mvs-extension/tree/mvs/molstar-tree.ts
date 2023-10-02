@@ -34,11 +34,11 @@ export const MolstarTreeSchema = TreeSchema('root',
         'structure': omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
         /** Just to collect multiple transform nodes */
         'transforms': {},
-        'color-from-url': {
-            ...MVSTreeSchema.paramsSchemas['color-from-url'],
+        'color-from-uri': {
+            ...MVSTreeSchema.paramsSchemas['color-from-uri'],
         },
-        'color-from-cif': {
-            ...MVSTreeSchema.paramsSchemas['color-from-cif'],
+        'color-from-source': {
+            ...MVSTreeSchema.paramsSchemas['color-from-source'],
         },
     }
 );

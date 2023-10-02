@@ -56,11 +56,11 @@ export async function loadTree<TTree extends Tree, TContext>(plugin: PluginConte
 }
 
 
-export const AnnotationFromUrlKinds = new Set(['color-from-url', 'component-from-url', 'label-from-url', 'tooltip-from-url'] satisfies MolstarKind[]);
-export type AnnotationFromUrlKind = ElementOfSet<typeof AnnotationFromUrlKinds>
+export const AnnotationFromUriKinds = new Set(['color-from-uri', 'component-from-uri', 'label-from-uri', 'tooltip-from-uri'] satisfies MolstarKind[]);
+export type AnnotationFromUriKind = ElementOfSet<typeof AnnotationFromUriKinds>
 
-export const AnnotationFromCifKinds = new Set(['color-from-cif', 'component-from-cif', 'label-from-cif', 'tooltip-from-cif'] satisfies MolstarKind[]);
-export type AnnotationFromCifKind = ElementOfSet<typeof AnnotationFromCifKinds>
+export const AnnotationFromSourceKinds = new Set(['color-from-source', 'component-from-source', 'label-from-source', 'tooltip-from-source'] satisfies MolstarKind[]);
+export type AnnotationFromSourceKind = ElementOfSet<typeof AnnotationFromSourceKinds>
 
 
 /** Return a 4x4 matrix representing rotation + translation */
@@ -83,11 +83,11 @@ export function collectAnnotationReferences(tree: SubTree<MolstarTree>, context:
     const distinctSpecs: { [key: string]: AnnotationSpec } = {};
     dfs(tree, node => {
         let spec: Omit<AnnotationSpec, 'id'> | undefined = undefined;
-        if (AnnotationFromUrlKinds.has(node.kind as any)) {
-            const p = (node as MolstarNode<AnnotationFromUrlKind>).params;
+        if (AnnotationFromUriKinds.has(node.kind as any)) {
+            const p = (node as MolstarNode<AnnotationFromUriKind>).params;
             spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
-        } else if (AnnotationFromCifKinds.has(node.kind as any)) {
-            const p = (node as MolstarNode<AnnotationFromCifKind>).params;
+        } else if (AnnotationFromSourceKinds.has(node.kind as any)) {
+            const p = (node as MolstarNode<AnnotationFromSourceKind>).params;
             spec = { source: { name: 'source-cif', params: {} }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
         }
         if (spec) {
@@ -109,7 +109,7 @@ function blockSpec(header: string | null | undefined, index: number | null | und
 export function collectAnnotationTooltips(tree: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext) {
     const annotationTooltips: AnnotationTooltipsProps['tooltips'] = [];
     dfs(tree, node => {
-        if (node.kind === 'tooltip-from-url' || node.kind === 'tooltip-from-cif') {
+        if (node.kind === 'tooltip-from-uri' || node.kind === 'tooltip-from-source') {
             const annotationId = context.annotationMap?.get(node);
             if (annotationId) {
                 annotationTooltips.push({ annotationId, fieldName: node.params.field_name ?? Defaults[node.kind].field_name });
@@ -128,7 +128,7 @@ export function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structur
                     text: node.params.text,
                     selector: componentPropsFromSelector(parent.params.selector),
                 });
-            } else if (parent?.kind === 'component-from-url' || parent?.kind === 'component-from-cif') {
+            } else if (parent?.kind === 'component-from-uri' || parent?.kind === 'component-from-source') {
                 const p = componentFromUrlOrCifProps(parent, context);
                 if (isDefined(p.annotationId) && isDefined(p.fieldName) && isDefined(p.fieldValues)) {
                     inlineTooltips.push({
@@ -146,9 +146,9 @@ export function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structur
 }
 
 /** Return `true` for components nodes which only serve for tooltip placement (not to be created in the MolStar object hierarchy) */
-export function isPhantomComponent(node: SubTreeOfKind<MolstarTree, 'component' | 'component-from-url' | 'component-from-cif'>) {
+export function isPhantomComponent(node: SubTreeOfKind<MolstarTree, 'component' | 'component-from-uri' | 'component-from-source'>) {
     // return false;
-    return node.children && node.children.every(child => child.kind === 'tooltip' || child.kind === 'tooltip-from-url' || child.kind === 'tooltip-from-cif');
+    return node.children && node.children.every(child => child.kind === 'tooltip' || child.kind === 'tooltip-from-uri' || child.kind === 'tooltip-from-source');
     // These nodes could theoretically be removed when converting MVS to Molstar tree, but would get very tricky if we allow nested components
 }
 
@@ -200,7 +200,7 @@ export function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 
     }
 }
 
-export function labelFromUrlOrCifProps(node: MolstarNode<'label-from-url' | 'label-from-cif'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
+export function labelFromUrlOrCifProps(node: MolstarNode<'label-from-uri' | 'label-from-source'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
     const annotationId = context.annotationMap?.get(node);
     const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
     const nearestReprNode = context.nearestReprMap?.get(node);
@@ -210,7 +210,7 @@ export function labelFromUrlOrCifProps(node: MolstarNode<'label-from-url' | 'lab
     };
 }
 
-export function componentFromUrlOrCifProps(node: MolstarNode<'component-from-url' | 'component-from-cif'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
+export function componentFromUrlOrCifProps(node: MolstarNode<'component-from-uri' | 'component-from-source'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
     const annotationId = context.annotationMap?.get(node);
     const { field_name, field_values } = node.params;
     return {
@@ -221,9 +221,9 @@ export function componentFromUrlOrCifProps(node: MolstarNode<'component-from-url
     };
 }
 
-export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-cif' | 'color-from-url' | 'representation'> | undefined, context: MolstarLoadingContext): StateTransformer.Params<StructureRepresentation3D>['colorTheme'] {
+export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-uri' | 'color-from-source' | 'representation'> | undefined, context: MolstarLoadingContext): StateTransformer.Params<StructureRepresentation3D>['colorTheme'] {
     if (node?.kind === 'representation') {
-        const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-cif' || c.kind === 'color-from-url') as MolstarNode<'color' | 'color-from-cif' | 'color-from-url'>[];
+        const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-uri' || c.kind === 'color-from-source') as MolstarNode<'color' | 'color-from-uri' | 'color-from-source'>[];
         if (children.length === 0) {
             return {
                 name: 'uniform',
@@ -245,8 +245,8 @@ export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'co
     let fieldName: string | undefined = undefined;
     let color: string | undefined = undefined;
     switch (node?.kind) {
-        case 'color-from-url':
-        case 'color-from-cif':
+        case 'color-from-uri':
+        case 'color-from-source':
             annotationId = context.annotationMap?.get(node);
             fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
             break;
@@ -266,7 +266,7 @@ export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'co
         };
     }
 }
-function appliesColorToWholeRepr(node: MolstarNode<'color' | 'color-from-url' | 'color-from-cif'>): boolean {
+function appliesColorToWholeRepr(node: MolstarNode<'color' | 'color-from-uri' | 'color-from-source'>): boolean {
     if (node.kind === 'color') {
         return !isDefined(node.params.selector) || node.params.selector === 'all';
     } else {

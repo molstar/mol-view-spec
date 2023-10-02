@@ -16,7 +16,7 @@ import { AnnotationTooltipsProvider } from './additions/annotation-tooltips-prop
 import { CustomLabelProps, CustomLabelRepresentationProvider } from './additions/custom-label/representation';
 import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { focusCameraNode, focusStructureNode, setCanvas } from './camera';
-import { AnnotationFromCifKind, AnnotationFromUrlKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUrlOrCifProps, componentPropsFromSelector, isPhantomComponent, labelFromUrlOrCifProps, loadTree, makeNearestReprMap, structureProps, transformFromRotationTranslation } from './load-helpers';
+import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUrlOrCifProps, componentPropsFromSelector, isPhantomComponent, labelFromUrlOrCifProps, loadTree, makeNearestReprMap, structureProps, transformFromRotationTranslation } from './load-helpers';
 import { ParamsOfKind, SubTreeOfKind, getChildren, getParams, validateTree } from './tree/generic/generic';
 import { convertMvsToMolstar } from './tree/mvs/conversion';
 import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
@@ -60,7 +60,7 @@ async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deleteP
 
 export interface MolstarLoadingContext {
     /** Maps `*-from-[url|cif]` nodes to annotationId they should reference */
-    annotationMap?: Map<MolstarNode<AnnotationFromUrlKind | AnnotationFromCifKind>, string>,
+    annotationMap?: Map<MolstarNode<AnnotationFromUriKind | AnnotationFromSourceKind>, string>,
     /** Maps each node (on 'structure' or lower level) to its nearest 'representation' node */
     nearestReprMap?: Map<MolstarNode, MolstarNode<'representation'>>,
     focus?: { kind: 'camera', params: ParamsOfKind<MolstarTree, 'camera'> } | { kind: 'focus', focusTarget: StateObjectSelector, params: ParamsOfKind<MolstarTree, 'focus'> },
@@ -139,8 +139,8 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
         return result;
     },
     tooltip: undefined, // No action needed, already loaded in `structure`
-    'tooltip-from-url': undefined, // No action needed, already loaded in `structure`
-    'tooltip-from-cif': undefined, // No action needed, already loaded in `structure`
+    'tooltip-from-uri': undefined, // No action needed, already loaded in `structure`
+    'tooltip-from-source': undefined, // No action needed, already loaded in `structure`
     component(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component'>): StateObjectSelector | undefined {
         if (isPhantomComponent(node)) {
             return msTarget;
@@ -152,12 +152,12 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
             nullIfEmpty: false,
         }).selector;
     },
-    'component-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component-from-url'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
+    'component-from-uri'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component-from-uri'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
         if (isPhantomComponent(node)) return undefined;
         const props = componentFromUrlOrCifProps(node, context);
         return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
     },
-    'component-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component-from-cif'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
+    'component-from-source'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component-from-source'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
         if (isPhantomComponent(node)) return undefined;
         const props = componentFromUrlOrCifProps(node, context);
         return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
@@ -172,8 +172,8 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
         }).selector;
     },
     color: undefined, // No action needed, already loaded in `structure`
-    'color-from-url': undefined, // No action needed, already loaded in `structure`
-    'color-from-cif': undefined, // No action needed, already loaded in `structure`
+    'color-from-uri': undefined, // No action needed, already loaded in `structure`
+    'color-from-source': undefined, // No action needed, already loaded in `structure`
     label(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label'>, context: MolstarLoadingContext): StateObjectSelector {
         const item: CustomLabelProps['items'][number] = {
             text: node.params.text,
@@ -188,11 +188,11 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
             colorTheme: colorThemeForNode(nearestReprNode, context),
         }).selector;
     },
-    'label-from-url'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-url'>, context: MolstarLoadingContext): StateObjectSelector {
+    'label-from-uri'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-uri'>, context: MolstarLoadingContext): StateObjectSelector {
         const props = labelFromUrlOrCifProps(node, context);
         return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
     },
-    'label-from-cif'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-cif'>, context: MolstarLoadingContext): StateObjectSelector {
+    'label-from-source'(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label-from-source'>, context: MolstarLoadingContext): StateObjectSelector {
         const props = labelFromUrlOrCifProps(node, context);
         return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
     },

@@ -59,11 +59,11 @@ export const MVSTreeSchema = TreeSchema('root',
         'component': {
             selector: RequiredField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
-        'component-from-url': {
+        'component-from-uri': {
             ..._DataFromUrlParams,
             field_values: OptionalField(nullable(list(str))),
         },
-        'component-from-cif': {
+        'component-from-source': {
             ..._DataFromCifParams,
             field_values: OptionalField(nullable(list(str))),
         },
@@ -74,28 +74,28 @@ export const MVSTreeSchema = TreeSchema('root',
             color: RequiredField(ColorT),
             selector: OptionalField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
-        'color-from-url': {
+        'color-from-uri': {
             ..._DataFromUrlParams,
         },
-        'color-from-cif': {
+        'color-from-source': {
             ..._DataFromCifParams,
         },
         'label': {
             text: RequiredField(str),
         },
-        'label-from-url': {
+        'label-from-uri': {
             ..._DataFromUrlParams,
         },
-        'label-from-cif': {
+        'label-from-source': {
             ..._DataFromCifParams,
         },
         'tooltip': {
             text: RequiredField(str),
         },
-        'tooltip-from-url': {
+        'tooltip-from-uri': {
             ..._DataFromUrlParams,
         },
-        'tooltip-from-cif': {
+        'tooltip-from-source': {
             ..._DataFromCifParams,
         },
         'focus': {
