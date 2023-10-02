@@ -2,7 +2,7 @@ import math
 import requests
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
-from typing import TypeAlias
+from typing import Literal, TypeAlias
 
 from app.config import settings
 from molviewspec.builder import Root
@@ -292,6 +292,9 @@ async def validation_data(id: str) -> Response:
     return JSONResponse(transformed_data)
 
 
+##############################################################################
+# Examples for frontend testing
+
 @router.get("/testing/formats")
 async def testing_formats_example() -> MVSResponse:
     """Return state with three proteins loaded in mmCIF, binaryCIF, and PDB format"""
@@ -371,7 +374,6 @@ async def testing_symmetry_structures_example(id: str = "1tqn") -> MVSResponse:
     along with symmetry structure (blue) and symmetry-mates structure (green).
     """
     builder = Root()
-    structure_url = _url_for_testing_local_bcif(id)
     structure_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs_2nnj_1tqn.cif"
     model = builder.download(url=structure_url).parse(format="mmcif")
     model.model_structure(block_header="1TQN", model_index=0).component().representation().color(color="white")
@@ -619,7 +621,7 @@ async def testing_color_domains_example(colors: bool = True, tooltips: bool = Fa
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
-    structure_url = _url_for_testing_local_bcif('1h9t')
+    structure_url = _url_for_testing_local_bcif("1h9t")
     structure = (
         builder.download(url=structure_url)
         .parse(format="bcif")
@@ -814,7 +816,7 @@ async def testing_component_from_cif(id: str = "1h9t") -> MVSResponse:
 @router.get("/testing/focus")
 async def testing_focus_example() -> MVSResponse:
     """
-    An example for 'focus' node.
+    An example for "focus" node.
     """
     builder = Root()
     position, direction, radius = _target_spherical_to_pdr((17, 21, 27), phi=-30, theta=15, radius=100)
@@ -823,14 +825,14 @@ async def testing_focus_example() -> MVSResponse:
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="orange")
     structure.component(selector="ligand").focus(direction=direction, up=up).representation(type="ball-and-stick").color(color="green")
-    builder.canvas(background_color='#BBDDFF')
+    builder.canvas(background_color="#BBDDFF")
     return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/camera")
 async def testing_camera_example() -> MVSResponse:
     """
-    An example for 'camera' node.
+    An example for "camera" node.
     """
     builder = Root()
     structure_url = _url_for_testing_local_bcif("1cbs")
@@ -839,7 +841,7 @@ async def testing_camera_example() -> MVSResponse:
     structure.component(selector="ligand").representation(type="ball-and-stick").color(color="green")
     target, position, up = _target_spherical_to_tpu((17, 21, 27), phi=30, theta=15, radius=100)
     builder.camera(target=target, position=position, up=up)
-    builder.canvas(background_color='black')
+    builder.canvas(background_color="black")
     return JSONResponse(builder.get_state())
 
 
@@ -980,13 +982,13 @@ async def testing_tooltips_example(id="1h9t") -> MVSResponse:
 
     structure.component_from_cif(
         schema="all-atomic",
-        category_name='atom_site',
+        category_name="atom_site",
         field_name="type_symbol",
         field_values="CL",
     ).tooltip(text="Chloride (this comes from CIF)")
     structure.component_from_cif(
         schema="all-atomic",
-        category_name='atom_site',
+        category_name="atom_site",
         field_name="type_symbol",
         field_values="AU",
     ).tooltip(text="Gold (this comes from CIF)")
@@ -1066,6 +1068,98 @@ async def testing_labels_from_cif_example() -> MVSResponse:
     structure.label_from_cif(schema="all-atomic", category_name="mvs_test_chain_label_annotation", field_name="tooltip")
     return JSONResponse(builder.get_state())
 
+
+##############################################################################
+# MVS specification of existing visualizations
+
+CAMERA_FOR_1HDA = {"target": (19.752, 39.904, 19.170), "position": (34.411, 131.418, 44.150), "up": (0.035, -0.268, 0.962)}
+CAMERA_FOR_1HDA_A = {"target": (30.403, 48.948, 10.986), "position": (5.350, 4.252, 45.337), "up": (0.704, -0.636, -0.313)}
+CAMERA_FOR_1HDA_HEM = {"target": (26.795, 49.162, 6.437), "position": (-11.895, 72.486, 22.770), "up": (0.587, 0.728, 0.352)}
+ENTITY_COLORS_1HDA = {"1": "#1A9E76", "2": "#D85F02", "3": "#A6D853"}
+BASE_COLOR = '#CCCCCC'  # should be #787878 but that's too dark because of missing transparency
+
+
+@router.get("/portfolio/entry")
+async def portfolio_entry_or_assembly(id: str = "1hda", coloring: Literal["by_chain", "by_entity"] = "by_chain", assembly_id: str | None = None) -> MVSResponse:
+    """
+    Entry or assembly structure colored by chain, as created by PDBImages.
+    (We are missing coloring by symmetry operator for assemblies!)
+    """
+    builder = Root()
+    structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}_updated.cif"
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{id}/portfolio.cif"
+    model = builder.download(url=structure_url).parse(format="mmcif")
+    struct = model.assembly_structure(assembly_id=assembly_id) if assembly_id is not None else model.model_structure()
+    struct.component(selector="polymer").representation(type="cartoon").color_from_url(url=annotation_url, format="cif", schema="all-atomic", category_name=f"color_{coloring}")
+    struct.component(selector="ligand").representation(type="ball-and-stick").color_from_url(
+        url=annotation_url, format="cif", schema="all-atomic", category_name=f"color_{coloring}"
+    ).color_from_url(
+        url=annotation_url, format="cif", schema="all-atomic", category_name="color_by_symbol")
+    builder.camera(**CAMERA_FOR_1HDA)
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/entity")
+async def portfolio_entity(id: str = "1hda", entity_id: str = "1", assembly_id: str = "1") -> MVSResponse:
+    """
+    Assembly structure with a higlighted entity, as created by PDBImages.
+    (We are missing advanced styling, like size-factor and opacity!)
+    """
+    builder = Root()
+    structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}_updated.cif"
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{id}/portfolio.cif"
+    struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=assembly_id)
+    highlight = ENTITY_COLORS_1HDA.get(entity_id, 'black')
+    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).color(selector=ComponentExpression(label_entity_id=entity_id), color=highlight)
+    struct.component(selector="ligand").representation(type="ball-and-stick").color(color=BASE_COLOR).color(selector=ComponentExpression(label_entity_id=entity_id), color=highlight)
+    builder.camera(**CAMERA_FOR_1HDA)
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/domain")
+async def portfolio_domain(id: str = "1hda", entity_id: str = "1", domain: str = "Pfam_PF00042_A") -> MVSResponse:
+    """
+    Chain structure with a higlighted SIFTS domain, as created by PDBImages.
+    (We are missing advanced styling, like size-factor and opacity!)
+    """
+    builder = Root()
+    structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}_updated.cif"
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{id}/portfolio.cif"
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    polymer = struct.component_from_url(url=annotation_url, format="cif", category_name=f"sifts_{domain}", schema="all-atomic", field_name="component", field_values="polymer")
+    ligand = struct.component_from_url(url=annotation_url, format="cif", category_name=f"sifts_{domain}", schema="all-atomic", field_name="component", field_values="ligand")
+    polymer.representation(type="cartoon").color(color=BASE_COLOR).color_from_url(url=annotation_url, format="cif", category_name=f"sifts_{domain}", schema="all-atomic")
+    ligand.representation(type="ball-and-stick").color(color=BASE_COLOR)
+    struct.tooltip_from_url(url=annotation_url, format="cif", category_name=f"sifts_{domain}", schema="all-atomic")
+    builder.camera(**CAMERA_FOR_1HDA_A)
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/ligand")
+async def portfolio_ligand(id: str = "1hda", ligand: str = "HEM") -> MVSResponse:
+    """
+    Chain structure with a higlighted SIFTS domain, as created by PDBImages.
+    (We are missing advanced styling, like size-factor and opacity!)
+    """
+    builder = Root()
+    structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id}_updated.cif"
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{id}/portfolio.cif"
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    wideenv = struct.component_from_url(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all-atomic", field_name="component", field_values="wideenv")
+    wideenv.representation(type="cartoon").color(color=BASE_COLOR).color_from_url(url=annotation_url, format="cif", schema="all-atomic", category_name="color_by_symbol")
+    env = struct.component_from_url(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all-atomic", field_name="component", field_values="env")
+    env.representation(type="ball-and-stick").color(color=BASE_COLOR).color_from_url(url=annotation_url, format="cif", schema="all-atomic", category_name="color_by_symbol")
+    lig = struct.component_from_url(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all-atomic", field_name="component", field_values="ligand")
+    lig.representation(type="ball-and-stick").color(color='#A6D853').color_from_url(url=annotation_url, format="cif", schema="all-atomic", category_name="color_by_symbol")
+    linkage = struct.component_from_url(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all-atomic", field_name="component", field_values="linkage")
+    linkage.representation(type="ball-and-stick").color(color='#A6D853').color_from_url(url=annotation_url, format="cif", schema="all-atomic", category_name="color_by_symbol")
+    struct.tooltip_from_url(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all-atomic")
+    builder.camera(**CAMERA_FOR_1HDA_HEM)
+    return JSONResponse(builder.get_state())
+
+
+##############################################################################
+# Auxiliary functions
 
 @router.get("/testing/local_bcif/{id}")
 async def testing_local_bcif(id: str) -> Response:

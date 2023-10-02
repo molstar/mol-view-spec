@@ -26,14 +26,12 @@ function Main() {
     const loadedTree = useBehavior(model.tree);
 
     const exampleUrls = {
-        load: 'http://localhost:9000/api/v1/examples/load/1cbs',
-        // label: 'http://localhost:9000/api/v1/examples/label/1cbs',
-        // color: 'http://localhost:9000/api/v1/examples/color/1cbs',
-        formats: 'http://localhost:9000/api/v1/examples/testing/formats',
-        structures: 'http://localhost:9000/api/v1/examples/testing/structures',
+        'load': 'http://localhost:9000/api/v1/examples/load/1cbs',
+        'formats': 'http://localhost:9000/api/v1/examples/testing/formats',
+        'structures': 'http://localhost:9000/api/v1/examples/testing/structures',
         'structures-symmetry': 'http://localhost:9000/api/v1/examples/testing/symmetry_structures',
-        transforms: 'http://localhost:9000/api/v1/examples/testing/transforms',
-        components: 'http://localhost:9000/api/v1/examples/testing/components',
+        'transforms': 'http://localhost:9000/api/v1/examples/testing/transforms',
+        'components': 'http://localhost:9000/api/v1/examples/testing/components',
         'colors-from-cif': 'http://localhost:9000/api/v1/examples/testing/color_from_cif',
         'colors rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
         'colors cif': 'http://localhost:9000/api/v1/examples/testing/color_cif',
@@ -57,6 +55,16 @@ function Main() {
         'component from cif': 'http://localhost:9000/api/v1/examples/testing/component_from_cif',
         'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
         'camera': 'http://localhost:9000/api/v1/examples/testing/camera',
+
+        'entry by chain': 'http://localhost:9000/api/v1/examples/portfolio/entry?coloring=by_chain',
+        'entry by entity': 'http://localhost:9000/api/v1/examples/portfolio/entry?coloring=by_entity',
+        'assembly by chain': 'http://localhost:9000/api/v1/examples/portfolio/entry?assembly_id=1&coloring=by_chain',
+        'assembly by entity': 'http://localhost:9000/api/v1/examples/portfolio/entry?assembly_id=1&coloring=by_entity',
+        'entity 1': 'http://localhost:9000/api/v1/examples/portfolio/entity?entity_id=1',
+        'entity 2': 'http://localhost:9000/api/v1/examples/portfolio/entity?entity_id=2',
+        'entity 3': 'http://localhost:9000/api/v1/examples/portfolio/entity?entity_id=3',
+        'domain': 'http://localhost:9000/api/v1/examples/portfolio/domain?domain=Pfam_PF00042_A',
+        'ligand': 'http://localhost:9000/api/v1/examples/portfolio/ligand?ligand=HEM',
     };
 
     return (
