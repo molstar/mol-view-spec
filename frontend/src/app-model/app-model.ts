@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2023 mol* contributors, licensed under MIT, See LICENSE file for more info.
+ *
+ * @author Adam Midlik <midlik@gmail.com>
+ */
+
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui/react18';
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
@@ -5,13 +11,10 @@ import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
 import { BehaviorSubject } from 'rxjs';
 
-import { Annotation } from './molstar-extensions/color-from-url-extension/behavior';
-import { CustomLabel } from './molstar-extensions/custom-label-extension/behavior';
-import { loadMVSTree } from './load-tree';
-import { MVSTree } from './tree/mvs-nodes';
-import { treeToString } from './tree/tree-utils';
-import { MultilayerColorTheme } from './molstar-extensions/multilayer-color-theme-extension/behavior';
-import { CustomTooltips } from './molstar-extensions/custom-tooltip-extension/behavior';
+import { MolViewSpec } from './mvs-extension/behavior';
+import { loadMVS } from './mvs-extension/load';
+import { MVSTree } from './mvs-extension/tree/mvs/mvs-tree';
+import { treeToString } from './mvs-extension/tree/generic/tree-utils';
 
 
 export class AppModel {
@@ -22,10 +25,7 @@ export class AppModel {
 
     async initPlugin(target: HTMLDivElement) {
         const defaultSpec = DefaultPluginUISpec();
-        defaultSpec.behaviors.push(PluginSpec.Behavior(Annotation));
-        defaultSpec.behaviors.push(PluginSpec.Behavior(MultilayerColorTheme));
-        defaultSpec.behaviors.push(PluginSpec.Behavior(CustomLabel));
-        defaultSpec.behaviors.push(PluginSpec.Behavior(CustomTooltips));
+        defaultSpec.behaviors.push(PluginSpec.Behavior(MolViewSpec));
         this.plugin = await createPluginUI(target, {
             ...defaultSpec,
             layout: {
@@ -56,27 +56,21 @@ export class AppModel {
     public async loadMvsFromUrl(url: string = 'http://localhost:9000/api/v1/examples/load/1cbs') {
         this.status.next('loading');
         try {
-            console.log('foo', this.plugin);
             if (!this.plugin) return;
             this.plugin.behaviors.layout.leftPanelTabName.next('data');
 
-            const { version, root } = await getTreeFromUrl(url);
-            console.log('MVS version:', version);
+            const tree = await getTreeFromUrl(url);
 
             const DELETE_PREVIOUS = true;
-            await loadMVSTree(this.plugin, root, DELETE_PREVIOUS);
+            await loadMVS(this.plugin, tree, DELETE_PREVIOUS);
 
             this.url.next(url);
-            this.tree.next(treeToString(root));
+            this.tree.next(treeToString(tree.root));
             this.status.next('ready');
         } catch (err) {
             this.status.next('error');
             throw err;
         }
-    }
-    printCamera() {
-        const snapshot = this.plugin?.canvas3d?.camera.getSnapshot();
-        console.log('printCamera:', snapshot);
     }
 }
 
@@ -86,71 +80,3 @@ async function getTreeFromUrl(url: string): Promise<{ version: number, root: MVS
     const data = await response.json();
     return data;
 }
-
-const TEST_DATA: MVSTree = {
-    'kind': 'root',
-    'children': [
-        {
-            'kind': 'download', 'params': { 'url': 'https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif' },
-            // 'kind': 'download', 'params': { 'url': 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent' },
-            'children': [
-                {
-                    'kind': 'parse', 'params': { 'format': 'bcif' },
-                    // 'kind': 'parse', 'params': { 'format': 'pdb' },
-                    'children': [
-                        {
-                            'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 0, 'assembly_id': '1' },
-                            'children': [
-                                {
-                                    'kind': 'component', 'params': { 'selector': 'protein' },
-                                    'children': [
-                                        {
-                                            'kind': 'representation', 'params': { 'type': 'cartoon' },
-                                            'children': [
-                                                {
-                                                    'kind': 'color', 'params': { 'color': 'red' }
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    'kind': 'component', 'params': { 'selector': 'ligand' },
-                                    'children': [
-                                        {
-                                            'kind': 'representation', 'params': { 'type': 'ball-and-stick' },
-                                            'children': [
-                                                {
-                                                    'kind': 'color-from-cif', 'params': { 'schema': 'residue', 'category_name': 'my_custom_cif_category' }
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 0, 'assembly_id': '2' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 1, 'assembly_id': '1' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 1, 'assembly_id': '2' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 1, 'assembly_id': '3' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 2, 'assembly_id': '1' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 2, 'assembly_id': '2' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'assembly', 'model_index': 2, 'assembly_id': '3' } },
-                        { 'kind': 'structure', 'params': { 'kind': 'model', 'model_index': 2 } }
-                    ]
-                }
-            ]
-        },
-        {
-            'kind': 'raw', 'params': { 'data': 'hello' }, 'children': [
-                { 'kind': 'parse', 'params': { 'format': 'pdb' } },
-                { 'kind': 'parse', 'params': { 'format': 'bcif' } },
-                { 'kind': 'parse', 'params': { 'format': 'mmcif' } }
-            ]
-        },
-        {
-            'kind': 'raw', 'params': { 'data': 'ciao' }
-        }
-
-    ]
-};

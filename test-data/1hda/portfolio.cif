@@ -1,0 +1,73 @@
+loop_
+_color_by_chain.label_asym_id
+_color_by_chain.color
+A '#1A9E76'
+B '#D85F02'
+C '#72B2C8'
+D '#BFB73C'
+E '#A6D853'
+F '#26A113'
+G '#50CA82'
+H '#F2B9BE'
+
+loop_
+_color_by_entity.label_entity_id
+_color_by_entity.color
+1 '#1A9E76'
+2 '#D85F02'
+3 '#A6D853'
+
+loop_
+_color_by_symbol.type_symbol
+_color_by_symbol.color
+N '#3050F8'
+O '#FF0D0D'
+S '#FFFF30'
+FE '#E06633'
+
+loop_
+_sifts_Pfam_PF00042_A.component
+_sifts_Pfam_PF00042_A.label_asym_id
+_sifts_Pfam_PF00042_A.beg_label_seq_id
+_sifts_Pfam_PF00042_A.end_label_seq_id
+_sifts_Pfam_PF00042_A.tooltip
+_sifts_Pfam_PF00042_A.color
+polymer A . . . .
+ligand E . . . .
+domain A 26 136 'Pfam PF00042' '#377EB8'
+
+loop_
+_ligand_HEM.component
+_ligand_HEM.label_asym_id
+_ligand_HEM.beg_label_seq_id
+_ligand_HEM.end_label_seq_id
+_ligand_HEM.auth_seq_id
+_ligand_HEM.label_atom_id
+_ligand_HEM.tooltip
+_ligand_HEM.color
+wideenv A 30 34 . . 'Wider environment' .
+wideenv A 37 48 . . 'Wider environment' .
+wideenv A 56 68 . . 'Wider environment' .
+wideenv A 81 103 . . 'Wider environment' .
+wideenv A 130 138 . . 'Wider environment' .
+env A 32 32 . . 'Environment' .
+env A 39 39 . . 'Environment' .
+env A 42 43 . . 'Environment' .
+env A 58 58 . . 'Environment' .
+env A 61 62 . . 'Environment' .
+env A 65 66 . . 'Environment' .
+env A 83 83 . . 'Environment' .
+env A 86 87 . . 'Environment' .
+env A 91 91 . . 'Environment' .
+env A 93 93 . . 'Environment' .
+env A 97 98 . . 'Environment' .
+env A 101 101 . . 'Environment' .
+env A 132 133 . . 'Environment' .
+env A 136 136 . . 'Environment' .
+env I . . 762 . 'Environment' .
+env I . . 764 . 'Environment' .
+env I . . 765 . 'Environment' .
+ligand E . . . . 'Ligand HEM' .
+linkage E . . . FE . .
+linkage A 87 87 . NE2 . .
+
