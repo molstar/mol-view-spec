@@ -1,0 +1,692 @@
+[
+    {
+        "label_seq_id": 6,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "bond_angles, clashes"
+    },
+    {
+        "label_seq_id": 16,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 31,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 35,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 45,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 52,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 70,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 73,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 76,
+        "label_asym_id": "A",
+        "color": "#ff0000",
+        "tooltip": "bond_angles, clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 77,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 82,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 87,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 91,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 106,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 116,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "bond_angles, clashes"
+    },
+    {
+        "label_seq_id": 127,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 131,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 136,
+        "label_asym_id": "A",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 141,
+        "label_asym_id": "A",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 6,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 30,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 31,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 45,
+        "label_asym_id": "C",
+        "color": "#ff8800",
+        "tooltip": "bond_angles, clashes"
+    },
+    {
+        "label_seq_id": 47,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 50,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 51,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 52,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 56,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 71,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 73,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 75,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 76,
+        "label_asym_id": "C",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 77,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 81,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 82,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 84,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 92,
+        "label_asym_id": "C",
+        "color": "#ff8800",
+        "tooltip": "bond_angles, clashes"
+    },
+    {
+        "label_seq_id": 112,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 113,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 114,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 126,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 129,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 131,
+        "label_asym_id": "C",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 141,
+        "label_asym_id": "C",
+        "color": "#ff8800",
+        "tooltip": "bond_angles, clashes"
+    },
+    {
+        "label_seq_id": 1,
+        "label_asym_id": "B",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 2,
+        "label_asym_id": "B",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 3,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 5,
+        "label_asym_id": "B",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 7,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 16,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 18,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 20,
+        "label_asym_id": "B",
+        "color": "#ff8800",
+        "tooltip": "bond_angles, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 21,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 23,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 29,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 31,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 36,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 39,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 50,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 52,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 54,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 56,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 60,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 66,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 67,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 70,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 75,
+        "label_asym_id": "B",
+        "color": "#ff8800",
+        "tooltip": "bond_angles, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 78,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 79,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 93,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 94,
+        "label_asym_id": "B",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 98,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 99,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 115,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 119,
+        "label_asym_id": "B",
+        "color": "#ff8800",
+        "tooltip": "symm_clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 120,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 125,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 129,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 130,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 133,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 142,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 143,
+        "label_asym_id": "B",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 3,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 5,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 6,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 18,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 19,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 20,
+        "label_asym_id": "D",
+        "color": "#ff8800",
+        "tooltip": "symm_clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 25,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 29,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 30,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 39,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 47,
+        "label_asym_id": "D",
+        "color": "#ff8800",
+        "tooltip": "bond_angles, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 50,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 51,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 54,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 56,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 60,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 66,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 67,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 71,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 72,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 75,
+        "label_asym_id": "D",
+        "color": "#ff8800",
+        "tooltip": "clashes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 78,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 94,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 105,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 106,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 107,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 110,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 115,
+        "label_asym_id": "D",
+        "color": "#ff0000",
+        "tooltip": "bond_angles, planes, sidechain_outliers"
+    },
+    {
+        "label_seq_id": 119,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "sidechain_outliers"
+    },
+    {
+        "label_seq_id": 125,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 133,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "clashes"
+    },
+    {
+        "label_seq_id": 142,
+        "label_asym_id": "D",
+        "color": "#ffff00",
+        "tooltip": "bond_angles"
+    },
+    {
+        "label_seq_id": 143,
+        "label_asym_id": "D",
+        "color": "#ff8800",
+        "tooltip": "bond_angles, planes"
+    }
+]

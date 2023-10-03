@@ -661,12 +661,12 @@ async def testing_color_validation_example(id: str = "1tqn", tooltips: bool = Fa
     structure_url = _url_for_local_bcif(id)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
-    structure.component(selector="protein").representation(type="cartoon").color(color="green").color_from_uri(
+    structure.component(selector="protein").representation(type="cartoon").color(color="#00ff00").color_from_uri(
         schema="residue",
         url=annotation_url,
         format="json",
     )
-    structure.component(selector="ligand").representation(type="ball_and_stick").color(color="green").color_from_uri(
+    structure.component(selector="ligand").representation(type="ball_and_stick").color(color="#00ff00").color_from_uri(
         schema="residue",
         url=annotation_url,
         format="json",
@@ -1073,19 +1073,23 @@ async def testing_labels_from_source_example() -> MVSResponse:
 CAMERA_FOR_1HDA = {"target": (19.752, 39.904, 19.170), "position": (34.411, 131.418, 44.150), "up": (0.035, -0.268, 0.962)}
 CAMERA_FOR_1HDA_A = {"target": (30.403, 48.948, 10.986), "position": (5.350, 4.252, 45.337), "up": (0.704, -0.636, -0.313)}
 CAMERA_FOR_1HDA_HEM = {"target": (26.795, 49.162, 6.437), "position": (-11.895, 72.486, 22.770), "up": (0.587, 0.728, 0.352)}
+CAMERA_FOR_1TQN = {"target": (-19.768, -24.352, -12.891), "position": (82.412, -19.409, -11.594), "up": (0.015, -0.063, -0.997)}
+CAMERA_FOR_1GKT = {"target": (8.594, 28.682, 11.525), "position": (69.856, -31.750, 25.286), "up": (0.211, -0.007, -0.977)}
+CAMERA_FOR_Q5VSL9 = {"target": (16.066, 10.270, -4.742), "position": (97.823, 164.346, 45.265), "up": (-0.576, 0.512, -0.636)}
 ENTITY_COLORS_1HDA = {"1": "#1A9E76", "2": "#D85F02", "3": "#A6D853"}
 BASE_COLOR = '#CCCCCC'  # should be #787878 but that's too dark because of missing transparency
 
 
 @router.get("/portfolio/entry")
-async def portfolio_entry_or_assembly(id: str = "1hda", coloring: Literal["by_chain", "by_entity"] = "by_chain", assembly_id: str | None = None) -> MVSResponse:
+async def portfolio_entry_or_assembly(coloring: Literal["by_chain", "by_entity"] = "by_chain", assembly_id: str | None = None) -> MVSResponse:
     """
     Entry or assembly structure colored by chain, as created by PDBImages.
     (We are missing coloring by symmetry operator for assemblies!)
     """
+    ID = "1hda"
     builder = Root()
-    structure_url = _url_for_mmcif(id)
-    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{id}/portfolio.cif"
+    structure_url = _url_for_mmcif(ID)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/portfolio.cif"
     model = builder.download(url=structure_url).parse(format="mmcif")
     struct = model.assembly_structure(assembly_id=assembly_id) if assembly_id is not None else model.model_structure()
     struct.component(selector="polymer").representation(type="cartoon").color_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name=f"color_{coloring}")
@@ -1098,13 +1102,14 @@ async def portfolio_entry_or_assembly(id: str = "1hda", coloring: Literal["by_ch
 
 
 @router.get("/portfolio/entity")
-async def portfolio_entity(id: str = "1hda", entity_id: str = "1", assembly_id: str = "1") -> MVSResponse:
+async def portfolio_entity(entity_id: str = "1", assembly_id: str = "1") -> MVSResponse:
     """
     Assembly structure with a higlighted entity, as created by PDBImages.
     (We are missing advanced styling, like size-factor and opacity!)
     """
+    ID = "1hda"
     builder = Root()
-    structure_url = _url_for_mmcif(id)
+    structure_url = _url_for_mmcif(ID)
     struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=assembly_id)
     highlight = ENTITY_COLORS_1HDA.get(entity_id, 'black')
     struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).color(selector=ComponentExpression(label_entity_id=entity_id), color=highlight)
@@ -1114,47 +1119,124 @@ async def portfolio_entity(id: str = "1hda", entity_id: str = "1", assembly_id: 
 
 
 @router.get("/portfolio/domain")
-async def portfolio_domain(id: str = "1hda", entity_id: str = "1", domain: str = "Pfam_PF00042_A") -> MVSResponse:
+async def portfolio_domain() -> MVSResponse:
     """
     Chain structure with a higlighted SIFTS domain, as created by PDBImages.
     (We are missing advanced styling, like size-factor and opacity!)
     """
+    ID = "1hda"
+    DOMAIN = "Pfam_PF00042_A"
     builder = Root()
-    structure_url = _url_for_mmcif(id)
-    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{id}/portfolio.cif"
+    structure_url = _url_for_mmcif(ID)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/portfolio.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
-    polymer = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"sifts_{domain}", schema="all_atomic", field_name="component", field_values="polymer")
-    ligand = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"sifts_{domain}", schema="all_atomic", field_name="component", field_values="ligand")
-    polymer.representation(type="cartoon").color(color=BASE_COLOR).color_from_uri(url=annotation_url, format="cif", category_name=f"sifts_{domain}", schema="all_atomic")
+    polymer = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic", field_name="component", field_values="polymer")
+    ligand = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic", field_name="component", field_values="ligand")
+    polymer.representation(type="cartoon").color(color=BASE_COLOR).color_from_uri(url=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic")
     ligand.representation(type="ball_and_stick").color(color=BASE_COLOR)
-    struct.tooltip_from_uri(url=annotation_url, format="cif", category_name=f"sifts_{domain}", schema="all_atomic")
+    struct.tooltip_from_uri(url=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic")
     builder.camera(**CAMERA_FOR_1HDA_A)
     return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/ligand")
-async def portfolio_ligand(id: str = "1hda", ligand: str = "HEM") -> MVSResponse:
+async def portfolio_ligand() -> MVSResponse:
     """
-    Chain structure with a higlighted SIFTS domain, as created by PDBImages.
+    Ligand environment, as created by PDBImages.
     (We are missing advanced styling, like size-factor and opacity!)
     """
+    ID = "1hda"
+    LIGAND = "HEM"
     builder = Root()
-    structure_url = _url_for_mmcif(id)
-    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{id}/portfolio.cif"
+    structure_url = _url_for_mmcif(ID)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/portfolio.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
-    wideenv = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all_atomic", field_name="component", field_values="wideenv")
+    wideenv = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic", field_name="component", field_values="wideenv")
     wideenv.representation(type="cartoon").color(color=BASE_COLOR).color_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
-    env = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all_atomic", field_name="component", field_values="env")
+    env = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic", field_name="component", field_values="env")
     env.representation(type="ball_and_stick").color(color=BASE_COLOR).color_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
-    lig = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all_atomic", field_name="component", field_values="ligand")
+    lig = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic", field_name="component", field_values="ligand")
     lig.representation(type="ball_and_stick").color(color='#A6D853').color_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
-    linkage = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all_atomic", field_name="component", field_values="linkage")
+    linkage = struct.component_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic", field_name="component", field_values="linkage")
     linkage.representation(type="ball_and_stick").color(color='#A6D853').color_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
-    struct.tooltip_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{ligand}", schema="all_atomic")
+    struct.tooltip_from_uri(url=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic")
     builder.camera(**CAMERA_FOR_1HDA_HEM)
     return JSONResponse(builder.get_state())
 
-# TODO add portfolio examples from PDBImages: modres, bfactor, validation, plddt
+
+@router.get("/portfolio/validation")
+async def portfolio_validation() -> MVSResponse:
+    """
+    Entry structure colored by validation report issues, as created by PDBImages.
+    """
+    ID = "1hda"
+    builder = Root()
+    structure_url = _url_for_mmcif(ID)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/validation.json"
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    struct.component(selector="polymer").representation(type="cartoon").color(color="#00ff00").color_from_uri(url=annotation_url, format="json", schema="all_atomic")
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color="#00ff00").color_from_uri(url=annotation_url, format="json", schema="all_atomic")
+    struct.tooltip_from_uri(url=annotation_url, format="json", schema="all_atomic")
+    builder.camera(**CAMERA_FOR_1HDA)
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/modres")
+async def portfolio_modres() -> MVSResponse:
+    """
+    Assembly structure with higlighted instances of a modified residue, as created by PDBImages.
+    (We are missing advanced styling, like size-factor and opacity!)
+    """
+    ID = "1gkt"
+    ASSEMBLY = "1"
+    MODRES = "SUI"
+    builder = Root()
+    structure_url = _url_for_mmcif(ID)
+    struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=ASSEMBLY)
+    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR)
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR)
+    struct.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=54)).tooltip(text="Modified residue SUI: (3-amino-2,5-dioxo-1-pyrrolidinyl)acetic acid").representation(type="ball_and_stick").color(color="#ED645A")
+    builder.camera(**CAMERA_FOR_1GKT)
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/bfactor")
+async def portfolio_bfactor() -> MVSResponse:
+    """
+    Entry structure colored by B-factor, as created by PDBImages.
+    (We are missing putty representation and size theme!)
+    """
+    ID = "1tqn"
+    builder = Root()
+    structure_url = _url_for_mmcif(ID)
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/bfactor.cif"
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    struct.component(selector="polymer").representation(type="cartoon").color_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor")
+    struct.component(selector="ligand").representation(type="ball_and_stick").color_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor")
+    struct.component(selector="branched").representation(type="ball_and_stick").color_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor")
+    struct.component().tooltip(text="B-factor value:")
+    struct.tooltip_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor", field_name="B_iso_or_equiv")
+    builder.camera(**(CAMERA_FOR_1TQN if ID == "1tqn" else CAMERA_FOR_1HDA))
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/plddt")
+async def portfolio_plddt() -> MVSResponse:
+    """
+    AlphaFold predicted structure colored by pLDDT, as created by PDBImages.
+    """
+    ID = "AF-Q5VSL9-F1-model_v4"
+    builder = Root()
+    structure_url = f"https://alphafold.ebi.ac.uk/files/{ID}.cif"
+    annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/plddt.cif"
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    struct.component(selector="polymer").representation(type="cartoon").color_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name=f"plddt", field_name="color")
+    struct.component().tooltip(text="pLDDT value:")
+    struct.tooltip_from_uri(url=annotation_url, format="cif", schema="all_atomic", category_name=f"plddt", field_name="plddt")
+    builder.camera(**CAMERA_FOR_Q5VSL9)
+    return JSONResponse(builder.get_state())
+
+
 # TODO add portfolio examples from all the documents we have who knows where
 
 

@@ -63,8 +63,12 @@ function Main() {
         'entity 1': 'http://localhost:9000/api/v1/examples/portfolio/entity?entity_id=1',
         'entity 2': 'http://localhost:9000/api/v1/examples/portfolio/entity?entity_id=2',
         'entity 3': 'http://localhost:9000/api/v1/examples/portfolio/entity?entity_id=3',
-        'domain': 'http://localhost:9000/api/v1/examples/portfolio/domain?domain=Pfam_PF00042_A',
-        'ligand': 'http://localhost:9000/api/v1/examples/portfolio/ligand?ligand=HEM',
+        'domain': 'http://localhost:9000/api/v1/examples/portfolio/domain',
+        'ligand': 'http://localhost:9000/api/v1/examples/portfolio/ligand',
+        'validation': 'http://localhost:9000/api/v1/examples/portfolio/validation',
+        'modres': 'http://localhost:9000/api/v1/examples/portfolio/modres',
+        'bfactor': 'http://localhost:9000/api/v1/examples/portfolio/bfactor',
+        'plddt': 'http://localhost:9000/api/v1/examples/portfolio/plddt',
     };
 
     return (
