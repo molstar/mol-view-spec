@@ -5,9 +5,10 @@
  */
 
 import { hashString } from 'molstar/lib/mol-data/util';
-import { isHexColorString } from './tree/mvs/param-types';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
+
+import { isHexColorString } from './tree/mvs/param-types';
 
 
 export function formatObject(obj: {} | undefined) {
@@ -138,6 +139,18 @@ export async function promiseAllObj<T extends {}>(promisesObj: { [key in keyof T
     return objectFromKeysAndValues(keys, results) as any;
 }
 
+/** Represents either the result or the reason of failure of an operation that might have failed */
+export type Maybe<T> = { ok: true, value: T } | { ok: false, error: any }
+
+/** Try to await a promise and return an object with its result (if resolved) or with the error (if rejected) */
+export async function safePromise<T>(promise: T): Promise<Maybe<Awaited<T>>> {
+    try {
+        const value = await promise;
+        return { ok: true, value };
+    } catch (error) {
+        return { ok: false, error };
+    }
+}
 
 export class DefaultMap<K, V> extends Map<K, V> {
     constructor(public defaultFactory: (key: K) => V) {

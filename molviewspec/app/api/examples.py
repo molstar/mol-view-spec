@@ -1237,7 +1237,7 @@ async def portfolio_plddt() -> MVSResponse:
     return JSONResponse(builder.get_state())
 
 
-# TODO add portfolio examples from all the documents we have who knows where
+# TODO add portfolio examples from all the documents we have who knows where (https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0)
 
 
 ##############################################################################
