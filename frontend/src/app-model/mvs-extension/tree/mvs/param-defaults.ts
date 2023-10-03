@@ -30,14 +30,14 @@ export const Defaults = {
     component: {
         selector: 'all',
     },
-    'component-from-uri': {
+    component_from_uri: {
         category_name: null,
         field_name: 'component',
         block_index: null,
         block_header: null,
         field_values: null,
     },
-    'component-from-source': {
+    component_from_source: {
         category_name: null,
         field_name: 'component',
         block_index: null,
@@ -46,60 +46,60 @@ export const Defaults = {
     },
     representation: {
     },
-    'color': {
+    color: {
         selector: 'all',
     },
-    'color-from-uri': {
+    color_from_uri: {
         category_name: null,
         field_name: 'color',
         block_index: null,
         block_header: null,
     },
-    'color-from-source': {
+    color_from_source: {
         category_name: null,
         field_name: 'color',
         block_index: null,
         block_header: null,
     },
-    'label': {
+    label: {
     },
-    'label-from-uri': {
+    label_from_uri: {
         category_name: null,
         field_name: 'label',
         block_index: null,
         block_header: null,
     },
-    'label-from-source': {
+    label_from_source: {
         category_name: null,
         field_name: 'label',
         block_index: null,
         block_header: null,
     },
-    'tooltip': {
+    tooltip: {
     },
-    'tooltip-from-uri': {
+    tooltip_from_uri: {
         category_name: null,
         field_name: 'tooltip',
         block_index: null,
         block_header: null,
     },
-    'tooltip-from-source': {
+    tooltip_from_source: {
         category_name: null,
         field_name: 'tooltip',
         block_index: null,
         block_header: null,
     },
-    'focus': {
+    focus: {
         direction: [0, 0, -1],
         up: [0, 1, 0],
     },
-    'transform': {
+    transform: {
         rotation: null,
         translation: null,
     },
-    'canvas': {
+    canvas: {
     },
-    'camera': {
+    camera: {
         up: [0, 1, 0],
     },
 } satisfies { [kind in MVSKind]: DefaultsFor<(typeof MVSTreeSchema)['paramsSchemas'][kind]> };

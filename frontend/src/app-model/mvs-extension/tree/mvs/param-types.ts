@@ -17,7 +17,7 @@ export type ParseFormatT = ValueFor<typeof ParseFormatT>
 export const MolstarParseFormatT = choice('cif', 'pdb');
 export type MolstarParseFormatT = ValueFor<typeof MolstarParseFormatT>
 
-export const StructureKindT = choice('model', 'assembly', 'symmetry', 'symmetry-mates');
+export const StructureKindT = choice('model', 'assembly', 'symmetry', 'symmetry_mates');
 
 export const ComponentSelectorT = choice('all', 'polymer', 'protein', 'nucleic', 'branched', 'ligand', 'ion', 'water');
 
@@ -39,11 +39,11 @@ export const ComponentExpression = t.partial({
     atom_index: int,
 });
 
-export const RepresentationTypeT = choice('ball-and-stick', 'cartoon', 'surface');
+export const RepresentationTypeT = choice('ball_and_stick', 'cartoon', 'surface');
 
 export const ColorNamesT = choice('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
 
-export const SchemaT = choice('whole-structure', 'entity', 'chain', 'auth-chain', 'residue', 'auth-residue', 'residue-range', 'auth-residue-range', 'atom', 'auth-atom', 'all-atomic');
+export const SchemaT = choice('whole_structure', 'entity', 'chain', 'auth_chain', 'residue', 'auth_residue', 'residue_range', 'auth_residue_range', 'atom', 'auth_atom', 'all_atomic');
 
 export const SchemaFormatT = choice('cif', 'bcif', 'json');
 

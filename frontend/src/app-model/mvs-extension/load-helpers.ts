@@ -56,10 +56,10 @@ export async function loadTree<TTree extends Tree, TContext>(plugin: PluginConte
 }
 
 
-export const AnnotationFromUriKinds = new Set(['color-from-uri', 'component-from-uri', 'label-from-uri', 'tooltip-from-uri'] satisfies MolstarKind[]);
+export const AnnotationFromUriKinds = new Set(['color_from_uri', 'component_from_uri', 'label_from_uri', 'tooltip_from_uri'] satisfies MolstarKind[]);
 export type AnnotationFromUriKind = ElementOfSet<typeof AnnotationFromUriKinds>
 
-export const AnnotationFromSourceKinds = new Set(['color-from-source', 'component-from-source', 'label-from-source', 'tooltip-from-source'] satisfies MolstarKind[]);
+export const AnnotationFromSourceKinds = new Set(['color_from_source', 'component_from_source', 'label_from_source', 'tooltip_from_source'] satisfies MolstarKind[]);
 export type AnnotationFromSourceKind = ElementOfSet<typeof AnnotationFromSourceKinds>
 
 
@@ -109,7 +109,7 @@ function blockSpec(header: string | null | undefined, index: number | null | und
 export function collectAnnotationTooltips(tree: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext) {
     const annotationTooltips: AnnotationTooltipsProps['tooltips'] = [];
     dfs(tree, node => {
-        if (node.kind === 'tooltip-from-uri' || node.kind === 'tooltip-from-source') {
+        if (node.kind === 'tooltip_from_uri' || node.kind === 'tooltip_from_source') {
             const annotationId = context.annotationMap?.get(node);
             if (annotationId) {
                 annotationTooltips.push({ annotationId, fieldName: node.params.field_name ?? Defaults[node.kind].field_name });
@@ -128,7 +128,7 @@ export function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structur
                     text: node.params.text,
                     selector: componentPropsFromSelector(parent.params.selector),
                 });
-            } else if (parent?.kind === 'component-from-uri' || parent?.kind === 'component-from-source') {
+            } else if (parent?.kind === 'component_from_uri' || parent?.kind === 'component_from_source') {
                 const p = componentFromUrlOrCifProps(parent, context);
                 if (isDefined(p.annotationId) && isDefined(p.fieldName) && isDefined(p.fieldValues)) {
                     inlineTooltips.push({
@@ -146,9 +146,9 @@ export function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structur
 }
 
 /** Return `true` for components nodes which only serve for tooltip placement (not to be created in the MolStar object hierarchy) */
-export function isPhantomComponent(node: SubTreeOfKind<MolstarTree, 'component' | 'component-from-uri' | 'component-from-source'>) {
+export function isPhantomComponent(node: SubTreeOfKind<MolstarTree, 'component' | 'component_from_uri' | 'component_from_source'>) {
     // return false;
-    return node.children && node.children.every(child => child.kind === 'tooltip' || child.kind === 'tooltip-from-uri' || child.kind === 'tooltip-from-source');
+    return node.children && node.children.every(child => child.kind === 'tooltip' || child.kind === 'tooltip_from_uri' || child.kind === 'tooltip_from_source');
     // These nodes could theoretically be removed when converting MVS to Molstar tree, but would get very tricky if we allow nested components
 }
 
@@ -176,7 +176,7 @@ export function structureProps(node: MolstarNode<'structure'>): StateTransformer
                     params: { ijkMin: params.ijk_min ?? Defaults.structure.ijk_min, ijkMax: params.ijk_max ?? Defaults.structure.ijk_max }
                 },
             };
-        case 'symmetry-mates':
+        case 'symmetry_mates':
             return {
                 type: {
                     name: 'symmetry-mates',
@@ -200,7 +200,7 @@ export function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 
     }
 }
 
-export function labelFromUrlOrCifProps(node: MolstarNode<'label-from-uri' | 'label-from-source'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
+export function labelFromUrlOrCifProps(node: MolstarNode<'label_from_uri' | 'label_from_source'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
     const annotationId = context.annotationMap?.get(node);
     const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
     const nearestReprNode = context.nearestReprMap?.get(node);
@@ -210,7 +210,7 @@ export function labelFromUrlOrCifProps(node: MolstarNode<'label-from-uri' | 'lab
     };
 }
 
-export function componentFromUrlOrCifProps(node: MolstarNode<'component-from-uri' | 'component-from-source'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
+export function componentFromUrlOrCifProps(node: MolstarNode<'component_from_uri' | 'component_from_source'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
     const annotationId = context.annotationMap?.get(node);
     const { field_name, field_values } = node.params;
     return {
@@ -221,9 +221,9 @@ export function componentFromUrlOrCifProps(node: MolstarNode<'component-from-uri
     };
 }
 
-export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color-from-uri' | 'color-from-source' | 'representation'> | undefined, context: MolstarLoadingContext): StateTransformer.Params<StructureRepresentation3D>['colorTheme'] {
+export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color_from_uri' | 'color_from_source' | 'representation'> | undefined, context: MolstarLoadingContext): StateTransformer.Params<StructureRepresentation3D>['colorTheme'] {
     if (node?.kind === 'representation') {
-        const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color-from-uri' || c.kind === 'color-from-source') as MolstarNode<'color' | 'color-from-uri' | 'color-from-source'>[];
+        const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color_from_uri' || c.kind === 'color_from_source') as MolstarNode<'color' | 'color_from_uri' | 'color_from_source'>[];
         if (children.length === 0) {
             return {
                 name: 'uniform',
@@ -245,8 +245,8 @@ export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'co
     let fieldName: string | undefined = undefined;
     let color: string | undefined = undefined;
     switch (node?.kind) {
-        case 'color-from-uri':
-        case 'color-from-source':
+        case 'color_from_uri':
+        case 'color_from_source':
             annotationId = context.annotationMap?.get(node);
             fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
             break;
@@ -266,7 +266,7 @@ export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'co
         };
     }
 }
-function appliesColorToWholeRepr(node: MolstarNode<'color' | 'color-from-uri' | 'color-from-source'>): boolean {
+function appliesColorToWholeRepr(node: MolstarNode<'color' | 'color_from_uri' | 'color_from_source'>): boolean {
     if (node.kind === 'color') {
         return !isDefined(node.params.selector) || node.params.selector === 'all';
     } else {

@@ -7,25 +7,25 @@ KindT = Literal[
     "camera",
     "canvas",
     "color",
-    "color-from-source",
-    "color-from-uri",
+    "color_from_source",
+    "color_from_uri",
     "component",
-    "component-from-source",
-    "component-from-uri",
+    "component_from_source",
+    "component_from_uri",
     "download",
     "focus",
-    "generic-visuals",
+    "generic_visuals",
     "label",
-    "label-from-source",
-    "label-from-uri",
+    "label_from_source",
+    "label_from_uri",
     "line",
     "parse",
     "representation",
     "sphere",
     "structure",
     "tooltip",
-    "tooltip-from-source",
-    "tooltip-from-uri",
+    "tooltip_from_source",
+    "tooltip_from_uri",
     "transform",
 ]
 
@@ -52,8 +52,11 @@ class ParseParams(Params):
     format: ParseFormatT
 
 
+StructureKindT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
+
+
 class StructureParams(Params):
-    kind: Literal["model", "assembly", "symmetry", "symmetry-mates"]
+    kind: StructureKindT
     assembly_id: NotRequired[str]
     """Use the name to specify which assembly to load"""
     assembly_index: NotRequired[int]
@@ -100,12 +103,9 @@ class ComponentExpression(TypedDict):  # Feel free to rename (this used to be In
     """Unique atom identifier (`_atom_site.id`)"""
     atom_index: NotRequired[int]
     """0-based atom index in the source file"""
-    # group_id: NotRequired[str]
-    # """This allows to merge multiple selections into one (when they have the same `group_id`) for example to show one label for two chains; if the `group_id` is not given, the selection is processed separately"""
-    # Not sure if group_id should be here (it makes sense in data from JSON/CIF, but not for inline)
 
 
-RepresentationTypeT = Literal["ball-and-stick", "cartoon", "surface"]
+RepresentationTypeT = Literal["ball_and_stick", "cartoon", "surface"]
 ColorNamesT = Literal["white", "gray", "black", "red", "orange", "yellow", "green", "cyan", "blue", "magenta"]
 ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
 
@@ -115,17 +115,17 @@ class RepresentationParams(Params):
 
 
 SchemaT = Literal[
-    "whole-structure",
+    "whole_structure",
     "entity",
     "chain",
-    "auth-chain",
+    "auth_chain",
     "residue",
-    "auth-residue",
-    "residue-range",
-    "auth-residue-range",
+    "auth_residue",
+    "residue_range",
+    "auth_residue_range",
     "atom",
-    "auth-atom",
-    "all-atomic",
+    "auth_atom",
+    "all_atomic",
 ]
 SchemaFormatT = Literal["cif", "bcif", "json"]
 

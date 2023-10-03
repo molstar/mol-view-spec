@@ -98,7 +98,7 @@ class Root(_Base):
         return Download(node=node, root=self._root)
 
     def generic_visuals(self) -> GenericVisuals:
-        node = Node(kind="generic-visuals")
+        node = Node(kind="generic_visuals")
         self._add_child(node)
         return GenericVisuals(node=node, root=self._root)
 
@@ -194,7 +194,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="symmetry-mates")
+        params = make_params(StructureParams, locals(), kind="symmetry_mates")
         if radius is None:
             params["radius"] = 5.0
         node = Node(kind="structure", params=params)
@@ -226,7 +226,7 @@ class Structure(_Base):
         if isinstance(field_values, str):
             field_values = [field_values]
         params = make_params(ComponentUrlParams, locals())
-        node = Node(kind="component-from-uri", params=params)
+        node = Node(kind="component_from_uri", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
 
@@ -243,7 +243,7 @@ class Structure(_Base):
         if isinstance(field_values, str):
             field_values = [field_values]
         params = make_params(ComponentCifCategoryParams, locals())
-        node = Node(kind="component-from-source", params=params)
+        node = Node(kind="component_from_source", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
 
@@ -259,7 +259,7 @@ class Structure(_Base):
         schema: SchemaT,
     ) -> Structure:
         params = make_params(LabelUrlParams, locals())
-        node = Node(kind="label-from-uri", params=params)
+        node = Node(kind="label_from_uri", params=params)
         self._add_child(node)
         return self
 
@@ -273,7 +273,7 @@ class Structure(_Base):
         schema: SchemaT,
     ) -> Structure:
         params = make_params(LabelCifCategoryParams, locals())
-        node = Node(kind="label-from-source", params=params)
+        node = Node(kind="label_from_source", params=params)
         self._add_child(node)
         return self
 
@@ -289,7 +289,7 @@ class Structure(_Base):
         schema: SchemaT,
     ) -> Structure:
         params = make_params(TooltipUrlParams, locals())
-        node = Node(kind="tooltip-from-uri", params=params)
+        node = Node(kind="tooltip_from_uri", params=params)
         self._add_child(node)
         return self
 
@@ -303,7 +303,7 @@ class Structure(_Base):
         schema: SchemaT,
     ) -> Structure:
         params = make_params(TooltipCifCategoryParams, locals())
-        node = Node(kind="tooltip-from-source", params=params)
+        node = Node(kind="tooltip_from_source", params=params)
         self._add_child(node)
         return self
 
@@ -374,14 +374,14 @@ class Representation(_Base):
     def color_from_source(self, *, schema: SchemaT, category_name: str,
                        field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
         params = make_params(ColorCifCategoryParams, locals())
-        node = Node(kind="color-from-source", params=params)
+        node = Node(kind="color_from_source", params=params)
         self._add_child(node)
         return self
 
     def color_from_uri(self, *, schema: SchemaT, url: str, format: str, category_name: str | None = None,
                        field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
         params = make_params(ColorUrlParams, locals())
-        node = Node(kind="color-from-uri", params=params)
+        node = Node(kind="color_from_uri", params=params)
         self._add_child(node)
         return self
 

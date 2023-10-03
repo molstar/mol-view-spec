@@ -34,18 +34,18 @@ const _DataFromCifParams = {
 
 export const MVSTreeSchema = TreeSchema('root',
     {
-        'root': {},
-        'download': {
+        root: {},
+        download: {
             url: RequiredField(str),
         },
         /** Raw node is not in the mol-view-spec proposal, now it's here for testing, TODO remove */
-        'raw': {
+        raw: {
             data: OptionalField(str),
         },
-        'parse': {
+        parse: {
             format: RequiredField(ParseFormatT),
         },
-        'structure': {
+        structure: {
             kind: RequiredField(StructureKindT),
             assembly_id: OptionalField(nullable(str)),
             assembly_index: OptionalField(nullable(int)),
@@ -56,61 +56,61 @@ export const MVSTreeSchema = TreeSchema('root',
             ijk_min: OptionalField(tuple([int, int, int])),
             ijk_max: OptionalField(tuple([int, int, int])),
         },
-        'component': {
+        component: {
             selector: RequiredField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
-        'component-from-uri': {
+        component_from_uri: {
             ..._DataFromUrlParams,
             field_values: OptionalField(nullable(list(str))),
         },
-        'component-from-source': {
+        component_from_source: {
             ..._DataFromCifParams,
             field_values: OptionalField(nullable(list(str))),
         },
-        'representation': {
+        representation: {
             type: RequiredField(RepresentationTypeT),
         },
-        'color': {
+        color: {
             color: RequiredField(ColorT),
             selector: OptionalField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
-        'color-from-uri': {
+        color_from_uri: {
             ..._DataFromUrlParams,
         },
-        'color-from-source': {
+        color_from_source: {
             ..._DataFromCifParams,
         },
-        'label': {
+        label: {
             text: RequiredField(str),
         },
-        'label-from-uri': {
+        label_from_uri: {
             ..._DataFromUrlParams,
         },
-        'label-from-source': {
+        label_from_source: {
             ..._DataFromCifParams,
         },
-        'tooltip': {
+        tooltip: {
             text: RequiredField(str),
         },
-        'tooltip-from-uri': {
+        tooltip_from_uri: {
             ..._DataFromUrlParams,
         },
-        'tooltip-from-source': {
+        tooltip_from_source: {
             ..._DataFromCifParams,
         },
-        'focus': {
+        focus: {
             direction: OptionalField(Vector3),
             up: OptionalField(Vector3),
         },
-        'transform': {
+        transform: {
             /** 3x3 matrix, column major */
             rotation: OptionalField(nullable(Matrix)),
             translation: OptionalField(nullable(Vector3)),
         },
-        'canvas': {
+        canvas: {
             background_color: RequiredField(ColorT),
         },
-        'camera': {
+        camera: {
             target: RequiredField(Vector3),
             position: RequiredField(Vector3),
             up: OptionalField(Vector3),

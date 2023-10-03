@@ -14,31 +14,31 @@ import { RequiredField, bool } from '../generic/params-schema';
 export const MolstarTreeSchema = TreeSchema('root',
     {
         ...MVSTreeSchema.paramsSchemas,
-        'download': {
+        download: {
             ...MVSTreeSchema.paramsSchemas.download,
             is_binary: RequiredField(bool),
         },
-        'raw': {
+        raw: {
             ...MVSTreeSchema.paramsSchemas.raw,
             is_binary: RequiredField(bool),
         },
-        'parse': {
+        parse: {
             format: RequiredField(MolstarParseFormatT),
         },
-        'trajectory': {
+        trajectory: {
             format: RequiredField(MolstarParseFormatT),
             block_header: MVSTreeSchema.paramsSchemas.structure.block_header,
             block_index: MVSTreeSchema.paramsSchemas.structure.block_index,
         },
-        'model': pickObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
-        'structure': omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
+        model: pickObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
+        structure: omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
         /** Just to collect multiple transform nodes */
-        'transforms': {},
-        'color-from-uri': {
-            ...MVSTreeSchema.paramsSchemas['color-from-uri'],
+        transforms: {},
+        color_from_uri: {
+            ...MVSTreeSchema.paramsSchemas.color_from_uri,
         },
-        'color-from-source': {
-            ...MVSTreeSchema.paramsSchemas['color-from-source'],
+        color_from_source: {
+            ...MVSTreeSchema.paramsSchemas.color_from_source,
         },
     }
 );
