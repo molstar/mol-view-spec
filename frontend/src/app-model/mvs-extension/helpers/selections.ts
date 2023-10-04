@@ -9,10 +9,10 @@ import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-m
 import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder';
 import { Expression } from 'molstar/lib/mol-script/language/expression';
 
-import { extend, filterInPlace, isAnyDefined, isDefined, range } from '../utils';
-import { AnnotationRow } from './schemas';
 import { AtomRanges, addRange, emptyRanges, singleRange, unionOfRanges } from './atom-ranges';
 import { IndicesAndSortings, getKeysWithValue, getKeysWithValueInRange } from './indexing';
+import { AnnotationRow } from './schemas';
+import { extend, filterInPlace, isAnyDefined, isDefined, range } from './utils';
 
 
 const EmptyArray: readonly any[] = [];

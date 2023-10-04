@@ -4,9 +4,10 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { ElementIndex } from 'molstar/lib/mol-model/structure';
-import { extend, range } from '../utils';
 import { SortedArray } from 'molstar/lib/mol-data/int';
+import { ElementIndex } from 'molstar/lib/mol-model/structure';
+
+import { extend, range } from './utils';
 
 
 /** Represents a collection of disjoint atom ranges in a model.

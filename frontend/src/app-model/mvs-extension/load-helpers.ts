@@ -24,7 +24,7 @@ import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getChildren, getParam
 import { dfs } from './tree/generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './tree/mvs/molstar-tree';
 import { DefaultColor, Defaults } from './tree/mvs/param-defaults';
-import { ElementOfSet, canonicalJsonString, decodeColor, distinct, isDefined, stringHash } from './utils';
+import { ElementOfSet, canonicalJsonString, decodeColor, distinct, isDefined, stringHash } from './helpers/utils';
 
 
 export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
@@ -219,6 +219,26 @@ export function componentFromUrlOrCifProps(node: MolstarNode<'component_from_uri
         fieldValues: field_values ? { name: 'selected', params: field_values.map(v => ({ value: v })) } : { name: 'all', params: {} },
         nullIfEmpty: false,
     };
+}
+
+export function representationProps(params: ParamsOfKind<MolstarTree, 'representation'>): Partial<StateTransformer.Params<StructureRepresentation3D>> {
+    switch (params.type) {
+        case 'cartoon':
+            return {
+                type: { name: 'cartoon', params: {} },
+            };
+        case 'ball_and_stick':
+            return {
+                type: { name: 'ball-and-stick', params: { sizeFactor: 0.5, sizeAspectRatio: 0.5 } },
+            };
+        case 'surface':
+            return {
+                type: { name: 'molecular-surface', params: {} },
+                sizeTheme: { name: 'physical', params: { scale: 1 } },
+            };
+        default:
+            throw new Error('NotImplementedError');
+    }
 }
 
 export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color_from_uri' | 'color_from_source' | 'representation'> | undefined, context: MolstarLoadingContext): StateTransformer.Params<StructureRepresentation3D>['colorTheme'] {

@@ -16,13 +16,13 @@ import { AnnotationTooltipsProvider } from './additions/annotation-tooltips-prop
 import { CustomLabelProps, CustomLabelRepresentationProvider } from './additions/custom-label/representation';
 import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { focusCameraNode, focusStructureNode, setCanvas } from './camera';
-import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUrlOrCifProps, componentPropsFromSelector, isPhantomComponent, labelFromUrlOrCifProps, loadTree, makeNearestReprMap, structureProps, transformFromRotationTranslation } from './load-helpers';
+import { canonicalJsonString } from './helpers/utils';
+import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUrlOrCifProps, componentPropsFromSelector, isPhantomComponent, labelFromUrlOrCifProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformFromRotationTranslation } from './load-helpers';
 import { ParamsOfKind, SubTreeOfKind, getChildren, getParams, validateTree } from './tree/generic/generic';
 import { convertMvsToMolstar } from './tree/mvs/conversion';
 import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
 import { MVSTree, MVSTreeSchema } from './tree/mvs/mvs-tree';
 import { Defaults } from './tree/mvs/param-defaults';
-import { canonicalJsonString } from './utils';
 
 
 export interface MVSData {
@@ -163,11 +163,8 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
         return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
     },
     representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>, context: MolstarLoadingContext): StateObjectSelector {
-        const mvsType = getParams(node).type;
-        const type = (mvsType === 'cartoon') ? 'cartoon' : (mvsType === 'surface') ? 'gaussian-surface' : 'ball-and-stick';
-        const typeParams = (type === 'ball-and-stick') ? { sizeFactor: 0.5, sizeAspectRatio: 0.5 } : {};
         return update.to(msTarget).apply(StructureRepresentation3D, {
-            type: { name: type, params: typeParams },
+            ...representationProps(node.params),
             colorTheme: colorThemeForNode(node, context),
         }).selector;
     },

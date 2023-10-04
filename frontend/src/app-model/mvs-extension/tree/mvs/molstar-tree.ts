@@ -4,11 +4,11 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { omitObjectKeys, pickObjectKeys } from '../../utils';
+import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
 import { NodeForTree, TreeFor, TreeSchema } from '../generic/generic';
+import { RequiredField, bool } from '../generic/params-schema';
 import { MVSTreeSchema } from './mvs-tree';
 import { MolstarParseFormatT } from './param-types';
-import { RequiredField, bool } from '../generic/params-schema';
 
 
 export const MolstarTreeSchema = TreeSchema('root',

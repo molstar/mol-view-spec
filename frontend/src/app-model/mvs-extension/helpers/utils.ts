@@ -8,7 +8,7 @@ import { hashString } from 'molstar/lib/mol-data/util';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
-import { isHexColorString } from './tree/mvs/param-types';
+import { isHexColorString } from '../tree/mvs/param-types';
 
 
 export function formatObject(obj: {} | undefined) {

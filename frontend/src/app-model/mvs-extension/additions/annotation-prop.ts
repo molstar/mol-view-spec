@@ -23,7 +23,7 @@ import { getIndicesAndSortings } from '../helpers/indexing';
 import { PD_MaybeString } from '../helpers/param-definition';
 import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from '../helpers/schemas';
 import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
-import { Json, Maybe, canonicalJsonString, extend, pickObjectKeys, promiseAllObj, range, safePromise } from '../utils';
+import { Json, Maybe, canonicalJsonString, extend, pickObjectKeys, promiseAllObj, range, safePromise } from '../helpers/utils';
 
 
 /** Allowed values for the annotation format parameter */
