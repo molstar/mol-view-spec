@@ -130,8 +130,8 @@ SchemaT = Literal[
 SchemaFormatT = Literal["cif", "bcif", "json"]
 
 
-class _DataFromUrlParams(Params):
-    url: str
+class _DataFromUriParams(Params):
+    uri: str
     format: SchemaFormatT
     category_name: NotRequired[str]
     """Only applies when format is 'cif' or 'bcif'"""
@@ -144,7 +144,7 @@ class _DataFromUrlParams(Params):
     schema: SchemaT
 
 
-class _DataFromCifParams(Params):
+class _DataFromSourceParams(Params):
     category_name: str
     field_name: NotRequired[str]
     """Name of the column in CIF that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node type"""
@@ -157,12 +157,12 @@ class ComponentInlineParams(Params):
     selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression]
 
 
-class ComponentUrlParams(_DataFromUrlParams):
+class ComponentFromUriParams(_DataFromUriParams):
     field_values: NotRequired[list[str]]
     """Create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows."""
 
 
-class ComponentCifCategoryParams(_DataFromCifParams):
+class ComponentFromSourceParams(_DataFromSourceParams):
     field_values: NotRequired[list[str]]
     """Create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows."""
 
@@ -171,11 +171,11 @@ class ColorInlineParams(ComponentInlineParams):
     color: ColorT
 
 
-class ColorUrlParams(_DataFromUrlParams):
+class ColorFromUriParams(_DataFromUriParams):
     pass
 
 
-class ColorCifCategoryParams(_DataFromCifParams):
+class ColorFromSourceParams(_DataFromSourceParams):
     pass
 
 
@@ -184,11 +184,11 @@ class LabelInlineParams(Params):
     # schema and other stuff not needed here, the label will be applied on the whole parent Structure or Component
 
 
-class LabelUrlParams(_DataFromUrlParams):
+class LabelFromUriParams(_DataFromUriParams):
     pass
 
 
-class LabelCifCategoryParams(_DataFromCifParams):
+class LabelFromSourceParams(_DataFromSourceParams):
     pass
 
 
@@ -197,11 +197,11 @@ class TooltipInlineParams(Params):
     # schema and other stuff not needed here, the tooltip will be applied on the whole parent Structure or Component
 
 
-class TooltipUrlParams(_DataFromUrlParams):
+class TooltipFromUriParams(_DataFromUriParams):
     pass
 
 
-class TooltipCifCategoryParams(_DataFromCifParams):
+class TooltipFromSourceParams(_DataFromSourceParams):
     pass
 
 

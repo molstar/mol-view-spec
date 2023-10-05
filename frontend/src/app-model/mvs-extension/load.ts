@@ -17,7 +17,7 @@ import { CustomLabelProps, CustomLabelRepresentationProvider } from './additions
 import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { focusCameraNode, focusStructureNode, setCanvas } from './camera';
 import { canonicalJsonString } from './helpers/utils';
-import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUrlOrCifProps, componentPropsFromSelector, isPhantomComponent, labelFromUrlOrCifProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformFromRotationTranslation } from './load-helpers';
+import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUriOrSourceProps, componentPropsFromSelector, isPhantomComponent, labelFromUriOrSourceProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformFromRotationTranslation } from './load-helpers';
 import { ParamsOfKind, SubTreeOfKind, getChildren, getParams, validateTree } from './tree/generic/generic';
 import { convertMvsToMolstar } from './tree/mvs/conversion';
 import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
@@ -59,7 +59,7 @@ async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deleteP
 
 
 export interface MolstarLoadingContext {
-    /** Maps `*_from_[url|cif]` nodes to annotationId they should reference */
+    /** Maps `*_from_[uri|source]` nodes to annotationId they should reference */
     annotationMap?: Map<MolstarNode<AnnotationFromUriKind | AnnotationFromSourceKind>, string>,
     /** Maps each node (on 'structure' or lower level) to its nearest 'representation' node */
     nearestReprMap?: Map<MolstarNode, MolstarNode<'representation'>>,
@@ -154,12 +154,12 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
     },
     component_from_uri(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component_from_uri'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
         if (isPhantomComponent(node)) return undefined;
-        const props = componentFromUrlOrCifProps(node, context);
+        const props = componentFromUriOrSourceProps(node, context);
         return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
     },
     component_from_source(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'component_from_source'>, context: MolstarLoadingContext): StateObjectSelector | undefined {
         if (isPhantomComponent(node)) return undefined;
-        const props = componentFromUrlOrCifProps(node, context);
+        const props = componentFromUriOrSourceProps(node, context);
         return update.to(msTarget).apply(AnnotationStructureComponent, props).selector;
     },
     representation(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'representation'>, context: MolstarLoadingContext): StateObjectSelector {
@@ -186,11 +186,11 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
         }).selector;
     },
     label_from_uri(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label_from_uri'>, context: MolstarLoadingContext): StateObjectSelector {
-        const props = labelFromUrlOrCifProps(node, context);
+        const props = labelFromUriOrSourceProps(node, context);
         return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
     },
     label_from_source(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label_from_source'>, context: MolstarLoadingContext): StateObjectSelector {
-        const props = labelFromUrlOrCifProps(node, context);
+        const props = labelFromUriOrSourceProps(node, context);
         return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
     },
     transforms(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'transforms'>, context: MolstarLoadingContext): StateObjectSelector {

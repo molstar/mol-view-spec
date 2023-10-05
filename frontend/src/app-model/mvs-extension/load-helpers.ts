@@ -85,7 +85,7 @@ export function collectAnnotationReferences(tree: SubTree<MolstarTree>, context:
         let spec: Omit<AnnotationSpec, 'id'> | undefined = undefined;
         if (AnnotationFromUriKinds.has(node.kind as any)) {
             const p = (node as MolstarNode<AnnotationFromUriKind>).params;
-            spec = { source: { name: 'url', params: { url: p.url, format: p.format } }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
+            spec = { source: { name: 'url', params: { url: p.uri, format: p.format } }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
         } else if (AnnotationFromSourceKinds.has(node.kind as any)) {
             const p = (node as MolstarNode<AnnotationFromSourceKind>).params;
             spec = { source: { name: 'source-cif', params: {} }, schema: p.schema, cifBlock: blockSpec(p.block_header, p.block_index), cifCategory: p.category_name ?? undefined };
@@ -129,7 +129,7 @@ export function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structur
                     selector: componentPropsFromSelector(parent.params.selector),
                 });
             } else if (parent?.kind === 'component_from_uri' || parent?.kind === 'component_from_source') {
-                const p = componentFromUrlOrCifProps(parent, context);
+                const p = componentFromUriOrSourceProps(parent, context);
                 if (isDefined(p.annotationId) && isDefined(p.fieldName) && isDefined(p.fieldValues)) {
                     inlineTooltips.push({
                         text: node.params.text,
@@ -200,7 +200,7 @@ export function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 
     }
 }
 
-export function labelFromUrlOrCifProps(node: MolstarNode<'label_from_uri' | 'label_from_source'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
+export function labelFromUriOrSourceProps(node: MolstarNode<'label_from_uri' | 'label_from_source'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
     const annotationId = context.annotationMap?.get(node);
     const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
     const nearestReprNode = context.nearestReprMap?.get(node);
@@ -210,7 +210,7 @@ export function labelFromUrlOrCifProps(node: MolstarNode<'label_from_uri' | 'lab
     };
 }
 
-export function componentFromUrlOrCifProps(node: MolstarNode<'component_from_uri' | 'component_from_source'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
+export function componentFromUriOrSourceProps(node: MolstarNode<'component_from_uri' | 'component_from_source'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
     const annotationId = context.annotationMap?.get(node);
     const { field_name, field_values } = node.params;
     return {

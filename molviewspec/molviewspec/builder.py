@@ -7,20 +7,20 @@ from typing import Sequence
 from molviewspec.nodes import (
     CameraParams,
     CanvasParams,
-    ColorCifCategoryParams,
+    ColorFromSourceParams,
     ColorInlineParams,
     ColorT,
-    ColorUrlParams,
-    ComponentCifCategoryParams,
+    ColorFromUriParams,
+    ComponentFromSourceParams,
     ComponentExpression,
     ComponentInlineParams,
     ComponentSelectorT,
-    ComponentUrlParams,
+    ComponentFromUriParams,
     DownloadParams,
     FocusInlineParams,
-    LabelCifCategoryParams,
+    LabelFromSourceParams,
     LabelInlineParams,
-    LabelUrlParams,
+    LabelFromUriParams,
     LineParams,
     Node,
     ParseFormatT,
@@ -32,9 +32,9 @@ from molviewspec.nodes import (
     SphereParams,
     State,
     StructureParams,
-    TooltipCifCategoryParams,
+    TooltipFromSourceParams,
     TooltipInlineParams,
-    TooltipUrlParams,
+    TooltipFromUriParams,
     TransformParams,
 )
 from molviewspec.params_utils import make_params
@@ -101,8 +101,6 @@ class Root(_Base):
         node = Node(kind="generic_visuals")
         self._add_child(node)
         return GenericVisuals(node=node, root=self._root)
-
-    # TODO Root inherit from _Base and have special __init__ with `self.root = self`? (to be able to use `add_child` in `download`)
 
 
 class Download(_Base):
@@ -214,7 +212,7 @@ class Structure(_Base):
     def component_from_uri(
         self,
         *,
-        url: str,
+        uri: str,
         format: SchemaFormatT,
         category_name: str | None = None,
         field_name: str | None = None,
@@ -225,7 +223,7 @@ class Structure(_Base):
     ) -> Component:
         if isinstance(field_values, str):
             field_values = [field_values]
-        params = make_params(ComponentUrlParams, locals())
+        params = make_params(ComponentFromUriParams, locals())
         node = Node(kind="component_from_uri", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
@@ -242,7 +240,7 @@ class Structure(_Base):
     ) -> Component:
         if isinstance(field_values, str):
             field_values = [field_values]
-        params = make_params(ComponentCifCategoryParams, locals())
+        params = make_params(ComponentFromSourceParams, locals())
         node = Node(kind="component_from_source", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
@@ -250,7 +248,7 @@ class Structure(_Base):
     def label_from_uri(
         self,
         *,
-        url: str,
+        uri: str,
         format: SchemaFormatT,
         category_name: str | None = None,
         field_name: str | None = None,
@@ -258,7 +256,7 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
-        params = make_params(LabelUrlParams, locals())
+        params = make_params(LabelFromUriParams, locals())
         node = Node(kind="label_from_uri", params=params)
         self._add_child(node)
         return self
@@ -272,7 +270,7 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
-        params = make_params(LabelCifCategoryParams, locals())
+        params = make_params(LabelFromSourceParams, locals())
         node = Node(kind="label_from_source", params=params)
         self._add_child(node)
         return self
@@ -280,7 +278,7 @@ class Structure(_Base):
     def tooltip_from_uri(
         self,
         *,
-        url: str,
+        uri: str,
         format: SchemaFormatT,
         category_name: str | None = None,
         field_name: str | None = None,
@@ -288,7 +286,7 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
-        params = make_params(TooltipUrlParams, locals())
+        params = make_params(TooltipFromUriParams, locals())
         node = Node(kind="tooltip_from_uri", params=params)
         self._add_child(node)
         return self
@@ -302,7 +300,7 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
-        params = make_params(TooltipCifCategoryParams, locals())
+        params = make_params(TooltipFromSourceParams, locals())
         node = Node(kind="tooltip_from_source", params=params)
         self._add_child(node)
         return self
@@ -373,14 +371,14 @@ class Component(_Base):
 class Representation(_Base):
     def color_from_source(self, *, schema: SchemaT, category_name: str,
                        field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
-        params = make_params(ColorCifCategoryParams, locals())
+        params = make_params(ColorFromSourceParams, locals())
         node = Node(kind="color_from_source", params=params)
         self._add_child(node)
         return self
 
-    def color_from_uri(self, *, schema: SchemaT, url: str, format: str, category_name: str | None = None,
+    def color_from_uri(self, *, schema: SchemaT, uri: str, format: str, category_name: str | None = None,
                        field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
-        params = make_params(ColorUrlParams, locals())
+        params = make_params(ColorFromUriParams, locals())
         node = Node(kind="color_from_uri", params=params)
         self._add_child(node)
         return self
