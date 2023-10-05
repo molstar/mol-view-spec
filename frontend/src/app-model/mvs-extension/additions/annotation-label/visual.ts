@@ -16,8 +16,8 @@ import { Theme } from 'molstar/lib/mol-theme/theme';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { omitObjectKeys } from '../../utils';
 import { textPropsForSelection } from '../../helpers/label-text';
+import { omitObjectKeys } from '../../helpers/utils';
 import { getAnnotationForStructure, groupRows } from '../annotation-prop';
 
 

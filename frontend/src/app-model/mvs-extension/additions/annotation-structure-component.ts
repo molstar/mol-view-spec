@@ -11,8 +11,8 @@ import { StateObject, StateTransformer } from 'molstar/lib/mol-state';
 import { deepEqual } from 'molstar/lib/mol-util';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { omitObjectKeys } from '../utils';
 import { rowsToExpression } from '../helpers/selections';
+import { omitObjectKeys } from '../helpers/utils';
 import { getAnnotationForStructure } from './annotation-prop';
 
 

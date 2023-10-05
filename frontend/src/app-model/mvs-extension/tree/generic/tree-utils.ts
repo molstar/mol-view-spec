@@ -4,7 +4,7 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { canonicalJsonString, formatObject } from '../../utils';
+import { canonicalJsonString, formatObject } from '../../helpers/utils';
 import { Kind, SubTree, SubTreeOfKind, Tree, getParams } from './generic';
 
 

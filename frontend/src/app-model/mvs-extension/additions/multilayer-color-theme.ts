@@ -20,7 +20,7 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { capitalize, stringToWords } from 'molstar/lib/mol-util/string';
 
-import { extend, mapArrToObj, pickObjectKeys, sortIfNeeded } from '../utils';
+import { extend, mapArrToObj, pickObjectKeys, sortIfNeeded } from '../helpers/utils';
 import { AnnotationStructureComponentParams, createAnnotationStructureComponent } from './annotation-structure-component';
 
 

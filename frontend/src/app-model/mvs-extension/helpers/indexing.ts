@@ -8,7 +8,7 @@ import { Column } from 'molstar/lib/mol-data/db';
 import { SortedArray } from 'molstar/lib/mol-data/int';
 import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-model/structure';
 
-import { BasicReadonlyMap, MultiMap, NumberMap, filterInPlace, range, sortIfNeeded } from '../utils';
+import { BasicReadonlyMap, MultiMap, NumberMap, filterInPlace, range, sortIfNeeded } from './utils';
 
 
 /** Auxiliary data structure for efficiently finding chains/residues/atoms by their properties */

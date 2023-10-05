@@ -9,8 +9,8 @@ import { ColorT, ComponentExpression, ComponentSelectorT, Matrix, ParseFormatT, 
 import { OptionalField, RequiredField, float, int, list, nullable, str, tuple, union } from '../generic/params-schema';
 
 
-const _DataFromUrlParams = {
-    url: RequiredField(str),
+const _DataFromUriParams = {
+    uri: RequiredField(str),
     format: RequiredField(SchemaFormatT),
     /** Only applies when format is 'cif' or 'bcif' */
     category_name: OptionalField(nullable(str)),
@@ -22,7 +22,7 @@ const _DataFromUrlParams = {
     block_header: OptionalField(nullable(str)),
     schema: RequiredField(SchemaT),
 };
-const _DataFromCifParams = {
+const _DataFromSourceParams = {
     category_name: OptionalField(nullable(str)),
     /** Name of the column in CIF that contains the desired value (color/label/tooltip...); the default value is 'color'/'label'/'tooltip' depending on the node type */
     field_name: OptionalField(str),
@@ -60,11 +60,11 @@ export const MVSTreeSchema = TreeSchema('root',
             selector: RequiredField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
         component_from_uri: {
-            ..._DataFromUrlParams,
+            ..._DataFromUriParams,
             field_values: OptionalField(nullable(list(str))),
         },
         component_from_source: {
-            ..._DataFromCifParams,
+            ..._DataFromSourceParams,
             field_values: OptionalField(nullable(list(str))),
         },
         representation: {
@@ -75,28 +75,28 @@ export const MVSTreeSchema = TreeSchema('root',
             selector: OptionalField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)])),
         },
         color_from_uri: {
-            ..._DataFromUrlParams,
+            ..._DataFromUriParams,
         },
         color_from_source: {
-            ..._DataFromCifParams,
+            ..._DataFromSourceParams,
         },
         label: {
             text: RequiredField(str),
         },
         label_from_uri: {
-            ..._DataFromUrlParams,
+            ..._DataFromUriParams,
         },
         label_from_source: {
-            ..._DataFromCifParams,
+            ..._DataFromSourceParams,
         },
         tooltip: {
             text: RequiredField(str),
         },
         tooltip_from_uri: {
-            ..._DataFromUrlParams,
+            ..._DataFromUriParams,
         },
         tooltip_from_source: {
-            ..._DataFromCifParams,
+            ..._DataFromSourceParams,
         },
         focus: {
             direction: OptionalField(Vector3),

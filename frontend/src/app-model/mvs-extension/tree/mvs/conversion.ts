@@ -4,7 +4,7 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { omitObjectKeys, pickObjectKeys } from '../../utils';
+import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
 import { ConversionRules, condenseTree, convertTree } from '../generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './molstar-tree';
 import { MVSTree } from './mvs-tree';

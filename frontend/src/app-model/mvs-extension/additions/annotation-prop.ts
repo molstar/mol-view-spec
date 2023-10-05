@@ -18,12 +18,12 @@ import { UUID } from 'molstar/lib/mol-util';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { Json, canonicalJsonString, extend, pickObjectKeys, promiseAllObj, range } from '../utils';
 import { rangesForeach } from '../helpers/atom-ranges';
 import { getIndicesAndSortings } from '../helpers/indexing';
 import { PD_MaybeString } from '../helpers/param-definition';
 import { AnnotationRow, AnnotationSchema, CIFAnnotationSchema, FieldsForSchemas } from '../helpers/schemas';
 import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
+import { Json, Maybe, canonicalJsonString, extend, pickObjectKeys, promiseAllObj, range, safePromise } from '../helpers/utils';
 
 
 /** Allowed values for the annotation format parameter */
@@ -109,13 +109,20 @@ export class Annotations {
     private constructor(private dict: { [id: string]: Annotation }) { }
     static async fromSpecs(ctx: CustomProperty.Context, specs: AnnotationSpec[], model?: Model): Promise<Annotations> {
         const sources: AnnotationSource[] = specs.map(annotationSourceFromSpec);
-        const data = await getFileFromSources(ctx, sources, model);
-        const dict: { [id: string]: Annotation } = {};
+        const files = await getFilesFromSources(ctx, sources, model);
+        const annots: { [id: string]: Annotation } = {};
         for (let i = 0; i < specs.length; i++) {
             const spec = specs[i];
-            dict[spec.id] = await Annotation.fromSpec(ctx, spec, data[i]);
+            try {
+                const file = files[i];
+                if (!file.ok) throw file.error;
+                annots[spec.id] = await Annotation.fromSpec(ctx, spec, file.value);
+            } catch (err) {
+                console.error(`Failed to obtain annotation (${err}).\nAnnotation specification:`, spec);
+                annots[spec.id] = Annotation.createEmpty(spec.schema);
+            }
         }
-        return new Annotations(dict);
+        return new Annotations(annots);
     }
     getAnnotation(id: string): Annotation | undefined {
         return this.dict[id];
@@ -137,9 +144,11 @@ export class Annotation {
         public schema: AnnotationSchema,
     ) { }
 
-    /** Create a new `Annotation` based on specification `spec`. Use `file` if provided, otherwise download the file. */
+    /** Create a new `Annotation` based on specification `spec`. Use `file` if provided, otherwise download the file.
+     * Throw error if download fails or problem with data. */
     static async fromSpec(ctx: CustomProperty.Context, spec: AnnotationSpec, file?: AnnotationFile): Promise<Annotation> {
         file ??= await getFileFromSource(ctx, annotationSourceFromSpec(spec));
+
         let data: AnnotationData;
         switch (file.format) {
             case 'json':
@@ -168,6 +177,10 @@ export class Annotation {
                 break;
         }
         return new Annotation(data, spec.schema);
+    }
+
+    static createEmpty(schema: AnnotationSchema): Annotation {
+        return new Annotation({ format: 'json', data: [] }, schema);
     }
 
     /** Reference implementation of `getAnnotationForLocation`, just for checking, DO NOT USE DIRECTLY */
@@ -330,16 +343,16 @@ async function getFileFromSource(ctx: CustomProperty.Context, source: Annotation
             }
     }
 }
-/** Like `sources.map(s => getFileFromSource(ctx, s))`
+/** Like `sources.map(s => safePromise(getFileFromSource(ctx, s)))`
  * but downloads a repeating source only once. */
-async function getFileFromSources(ctx: CustomProperty.Context, sources: AnnotationSource[], model?: Model): Promise<AnnotationFile[]> {
-    const promises: { [key: string]: Promise<AnnotationFile> } = {};
+async function getFilesFromSources(ctx: CustomProperty.Context, sources: AnnotationSource[], model?: Model): Promise<Maybe<AnnotationFile>[]> {
+    const promises: { [key: string]: Promise<Maybe<AnnotationFile>> } = {};
     for (const src of sources) {
         const key = canonicalJsonString(src);
-        promises[key] ??= getFileFromSource(ctx, src, model);
+        promises[key] ??= safePromise(getFileFromSource(ctx, src, model));
     }
-    const data = await promiseAllObj(promises);
-    return sources.map(src => data[canonicalJsonString(src)]);
+    const files = await promiseAllObj(promises);
+    return sources.map(src => files[canonicalJsonString(src)]);
 }
 
 function getFileFromModel(model?: Model): CifFile {

@@ -10,11 +10,11 @@ import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { ElementIndex, Model, Structure, StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure';
 import { UUID } from 'molstar/lib/mol-util';
 
-import { extend } from '../utils';
 import { AtomRanges, selectAtomsInRanges } from './atom-ranges';
 import { getIndicesAndSortings } from './indexing';
 import { AnnotationRow } from './schemas';
 import { getAtomRangesForRows } from './selections';
+import { extend } from './utils';
 
 
 interface TextProps {

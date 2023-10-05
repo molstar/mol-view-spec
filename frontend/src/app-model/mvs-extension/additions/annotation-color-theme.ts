@@ -11,7 +11,7 @@ import { ThemeDataContext } from 'molstar/lib/mol-theme/theme';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { decodeColor } from '../utils';
+import { decodeColor } from '../helpers/utils';
 import { getAnnotationForStructure } from './annotation-prop';
 
 

@@ -12,7 +12,7 @@ import { Structure, StructureElement } from 'molstar/lib/mol-model/structure';
 import { LociLabelProvider } from 'molstar/lib/mol-plugin-state/manager/loci-label';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
-import { filterDefined } from '../utils';
+import { filterDefined } from '../helpers/utils';
 import { ElementSet, Selector, SelectorParams, elementSetFromSelector, elementSetHas } from './multilayer-color-theme';
 
 
