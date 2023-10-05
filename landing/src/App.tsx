@@ -15,7 +15,7 @@ export function App() {
             <div className='two columns'>&nbsp;</div>
             <div className='eight columns' style={{ borderTop: '1px solid #E0DDD4', paddingTop: 20 }}>
                 <h5 className='hero-heading'>
-                    TODO One line summary
+                    Toolkit for Describing Molecular Visualizations
                 </h5>
             </div>
             <div className='two columns'>&nbsp;</div>
@@ -23,8 +23,12 @@ export function App() {
 
         <div className='row' style={{ marginTop: 0, display: 'flex' }}>
             <div className='twelve columns' style={{ display: 'flex', alignItems: 'center' }}>
-                <div style={{ margin: 5 }}>
-                    TODO Description
+                <div style={{ margin: 5, textAlign: 'justify' }}>
+                    <b>Mol View Spec</b> provides a generic mechanism to describe visual scenes or views that are used in molecular visualizations. 
+                    It adopts declarative data-driven approach to descrive, load, render, and visually deliver molecular structures, along with 3D representations, 
+                    coloring schemes, and associated structural, biological, or functional annotations. The toolkit allows for describing the information required 
+                    for representing a <i>molecular view state</i> as data in a nested tree format that can be consumed by visualization software tools 
+                    such as Mol*. 
                 </div>
             </div>
         </div>
@@ -48,9 +52,9 @@ export function App() {
             </div>
         </div>
 
-        <div className='row' style={{ textAlign: 'center', marginTop: 20 }}>
+        <div className='row' style={{ textAlign: 'center', marginTop: 20,  borderTop: '1px solid #E0DDD4', paddingTop: 20 }}>
             <div className='twelve columns'>
-                <h4 className='hero-heading' style={{ marginBottom: 30 }}><b>Interactive Examples</b></h4>
+                <h5 className='hero-heading' style={{ marginBottom: 30 }}><b>Examples</b></h5>
                 {/* <div style={{ fontSize: '0.95rem', maxWidth: 500, margin: '10px auto 40px auto', color: '#555' }}>
                     WebGL2 support is required to view the interactive examples. The examples were tested in Firefox, Chrome & Safari on PC, Linux and MacOS/iOS.
                     Some users experienced rendering problems with integrated Intel graphics cards.
@@ -64,7 +68,7 @@ export function App() {
 
 
         <div className='row' style={{ textAlign: 'right', color: '#999' }}>
-            Copyright 2023–now, Mol* Volumes & Segmentations Contributors | <a href='terms-of-use.html' style={{ color: '#999' }}>Terms of Use &
+            Copyright 2023–now, Mol View Spec Contributors | <a href='terms-of-use.html' style={{ color: '#999' }}>Terms of Use &
                 GDPR</a>
         </div>
 

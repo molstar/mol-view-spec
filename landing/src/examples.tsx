@@ -12,21 +12,47 @@ export interface ExampleSpec {
 
 
 export const Examples: ExampleSpec[] = [{
-    header: 'Example 1',
-    description: 'First example',
+    header: 'Ligand Focus',
+    description: 'Load 4hhb and zoom in on the 1st HEM ligand. The ligand and its non-covalent interaction partners are shown in ball-and-stick representation.',
     thumbnail: 'example1.png',
     uri: 'example1.mvsj',
     python: `builder = Root()
-(builder
-    .download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif")
+structure = (
+    builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/4hhb_updated.cif")
     .parse(format="mmcif")
-    .symmetry_structure(ijk_min=(-1, -1, -1), ijk_max=(1, 1, 1)))
+    .model_structure()
+)
+structure.component().representation()
+structure.component(selector=ComponentExpression(label_asym_id="E")).focus()
+
 return builder.get_state()`,
-    json: `{ a: 1, b: 2, c: 3 }`
+    json: ``
 }, {
-    header: 'Example 2',
-    description: 'Second example',
+    header: 'Color by Chain',
+    description: 'Load a gamma-thrombin that was cleaved into 4 fragments and color each chain differently.',
     thumbnail: 'example2.png',
+    uri: 'example1.mvsj',
+    python: `builder = Root()
+structure = (
+    builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/2hnt_updated.cif")
+    .parse(format="mmcif")
+    .model_structure()
+)
+(
+    structure.component()
+    .representation(type="cartoon")
+    .color(selector=ComponentExpression(label_asym_id="A"), color="#648fff")
+    .color(selector=ComponentExpression(label_asym_id="B"), color="#785ef0")
+    .color(selector=ComponentExpression(label_asym_id="C"), color="#dc267f")
+    .color(selector=ComponentExpression(label_asym_id="D"), color="#fe6100")
+)
+
+return builder.get_state()`,
+    json: ``
+}, {
+    header: 'Structure Superposition',
+    description: 'Superimpose 4hhb and 1oj6 by rotating and translating the 2nd structure.',
+    thumbnail: 'example3.png',
     uri: 'example1.mvsj',
     python: `builder = Root()
 (
@@ -44,7 +70,51 @@ return builder.get_state()`,
     )
 )
 return builder.get_state()`,
-    json: `{ a: 1, b: 2, c: 3 }`
+    json: ``
+}, {
+    header: 'Structure Superposition',
+    description: 'Superimpose 4hhb and 1oj6 by rotating and translating the 2nd structure.',
+    thumbnail: 'example4.png',
+    uri: 'example1.mvsj',
+    python: `builder = Root()
+(
+    builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/4hhb_updated.cif")
+    .parse(format="mmcif")
+    .model_structure()
+)
+(
+    builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1oj6_updated.cif")
+    .parse(format="mmcif")
+    .model_structure()
+    .transform(
+        rotation=[-0.72, -0.33, -0.61, 0.36, 0.57, -0.74, 0.59, -0.75, -0.30],
+        translation=[-12.54, 46.79, 94.50]
+    )
+)
+return builder.get_state()`,
+    json: ``
+}, {
+    header: 'Structure Superposition',
+    description: 'Superimpose 4hhb and 1oj6 by rotating and translating the 2nd structure.',
+    thumbnail: 'example5.png',
+    uri: 'example1.mvsj',
+    python: `builder = Root()
+(
+    builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/4hhb_updated.cif")
+    .parse(format="mmcif")
+    .model_structure()
+)
+(
+    builder.download(url=f"https://www.ebi.ac.uk/pdbe/entry-files/download/1oj6_updated.cif")
+    .parse(format="mmcif")
+    .model_structure()
+    .transform(
+        rotation=[-0.72, -0.33, -0.61, 0.36, 0.57, -0.74, 0.59, -0.75, -0.30],
+        translation=[-12.54, 46.79, 94.50]
+    )
+)
+return builder.get_state()`,
+    json: ``
 }];
 
 export function ExamplesUI() {
@@ -78,10 +148,12 @@ function ExamplePreview({ example, setCurrent, current }: { example: ExampleSpec
 function CurrentExample({ example }: { example: ExampleSpec }) {
 
     return <>
-        <div className='row'>
-            <div className='twelve columns'>
-                <b>{example.header}:</b> {example.description}
-                <a className='button' href={resolveExampleSnapshotURL(example.uri)} target='_blank' rel='noreferrer' style={{ marginLeft: 20 }}>Open in Mol*</a>
+        <div className='row' style={{ marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
+            <div className='nine columns'>
+                <b>{example.header}:</b><br/> {example.description}    
+            </div>
+            <div className='three columns' style={{ display: 'flex', alignItems: 'flex-end' }}>
+                <a className='button' href={resolveExampleSnapshotURL(example.uri)} target='_blank' rel='noreferrer' style={{ width: '100%', fontWeight: 'bold', marginBottom: 0 }}>Open in Mol*</a>
             </div>
         </div>
         <div className='row'>
