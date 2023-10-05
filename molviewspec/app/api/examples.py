@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 from typing import Literal, TypeAlias
 
 from app.config import settings
-from molviewspec.builder import Root
+from molviewspec.builder import Root, Representation
 from molviewspec.nodes import ComponentExpression
 
 
@@ -1237,6 +1237,42 @@ async def portfolio_plddt() -> MVSResponse:
     return JSONResponse(builder.get_state())
 
 
+@router.get("/portfolio/pdbe_entry_page")
+async def portfolio_entry_page(id: str = "7xv8") -> MVSResponse:
+    """
+    "PDBe entry page 3D view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
+    """
+    builder = Root()
+    structure_url = _url_for_mmcif(id)
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    struct.component(selector="protein").tooltip(text="protein").representation(type="cartoon").color(color="#1d9671")
+    struct.component(selector="nucleic").tooltip(text="nucleic").representation(type="cartoon").color(color="#ff449e")
+    _color_by_symbol(struct.component(selector="ligand").tooltip(text="ligand").representation(type="ball_and_stick"), base="#888888")
+    _color_by_symbol(struct.component(selector="ion").tooltip(text="ion").representation(type="ball_and_stick"), base="#888888")
+    _color_by_symbol(struct.component(selector="branched").tooltip(text="branched").representation(type="ball_and_stick"), base="#888888")
+    struct.component(selector="water").tooltip(text="water").representation(type="ball_and_stick").color(color="#98170f")
+    builder.canvas(background_color="#000000")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/pdbe_entry_page_entity")
+async def portfolio_entry_page_entity(id: str = "7xv8", entity_id: str = "1") -> MVSResponse:
+    """
+    "PDBe entry page entity view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
+    """
+    builder = Root()
+    structure_url = _url_for_mmcif(id)
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    struct.component(selector="polymer").representation(type="cartoon").color(color="#dfc2c1").color(selector=ComponentExpression(label_entity_id=entity_id), color="#720202")
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color="#dfc2c1")
+    struct.component(selector="ion").representation(type="ball_and_stick").color(color="#dfc2c1")
+    struct.component(selector="branched").representation(type="ball_and_stick").color(color="#dfc2c1")
+    struct.component(selector="water").representation(type="ball_and_stick").color(color="#dfc2c1")
+    struct.component(selector=ComponentExpression(label_entity_id=entity_id)).tooltip(text=f"Entity {entity_id}")
+    builder.canvas(background_color="#000000")
+    return JSONResponse(builder.get_state())
+
+
 # TODO add portfolio examples from all the documents we have who knows where (https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0)
 
 
@@ -1278,3 +1314,13 @@ def _url_for_bcif(id: str) -> str:
 def _url_for_pdb(id: str) -> str:
     """Return URL for good old PDB file from PDBe server"""
     return f"https://www.ebi.ac.uk/pdbe/entry-files/download/pdb{id.lower()}.ent"
+
+
+def _color_by_symbol(repr: Representation, base: str = "#888888") -> Representation:
+    return (
+        repr.color(color=base)
+        .color(selector=ComponentExpression(type_symbol="N"), color="#3050F8")
+        .color(selector=ComponentExpression(type_symbol="O"), color="#FF0D0D")
+        .color(selector=ComponentExpression(type_symbol="S"), color="#FFFF30")
+        .color(selector=ComponentExpression(type_symbol="F"), color="#E06633")
+    )

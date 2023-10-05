@@ -69,6 +69,9 @@ function Main() {
         'modres': 'http://localhost:9000/api/v1/examples/portfolio/modres',
         'bfactor': 'http://localhost:9000/api/v1/examples/portfolio/bfactor',
         'plddt': 'http://localhost:9000/api/v1/examples/portfolio/plddt',
+
+        'pdbe entry page': 'http://localhost:9000/api/v1/examples/portfolio/pdbe_entry_page?id=7xv8',
+        'pdbe entry page entity': 'http://localhost:9000/api/v1/examples/portfolio/pdbe_entry_page_entity?id=7xv8&entity_id=2',
     };
 
     return (
