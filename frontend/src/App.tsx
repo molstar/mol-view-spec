@@ -72,6 +72,9 @@ function Main() {
 
         'pdbe entry page': 'http://localhost:9000/api/v1/examples/portfolio/pdbe_entry_page?id=7xv8',
         'pdbe entry page entity': 'http://localhost:9000/api/v1/examples/portfolio/pdbe_entry_page_entity?id=7xv8&entity_id=2',
+        'pdbe-kb default view': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_default?id=7xv8&entity_id=1',
+        'pdbe-kb segment superpose': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_segment_superpose?id1=1tqn&chain1=A&id2=2nnj&chain2=A',
+        'pdbe-kb ligand superpose': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_ligand_superpose?chains=1tqn:A,2nnj:A',
     };
 
     return (
