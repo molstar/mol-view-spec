@@ -1,8 +1,8 @@
-from typing import ForwardRef, Iterable, Type, TypeVar
+from typing import ForwardRef, Iterable, Type, TypeVar, TypedDict
 from pydantic import BaseModel
 
 
-class Params(BaseModel):
+class Params(BaseModel, metaclass=TypedDict):
     """Base class for all params classes"""
 
 

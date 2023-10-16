@@ -40,7 +40,7 @@ from molviewspec.nodes import (
 )
 from molviewspec.params_utils import make_params
 
-VERSION = 6
+VERSION = 7
 
 
 def create_builder() -> Root:
@@ -51,10 +51,6 @@ class _Base(BaseModel):
     _root: Root
     _node: Node
 
-    def __init__(self, *, root: Root, node: Node) -> None:
-        self._root = root
-        self._node = node
-
     def _add_child(self, node: Node) -> None:
         if "children" not in self._node:
             self._node["children"] = []
@@ -62,8 +58,7 @@ class _Base(BaseModel):
 
 
 class Root(_Base):
-    def __init__(self) -> None:
-        super().__init__(root=self, node=Node(kind="root"))
+    _node = Node(kind="root")
 
     def get_state(self) -> State:
         return State(version=VERSION, root=self._node)
