@@ -1,13 +1,13 @@
 import math
+from typing import Literal, TypeAlias
+
 import requests
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
-from typing import Literal, TypeAlias
 
 from app.config import settings
 from molviewspec.builder import Root
 from molviewspec.nodes import ComponentExpression
-
 
 MVSResponse: TypeAlias = Response
 """Response containing a MVS tree (as JSON)"""
@@ -22,13 +22,7 @@ async def download_example(id: str) -> MVSResponse:
     Download a minimal example that visualizes a given PDB entry in cartoon representation.
     """
     builder = Root()
-    (
-        builder.download(url=_url_for_mmcif(id))
-        .parse(format="mmcif")
-        .model_structure()
-        .component()
-        .representation()
-    )
+    (builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").model_structure().component().representation())
     return JSONResponse(builder.get_state())
 
 
@@ -38,11 +32,7 @@ async def label_example(id: str) -> MVSResponse:
     The minimal example enriched by custom labels and labels read from the CIF source file.
     """
     builder = Root()
-    structure = (
-        builder.download(url=_url_for_mmcif(id))
-        .parse(format="mmcif")
-        .model_structure()
-    )
+    structure = builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").model_structure()
 
     # represent everything as cartoon
     whole = structure.component()
@@ -62,11 +52,7 @@ async def color_example(id: str) -> MVSResponse:
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
-    structure = (
-        builder.download(url=_url_for_mmcif(id))
-        .parse(format="mmcif")
-        .model_structure()
-    )
+    structure = builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").model_structure()
 
     structure.component(selector="protein").representation(type="cartoon").color(color="white")
 
@@ -88,11 +74,7 @@ async def component_example() -> MVSResponse:
     representation.
     """
     builder = Root()
-    structure = (
-        builder.download(url=_url_for_mmcif("1cbs"))
-        .parse(format="mmcif")
-        .model_structure()
-    )
+    structure = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure()
 
     structure.component_from_uri(
         schema="chain", uri=f"/data/1cbs/components.cif", format="cif", category_name="mvs_test_component1"
@@ -110,11 +92,7 @@ async def symmetry_mates_example(id: str) -> MVSResponse:
     Add symmetry mates within a distance threshold.
     """
     builder = Root()
-    (
-        builder.download(url=_url_for_mmcif(id))
-        .parse(format="mmcif")
-        .symmetry_mates_structure(radius=5.0)
-    )
+    (builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").symmetry_mates_structure(radius=5.0))
     return JSONResponse(builder.get_state())
 
 
@@ -138,11 +116,7 @@ async def transform_example() -> MVSResponse:
     Superimpose 4hhb and 1oj6 by transforming the latter.
     """
     builder = Root()
-    (
-        builder.download(url=_url_for_mmcif("4hhb"))
-        .parse(format="mmcif")
-        .model_structure()
-    )
+    (builder.download(url=_url_for_mmcif("4hhb")).parse(format="mmcif").model_structure())
     (
         builder.download(url=_url_for_mmcif("1oj6"))
         .parse(format="mmcif")
@@ -295,6 +269,7 @@ async def validation_data(id: str) -> Response:
 ##############################################################################
 # Examples for frontend testing
 
+
 @router.get("/testing/formats")
 async def testing_formats_example() -> MVSResponse:
     """Return state with three proteins loaded in mmCIF, binaryCIF, and PDB format"""
@@ -375,8 +350,12 @@ async def testing_symmetry_structures_example(id: str = "1tqn") -> MVSResponse:
     structure_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs_2nnj_1tqn.cif"
     model = builder.download(url=structure_url).parse(format="mmcif")
     model.model_structure(block_header="1TQN", model_index=0).component().representation().color(color="white")
-    model.symmetry_structure(block_index=2, ijk_min=(0, 0, 0), ijk_max=(1, 1, 0)).transform(translation=(100, 0, 0)).component().representation().color(color="blue")
-    model.symmetry_mates_structure(block_index=2, radius=40).transform(translation=(-130, 0, 0)).component().representation().color(color="green")
+    model.symmetry_structure(block_index=2, ijk_min=(0, 0, 0), ijk_max=(1, 1, 0)).transform(
+        translation=(100, 0, 0)
+    ).component().representation().color(color="blue")
+    model.symmetry_mates_structure(block_index=2, radius=40).transform(
+        translation=(-130, 0, 0)
+    ).component().representation().color(color="green")
     return JSONResponse(builder.get_state())
 
 
@@ -390,45 +369,66 @@ async def testing_transforms_example(id: str = "1cbs") -> MVSResponse:
     builder = Root()
     structure_url = _url_for_local_bcif(id)
     model = builder.download(url=structure_url).parse(format="bcif")
-    original = (
-        model
-        .model_structure()
-        .component(selector="all")
-        .representation().color(color="white")
-    )
+    original = model.model_structure().component(selector="all").representation().color(color="white")
     moved = (
-        model
-        .model_structure()
+        model.model_structure()
         .transform(translation=(0, -40, 0))
         .component(selector="all")
-        .representation().color(color="blue")
+        .representation()
+        .color(color="blue")
     )
     rotatedZ90 = (
-        model
-        .model_structure()
-        .transform(rotation=(
-            0, 1, 0,  # this is a column, because of column-major convention
-            -1, 0, 0,
-            0, 0, 1,
-        ), translation=(80, 5, 0))
+        model.model_structure()
+        .transform(
+            rotation=(
+                0,
+                1,
+                0,  # this is a column, because of column-major convention
+                -1,
+                0,
+                0,
+                0,
+                0,
+                1,
+            ),
+            translation=(80, 5, 0),
+        )
         .component(selector="all")
-        .representation().color(color="green")
+        .representation()
+        .color(color="green")
     )
     combination = (
-        model
-        .model_structure()
-        .transform(rotation=(  # rotateX90
-            1, 0, 0,
-            0, 0, 1,
-            0, -1, 0,
-        ))
-        .transform(rotation=(  # rotateY90
-            0, 0, -1,
-            0, 1, 0,
-            1, 0, 0,
-        ), translation=(40, 10, 40))
+        model.model_structure()
+        .transform(
+            rotation=(  # rotateX90
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                -1,
+                0,
+            )
+        )
+        .transform(
+            rotation=(  # rotateY90
+                0,
+                0,
+                -1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                0,
+            ),
+            translation=(40, 10, 40),
+        )
         .component(selector="all")
-        .representation().color(color="orange")
+        .representation()
+        .color(color="orange")
     )
     return JSONResponse(builder.get_state())
 
@@ -440,11 +440,7 @@ async def testing_components_example() -> MVSResponse:
     (polymer, ligand, ion, water, branched, protein, nucleic)
     """
     builder = Root()
-    struct1 = (
-        builder.download(url=_url_for_mmcif("2nnj"))
-        .parse(format="mmcif")
-        .model_structure()
-    )
+    struct1 = builder.download(url=_url_for_mmcif("2nnj")).parse(format="mmcif").model_structure()
     struct1.component(selector="polymer").representation(type="cartoon").color(color="white")
     struct1.component(selector="ligand").representation(type="surface").color(color="blue")
     struct1.component(selector="ion").representation(type="surface").color(color="cyan")
@@ -508,11 +504,7 @@ async def testing_color_rainbow_example() -> MVSResponse:
     An example with different representations and coloring for polymer and non-polymer chains.
     """
     builder = Root()
-    structure = (
-        builder.download(url=_url_for_mmcif("1cbs"))
-        .parse(format="mmcif")
-        .model_structure()
-    )
+    structure = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure()
     structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_uri(
         schema="all_atomic",
         uri="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow",
@@ -563,7 +555,7 @@ async def testing_color_cif_multicategory_example() -> MVSResponse:
         format="cif",
         block_index=1,
         category_name="color",
-        field_name="secondary_color"
+        field_name="secondary_color",
     )
     structure.component(selector="ligand").representation(type="ball_and_stick").color(color="white").color_from_uri(
         schema="atom",
@@ -620,11 +612,7 @@ async def testing_color_domains_example(colors: bool = True, tooltips: bool = Fa
     """
     builder = Root()
     structure_url = _url_for_local_bcif("1h9t")
-    structure = (
-        builder.download(url=structure_url)
-        .parse(format="bcif")
-        .model_structure()
-    )
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     reprs = [
         structure.component(selector="protein").representation(type="cartoon").color(color="white"),
         structure.component(selector="nucleic").representation(type="ball_and_stick").color(color="white"),
@@ -653,7 +641,9 @@ async def testing_color_domains_example(colors: bool = True, tooltips: bool = Fa
 
 
 @router.get("/testing/color_validation")
-async def testing_color_validation_example(id: str = "1tqn", tooltips: bool = False, labels: bool = False) -> MVSResponse:
+async def testing_color_validation_example(
+    id: str = "1tqn", tooltips: bool = False, labels: bool = False
+) -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
@@ -697,26 +687,35 @@ async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
     structure_url = _url_for_local_bcif(id)
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     (
-        structure
-        .component(selector="protein")
+        structure.component(selector="protein")
         .representation(type="cartoon")
-        .color(color="#00dd00", selector=[ComponentExpression(beg_label_seq_id=1, end_label_seq_id=176),
-                                          ComponentExpression(beg_label_seq_id=242)])
+        .color(
+            color="#00dd00",
+            selector=[
+                ComponentExpression(beg_label_seq_id=1, end_label_seq_id=176),
+                ComponentExpression(beg_label_seq_id=242),
+            ],
+        )
         .color_from_uri(
             schema="residue",
             uri=f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation",
             format="json",
-        ).color(color="magenta", selector=[ComponentExpression(beg_label_seq_id=50, end_label_seq_id=63),
-                                           ComponentExpression(beg_auth_seq_id=373, end_auth_seq_id=376),
-                                           ComponentExpression(beg_auth_seq_id=393, end_auth_seq_id=396)])
+        )
+        .color(
+            color="magenta",
+            selector=[
+                ComponentExpression(beg_label_seq_id=50, end_label_seq_id=63),
+                ComponentExpression(beg_auth_seq_id=373, end_auth_seq_id=376),
+                ComponentExpression(beg_auth_seq_id=393, end_auth_seq_id=396),
+            ],
+        )
         .color(color="blue", selector=ComponentExpression(label_seq_id=52))
         .color(color="blue", selector=ComponentExpression(label_seq_id=61))
         .color(color="blue", selector=ComponentExpression(label_seq_id=354))
         .color(color="blue", selector=ComponentExpression(label_seq_id=373))
     )
     (
-        structure
-        .component(selector="ligand")
+        structure.component(selector="ligand")
         .representation(type="ball_and_stick")
         .color(color="gray")
         .color(color="blue", selector=[ComponentExpression(type_symbol="N")])
@@ -747,7 +746,11 @@ async def testing_component_from_uri(id: str = "1h9t") -> MVSResponse:
         schema="all_atomic",
         field_name="tooltip",
         field_values=["Ligand binding site"],
-    ).representation(type="ball_and_stick").color(selector=ComponentExpression(type_symbol="O"), color="red").color(selector=ComponentExpression(type_symbol="N"), color="blue").color(selector=ComponentExpression(type_symbol="S"), color="yellow")
+    ).representation(type="ball_and_stick").color(selector=ComponentExpression(type_symbol="O"), color="red").color(
+        selector=ComponentExpression(type_symbol="N"), color="blue"
+    ).color(
+        selector=ComponentExpression(type_symbol="S"), color="yellow"
+    )
     structure.component_from_uri(
         uri=annotation_url,
         format="json",
@@ -822,7 +825,9 @@ async def testing_focus_example() -> MVSResponse:
     structure_url = _url_for_local_bcif("1cbs")
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="orange")
-    structure.component(selector="ligand").focus(direction=direction, up=up).representation(type="ball_and_stick").color(color="green")
+    structure.component(selector="ligand").focus(direction=direction, up=up).representation(
+        type="ball_and_stick"
+    ).color(color="green")
     builder.canvas(background_color="#BBDDFF")
     return JSONResponse(builder.get_state())
 
@@ -950,12 +955,12 @@ async def testing_tooltips_example(id="1h9t") -> MVSResponse:
         uri=annotation_url,
         format="json",
     )
-    structure.component(selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=9, end_label_seq_id=83)).tooltip(
-        text="DNA-binding"
-    )
-    structure.component(selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=9, end_label_seq_id=83)).tooltip(
-        text="DNA-binding"
-    )
+    structure.component(
+        selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=9, end_label_seq_id=83)
+    ).tooltip(text="DNA-binding")
+    structure.component(
+        selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=9, end_label_seq_id=83)
+    ).tooltip(text="DNA-binding")
     structure.component(
         selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=84, end_label_seq_id=231)
     ).tooltip(text="Acyl-CoA\nbinding")
@@ -996,18 +1001,34 @@ async def testing_tooltips_example(id="1h9t") -> MVSResponse:
 
     structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=57)).tooltip(text="Ligand binding")
     structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=67)).tooltip(text="Ligand binding")
-    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=121)).tooltip(text="Ligand binding")
-    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=125)).tooltip(text="Ligand binding")
-    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=129)).tooltip(text="Ligand binding")
-    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=178)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=121)).tooltip(
+        text="Ligand binding"
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=125)).tooltip(
+        text="Ligand binding"
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=129)).tooltip(
+        text="Ligand binding"
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=178)).tooltip(
+        text="Ligand binding"
+    )
     structure.component(
         selector=ComponentExpression(label_asym_id="A", beg_label_seq_id=203, end_label_seq_id=205)
     ).tooltip(text="Ligand binding")
     structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=67)).tooltip(text="Ligand binding")
-    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=121)).tooltip(text="Ligand binding")
-    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=125)).tooltip(text="Ligand binding")
-    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=129)).tooltip(text="Ligand binding")
-    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=178)).tooltip(text="Ligand binding")
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=121)).tooltip(
+        text="Ligand binding"
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=125)).tooltip(
+        text="Ligand binding"
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=129)).tooltip(
+        text="Ligand binding"
+    )
+    structure.component(selector=ComponentExpression(label_asym_id="B", label_seq_id=178)).tooltip(
+        text="Ligand binding"
+    )
     structure.component(
         selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=203, end_label_seq_id=205)
     ).tooltip(text="Ligand binding")
@@ -1058,30 +1079,55 @@ async def testing_labels_from_source_example() -> MVSResponse:
         category_name="mvs_test_chain_label_annotation",
     )
     structure.component(selector="ligand").representation(type="ball_and_stick").color(color="white").color_from_source(
-        schema="all_atomic",
-        block_header="1CBS",
-        category_name="mvs_test_chain_label_annotation",
-        field_name="color"
+        schema="all_atomic", block_header="1CBS", category_name="mvs_test_chain_label_annotation", field_name="color"
     )
-    structure.label_from_source(schema="all_atomic", category_name="mvs_test_chain_label_annotation", field_name="tooltip")
+    structure.label_from_source(
+        schema="all_atomic", category_name="mvs_test_chain_label_annotation", field_name="tooltip"
+    )
     return JSONResponse(builder.get_state())
 
 
 ##############################################################################
 # MVS specification of existing visualizations
 
-CAMERA_FOR_1HDA = {"target": (19.752, 39.904, 19.170), "position": (34.411, 131.418, 44.150), "up": (0.035, -0.268, 0.962)}
-CAMERA_FOR_1HDA_A = {"target": (30.403, 48.948, 10.986), "position": (5.350, 4.252, 45.337), "up": (0.704, -0.636, -0.313)}
-CAMERA_FOR_1HDA_HEM = {"target": (26.795, 49.162, 6.437), "position": (-11.895, 72.486, 22.770), "up": (0.587, 0.728, 0.352)}
-CAMERA_FOR_1TQN = {"target": (-19.768, -24.352, -12.891), "position": (82.412, -19.409, -11.594), "up": (0.015, -0.063, -0.997)}
-CAMERA_FOR_1GKT = {"target": (8.594, 28.682, 11.525), "position": (69.856, -31.750, 25.286), "up": (0.211, -0.007, -0.977)}
-CAMERA_FOR_Q5VSL9 = {"target": (16.066, 10.270, -4.742), "position": (97.823, 164.346, 45.265), "up": (-0.576, 0.512, -0.636)}
+CAMERA_FOR_1HDA = {
+    "target": (19.752, 39.904, 19.170),
+    "position": (34.411, 131.418, 44.150),
+    "up": (0.035, -0.268, 0.962),
+}
+CAMERA_FOR_1HDA_A = {
+    "target": (30.403, 48.948, 10.986),
+    "position": (5.350, 4.252, 45.337),
+    "up": (0.704, -0.636, -0.313),
+}
+CAMERA_FOR_1HDA_HEM = {
+    "target": (26.795, 49.162, 6.437),
+    "position": (-11.895, 72.486, 22.770),
+    "up": (0.587, 0.728, 0.352),
+}
+CAMERA_FOR_1TQN = {
+    "target": (-19.768, -24.352, -12.891),
+    "position": (82.412, -19.409, -11.594),
+    "up": (0.015, -0.063, -0.997),
+}
+CAMERA_FOR_1GKT = {
+    "target": (8.594, 28.682, 11.525),
+    "position": (69.856, -31.750, 25.286),
+    "up": (0.211, -0.007, -0.977),
+}
+CAMERA_FOR_Q5VSL9 = {
+    "target": (16.066, 10.270, -4.742),
+    "position": (97.823, 164.346, 45.265),
+    "up": (-0.576, 0.512, -0.636),
+}
 ENTITY_COLORS_1HDA = {"1": "#1A9E76", "2": "#D85F02", "3": "#A6D853"}
-BASE_COLOR = '#CCCCCC'  # should be #787878 but that's too dark because of missing transparency
+BASE_COLOR = "#CCCCCC"  # should be #787878 but that's too dark because of missing transparency
 
 
 @router.get("/portfolio/entry")
-async def portfolio_entry_or_assembly(coloring: Literal["by_chain", "by_entity"] = "by_chain", assembly_id: str | None = None) -> MVSResponse:
+async def portfolio_entry_or_assembly(
+    coloring: Literal["by_chain", "by_entity"] = "by_chain", assembly_id: str | None = None
+) -> MVSResponse:
     """
     Entry or assembly structure colored by chain, as created by PDBImages.
     (We are missing coloring by symmetry operator for assemblies!)
@@ -1092,11 +1138,12 @@ async def portfolio_entry_or_assembly(coloring: Literal["by_chain", "by_entity"]
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/portfolio.cif"
     model = builder.download(url=structure_url).parse(format="mmcif")
     struct = model.assembly_structure(assembly_id=assembly_id) if assembly_id is not None else model.model_structure()
-    struct.component(selector="polymer").representation(type="cartoon").color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name=f"color_{coloring}")
+    struct.component(selector="polymer").representation(type="cartoon").color_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name=f"color_{coloring}"
+    )
     struct.component(selector="ligand").representation(type="ball_and_stick").color_from_uri(
         uri=annotation_url, format="cif", schema="all_atomic", category_name=f"color_{coloring}"
-    ).color_from_uri(
-        uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
+    ).color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
     builder.camera(**CAMERA_FOR_1HDA)
     return JSONResponse(builder.get_state())
 
@@ -1111,9 +1158,13 @@ async def portfolio_entity(entity_id: str = "1", assembly_id: str = "1") -> MVSR
     builder = Root()
     structure_url = _url_for_mmcif(ID)
     struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=assembly_id)
-    highlight = ENTITY_COLORS_1HDA.get(entity_id, 'black')
-    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).color(selector=ComponentExpression(label_entity_id=entity_id), color=highlight)
-    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR).color(selector=ComponentExpression(label_entity_id=entity_id), color=highlight)
+    highlight = ENTITY_COLORS_1HDA.get(entity_id, "black")
+    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).color(
+        selector=ComponentExpression(label_entity_id=entity_id), color=highlight
+    )
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR).color(
+        selector=ComponentExpression(label_entity_id=entity_id), color=highlight
+    )
     builder.camera(**CAMERA_FOR_1HDA)
     return JSONResponse(builder.get_state())
 
@@ -1130,9 +1181,25 @@ async def portfolio_domain() -> MVSResponse:
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/portfolio.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
-    polymer = struct.component_from_uri(uri=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic", field_name="component", field_values="polymer")
-    ligand = struct.component_from_uri(uri=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic", field_name="component", field_values="ligand")
-    polymer.representation(type="cartoon").color(color=BASE_COLOR).color_from_uri(uri=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic")
+    polymer = struct.component_from_uri(
+        uri=annotation_url,
+        format="cif",
+        category_name=f"sifts_{DOMAIN}",
+        schema="all_atomic",
+        field_name="component",
+        field_values="polymer",
+    )
+    ligand = struct.component_from_uri(
+        uri=annotation_url,
+        format="cif",
+        category_name=f"sifts_{DOMAIN}",
+        schema="all_atomic",
+        field_name="component",
+        field_values="ligand",
+    )
+    polymer.representation(type="cartoon").color(color=BASE_COLOR).color_from_uri(
+        uri=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic"
+    )
     ligand.representation(type="ball_and_stick").color(color=BASE_COLOR)
     struct.tooltip_from_uri(uri=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic")
     builder.camera(**CAMERA_FOR_1HDA_A)
@@ -1151,14 +1218,50 @@ async def portfolio_ligand() -> MVSResponse:
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/portfolio.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
-    wideenv = struct.component_from_uri(uri=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic", field_name="component", field_values="wideenv")
-    wideenv.representation(type="cartoon").color(color=BASE_COLOR).color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
-    env = struct.component_from_uri(uri=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic", field_name="component", field_values="env")
-    env.representation(type="ball_and_stick").color(color=BASE_COLOR).color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
-    lig = struct.component_from_uri(uri=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic", field_name="component", field_values="ligand")
-    lig.representation(type="ball_and_stick").color(color='#A6D853').color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
-    linkage = struct.component_from_uri(uri=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic", field_name="component", field_values="linkage")
-    linkage.representation(type="ball_and_stick").color(color='#A6D853').color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
+    wideenv = struct.component_from_uri(
+        uri=annotation_url,
+        format="cif",
+        category_name=f"ligand_{LIGAND}",
+        schema="all_atomic",
+        field_name="component",
+        field_values="wideenv",
+    )
+    wideenv.representation(type="cartoon").color(color=BASE_COLOR).color_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol"
+    )
+    env = struct.component_from_uri(
+        uri=annotation_url,
+        format="cif",
+        category_name=f"ligand_{LIGAND}",
+        schema="all_atomic",
+        field_name="component",
+        field_values="env",
+    )
+    env.representation(type="ball_and_stick").color(color=BASE_COLOR).color_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol"
+    )
+    lig = struct.component_from_uri(
+        uri=annotation_url,
+        format="cif",
+        category_name=f"ligand_{LIGAND}",
+        schema="all_atomic",
+        field_name="component",
+        field_values="ligand",
+    )
+    lig.representation(type="ball_and_stick").color(color="#A6D853").color_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol"
+    )
+    linkage = struct.component_from_uri(
+        uri=annotation_url,
+        format="cif",
+        category_name=f"ligand_{LIGAND}",
+        schema="all_atomic",
+        field_name="component",
+        field_values="linkage",
+    )
+    linkage.representation(type="ball_and_stick").color(color="#A6D853").color_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol"
+    )
     struct.tooltip_from_uri(uri=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic")
     builder.camera(**CAMERA_FOR_1HDA_HEM)
     return JSONResponse(builder.get_state())
@@ -1174,8 +1277,12 @@ async def portfolio_validation() -> MVSResponse:
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/validation.json"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
-    struct.component(selector="polymer").representation(type="cartoon").color(color="#00ff00").color_from_uri(uri=annotation_url, format="json", schema="all_atomic")
-    struct.component(selector="ligand").representation(type="ball_and_stick").color(color="#00ff00").color_from_uri(uri=annotation_url, format="json", schema="all_atomic")
+    struct.component(selector="polymer").representation(type="cartoon").color(color="#00ff00").color_from_uri(
+        uri=annotation_url, format="json", schema="all_atomic"
+    )
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color="#00ff00").color_from_uri(
+        uri=annotation_url, format="json", schema="all_atomic"
+    )
     struct.tooltip_from_uri(uri=annotation_url, format="json", schema="all_atomic")
     builder.camera(**CAMERA_FOR_1HDA)
     return JSONResponse(builder.get_state())
@@ -1189,13 +1296,14 @@ async def portfolio_modres() -> MVSResponse:
     """
     ID = "1gkt"
     ASSEMBLY = "1"
-    MODRES = "SUI"
     builder = Root()
     structure_url = _url_for_mmcif(ID)
     struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=ASSEMBLY)
     struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR)
     struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR)
-    struct.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=54)).tooltip(text="Modified residue SUI: (3-amino-2,5-dioxo-1-pyrrolidinyl)acetic acid").representation(type="ball_and_stick").color(color="#ED645A")
+    struct.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=54)).tooltip(
+        text="Modified residue SUI: (3-amino-2,5-dioxo-1-pyrrolidinyl)acetic acid"
+    ).representation(type="ball_and_stick").color(color="#ED645A")
     builder.camera(**CAMERA_FOR_1GKT)
     return JSONResponse(builder.get_state())
 
@@ -1211,11 +1319,19 @@ async def portfolio_bfactor() -> MVSResponse:
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/bfactor.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
-    struct.component(selector="polymer").representation(type="cartoon").color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor")
-    struct.component(selector="ligand").representation(type="ball_and_stick").color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor")
-    struct.component(selector="branched").representation(type="ball_and_stick").color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor")
+    struct.component(selector="polymer").representation(type="cartoon").color_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor"
+    )
+    struct.component(selector="ligand").representation(type="ball_and_stick").color_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor"
+    )
+    struct.component(selector="branched").representation(type="ball_and_stick").color_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor"
+    )
     struct.component().tooltip(text="B-factor value:")
-    struct.tooltip_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor", field_name="B_iso_or_equiv")
+    struct.tooltip_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor", field_name="B_iso_or_equiv"
+    )
     builder.camera(**(CAMERA_FOR_1TQN if ID == "1tqn" else CAMERA_FOR_1HDA))
     return JSONResponse(builder.get_state())
 
@@ -1230,9 +1346,13 @@ async def portfolio_plddt() -> MVSResponse:
     structure_url = f"https://alphafold.ebi.ac.uk/files/{ID}.cif"
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/plddt.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
-    struct.component(selector="polymer").representation(type="cartoon").color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name=f"plddt", field_name="color")
+    struct.component(selector="polymer").representation(type="cartoon").color_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name=f"plddt", field_name="color"
+    )
     struct.component().tooltip(text="pLDDT value:")
-    struct.tooltip_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name=f"plddt", field_name="plddt")
+    struct.tooltip_from_uri(
+        uri=annotation_url, format="cif", schema="all_atomic", category_name=f"plddt", field_name="plddt"
+    )
     builder.camera(**CAMERA_FOR_Q5VSL9)
     return JSONResponse(builder.get_state())
 
@@ -1242,6 +1362,7 @@ async def portfolio_plddt() -> MVSResponse:
 
 ##############################################################################
 # Auxiliary functions
+
 
 @router.get("/testing/local_bcif/{id}")
 async def testing_local_bcif(id: str) -> Response:
