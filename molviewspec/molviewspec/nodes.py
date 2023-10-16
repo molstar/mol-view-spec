@@ -1,4 +1,5 @@
-from typing import Any, Literal, Mapping, NotRequired, TypedDict, Union
+from typing import Any, Literal, Mapping, Union, Optional
+from pydantic import BaseModel
 
 from .params_utils import Params
 
@@ -30,13 +31,13 @@ KindT = Literal[
 ]
 
 
-class Node(TypedDict):
+class Node(BaseModel):
     kind: KindT
-    params: NotRequired[Mapping[str, Any]]
-    children: NotRequired[list["Node"]]
+    params: Optional[Mapping[str, Any]]
+    children: Optional[list["Node"]]
 
 
-class State(TypedDict):
+class State(BaseModel):
     version: int
     root: Node
 
@@ -57,51 +58,51 @@ StructureKindT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 class StructureParams(Params):
     kind: StructureKindT
-    assembly_id: NotRequired[str]
+    assembly_id: Optional[str]
     """Use the name to specify which assembly to load"""
-    assembly_index: NotRequired[int]
+    assembly_index: Optional[int]
     """0-based assembly index, use this to load the 1st assembly"""
-    model_index: NotRequired[int]
+    model_index: Optional[int]
     """0-based model index in case multiple NMR frames are present"""
-    block_index: NotRequired[int]
+    block_index: Optional[int]
     """0-based block index in case multiple mmCIF or SDF data blocks are present"""
-    block_header: NotRequired[str]
+    block_header: Optional[str]
     """Reference a specific mmCIF or SDF data block by its block header"""
-    radius: NotRequired[float]
+    radius: Optional[float]
     """Radius around model coordinates when loading symmetry mates"""
-    ijk_min: NotRequired[tuple[int, int, int]]
+    ijk_min: Optional[tuple[int, int, int]]
     """Bottom-left Miller indices"""
-    ijk_max: NotRequired[tuple[int, int, int]]
+    ijk_max: Optional[tuple[int, int, int]]
     """Top-right Miller indices"""
 
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]
 
 
-class ComponentExpression(TypedDict):  # Feel free to rename (this used to be InlineSchemaParams)
-    label_entity_id: NotRequired[str]
-    label_asym_id: NotRequired[str]
-    auth_asym_id: NotRequired[str]
-    label_seq_id: NotRequired[int]
-    auth_seq_id: NotRequired[int]
-    pdbx_PDB_ins_code: NotRequired[str]
-    beg_label_seq_id: NotRequired[int]
-    end_label_seq_id: NotRequired[int]
+class ComponentExpression(BaseModel):  # Feel free to rename (this used to be InlineSchemaParams)
+    label_entity_id: Optional[str]
+    label_asym_id: Optional[str]
+    auth_asym_id: Optional[str]
+    label_seq_id: Optional[int]
+    auth_seq_id: Optional[int]
+    pdbx_PDB_ins_code: Optional[str]
+    beg_label_seq_id: Optional[int]
+    end_label_seq_id: Optional[int]
     """End indices are inclusive"""
-    beg_auth_seq_id: NotRequired[int]
-    end_auth_seq_id: NotRequired[int]
+    beg_auth_seq_id: Optional[int]
+    end_auth_seq_id: Optional[int]
     """End indices are inclusive"""
-    residue_index: NotRequired[int]
+    residue_index: Optional[int]
     """0-based residue index in the source file"""
-    label_atom_id: NotRequired[int]
+    label_atom_id: Optional[int]
     """Atom name like 'CA', 'N', 'O' (`_atom_site.label_atom_id`)"""
-    auth_atom_id: NotRequired[int]
+    auth_atom_id: Optional[int]
     """Atom name like 'CA', 'N', 'O' (`_atom_site.auth_atom_id`)"""
-    type_symbol: NotRequired[str]
+    type_symbol: Optional[str]
     """Element symbol like 'H', 'HE', 'LI', 'BE' (`_atom_site.type_symbol`)"""
-    atom_id: NotRequired[int]
+    atom_id: Optional[int]
     """Unique atom identifier (`_atom_site.id`)"""
-    atom_index: NotRequired[int]
+    atom_index: Optional[int]
     """0-based atom index in the source file"""
 
 
@@ -133,24 +134,24 @@ SchemaFormatT = Literal["cif", "bcif", "json"]
 class _DataFromUriParams(Params):
     uri: str
     format: SchemaFormatT
-    category_name: NotRequired[str]
+    category_name: Optional[str]
     """Only applies when format is 'cif' or 'bcif'"""
-    field_name: NotRequired[str]
+    field_name: Optional[str]
     """Name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node type"""
-    block_header: NotRequired[str]
+    block_header: Optional[str]
     """Only applies when format is 'cif' or 'bcif'"""
-    block_index: NotRequired[int]
+    block_index: Optional[int]
     """Only applies when format is 'cif' or 'bcif'"""
-    schema: SchemaT
+    schema_: SchemaT
 
 
 class _DataFromSourceParams(Params):
     category_name: str
-    field_name: NotRequired[str]
+    field_name: Optional[str]
     """Name of the column in CIF that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node type"""
-    block_header: NotRequired[str]
-    block_index: NotRequired[int]
-    schema: SchemaT
+    block_header: Optional[str]
+    block_index: Optional[int]
+    schema_: SchemaT
 
 
 class ComponentInlineParams(Params):
@@ -158,12 +159,12 @@ class ComponentInlineParams(Params):
 
 
 class ComponentFromUriParams(_DataFromUriParams):
-    field_values: NotRequired[list[str]]
+    field_values: Optional[list[str]]
     """Create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows."""
 
 
 class ComponentFromSourceParams(_DataFromSourceParams):
-    field_values: NotRequired[list[str]]
+    field_values: Optional[list[str]]
     """Create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows."""
 
 
@@ -206,17 +207,17 @@ class TooltipFromSourceParams(_DataFromSourceParams):
 
 
 class FocusInlineParams(Params):
-    direction: NotRequired[tuple[float, float, float]]
+    direction: Optional[tuple[float, float, float]]
     """Direction of the view (vector position -> target)"""
-    up: NotRequired[tuple[float, float, float]]
+    up: Optional[tuple[float, float, float]]
     """Controls the rotation around the vector between target and position"""
 
 
 class TransformParams(Params):
-    rotation: NotRequired[tuple[float, ...]]
+    rotation: Optional[tuple[float, ...]]
     """In a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied 
     from the left"""
-    translation: NotRequired[tuple[float, float, float]]
+    translation: Optional[tuple[float, float, float]]
 
 
 class CameraParams(Params):
@@ -224,7 +225,7 @@ class CameraParams(Params):
     """What to look at"""
     position: tuple[float, float, float]
     """The position of the camera"""
-    up: NotRequired[tuple[float, float, float]]
+    up: Optional[tuple[float, float, float]]
     """Controls the rotation around the vector between target and position"""
 
 
@@ -236,8 +237,8 @@ class SphereParams(Params):
     position: tuple[float, float, float]
     radius: float
     color: ColorT
-    label: NotRequired[str]
-    tooltip: NotRequired[str]
+    label: Optional[str]
+    tooltip: Optional[str]
 
 
 class LineParams(Params):
@@ -245,5 +246,5 @@ class LineParams(Params):
     position2: tuple[float, float, float]
     radius: float
     color: ColorT
-    label: NotRequired[str]
-    tooltip: NotRequired[str]
+    label: Optional[str]
+    tooltip: Optional[str]

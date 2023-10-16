@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 from typing import Sequence
+from pydantic import BaseModel
 
 from molviewspec.nodes import (
     CameraParams,
@@ -46,7 +47,7 @@ def create_builder() -> Root:
     return Root()
 
 
-class _Base:
+class _Base(BaseModel):
     _root: Root
     _node: Node
 

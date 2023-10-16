@@ -1,9 +1,8 @@
 from typing import ForwardRef, Iterable, Type, TypeVar
+from pydantic import BaseModel
 
-from typing_extensions import TypedDict, is_typeddict
 
-
-class Params(TypedDict):
+class Params(BaseModel):
     """Base class for all params classes"""
 
 
@@ -11,7 +10,7 @@ TParams = TypeVar("TParams", bound=Params)
 
 
 def _required_keys(params_type: Type[Params]) -> Iterable[str]:
-    assert is_typeddict(params_type)
+    assert isinstance(params_type, BaseModel)  # TODO this isn't equivalent, is it?
     if any(isinstance(annot, ForwardRef) for annot in params_type.__annotations__.values()):
         # `__required_keys__` does not work correctly with `from __future__ import annotations`: https://github.com/python/cpython/issues/97727
         raise ValueError(
