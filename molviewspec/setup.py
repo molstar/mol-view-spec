@@ -24,7 +24,7 @@ setup(
     author="Sebastian Bittrich",
     author_email="sebastian.bittrich@rcsb.org",
     url="https://github.com/molstar/mol-view-spec",
-    download_url="https://github.com/molstar/mol-view-spec/archive/v_" + version + ".tar.gz",
+    download_url="https://github.com/molstar/mol-view-spec/archive/v" + version + ".tar.gz",
     keywords=[
         "molecular graphics",
         "scientific visualization",
