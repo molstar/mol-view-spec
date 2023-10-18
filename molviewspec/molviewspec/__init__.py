@@ -1,5 +1,5 @@
 """MolViewSpec"""
-__version__ = "0.0.1-alpha"
+__version__ = "0.0.1a0"
 
 from molviewspec.builder import Root
 from molviewspec.nodes import ComponentExpression

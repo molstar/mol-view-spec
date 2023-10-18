@@ -1,7 +1,7 @@
 import re
-from distutils.core import setup
+from setuptools import find_packages, setup
 
-name = "mol-view-spec"
+name = "molviewspec"
 
 with open("molviewspec/__init__.py", "r", encoding="utf-8") as fd:
     match = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE)
@@ -15,14 +15,14 @@ if not version:
 
 setup(
     name=name,
-    packages=[name],
+    packages=find_packages(),
     version=version,
     license="MIT",
     description="Generate Mol* views using this simple Python library, which allows you to compose complex scenes in a "
     "step-wise manner.",
     long_description=longDescription,
-    author="Sebastian Bittrich",
-    author_email="sebastian.bittrich@rcsb.org",
+    author="Adam Midlik, Sebastian Bittrich, David Sehnal",
+    author_email="midlik@ebi.ac.uk, sebastian.bittrich@rcsb.org, david.sehnal@gmail.com",
     url="https://github.com/molstar/mol-view-spec",
     download_url="https://github.com/molstar/mol-view-spec/archive/v" + version + ".tar.gz",
     keywords=[
@@ -33,9 +33,7 @@ setup(
         "scene building",
         "Mol*",
     ],
-    install_requires=[  # TODO should these be defined in some requirements.txt or pulled from env?
-        "typing-extensions",
-    ],
+    install_requires=[],
     classifiers=[
         "Development Status :: 3 - Alpha",
         # "Development Status :: 4 - Beta",
