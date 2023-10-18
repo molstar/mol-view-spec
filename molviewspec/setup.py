@@ -1,7 +1,7 @@
 import re
 from distutils.core import setup
 
-name = "molviewspec"
+name = "mol-view-spec"
 
 with open("molviewspec/__init__.py", "r", encoding="utf-8") as fd:
     match = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE)
