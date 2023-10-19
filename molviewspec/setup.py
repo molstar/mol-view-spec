@@ -1,5 +1,5 @@
 import re
-from setuptools import find_packages, setup
+from setuptools import setup
 
 name = "molviewspec"
 
@@ -15,7 +15,7 @@ if not version:
 
 setup(
     name=name,
-    packages=find_packages(),
+    packages=[name],
     version=version,
     license="MIT",
     description="Generate Mol* views using this simple Python library, which allows you to compose complex scenes in a "
