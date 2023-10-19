@@ -20,6 +20,7 @@ setup(
     license="MIT",
     description="Generate Mol* views using this simple Python library, which allows you to compose complex scenes in a "
     "step-wise manner.",
+    long_description_content_type="text/markdown",
     long_description=longDescription,
     author="Adam Midlik, Sebastian Bittrich, David Sehnal",
     author_email="midlik@ebi.ac.uk, sebastian.bittrich@rcsb.org, david.sehnal@gmail.com",
