@@ -34,6 +34,7 @@ setup(
         "Mol*",
     ],
     install_requires=[],
+    package_data={"": ["../dist"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         # "Development Status :: 4 - Beta",
