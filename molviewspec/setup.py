@@ -22,8 +22,8 @@ setup(
     "step-wise manner.",
     long_description_content_type="text/markdown",
     long_description=longDescription,
-    author="Adam Midlik, Sebastian Bittrich, David Sehnal",
-    author_email="midlik@ebi.ac.uk, sebastian.bittrich@rcsb.org, david.sehnal@gmail.com",
+    author="Sebastian Bittrich, Adam Midlik, David Sehnal",
+    author_email="sebastian.bittrich@rcsb.org, midlik@ebi.ac.uk, david.sehnal@gmail.com",
     url="https://github.com/molstar/mol-view-spec",
     download_url="https://github.com/molstar/mol-view-spec/archive/v" + version + ".tar.gz",
     keywords=[
