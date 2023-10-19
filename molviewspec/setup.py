@@ -7,6 +7,9 @@ with open("molviewspec/__init__.py", "r", encoding="utf-8") as fd:
     match = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE)
     version = match.group(1) if match is not None else None
 
+with open("README.md", "r", encoding="utf-8") as ifh:
+    longDescription = ifh.read()
+
 if not version:
     raise RuntimeError("Cannot find version information")
 
@@ -17,6 +20,7 @@ setup(
     license="MIT",
     description="Generate Mol* views using this simple Python library, which allows you to compose complex scenes in a "
     "step-wise manner.",
+    long_description=longDescription,
     author="Adam Midlik, Sebastian Bittrich, David Sehnal",
     author_email="midlik@ebi.ac.uk, sebastian.bittrich@rcsb.org, david.sehnal@gmail.com",
     url="https://github.com/molstar/mol-view-spec",
