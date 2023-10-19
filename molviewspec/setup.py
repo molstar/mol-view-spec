@@ -39,7 +39,7 @@ setup(
         "Development Status :: 3 - Alpha",
         # "Development Status :: 4 - Beta",
         # 'Development Status :: 5 - Production/Stable',
-        "Intended Audience :: Bio-Informatics",
+        "Intended Audience :: Science/Research",
         "Topic :: Software Development :: Build Tools",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
