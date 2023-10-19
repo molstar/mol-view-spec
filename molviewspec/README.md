@@ -165,9 +165,17 @@ from above -- which selects the entire structure -- and depicts it as cartoon by
 Nodes can have 0 or more nodes as children. It is, for example, possible to create multiple `component` nodes based on a
 particular `structure` node to create different representations for different types of molecules.
 
-# Lint
+# Development
+
+## Lint
 
 ```
 make format
 make mypy
 ```
+
+## Publish the Python Library
+
+- Set version (in https://github.com/molstar/mol-view-spec/blob/master/molviewspec/molviewspec/__init__.py)
+- Create a GitHub release
+- Tag will automatically publish to PyPI
