@@ -1,4 +1,6 @@
-from typing import Any, Literal, Mapping, NotRequired, TypedDict, Union
+from typing import Any, Literal, Mapping, Union
+
+from typing_extensions import NotRequired, TypedDict
 
 from .params_utils import Params
 

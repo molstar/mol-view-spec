@@ -1,4 +1,5 @@
 import re
+
 from setuptools import setup
 
 name = "molviewspec"
@@ -34,7 +35,7 @@ setup(
         "scene building",
         "Mol*",
     ],
-    install_requires=[],
+    install_requires=["typing_extensions"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         # "Development Status :: 4 - Beta",
