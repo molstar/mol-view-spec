@@ -75,6 +75,7 @@ function Main() {
         'pdbe-kb default view': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_default?id=7xv8&entity_id=1',
         'pdbe-kb segment superpose': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_segment_superpose?id1=1tqn&chain1=A&id2=2nnj&chain2=A',
         'pdbe-kb ligand superpose': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_ligand_superpose?chains=1tqn:A,2nnj:A',
+        'rcsb entry page': 'http://localhost:9000/api/v1/examples/portfolio/rcsb_entry?id=3sn6',
     };
 
     return (
