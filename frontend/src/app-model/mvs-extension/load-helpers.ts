@@ -20,7 +20,7 @@ import { CustomTooltipsProps } from './additions/custom-tooltips-prop';
 import { MultilayerColorThemeName, MultilayerColorThemeProps, NoColor, SelectorAll } from './additions/multilayer-color-theme';
 import { rowToExpression, rowsToExpression } from './helpers/selections';
 import { MolstarLoadingContext } from './load';
-import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getChildren, getParams } from './tree/generic/generic';
+import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getChildren, getParams } from './tree/generic/tree-schema';
 import { dfs } from './tree/generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './tree/mvs/molstar-tree';
 import { DefaultColor, Defaults } from './tree/mvs/param-defaults';

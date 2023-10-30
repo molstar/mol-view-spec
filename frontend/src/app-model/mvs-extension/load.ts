@@ -18,7 +18,7 @@ import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { focusCameraNode, focusStructureNode, setCanvas } from './camera';
 import { canonicalJsonString } from './helpers/utils';
 import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUriOrSourceProps, componentPropsFromSelector, isPhantomComponent, labelFromUriOrSourceProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformFromRotationTranslation } from './load-helpers';
-import { ParamsOfKind, SubTreeOfKind, getChildren, getParams, validateTree } from './tree/generic/generic';
+import { ParamsOfKind, SubTreeOfKind, getChildren, getParams, validateTree } from './tree/generic/tree-schema';
 import { convertMvsToMolstar } from './tree/mvs/conversion';
 import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
 import { MVSTree, MVSTreeSchema } from './tree/mvs/mvs-tree';

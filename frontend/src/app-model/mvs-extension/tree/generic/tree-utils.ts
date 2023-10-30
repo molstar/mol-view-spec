@@ -5,7 +5,7 @@
  */
 
 import { canonicalJsonString, formatObject } from '../../helpers/utils';
-import { Kind, SubTree, SubTreeOfKind, Tree, getParams } from './generic';
+import { Kind, SubTree, SubTreeOfKind, Tree, getParams } from './tree-schema';
 
 
 function _dfs<TTree extends Tree>(root: TTree, parent: SubTree<TTree> | undefined, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {

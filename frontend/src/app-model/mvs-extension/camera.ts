@@ -18,7 +18,7 @@ import { StateObjectSelector } from 'molstar/lib/mol-state';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 import { decodeColor } from './helpers/utils';
-import { ParamsOfKind } from './tree/generic/generic';
+import { ParamsOfKind } from './tree/generic/tree-schema';
 import { MolstarTree } from './tree/mvs/molstar-tree';
 import { Defaults } from './tree/mvs/param-defaults';
 

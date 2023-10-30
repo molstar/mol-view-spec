@@ -5,7 +5,7 @@
  */
 
 import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
-import { NodeForTree, TreeFor, TreeSchema } from '../generic/generic';
+import { NodeForTree, TreeFor, TreeSchema } from '../generic/tree-schema';
 import { RequiredField, bool } from '../generic/params-schema';
 import { MVSTreeSchema } from './mvs-tree';
 import { MolstarParseFormatT } from './param-types';

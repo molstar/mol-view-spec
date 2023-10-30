@@ -6,7 +6,7 @@
 
 import { MVSKind, MVSTreeSchema } from './mvs-tree';
 import { DefaultsFor } from '../generic/params-schema';
-import { DefaultsForTree } from '../generic/generic';
+import { DefaultsForTree } from '../generic/tree-schema';
 
 
 /** Default values for params in `MVSTree` */

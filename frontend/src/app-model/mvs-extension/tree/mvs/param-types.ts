@@ -56,6 +56,7 @@ export type HexColorString = string & { '@type': 'HexColorString' }
 
 const hexColorRegex = /^#([0-9A-F]{3}){1,2}$/i; // matches #FF1100 or #f10
 
+/** Decide if a string is a valid hexadecimal color string (6-digit or 3-digit, e.g. '#FF1100' or '#f10') */
 export function isHexColorString(str: any): str is HexColorString {
     return typeof str === 'string' && hexColorRegex.test(str);
 }
