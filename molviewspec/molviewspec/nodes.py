@@ -1,4 +1,7 @@
-from typing import Any, Literal, Mapping, Union, Optional
+from __future__ import annotations
+
+from typing import Any, Literal, Mapping, Optional, Union
+
 from pydantic import BaseModel
 
 from .params_utils import Params
@@ -33,8 +36,8 @@ KindT = Literal[
 
 class Node(BaseModel):
     kind: KindT
-    params: Optional[Mapping[str, Any]]
-    children: Optional[list["Node"]]
+    params: Optional[Mapping[str, Any]] = None
+    children: Optional[list[Node]] = None
 
 
 class State(BaseModel):

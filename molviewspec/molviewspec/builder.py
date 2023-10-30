@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 import math
 from typing import Sequence
-from pydantic import BaseModel
+
+from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
     CameraParams,
@@ -48,17 +49,23 @@ def create_builder() -> Root:
 
 
 class _Base(BaseModel):
-    _root: Root
-    _node: Node
+    _root: Root = PrivateAttr()
+    _node: Node = PrivateAttr()
+
+    def __init__(self, *, root: Root, node: Node) -> None:
+        super().__init__()
+        self._root = root
+        self._node = node
 
     def _add_child(self, node: Node) -> None:
-        if "children" not in self._node:
-            self._node["children"] = []
-        self._node["children"].append(node)
+        if self._node.children is None:
+            self._node.children = []
+        self._node.children.append(node)
 
 
 class Root(_Base):
-    _node = Node(kind="root")
+    def __init__(self) -> None:
+        super().__init__(root=self, node=Node(kind="root"))
 
     def get_state(self) -> State:
         return State(version=VERSION, root=self._node)
@@ -89,7 +96,8 @@ class Root(_Base):
         return self
 
     def download(self, *, url: str) -> Download:
-        node = Node(kind="download", params=DownloadParams(url=url))
+        params: DownloadParams = {"url": url}
+        node = Node(kind="download", params=params)
         self._add_child(node)
         return Download(node=node, root=self._root)
 

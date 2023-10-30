@@ -35,7 +35,7 @@ setup(
         "scene building",
         "Mol*",
     ],
-    install_requires=["typing_extensions"],
+    install_requires=["pydantic"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         # "Development Status :: 4 - Beta",
