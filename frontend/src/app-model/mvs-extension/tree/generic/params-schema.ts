@@ -8,23 +8,39 @@ import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
 
 
+/** All types that can be used in tree node params.
+ * Can be extended, this is just to list them all in one place and possibly catch some typing errors */
 type AllowedValueTypes = string | number | boolean | null | [number, number, number] | string[] | number[] | {}
 
+/** Type definition for a string  */
 export const str = t.string;
+/** Type definition for an integer  */
 export const int = t.Integer;
+/** Type definition for a float or integer number  */
 export const float = t.number;
+/** Type definition for a boolean  */
 export const bool = t.boolean;
+/** Type definition for a tuple, e.g. `tuple([str, int, int])`  */
 export const tuple = t.tuple;
+/** Type definition for a list/array, e.g. `list(str)`  */
 export const list = t.array;
+/** Type definition for union types, e.g. `union([str, int])` means string or integer  */
 export const union = t.union;
-
-export function choice<V extends string | number | boolean>(v1: V, v2: V, ...others: V[]) {
-    return union([t.literal(v1), t.literal(v2), ...others.map(v => t.literal(v))]);
-}
+/** Type definition for nullable types, e.g. `nullable(str)` means string or `null`  */
 export function nullable<T extends t.Type<any>>(type: T) {
     return union([type, t.null]);
 }
+/** Type definition for literal types, e.g. `literal('red', 'green', 'blue')` means 'red' or 'green' or 'blue'  */
+export function literal<V extends string | number | boolean>(v1: V, v2?: V, ...others: V[]) {
+    if (v2 === undefined) {
+        return t.literal(v1);
+    } else {
+        return union([t.literal(v1), t.literal(v2), ...others.map(v => t.literal(v))]);
+    }
+}
 
+
+/** Schema for one field in params (i.e. a value in a top-level key-value pair) */
 interface Field<V extends AllowedValueTypes = any, R extends boolean = boolean> {
     /** Definition of allowed types for the field */
     type: t.Type<V>,
@@ -56,12 +72,16 @@ export type ValueFor<F extends Field | t.Any> = F extends Field<infer V> ? V : F
 export type DefaultFor<F extends Field> = F extends Field<infer V> ? (null extends V ? null : V) : never
 
 
+/** Schema for "params", i.e. a flat collection of key-value pairs */
 export type ParamsSchema<TKey extends string = string> = { [key in TKey]: Field }
 
+/** Type of full values for a params schema, i.e. including all optional fields */
 export type FullValuesFor<P extends ParamsSchema> = { [key in keyof P]: ValueFor<P[key]> }
+/** Type of values for a params schema (optional fields can be missing) */
 export type ValuesFor<P extends ParamsSchema> =
     { [key in keyof P as (P[key] extends RequiredField<any> ? key : never)]: ValueFor<P[key]> }
     & { [key in keyof P as (P[key] extends OptionalField<any> ? key : never)]?: ValueFor<P[key]> }
+/** Type of default values for a params schema, i.e. values for optional fields only */
 export type DefaultsFor<P extends ParamsSchema> = { [key in keyof P as (P[key] extends Field<any, false> ? key : never)]: ValueFor<P[key]> }
 
 

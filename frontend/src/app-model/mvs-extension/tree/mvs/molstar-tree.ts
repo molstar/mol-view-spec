@@ -11,15 +11,12 @@ import { MVSTreeSchema } from './mvs-tree';
 import { MolstarParseFormatT } from './param-types';
 
 
+/** Schema for `MolstarTree` (auxiliary tree representation before creating a real Molstar state) */
 export const MolstarTreeSchema = TreeSchema('root',
     {
         ...MVSTreeSchema.paramsSchemas,
         download: {
             ...MVSTreeSchema.paramsSchemas.download,
-            is_binary: RequiredField(bool),
-        },
-        raw: {
-            ...MVSTreeSchema.paramsSchemas.raw,
             is_binary: RequiredField(bool),
         },
         parse: {
@@ -44,8 +41,11 @@ export const MolstarTreeSchema = TreeSchema('root',
 );
 
 
+/** Node kind in a `MolstarTree` */
 export type MolstarKind = keyof typeof MolstarTreeSchema.paramsSchemas;
 
+/** Node in a `MolstarTree` */
 export type MolstarNode<TKind extends MolstarKind = MolstarKind> = NodeForTree<typeof MolstarTreeSchema, TKind>
 
+/** Auxiliary tree representation before creating a real Molstar state */
 export type MolstarTree = TreeFor<typeof MolstarTreeSchema>

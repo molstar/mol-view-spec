@@ -109,7 +109,7 @@ function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme,
                 break;
             case 'selection':
                 const p = textPropsForSelection(structure, theme.size.size, item.position.params);
-                if (p) builder.add(item.text, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
+                if (p) builder.add(item.text, p.center[0], p.center[1], p.center[2], p.depth, p.scale, p.group);
                 break;
         }
     }

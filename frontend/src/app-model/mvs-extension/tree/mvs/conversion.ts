@@ -11,8 +11,8 @@ import { MVSTree } from './mvs-tree';
 import { MolstarParseFormatT, ParseFormatT } from './param-types';
 
 
-/** Convert `format` parameter of `parse` node in MVS tree
- * into `format` and `is_binary` parameters in Molstar tree */
+/** Convert `format` parameter of `parse` node in `MolstarTree`
+ * into `format` and `is_binary` parameters in `MolstarTree` */
 export const ParseFormatMvsToMolstar = {
     mmcif: { format: 'cif', is_binary: false },
     bcif: { format: 'cif', is_binary: true },
@@ -20,26 +20,20 @@ export const ParseFormatMvsToMolstar = {
 } satisfies { [p in ParseFormatT]: { format: MolstarParseFormatT, is_binary: boolean } };
 
 
+/** Conversion rules for conversion from `MVSTree` to `MolstarTree` */
 const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
     'download': node => [],
-    'raw': node => [],
     'parse': (node, parent) => {
         const { format, is_binary } = ParseFormatMvsToMolstar[node.params.format];
         const convertedNode: MolstarNode<'parse'> = { kind: 'parse', params: { ...node.params, format } };
-        switch (parent?.kind) {
-            case 'download':
-                return [
-                    { kind: 'download', params: { ...parent.params, is_binary } },
-                    convertedNode,
-                ] satisfies MolstarNode[];
-            case 'raw':
-                return [
-                    { kind: 'raw', params: { ...parent.params, is_binary } },
-                    convertedNode,
-                ] satisfies MolstarNode[];
-            default:
-                console.warn('"parse" node is not being converted, this is suspicious');
-                return [convertedNode] satisfies MolstarNode[];
+        if (parent?.kind === 'download') {
+            return [
+                { kind: 'download', params: { ...parent.params, is_binary } },
+                convertedNode,
+            ] satisfies MolstarNode[];
+        } else {
+            console.warn('"parse" node is not being converted, this is suspicious');
+            return [convertedNode] satisfies MolstarNode[];
         }
     },
     'structure': (node, parent) => {
@@ -58,8 +52,8 @@ const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
         ];
     },
 };
-/** Node kinds that it makes sense to condense */
-const molstarNodesToCondense = new Set<MolstarKind>(['download', 'raw', 'parse', 'trajectory', 'model', 'transforms'] satisfies MolstarKind[]);
+/** Node kinds in `MolstarTree` that it makes sense to condense */
+const molstarNodesToCondense = new Set<MolstarKind>(['download', 'parse', 'trajectory', 'model', 'transforms'] satisfies MolstarKind[]);
 
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {

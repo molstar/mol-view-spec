@@ -16,10 +16,14 @@ function _dfs<TTree extends Tree>(root: TTree, parent: SubTree<TTree> | undefine
     if (postVisit) postVisit(root, parent);
 }
 
+/** Run DFS (depth-first search) algorithm on a rooted tree.
+ * Runs `visit` function when a node is discovered (before visiting any descendants).
+ * Runs `postVisit` function when leaving a node (after all descendants have been visited). */
 export function dfs<TTree extends Tree>(root: TTree, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
     return _dfs<SubTree<TTree>>(root, undefined, visit, postVisit);
 }
 
+/** Convert a tree into a pretty-printed string. */
 export function treeToString(tree: Tree) {
     let level = 0;
     const lines: string[] = [];
@@ -27,12 +31,14 @@ export function treeToString(tree: Tree) {
     return lines.join('\n');
 }
 
+/** Create a copy of a tree node, ignoring children. */
 export function copyNodeWithoutChildren<TTree extends Tree>(node: TTree): TTree {
     return {
         kind: node.kind,
         params: node.params ? { ...node.params } : undefined,
     } as TTree;
 }
+/** Create a copy of a tree node, including a shallow copy of children. */
 export function copyNode<TTree extends Tree>(node: TTree): TTree {
     return {
         kind: node.kind,
@@ -41,14 +47,23 @@ export function copyNode<TTree extends Tree>(node: TTree): TTree {
     } as TTree;
 }
 
+/** Create a deep copy of a tree. */
 export function copyTree<T extends Tree>(root: T): T {
     return convertTree(root, {}) as T;
 }
 
+/** Set of rules for converting a tree of one schema into a different schema.
+ * Each rule defines how to convert a node of a specific kind, e.g.
+ * `{A: node => [], B: node => [{kind: 'X',...}], C: node => [{kind: 'Y',...}, {kind: 'Z',...}]}`:
+ * nodes of kind `A` will be deleted (their children moved to parent),
+ * nodes of kind `B` will be converted to kind `X`,
+ * nodes of kind `C` will be converted to `Y` with a child `Z` (original children moved to `Z`),
+ * nodes of other kinds will just be copied. */
 export type ConversionRules<A extends Tree, B extends Tree> = {
     [kind in Kind<SubTree<A>>]?: (node: SubTreeOfKind<A, kind>, parent?: SubTree<A>) => SubTree<B>[]
 };
 
+/** Apply a set of conversion rules to a tree to change to a different schema. */
 export function convertTree<A extends Tree, B extends Tree>(root: A, conversions: ConversionRules<A, B>): SubTree<B> {
     const mapping = new Map<SubTree<A>, SubTree<B>>();
     let convertedRoot: SubTree<B>;

@@ -6,20 +6,20 @@
 
 import * as t from 'io-ts';
 
-import { ValueFor, choice, float, int, list, nullable, str, tuple, union } from '../generic/params-schema';
+import { ValueFor, literal, float, int, list, str, tuple, union } from '../generic/params-schema';
 
 
 /** `format` parameter values of `parse` node in MVS tree */
-export const ParseFormatT = choice('mmcif', 'bcif', 'pdb');
+export const ParseFormatT = literal('mmcif', 'bcif', 'pdb');
 export type ParseFormatT = ValueFor<typeof ParseFormatT>
 
 /** `format` parameter values of `parse` node in Molstar tree */
-export const MolstarParseFormatT = choice('cif', 'pdb');
+export const MolstarParseFormatT = literal('cif', 'pdb');
 export type MolstarParseFormatT = ValueFor<typeof MolstarParseFormatT>
 
-export const StructureKindT = choice('model', 'assembly', 'symmetry', 'symmetry_mates');
+export const StructureKindT = literal('model', 'assembly', 'symmetry', 'symmetry_mates');
 
-export const ComponentSelectorT = choice('all', 'polymer', 'protein', 'nucleic', 'branched', 'ligand', 'ion', 'water');
+export const ComponentSelectorT = literal('all', 'polymer', 'protein', 'nucleic', 'branched', 'ligand', 'ion', 'water');
 
 export const ComponentExpression = t.partial({
     label_entity_id: str,
@@ -39,13 +39,13 @@ export const ComponentExpression = t.partial({
     atom_index: int,
 });
 
-export const RepresentationTypeT = choice('ball_and_stick', 'cartoon', 'surface');
+export const RepresentationTypeT = literal('ball_and_stick', 'cartoon', 'surface');
 
-export const ColorNamesT = choice('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
+export const ColorNamesT = literal('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
 
-export const SchemaT = choice('whole_structure', 'entity', 'chain', 'auth_chain', 'residue', 'auth_residue', 'residue_range', 'auth_residue_range', 'atom', 'auth_atom', 'all_atomic');
+export const SchemaT = literal('whole_structure', 'entity', 'chain', 'auth_chain', 'residue', 'auth_residue', 'residue_range', 'auth_residue_range', 'atom', 'auth_atom', 'all_atomic');
 
-export const SchemaFormatT = choice('cif', 'bcif', 'json');
+export const SchemaFormatT = literal('cif', 'bcif', 'json');
 
 export const Vector3 = tuple([float, float, float]);
 

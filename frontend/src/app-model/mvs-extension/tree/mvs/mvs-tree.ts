@@ -32,15 +32,12 @@ const _DataFromSourceParams = {
 };
 
 
+/** Schema for `MVSTree` (MolViewSpec tree) */
 export const MVSTreeSchema = TreeSchema('root',
     {
         root: {},
         download: {
             url: RequiredField(str),
-        },
-        /** Raw node is not in the mol-view-spec proposal, now it's here for testing, TODO remove */
-        raw: {
-            data: OptionalField(str),
         },
         parse: {
             format: RequiredField(ParseFormatT),
@@ -119,8 +116,11 @@ export const MVSTreeSchema = TreeSchema('root',
 );
 
 
+/** Node kind in a `MVSTree` */
 export type MVSKind = keyof typeof MVSTreeSchema.paramsSchemas
 
+/** Node in a `MVSTree` */
 export type MVSNode<TKind extends MVSKind = MVSKind> = NodeForTree<typeof MVSTreeSchema, TKind>
 
+/** MolViewSpec tree */
 export type MVSTree = TreeFor<typeof MVSTreeSchema>

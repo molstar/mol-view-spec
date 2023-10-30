@@ -123,7 +123,6 @@ export function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structur
     dfs(tree, (node, parent) => {
         if (node.kind === 'tooltip') {
             if (parent?.kind === 'component') {
-                // TODO what about nested components?! (do we want to allow them?) (would require changes here (process spine instead of parent) and in CustomTooltips)
                 inlineTooltips.push({
                     text: node.params.text,
                     selector: componentPropsFromSelector(parent.params.selector),

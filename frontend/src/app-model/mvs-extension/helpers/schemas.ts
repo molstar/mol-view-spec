@@ -6,6 +6,9 @@
 
 import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers';
 import { Column, Table } from 'molstar/lib/mol-data/db';
+import { pickObjectKeys } from './utils';
+
+const { str, int } = Column.Schema;
 
 
 /** Names of allowed annotation schemas (values for the annotation schema parameter) */
@@ -26,13 +29,21 @@ export const AnnotationSchema = new Choice(
     },
     'all_atomic');
 
+/** Represents a set of criteria for selection of atoms in a model (in `all_atomic` schema).
+* Missing/undefined values mean that we do not care about that specific atom property. */
+export type AnnotationRow = Partial<Table.Row<typeof AllAtomicCifAnnotationSchema>>
 
-const { str, int } = Column.Schema;
+
+/** Get CIF schema definition for given annotation schema name */
+export function getCifAnnotationSchema<K extends AnnotationSchema>(schemaName: K): Pick<typeof AllAtomicCifAnnotationSchema, (typeof FieldsForSchemas)[K][number]> {
+    return pickObjectKeys(AllAtomicCifAnnotationSchema, FieldsForSchemas[schemaName]);
+}
+
 
 /** Definition of `all_atomic` schema for CIF (other atomic schemas are subschemas of this one) */
-export const CIFAnnotationSchema = {
+const AllAtomicCifAnnotationSchema = {
     /** Tag for grouping multiple annotation rows with the same `group_id` (e.g. to show one label for two chains);
-     * if the `group_id` is not given, the row is processed separately */
+     * if the `group_id` is not given, each row is processed separately */
     group_id: str,
 
     label_entity_id: str,
@@ -63,23 +74,19 @@ export const CIFAnnotationSchema = {
     atom_index: int,
 } satisfies Table.Schema;
 
-/** Represents a set of criteria for selection of atoms in a model (`all_atomic` schema).
- * Missing/undefined values mean than we do not care about that specific atom property. */
-export type AnnotationRow = Partial<Table.Row<typeof CIFAnnotationSchema>>
-
-
 /** Allowed fields (i.e. CIF columns or JSON keys) for each annotation schema
  * (other fields will just be ignored) */
-export const FieldsForSchemas = {
-    whole_structure: [],
-    entity: ['label_entity_id'],
-    chain: ['label_entity_id', 'label_asym_id'],
-    auth_chain: ['auth_asym_id'],
-    residue: ['label_entity_id', 'label_asym_id', 'label_seq_id'],
-    auth_residue: ['auth_asym_id', 'auth_seq_id', 'pdbx_PDB_ins_code'],
-    residue_range: ['label_entity_id', 'label_asym_id', 'beg_label_seq_id', 'end_label_seq_id'],
-    auth_residue_range: ['auth_asym_id', 'beg_auth_seq_id', 'end_auth_seq_id', 'pdbx_PDB_ins_code'],
-    atom: ['label_entity_id', 'label_asym_id', 'label_seq_id', 'label_atom_id', 'type_symbol', 'atom_id', 'atom_index'],
-    auth_atom: ['auth_asym_id', 'auth_seq_id', 'pdbx_PDB_ins_code', 'auth_atom_id', 'type_symbol', 'atom_id', 'atom_index'],
-    all_atomic: Object.keys(CIFAnnotationSchema) as (keyof typeof CIFAnnotationSchema)[],
-} satisfies { [schema in AnnotationSchema]: (keyof typeof CIFAnnotationSchema)[] };
+const FieldsForSchemas = {
+    whole_structure: ['group_id'],
+    entity: ['group_id', 'label_entity_id'],
+    chain: ['group_id', 'label_entity_id', 'label_asym_id'],
+    auth_chain: ['group_id', 'auth_asym_id'],
+    residue: ['group_id', 'label_entity_id', 'label_asym_id', 'label_seq_id'],
+    auth_residue: ['group_id', 'auth_asym_id', 'auth_seq_id', 'pdbx_PDB_ins_code'],
+    residue_range: ['group_id', 'label_entity_id', 'label_asym_id', 'beg_label_seq_id', 'end_label_seq_id'],
+    auth_residue_range: ['group_id', 'auth_asym_id', 'beg_auth_seq_id', 'end_auth_seq_id', 'pdbx_PDB_ins_code'],
+    atom: ['group_id', 'label_entity_id', 'label_asym_id', 'label_seq_id', 'label_atom_id', 'type_symbol', 'atom_id', 'atom_index'],
+    auth_atom: ['group_id', 'auth_asym_id', 'auth_seq_id', 'pdbx_PDB_ins_code', 'auth_atom_id', 'type_symbol', 'atom_id', 'atom_index'],
+    all_atomic: Object.keys(AllAtomicCifAnnotationSchema) as (keyof typeof AllAtomicCifAnnotationSchema)[],
+} satisfies { [schema in AnnotationSchema]: (keyof typeof AllAtomicCifAnnotationSchema)[] };
+

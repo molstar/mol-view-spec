@@ -6,7 +6,7 @@
 
 import * as t from 'io-ts';
 
-import { fieldValidationIssues, RequiredField, choice, nullable, paramsValidationIssues, OptionalField } from '../params-schema';
+import { fieldValidationIssues, RequiredField, literal, nullable, paramsValidationIssues, OptionalField } from '../params-schema';
 
 
 describe('fieldValidationIssues', () => {
@@ -19,7 +19,7 @@ describe('fieldValidationIssues', () => {
         expect(fieldValidationIssues(stringField, undefined)).toBeTruthy();
     });
     it('fieldValidationIssues string choice', async () => {
-        const colorParam = RequiredField(choice('red', 'green', 'blue', 'yellow'));
+        const colorParam = RequiredField(literal('red', 'green', 'blue', 'yellow'));
         expect(fieldValidationIssues(colorParam, 'red')).toBeUndefined();
         expect(fieldValidationIssues(colorParam, 'green')).toBeUndefined();
         expect(fieldValidationIssues(colorParam, 'blue')).toBeUndefined();
@@ -30,7 +30,7 @@ describe('fieldValidationIssues', () => {
         expect(fieldValidationIssues(colorParam, undefined)).toBeTruthy();
     });
     it('fieldValidationIssues number choice', async () => {
-        const numberParam = RequiredField(choice(1, 2, 3, 4));
+        const numberParam = RequiredField(literal(1, 2, 3, 4));
         expect(fieldValidationIssues(numberParam, 1)).toBeUndefined();
         expect(fieldValidationIssues(numberParam, 2)).toBeUndefined();
         expect(fieldValidationIssues(numberParam, 3)).toBeUndefined();

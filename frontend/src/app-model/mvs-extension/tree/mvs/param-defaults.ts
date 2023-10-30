@@ -6,14 +6,13 @@
 
 import { MVSKind, MVSTreeSchema } from './mvs-tree';
 import { DefaultsFor } from '../generic/params-schema';
+import { DefaultsForTree } from '../generic/generic';
 
 
+/** Default values for params in `MVSTree` */
 export const Defaults = {
     root: {},
     download: {
-    },
-    raw: {
-        data: 'DEFAULT_DATA',
     },
     parse: {
     },
@@ -102,7 +101,7 @@ export const Defaults = {
     camera: {
         up: [0, 1, 0],
     },
-} satisfies { [kind in MVSKind]: DefaultsFor<(typeof MVSTreeSchema)['paramsSchemas'][kind]> };
+} satisfies DefaultsForTree<typeof MVSTreeSchema>;
 // TODO apply default to MVS tree (before conversion), not Molstar tree
 
 export const DefaultColor = 'white';

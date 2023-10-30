@@ -106,14 +106,6 @@ export function filterInPlace<T>(array: T[], predicate: (x: T) => boolean): T[] 
     return array;
 }
 
-export function foreachOfGenerator<T>(items: Generator<T>, func: (item: T) => any) {
-    while (true) {
-        const next = items.next();
-        if (next.done) return;
-        func(next.value);
-    }
-}
-
 /** Create an object from keys and values (first key maps to first value etc.) */
 export function objectFromKeysAndValues<K extends keyof any, V>(keys: K[], values: V[]): Record<K, V> {
     const obj: Partial<Record<K, V>> = {};
@@ -152,22 +144,9 @@ export async function safePromise<T>(promise: T): Promise<Maybe<Awaited<T>>> {
     }
 }
 
-export class DefaultMap<K, V> extends Map<K, V> {
-    constructor(public defaultFactory: (key: K) => V) {
-        super();
-    }
-    /** Return the same as `this.get(key)` if `key` is present.
-     * Set `key`'s value to `this.defaultFactory(key)` and return it if `key` is not present.
-     */
-    safeGet(key: K): V {
-        if (!this.has(key)) {
-            this.set(key, this.defaultFactory(key));
-        }
-        return this.get(key)!;
-    }
-}
-
+/** A map where values are arrays. Handles missing keys when adding values. */
 export class MultiMap<K, V> extends Map<K, V[]> {
+    /** Append value to a key (handles missing keys) */
     add(key: K, value: V) {
         if (!this.has(key)) {
             this.set(key, []);
@@ -176,11 +155,16 @@ export class MultiMap<K, V> extends Map<K, V[]> {
     }
 }
 
+
+/** Basic subset of `Map<K, V>`, only needs to have `get` method */
+export type Mapping<K, V> = Pick<Map<K, V>, 'get'>
+
+
 /** Implementation of `Map` where keys are integers
  * and most keys are expected to be from interval `[0, limit)`.
  * For the keys within this interval, performance is better than `Map` (implemented by array).
  * For the keys out of this interval, performance is slightly worse than `Map`. */
-export class NumberMap<K extends number, V> {
+export class NumberMap<K extends number, V> implements Mapping<K, V> {
     private array: V[];
     private map: Map<K, V>;
     constructor(public readonly limit: K) {
@@ -196,8 +180,8 @@ export class NumberMap<K extends number, V> {
         else this.map.set(key, value);
     }
 }
-export type BasicReadonlyMap<K, V> = Pick<Map<K, V>, 'get'>
 
+/** A JSON-serializable value */
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json | undefined }
 
 

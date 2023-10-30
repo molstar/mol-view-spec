@@ -25,7 +25,7 @@ export const AnnotationLabelTextParams = {
     annotationId: PD.Text('', { description: 'Reference to "Annotation" custom model property', isEssential: true }),
     fieldName: PD.Text('label', { description: 'Annotation field (column) from which to take label contents', isEssential: true }),
     ...omitObjectKeys(Original.LabelTextParams, ['level', 'chainScale', 'residueScale', 'elementScale']),
-    borderColor: { ...Original.LabelTextParams.borderColor, defaultValue: ColorNames.black }, // TODO probably remove this (what if black background)
+    borderColor: { ...Original.LabelTextParams.borderColor, defaultValue: ColorNames.black },
 };
 
 export type AnnotationLabelTextParams = typeof AnnotationLabelTextParams
@@ -56,7 +56,7 @@ function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme,
         const rowsInGroup = grouped.slice(offsets[iGroup], offsets[iGroup + 1]).map(j => rows[j]);
         const p = textPropsForSelection(structure, theme.size.size, rowsInGroup, model);
         if (!p) continue;
-        builder.add(labelText, p.center[0], p.center[1], p.center[2], p.radius, p.scale, p.group);
+        builder.add(labelText, p.center[0], p.center[1], p.center[2], p.depth, p.scale, p.group);
     }
     return builder.getText();
 }
