@@ -27,6 +27,7 @@ import { Defaults } from './tree/mvs/param-defaults';
 
 export interface MVSData {
     root: MVSTree,
+    /** Integer defining the major version of MolViewSpec format (e.g. 2 for '2.1.8') */
     version: number,
 }
 

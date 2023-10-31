@@ -12,7 +12,7 @@ import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
 import { BehaviorSubject } from 'rxjs';
 
 import { MolViewSpec } from './mvs-extension/behavior';
-import { loadMVS } from './mvs-extension/load';
+import { MVSData, loadMVS } from './mvs-extension/load';
 import { MVSTree } from './mvs-extension/tree/mvs/mvs-tree';
 import { treeToString } from './mvs-extension/tree/generic/tree-utils';
 
@@ -65,6 +65,23 @@ export class AppModel {
             await loadMVS(this.plugin, tree, DELETE_PREVIOUS);
 
             this.url.next(url);
+            this.tree.next(treeToString(tree.root));
+            this.status.next('ready');
+        } catch (err) {
+            this.status.next('error');
+            throw err;
+        }
+    }
+    public async loadMvs(tree: MVSData) {
+        this.status.next('loading');
+        try {
+            if (!this.plugin) return;
+            this.plugin.behaviors.layout.leftPanelTabName.next('data');
+
+            const DELETE_PREVIOUS = true;
+            await loadMVS(this.plugin, tree, DELETE_PREVIOUS);
+
+            this.url.next('<inline>');
             this.tree.next(treeToString(tree.root));
             this.status.next('ready');
         } catch (err) {

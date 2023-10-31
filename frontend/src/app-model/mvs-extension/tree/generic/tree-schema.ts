@@ -34,9 +34,10 @@ export type Tree<TNode extends Node<string, {}> = Node<string, {}>, TRoot extend
 
 /** Type of any subtree that can occur within given `TTree` tree type */
 export type SubTree<TTree extends Tree> = NonNullable<TTree['children']>[number]
+// TODO make private, use SubTreeOfKind (renamed to Subtree) everywhere?
 
 /** Type of any subtree that can occur within given `TTree` tree type and has kind type `TKind` */
-export type SubTreeOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>>> = RootOfKind<SubTree<TTree>, TKind>
+export type SubTreeOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>> = Kind<SubTree<TTree>>> = RootOfKind<SubTree<TTree>, TKind>
 type RootOfKind<TTree extends Tree, TKind extends Kind<TTree>> = Extract<TTree, Tree<any, Node<TKind>>>
 
 /** Params type for a given kind type within a tree */

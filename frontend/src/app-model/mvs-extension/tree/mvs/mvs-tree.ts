@@ -9,6 +9,8 @@ import { ColorT, ComponentExpression, ComponentSelectorT, Matrix, ParseFormatT, 
 import { OptionalField, RequiredField, float, int, list, nullable, str, tuple, union } from '../generic/params-schema';
 
 
+export const MVS_VERSION = 1;
+
 const _DataFromUriParams = {
     uri: RequiredField(str),
     format: RequiredField(SchemaFormatT),
@@ -44,13 +46,21 @@ export const MVSTreeSchema = TreeSchema('root',
         },
         structure: {
             kind: RequiredField(StructureKindT),
+            /** Use the name to specify which assembly to load */
             assembly_id: OptionalField(nullable(str)),
+            /** 0-based assembly index, use this to load the 1st assembly */
             assembly_index: OptionalField(nullable(int)),
+            /** 0-based model index in case multiple NMR frames are present */
             model_index: OptionalField(int),
+            /** 0-based block index in case multiple mmCIF or SDF data blocks are present */
             block_index: OptionalField(nullable(int)),
+            /** Reference a specific mmCIF or SDF data block by its block header */
             block_header: OptionalField(nullable(str)),
+            /** Radius around model coordinates when loading symmetry mates */
             radius: OptionalField(float),
+            /** Bottom-left Miller indices */
             ijk_min: OptionalField(tuple([int, int, int])),
+            /** Top-right Miller indices */
             ijk_max: OptionalField(tuple([int, int, int])),
         },
         component: {

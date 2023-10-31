@@ -27,7 +27,7 @@ export const Defaults = {
         ijk_max: [1, 1, 1],
     },
     component: {
-        selector: 'all',
+        selector: 'all' as const,
     },
     component_from_uri: {
         category_name: null,
@@ -46,7 +46,7 @@ export const Defaults = {
     representation: {
     },
     color: {
-        selector: 'all',
+        selector: 'all' as const,
     },
     color_from_uri: {
         category_name: null,

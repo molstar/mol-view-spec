@@ -52,16 +52,22 @@ export const Vector3 = tuple([float, float, float]);
 export const Matrix = list(float);
 
 /** Hexadecimal color string, e.g. '#FF1100' */
-export type HexColorString = string & { '@type': 'HexColorString' }
+export type HexColor = string & { '@type': 'HexColorString' }
+export function HexColor(str: string) {
+    if (!isHexColorString(str)) {
+        throw new Error(`ValueError: "${str}" is not a valid hex color string`);
+    }
+    return str as HexColor;
+}
 
 const hexColorRegex = /^#([0-9A-F]{3}){1,2}$/i; // matches #FF1100 or #f10
 
 /** Decide if a string is a valid hexadecimal color string (6-digit or 3-digit, e.g. '#FF1100' or '#f10') */
-export function isHexColorString(str: any): str is HexColorString {
+export function isHexColorString(str: any): str is HexColor {
     return typeof str === 'string' && hexColorRegex.test(str);
 }
 
-export const HexColorT = new t.Type<HexColorString>(
+export const HexColorT = new t.Type<HexColor>(
     'HexColorT',
     ((value: any) => typeof value === 'string') as any,
     (value, ctx) => isHexColorString(value) ? { _tag: 'Right', right: value } : { _tag: 'Left', left: [{ value: value, context: ctx, message: `"${value}" is not a valid hex color string` }] },

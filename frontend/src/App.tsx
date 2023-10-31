@@ -6,6 +6,7 @@ import { useBehavior } from 'molstar/lib/mol-plugin-ui/hooks/use-behavior';
 
 import './App.css';
 import { AppModel } from './app-model/app-model';
+import { builderDemo } from './app-model/mvs-extension/tree/mvs/mvs-builder';
 
 
 export function App() {
@@ -94,6 +95,9 @@ function Main() {
                             {name}
                         </Button>
                     )}
+
+                    <Button variant={'<inline>' === loadedUrl ? 'contained' : 'outlined'} onClick={() => model.loadMvs(builderDemo())}>Builder demo</Button>
+
                     <Typography variant='caption'>{status}</Typography>
 
                     {loadedUrl &&
@@ -112,9 +116,6 @@ function Main() {
                         </div>
                     </>}
                 </div>
-                {/* <div>
-                    <Button onClick={() => model.printCamera()}>Print camera</Button>
-                </div> */}
             </div>
         </div>
     );
