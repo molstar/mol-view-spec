@@ -40,9 +40,16 @@ class Node(BaseModel):
     children: Optional[list[Node]] = Field(description="Optional collection of nested child nodes.")
 
 
+class Metadata(BaseModel):
+    version: str = Field(description="Version of the spec used to write this tree.")
+    title: Optional[str] = Field(description="Name of this view.")
+    description: Optional[str] = Field(description="Detailed description of this view.")
+    timestamp: str = Field(description="Timestamp when this view was exported.")
+
+
 class State(BaseModel):
-    version: int
-    root: Node
+    root: Node = Field(description="Root of the node tree.")
+    metadata: Metadata = Field(description="Associated metadata.")
 
 
 class DownloadParams(Params):
@@ -64,8 +71,9 @@ class StructureParams(Params):
     assembly_id: Optional[str] = Field(description="Use the name to specify which assembly to load")
     assembly_index: Optional[int] = Field(description="0-based assembly index, use this to load the 1st assembly")
     model_index: Optional[int] = Field(description="0-based model index in case multiple NMR frames are present")
-    block_index: Optional[int] = Field(description="0-based block index in case multiple mmCIF or SDF data blocks are "
-                                                   "present")
+    block_index: Optional[int] = Field(
+        description="0-based block index in case multiple mmCIF or SDF data blocks are " "present"
+    )
     block_header: Optional[str] = Field(description="Reference a specific mmCIF or SDF data block by its block header")
     radius: Optional[float] = Field(description="Radius around model coordinates when loading symmetry mates")
     ijk_min: Optional[tuple[int, int, int]] = Field(description="Bottom-left Miller indices")
@@ -82,14 +90,18 @@ class ComponentExpression(BaseModel):  # Feel free to rename (this used to be In
     label_seq_id: Optional[int]
     auth_seq_id: Optional[int]
     pdbx_PDB_ins_code: Optional[str]
-    beg_label_seq_id: Optional[int] = Field("Defines a consecutive range of residues when combined with "
-                                            "`end_label_seq_id`.")
-    end_label_seq_id: Optional[int] = Field("Defines a consecutive range of residues when combined with "
-                                            "`beg_label_seq_id`. End indices are inclusive.")
-    beg_auth_seq_id: Optional[int] = Field("Defines a consecutive range of residues when combined with "
-                                           "`end_auth_seq_id`.")
-    end_auth_seq_id: Optional[int] = Field("Defines a consecutive range of residues when combined with "
-                                           "`beg_auth_seq_id`. End indices are inclusive.")
+    beg_label_seq_id: Optional[int] = Field(
+        "Defines a consecutive range of residues when combined with " "`end_label_seq_id`."
+    )
+    end_label_seq_id: Optional[int] = Field(
+        "Defines a consecutive range of residues when combined with " "`beg_label_seq_id`. End indices are inclusive."
+    )
+    beg_auth_seq_id: Optional[int] = Field(
+        "Defines a consecutive range of residues when combined with " "`end_auth_seq_id`."
+    )
+    end_auth_seq_id: Optional[int] = Field(
+        "Defines a consecutive range of residues when combined with " "`beg_auth_seq_id`. End indices are inclusive."
+    )
     residue_index: Optional[int] = Field("0-based residue index in the source file")
     label_atom_id: Optional[int] = Field("Atom name like 'CA', 'N', 'O' (`_atom_site.label_atom_id`)")
     auth_atom_id: Optional[int] = Field("Atom name like 'CA', 'N', 'O' (`_atom_site.auth_atom_id`)")
@@ -127,10 +139,12 @@ class _DataFromUriParams(Params):
     uri: str
     format: SchemaFormatT
     category_name: Optional[str] = Field(description="Only applies when format is 'cif' or 'bcif'")
-    field_name: Optional[str] = Field(description="Name of the column in CIF or field name (key) in JSON that "
-                                                  "contains the desired value (color/label/tooltip/component...); the "
-                                                  "default value is 'color'/'label'/'tooltip'/'component' depending "
-                                                  "on the node type")
+    field_name: Optional[str] = Field(
+        description="Name of the column in CIF or field name (key) in JSON that "
+        "contains the desired value (color/label/tooltip/component...); the "
+        "default value is 'color'/'label'/'tooltip'/'component' depending "
+        "on the node type"
+    )
     block_header: Optional[str] = Field(description="Only applies when format is 'cif' or 'bcif'")
     block_index: Optional[int] = Field(description="Only applies when format is 'cif' or 'bcif'")
     schema_: SchemaT
@@ -138,9 +152,11 @@ class _DataFromUriParams(Params):
 
 class _DataFromSourceParams(Params):
     category_name: str
-    field_name: Optional[str] = Field(description="Name of the column in CIF that contains the desired value ("
-                                                  "color/label/tooltip/component...); the default value is "
-                                                  "'color'/'label'/'tooltip'/'component' depending on the node type")
+    field_name: Optional[str] = Field(
+        description="Name of the column in CIF that contains the desired value ("
+        "color/label/tooltip/component...); the default value is "
+        "'color'/'label'/'tooltip'/'component' depending on the node type"
+    )
     block_header: Optional[str]
     block_index: Optional[int]
     schema_: SchemaT
@@ -151,15 +167,19 @@ class ComponentInlineParams(Params):
 
 
 class ComponentFromUriParams(_DataFromUriParams):
-    field_values: Optional[list[str]] = Field(description="Create the component from rows that have any of these "
-                                                          "values in the field specified by `field_name`. If not "
-                                                          "provided, create the component from all rows.")
+    field_values: Optional[list[str]] = Field(
+        description="Create the component from rows that have any of these "
+        "values in the field specified by `field_name`. If not "
+        "provided, create the component from all rows."
+    )
 
 
 class ComponentFromSourceParams(_DataFromSourceParams):
-    field_values: Optional[list[str]] = Field(description="Create the component from rows that have any of these "
-                                                          "values in the field specified by `field_name`. If not "
-                                                          "provided, create the component from all rows.")
+    field_values: Optional[list[str]] = Field(
+        description="Create the component from rows that have any of these "
+        "values in the field specified by `field_name`. If not "
+        "provided, create the component from all rows."
+    )
 
 
 class ColorInlineParams(ComponentInlineParams):
@@ -201,24 +221,29 @@ class TooltipFromSourceParams(_DataFromSourceParams):
 
 
 class FocusInlineParams(Params):
-    direction: Optional[tuple[float, float, float]] = Field(description="Direction of the view (vector position -> "
-                                                                        "target)")
-    up: Optional[tuple[float, float, float]] = Field(description="Controls the rotation around the vector between "
-                                                                 "target and position")
+    direction: Optional[tuple[float, float, float]] = Field(
+        description="Direction of the view (vector position -> " "target)"
+    )
+    up: Optional[tuple[float, float, float]] = Field(
+        description="Controls the rotation around the vector between " "target and position"
+    )
 
 
 class TransformParams(Params):
-    rotation: Optional[tuple[float, ...]] = Field(description="In a column major (j * 3 + i indexing) format, this is "
-                                                              "equivalent to Fortran-order in numpy, to be multiplied"
-                                                              " from the left")
+    rotation: Optional[tuple[float, ...]] = Field(
+        description="In a column major (j * 3 + i indexing) format, this is "
+        "equivalent to Fortran-order in numpy, to be multiplied"
+        " from the left"
+    )
     translation: Optional[tuple[float, float, float]]
 
 
 class CameraParams(Params):
     target: tuple[float, float, float] = Field(description="What to look at")
     position: tuple[float, float, float] = Field(description="The position of the camera")
-    up: Optional[tuple[float, float, float]] = Field(description="Controls the rotation around the vector between "
-                                                                 "target and position")
+    up: Optional[tuple[float, float, float]] = Field(
+        description="Controls the rotation around the vector between " "target and position"
+    )
 
 
 class CanvasParams(Params):

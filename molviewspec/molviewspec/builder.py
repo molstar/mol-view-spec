@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+from datetime import datetime
 from typing import Sequence
 
 from pydantic import BaseModel, PrivateAttr
@@ -24,6 +25,7 @@ from molviewspec.nodes import (
     LabelFromUriParams,
     LabelInlineParams,
     LineParams,
+    Metadata,
     Node,
     ParseFormatT,
     ParseParams,
@@ -41,7 +43,7 @@ from molviewspec.nodes import (
 )
 from molviewspec.params_utils import make_params
 
-VERSION = 7
+VERSION = 8
 
 
 def create_builder() -> Root:
@@ -67,13 +69,15 @@ class Root(_Base):
     def __init__(self) -> None:
         super().__init__(root=self, node=Node(kind="root"))
 
-    def get_state(self) -> State:
-        return State(version=VERSION, root=self._node)
+    def get_state(self, *, title: str = None, description: str = None) -> State:
+        # TODO jamming title and description in here prolly isn't the best idea
+        metadata = Metadata(version=VERSION, timestamp=datetime.now().isoformat(), title=title, description=description)
+        return State(root=self._node, metadata=metadata)
 
-    def save_state(self, *, destination: str):
-        state = self.get_state()
+    def save_state(self, *, destination: str, indent: int = 0, title: str = None, description: str = None):
+        state = self.get_state(title=title, description=description)
         with open(destination, "w") as out:
-            out.write(json.dumps(state, indent=2))
+            out.write(json.dumps(state, indent=indent))
 
     def camera(
         self,
