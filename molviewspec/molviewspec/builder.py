@@ -19,6 +19,7 @@ from molviewspec.nodes import (
     ComponentFromUriParams,
     ComponentInlineParams,
     ComponentSelectorT,
+    DescriptionFormatT,
     DownloadParams,
     FocusInlineParams,
     LabelFromSourceParams,
@@ -69,13 +70,29 @@ class Root(_Base):
     def __init__(self) -> None:
         super().__init__(root=self, node=Node(kind="root"))
 
-    def get_state(self, *, title: str = None, description: str = None) -> State:
+    def get_state(
+        self, *, title: str = None, description: str = None, description_format: DescriptionFormatT = None
+    ) -> State:
         # TODO jamming title and description in here prolly isn't the best idea
-        metadata = Metadata(version=VERSION, timestamp=datetime.now().isoformat(), title=title, description=description)
+        metadata = Metadata(
+            version=VERSION,
+            timestamp=datetime.now().isoformat(),
+            title=title,
+            description=description,
+            description_format=description_format,
+        )
         return State(root=self._node, metadata=metadata)
 
-    def save_state(self, *, destination: str, indent: int = 0, title: str = None, description: str = None):
-        state = self.get_state(title=title, description=description)
+    def save_state(
+        self,
+        *,
+        destination: str,
+        indent: int = 0,
+        title: str = None,
+        description: str = None,
+        description_format: DescriptionFormatT = None,
+    ):
+        state = self.get_state(title=title, description=description, description_format=description_format)
         with open(destination, "w") as out:
             out.write(json.dumps(state, indent=indent))
 

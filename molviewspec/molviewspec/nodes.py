@@ -40,10 +40,14 @@ class Node(BaseModel):
     children: Optional[list[Node]] = Field(description="Optional collection of nested child nodes.")
 
 
+DescriptionFormatT = Literal["markdown", "plaintext"]
+
+
 class Metadata(BaseModel):
     version: str = Field(description="Version of the spec used to write this tree.")
     title: Optional[str] = Field(description="Name of this view.")
     description: Optional[str] = Field(description="Detailed description of this view.")
+    description_format: Optional[DescriptionFormatT] = Field(description="Format of the description.")
     timestamp: str = Field(description="Timestamp when this view was exported.")
 
 
