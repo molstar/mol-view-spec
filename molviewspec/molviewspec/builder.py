@@ -88,7 +88,7 @@ class Root(_Base):
     ):
         params = make_params(CameraParams, locals())
         if up is None:
-            params["up"] = (0, 1, 0)
+            params.up = (0, 1, 0)
         node = Node(kind="camera", params=params)
         self._add_child(node)
         return self
@@ -180,9 +180,9 @@ class Parse(_Base):
         """
         params = make_params(StructureParams, locals(), kind="symmetry")
         if ijk_min is None:
-            params["ijk_min"] = (-1, -1, -1)
+            params.ijk_min = (-1, -1, -1)
         if ijk_max is None:
-            params["ijk_max"] = (1, 1, 1)
+            params.ijk_max = (1, 1, 1)
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -202,7 +202,7 @@ class Parse(_Base):
         """
         params = make_params(StructureParams, locals(), kind="symmetry_mates")
         if radius is None:
-            params["radius"] = 5.0
+            params.radius = 5.0
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
