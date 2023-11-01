@@ -6,6 +6,7 @@
 
 import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/PathReporter';
+import { mapObjToObj } from '../../helpers/utils';
 
 
 /** All types that can be used in tree node params.
@@ -71,9 +72,29 @@ export type ValueFor<F extends Field | t.Any> = F extends Field<infer V> ? V : F
 /** Type of valid default value for field of type `F` (if the field's type allows `null`, the default must be `null`) */
 export type DefaultFor<F extends Field> = F extends Field<infer V> ? (null extends V ? null : V) : never
 
+/** Return `undefined` if `value` has correct type for `field`, regardsless of if required or optional.
+ * Return description of validation issues, if `value` has wrong type.
+ */
+export function fieldValidationIssues<F extends Field, V>(field: F, value: V): V extends ValueFor<F> ? undefined : string[] {
+    const validation = field.type.decode(value);
+    if (validation._tag === 'Right') {
+        return undefined as any;
+    } else {
+        return PathReporter.report(validation) as any;
+    }
+}
+
 
 /** Schema for "params", i.e. a flat collection of key-value pairs */
 export type ParamsSchema<TKey extends string = string> = { [key in TKey]: Field }
+
+/** Variation of schema `TParamsSchema` where all fields are required */
+export type AllRequired<TParamsSchema extends ParamsSchema> = { [key in keyof TParamsSchema]: TParamsSchema[key] extends Field<infer V> ? RequiredField<V> : never }
+
+/** Create of copy of a params schema where all fields are required */
+export function AllRequired<TParamsSchema extends ParamsSchema>(paramsSchema: TParamsSchema): AllRequired<TParamsSchema> {
+    return mapObjToObj(paramsSchema, (key, field) => RequiredField(field.type, field.description)) as AllRequired<TParamsSchema>;
+}
 
 /** Type of full values for a params schema, i.e. including all optional fields */
 export type FullValuesFor<P extends ParamsSchema> = { [key in keyof P]: ValueFor<P[key]> }
@@ -85,26 +106,12 @@ export type ValuesFor<P extends ParamsSchema> =
 export type DefaultsFor<P extends ParamsSchema> = { [key in keyof P as (P[key] extends Field<any, false> ? key : never)]: ValueFor<P[key]> }
 
 
-type Issues = string[]
-
-/** Return `undefined` if `value` has correct type for `field`, regardsless of if required or optional.
- * Return description of validation issues, if `value` has wrong type.
- */
-export function fieldValidationIssues<F extends Field, V>(field: F, value: V): V extends ValueFor<F> ? undefined : Issues {
-    const validation = field.type.decode(value);
-    if (validation._tag === 'Right') {
-        return undefined as Issues | undefined as any;
-    } else {
-        return PathReporter.report(validation) as Issues | undefined as any;
-    }
-}
-
 /** Return `undefined` if `values` contains correct value types for `schema`,
  * return description of validation issues, if `values` have wrong type.
  * If `options.requireAll`, all parameters (including optional) must have a value provided.
  * If `options.noExtra` is true, presence of any extra parameters is treated as an issue.
  */
-export function paramsValidationIssues<P extends ParamsSchema, V extends { [k: string]: any }>(schema: P, values: V, options: { requireAll?: boolean, noExtra?: boolean } = {}): Issues | undefined {
+export function paramsValidationIssues<P extends ParamsSchema, V extends { [k: string]: any }>(schema: P, values: V, options: { requireAll?: boolean, noExtra?: boolean } = {}): string[] | undefined {
     // console.log('validating', values, 'against', schema);
     for (const key in schema) {
         const paramDef = schema[key];

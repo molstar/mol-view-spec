@@ -4,9 +4,9 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { NodeForTree, TreeFor, TreeSchema } from '../generic/tree-schema';
+import { TreeWithAllRequired, NodeForTree, TreeFor, TreeSchema } from '../generic/tree-schema';
 import { ColorT, ComponentExpression, ComponentSelectorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
-import { OptionalField, RequiredField, float, int, list, nullable, str, tuple, union } from '../generic/params-schema';
+import { AllRequired, OptionalField, RequiredField, ValuesFor, float, int, list, nullable, str, tuple, union } from '../generic/params-schema';
 
 
 export const MVS_VERSION = 1;
@@ -35,8 +35,9 @@ const _DataFromSourceParams = {
 
 
 /** Schema for `MVSTree` (MolViewSpec tree) */
-export const MVSTreeSchema = TreeSchema('root',
-    {
+export const MVSTreeSchema = TreeSchema({
+    rootKind: 'root',
+    paramsSchemas: {
         root: {},
         download: {
             url: RequiredField(str),
@@ -123,8 +124,15 @@ export const MVSTreeSchema = TreeSchema('root',
             up: OptionalField(Vector3),
         },
     }
-);
+});
 
+type p_ = typeof MVSTreeSchema['paramsSchemas']['structure']
+type p = AllRequired<typeof MVSTreeSchema['paramsSchemas']['structure']>
+const x: ValuesFor<typeof MVSTreeSchema['paramsSchemas']['structure']> = { kind: 'assembly', 'assembly_id': '' }
+const y: ValuesFor<p> = { kind: 'assembly', assembly_id: null, assembly_index: null, block_header: null, block_index: null, ijk_max: [0, 0, 0], ijk_min: [0, 0, 0], radius: 5, model_index: 0 }
+type t = TreeWithAllRequired<typeof MVSTreeSchema>
+const z: NodeForTree<t> = { kind: 'structure', params: { kind: 'assembly', assembly_id: null, assembly_index: null, block_header: null, block_index: null, ijk_max: [0, 0, 0], ijk_min: [0, 0, 0], radius: 5, model_index: 0 } }
+type x = Required<{}>
 
 /** Node kind in a `MVSTree` */
 export type MVSKind = keyof typeof MVSTreeSchema.paramsSchemas
@@ -134,3 +142,10 @@ export type MVSNode<TKind extends MVSKind = MVSKind> = NodeForTree<typeof MVSTre
 
 /** MolViewSpec tree */
 export type MVSTree = TreeFor<typeof MVSTreeSchema>
+
+
+/** Schema for `MVSTree` (MolViewSpec tree with all params provided) */
+export const FullMVSTreeSchema = TreeWithAllRequired(MVSTreeSchema);
+
+/** MolViewSpec tree with all params provided */
+export type FullMVSTree = TreeFor<typeof FullMVSTreeSchema>

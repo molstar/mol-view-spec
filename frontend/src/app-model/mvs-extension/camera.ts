@@ -40,7 +40,7 @@ export async function focusCameraNode(plugin: PluginContext, params: ParamsOfKin
     await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
 }
 
-export async function focusStructureNode(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, params: ParamsOfKind<MolstarTree, 'focus'> = {}) {
+export async function focusStructureNode(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, params: ParamsOfKind<MolstarTree, 'focus'> = Defaults.focus) {
     let structure: Structure | undefined = undefined;
     if (structureNodeSelector) {
         const cell = plugin.state.data.cells.get(structureNodeSelector.ref);

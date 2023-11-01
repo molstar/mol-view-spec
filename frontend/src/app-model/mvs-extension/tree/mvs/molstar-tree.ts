@@ -7,16 +7,17 @@
 import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
 import { NodeForTree, TreeFor, TreeSchema } from '../generic/tree-schema';
 import { RequiredField, bool } from '../generic/params-schema';
-import { MVSTreeSchema } from './mvs-tree';
+import { FullMVSTreeSchema } from './mvs-tree';
 import { MolstarParseFormatT } from './param-types';
 
 
 /** Schema for `MolstarTree` (auxiliary tree representation before creating a real Molstar state) */
-export const MolstarTreeSchema = TreeSchema('root',
-    {
-        ...MVSTreeSchema.paramsSchemas,
+export const MolstarTreeSchema = TreeSchema({
+    rootKind: 'root',
+    paramsSchemas: {
+        ...FullMVSTreeSchema.paramsSchemas,
         download: {
-            ...MVSTreeSchema.paramsSchemas.download,
+            ...FullMVSTreeSchema.paramsSchemas.download,
             is_binary: RequiredField(bool),
         },
         parse: {
@@ -24,21 +25,21 @@ export const MolstarTreeSchema = TreeSchema('root',
         },
         trajectory: {
             format: RequiredField(MolstarParseFormatT),
-            block_header: MVSTreeSchema.paramsSchemas.structure.block_header,
-            block_index: MVSTreeSchema.paramsSchemas.structure.block_index,
+            block_header: FullMVSTreeSchema.paramsSchemas.structure.block_header,
+            block_index: FullMVSTreeSchema.paramsSchemas.structure.block_index,
         },
-        model: pickObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
-        structure: omitObjectKeys(MVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
+        model: pickObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
+        structure: omitObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
         /** Just to collect multiple transform nodes */
         transforms: {},
         color_from_uri: {
-            ...MVSTreeSchema.paramsSchemas.color_from_uri,
+            ...FullMVSTreeSchema.paramsSchemas.color_from_uri,
         },
         color_from_source: {
-            ...MVSTreeSchema.paramsSchemas.color_from_source,
+            ...FullMVSTreeSchema.paramsSchemas.color_from_source,
         },
     }
-);
+});
 
 
 /** Node kind in a `MolstarTree` */

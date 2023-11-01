@@ -4,9 +4,8 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { MVSKind, MVSTreeSchema } from './mvs-tree';
-import { DefaultsFor } from '../generic/params-schema';
 import { DefaultsForTree } from '../generic/tree-schema';
+import { MVSTreeSchema } from './mvs-tree';
 
 
 /** Default values for params in `MVSTree` */
@@ -22,7 +21,7 @@ export const Defaults = {
         assembly_index: null,
         block_index: null,
         block_header: null,
-        radius: 0,
+        radius: 5,
         ijk_min: [-1, -1, -1],
         ijk_max: [1, 1, 1],
     },

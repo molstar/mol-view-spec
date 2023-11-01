@@ -5,9 +5,10 @@
  */
 
 import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
-import { ConversionRules, condenseTree, convertTree } from '../generic/tree-utils';
+import { ConversionRules, addDefaults, condenseTree, convertTree } from '../generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './molstar-tree';
-import { MVSTree } from './mvs-tree';
+import { FullMVSTree, MVSTree, MVSTreeSchema } from './mvs-tree';
+import { Defaults } from './param-defaults';
 import { MolstarParseFormatT, ParseFormatT } from './param-types';
 
 
@@ -19,9 +20,8 @@ export const ParseFormatMvsToMolstar = {
     pdb: { format: 'pdb', is_binary: false },
 } satisfies { [p in ParseFormatT]: { format: MolstarParseFormatT, is_binary: boolean } };
 
-
-/** Conversion rules for conversion from `MVSTree` to `MolstarTree` */
-const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
+/** Conversion rules for conversion from `MVSTree` (with all parameter values) to `MolstarTree` */
+const mvsToMolstarConversionRules: ConversionRules<FullMVSTree, MolstarTree> = {
     'download': node => [],
     'parse': (node, parent) => {
         const { format, is_binary } = ParseFormatMvsToMolstar[node.params.format];
@@ -55,9 +55,11 @@ const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
 /** Node kinds in `MolstarTree` that it makes sense to condense */
 const molstarNodesToCondense = new Set<MolstarKind>(['download', 'parse', 'trajectory', 'model', 'transforms'] satisfies MolstarKind[]);
 
+
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
-    const converted = convertTree<MVSTree, MolstarTree>(mvsTree, mvsToMolstarConversionRules);
+    const full: FullMVSTree = addDefaults<typeof MVSTreeSchema>(mvsTree, Defaults);
+    const converted = convertTree<FullMVSTree, MolstarTree>(full, mvsToMolstarConversionRules);
     if (converted.kind !== 'root') throw new Error("Root's type is not 'root' after conversion from MVS tree to Molstar tree.");
     const condensed = condenseTree<MolstarTree>(converted, molstarNodesToCondense);
     return condensed;

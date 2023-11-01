@@ -4,7 +4,8 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { DefaultsFor, ParamsSchema, ValuesFor, paramsValidationIssues } from './params-schema';
+import { mapObjToObj } from '../../helpers/utils';
+import { AllRequired, DefaultsFor, ParamsSchema, ValuesFor, paramsValidationIssues } from './params-schema';
 import { treeToString } from './tree-utils';
 
 
@@ -34,7 +35,6 @@ export type Tree<TNode extends Node<string, {}> = Node<string, {}>, TRoot extend
 
 /** Type of any subtree that can occur within given `TTree` tree type */
 export type SubTree<TTree extends Tree> = NonNullable<TTree['children']>[number]
-// TODO make private, use SubTreeOfKind (renamed to Subtree) everywhere?
 
 /** Type of any subtree that can occur within given `TTree` tree type and has kind type `TKind` */
 export type SubTreeOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>> = Kind<SubTree<TTree>>> = RootOfKind<SubTree<TTree>, TKind>
@@ -72,10 +72,23 @@ export interface TreeSchema<TSchemas extends { [kind: string]: ParamsSchema } = 
     rootKind: TRootKind,
     paramsSchemas: TSchemas,
 }
-export function TreeSchema<TSchemas extends { [kind: string]: ParamsSchema }, TRootKind extends string & keyof TSchemas>(rootKind: TRootKind, paramsSchemas: TSchemas): TreeSchema<TSchemas, TRootKind> {
-    return { rootKind, paramsSchemas };
+export function TreeSchema<TTreeSchema extends TreeSchema>(schema: TTreeSchema): TTreeSchema {
+    return schema;
 }
 
+/** Variation of schema `TTreeSchema` where all param fields are required */
+export type TreeWithAllRequired<TTreeSchema extends TreeSchema> = {
+    rootKind: TTreeSchema['rootKind'],
+    paramsSchemas: { [kind in keyof TTreeSchema['paramsSchemas']]: AllRequired<TTreeSchema['paramsSchemas'][kind]> },
+}
+
+/** Create of copy of a params schema where all fields are required */
+export function TreeWithAllRequired<TTreeSchema extends TreeSchema>(schema: TTreeSchema): TreeWithAllRequired<TTreeSchema> {
+    return {
+        ...schema,
+        paramsSchemas: mapObjToObj(schema.paramsSchemas, (kind, params) => AllRequired(params)) as any,
+    }
+}
 
 /** Type of tree node which can occur anywhere in a tree conforming to tree schema `TTreeSchema`,
  * optionally narrowing down to a given node kind */
@@ -90,7 +103,8 @@ export type RootForTree<TTreeSchema extends TreeSchema> = NodeForTree<TTreeSchem
 export type TreeFor<TTreeSchema extends TreeSchema> = Tree<NodeForTree<TTreeSchema>, RootForTree<TTreeSchema> & NodeForTree<TTreeSchema>>
 
 /** Type of default parameter values for each node kind in a tree schema `TTreeSchema` */
-export type DefaultsForTree<TTreeSchema extends TreeSchema> = { [kind in keyof TTreeSchema['paramsSchemas']]: DefaultsFor<(TTreeSchema)['paramsSchemas'][kind]> }
+export type DefaultsForTree<TTreeSchema extends TreeSchema> = { [kind in keyof TTreeSchema['paramsSchemas']]: DefaultsFor<TTreeSchema['paramsSchemas'][kind]> }
+
 
 /** Return `undefined` if a tree conforms to the given schema,
  * return validation issues (as a list of lines) if it does not conform.

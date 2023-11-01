@@ -115,10 +115,20 @@ export function objectFromKeysAndValues<K extends keyof any, V>(keys: K[], value
     return obj as Record<K, V>;
 }
 
+/** Equivalent to Pythonic `{k: getValue(k) for k in array}` */
 export function mapArrToObj<K extends keyof any, V>(array: readonly K[], getValue: (key: K) => V): Record<K, V> {
     const result = {} as Record<K, V>;
     for (const key of array) {
         result[key] = getValue(key);
+    }
+    return result;
+}
+
+/** Equivalent to Pythonic `{k: getValue(k, v) for k, v in obj.items()}` */
+export function mapObjToObj<K extends keyof any, VIn, VOut>(obj: Record<K, VIn>, getValue: (key: K, value: VIn) => VOut): Record<K, VOut> {
+    const result = {} as Record<K, VOut>;
+    for (const key in obj) {
+        result[key] = getValue(key, obj[key]);
     }
     return result;
 }

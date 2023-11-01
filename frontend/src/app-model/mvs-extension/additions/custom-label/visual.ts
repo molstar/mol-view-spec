@@ -68,7 +68,7 @@ export const CustomLabelTextParams = {
         { isEssential: true }
     ),
     ...omitObjectKeys(Original.LabelTextParams, ['level', 'chainScale', 'residueScale', 'elementScale']),
-    borderColor: { ...Original.LabelTextParams.borderColor, defaultValue: ColorNames.black }, // TODO probably remove this (what if black background)
+    borderColor: { ...Original.LabelTextParams.borderColor, defaultValue: ColorNames.black },
     // ...ComplexTextParams,
     // background: PD.Boolean(false),
     // backgroundMargin: PD.Numeric(0, { min: 0, max: 1, step: 0.01 }),
