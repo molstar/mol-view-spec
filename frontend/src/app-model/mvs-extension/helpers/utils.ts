@@ -17,7 +17,7 @@ export function formatObject(obj: {} | undefined) {
 }
 
 /** Return an object with keys `keys` and their values same as in `obj` */
-export function pickObjectKeys<T extends {}, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+export function pickObjectKeys<T extends {}, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K> {
     const result: Partial<Pick<T, K>> = {};
     for (const key of keys) {
         if (Object.hasOwn(obj, key)) {
@@ -28,7 +28,7 @@ export function pickObjectKeys<T extends {}, K extends keyof T>(obj: T, keys: K[
 }
 
 /** Return an object same as `obj` but without keys `keys` */
-export function omitObjectKeys<T extends {}, K extends keyof T>(obj: T, omitKeys: K[]): Omit<T, K> {
+export function omitObjectKeys<T extends {}, K extends keyof T>(obj: T, omitKeys: readonly K[]): Omit<T, K> {
     const result: T = { ...obj };
     for (const key of omitKeys) {
         delete result[key];
@@ -216,6 +216,12 @@ export function sortObjectKeys<T extends {}>(obj: T): T {
  * independent from object key order and undefined properties. */
 export function canonicalJsonString(obj: Json) {
     return JSON.stringify(obj, (key, value) => isReallyObject(value) ? sortObjectKeys(value) : value);
+}
+
+/** Return a pretty JSON representation for a JSON-able object,
+ * (single line, but use space after comma). E.g. '{"name": "Bob", "favorite_numbers": [1, 2, 3]}' */
+export function onelinerJsonString(obj: Json) {
+    return JSON.stringify(obj, undefined, '\t').replace(/,\n\t*/g, ', ').replace(/\n\t*/g, '');
 }
 
 /** Return an array of all distinct values from `values`

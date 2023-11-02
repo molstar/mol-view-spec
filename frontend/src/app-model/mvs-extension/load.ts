@@ -18,11 +18,10 @@ import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { focusCameraNode, focusStructureNode, setCanvas } from './camera';
 import { canonicalJsonString } from './helpers/utils';
 import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUriOrSourceProps, componentPropsFromSelector, isPhantomComponent, labelFromUriOrSourceProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformFromRotationTranslation } from './load-helpers';
-import { ParamsOfKind, SubTreeOfKind, getChildren, getParams, validateTree } from './tree/generic/tree-schema';
+import { ParamsOfKind, SubTreeOfKind, getChildren, validateTree } from './tree/generic/tree-schema';
 import { convertMvsToMolstar } from './tree/mvs/conversion';
 import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
 import { MVSTree, MVSTreeSchema } from './tree/mvs/mvs-tree';
-import { Defaults } from './tree/mvs/param-defaults';
 
 
 export interface MVSData {
@@ -76,12 +75,12 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
     },
     download(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'download'>): StateObjectSelector {
         return update.to(msTarget).apply(Download, {
-            url: getParams(node).url,
-            isBinary: getParams(node).is_binary,
+            url: node.params.url,
+            isBinary: node.params.is_binary,
         }).selector;
     },
     parse(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'parse'>): StateObjectSelector | undefined {
-        const format = getParams(node).format;
+        const format = node.params.format;
         if (format === 'cif') {
             return update.to(msTarget).apply(ParseCif, {}).selector;
         } else if (format === 'pdb') {
@@ -92,11 +91,11 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
         }
     },
     trajectory(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'trajectory'>): StateObjectSelector | undefined {
-        const format = getParams(node).format;
+        const format = node.params.format;
         if (format === 'cif') {
             return update.to(msTarget).apply(TrajectoryFromMmCif, {
-                blockHeader: node.params.block_header ?? Defaults.structure.block_header ?? '', // Must set to '' because just undefined would get overwritten by createDefaults
-                blockIndex: node.params.block_index ?? Defaults.structure.block_index ?? undefined,
+                blockHeader: node.params.block_header ?? '', // Must set to '' because just undefined would get overwritten by createDefaults
+                blockIndex: node.params.block_index ?? undefined,
             }).selector;
         } else if (format === 'pdb') {
             return update.to(msTarget).apply(TrajectoryFromPDB, {}).selector;
@@ -109,7 +108,7 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
         const annotations = collectAnnotationReferences(node, context);
         return update.to(msTarget)
             .apply(ModelFromTrajectory, {
-                modelIndex: getParams(node).model_index ?? Defaults.structure.model_index,
+                modelIndex: node.params.model_index,
             })
             .apply(CustomModelProperties, {
                 properties: {
@@ -146,7 +145,7 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
         if (isPhantomComponent(node)) {
             return msTarget;
         }
-        const selector = getParams(node).selector ?? Defaults.component.selector;
+        const selector = node.params.selector;
         return update.to(msTarget).apply(StructureComponent, {
             type: componentPropsFromSelector(selector),
             label: canonicalJsonString(selector),
@@ -205,15 +204,15 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
         return result;
     },
     focus(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'focus'>, context: MolstarLoadingContext): StateObjectSelector {
-        context.focus = { kind: 'focus', focusTarget: msTarget, params: getParams(node) };
+        context.focus = { kind: 'focus', focusTarget: msTarget, params: node.params };
         return msTarget;
     },
     camera(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'camera'>, context: MolstarLoadingContext): StateObjectSelector {
-        context.focus = { kind: 'camera', params: getParams(node) };
+        context.focus = { kind: 'camera', params: node.params };
         return msTarget;
     },
     canvas(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'canvas'>, context: MolstarLoadingContext): StateObjectSelector {
-        context.canvas = getParams(node);
+        context.canvas = node.params;
         return msTarget;
     },
 };

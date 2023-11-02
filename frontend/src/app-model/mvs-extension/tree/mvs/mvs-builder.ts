@@ -2,7 +2,7 @@ import { pickObjectKeys } from '../../helpers/utils';
 import { MVSData } from '../../load';
 import { ParamsOfKind, SubTreeOfKind } from '../generic/tree-schema';
 import { MVSKind, MVSNode, MVSTree, MVSTreeSchema, MVS_VERSION } from './mvs-tree';
-import { Defaults } from './param-defaults';
+import { MVSDefaults } from './mvs-defaults';
 import { HexColor } from './param-types';
 
 
@@ -98,7 +98,7 @@ export class Parse extends _Base<'parse'> {
 
 export class Structure extends _Base<'structure'> {
     component(params: Partial<ParamsOfKind<MVSTree, 'component'>> = {}): Component {
-        const fullParams = { ...params, selector: params.selector ?? Defaults.component.selector };
+        const fullParams = { ...params, selector: params.selector ?? MVSDefaults.component.selector };
         return new Component(this._root, this.addChild('component', fullParams));
     }
     componentFromUri(params: ParamsOfKind<MVSTree, 'component_from_uri'>): Component {
@@ -186,7 +186,7 @@ export function builderDemo() {
     cif.modelStructure({ model_index: 2 }).component().representation().color({ color: HexColor('#FFFF00') });
 
     cif.modelStructure({ model_index: 0 }).transform({ translation: [30, 0, 0] }).component().representation().color({ color: HexColor('#ff88bb') });
-    cif.modelStructure({ model_index: 0 }).transform({ translation: [60, 0, 0], rotation: [0, 1, 0, -1, 0, 0, 0, 0, 1] }).component().representation().color({ color: HexColor('#aa0077') });
+    cif.modelStructure({ model_index: '0' as any }).transform({ translation: [60, 0, 0], rotation: [0, 1, 0, -1, 0, 0, 0, 0, 1] }).component().representation().color({ color: HexColor('#aa0077') });
 
     return builder.getState();
 }

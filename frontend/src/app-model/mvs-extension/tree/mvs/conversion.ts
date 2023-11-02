@@ -8,7 +8,7 @@ import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
 import { ConversionRules, addDefaults, condenseTree, convertTree } from '../generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './molstar-tree';
 import { FullMVSTree, MVSTree, MVSTreeSchema } from './mvs-tree';
-import { Defaults } from './param-defaults';
+import { MVSDefaults } from './mvs-defaults';
 import { MolstarParseFormatT, ParseFormatT } from './param-types';
 
 
@@ -58,7 +58,7 @@ const molstarNodesToCondense = new Set<MolstarKind>(['download', 'parse', 'traje
 
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
-    const full: FullMVSTree = addDefaults<typeof MVSTreeSchema>(mvsTree, Defaults);
+    const full: FullMVSTree = addDefaults<typeof MVSTreeSchema>(mvsTree, MVSDefaults);
     const converted = convertTree<FullMVSTree, MolstarTree>(full, mvsToMolstarConversionRules);
     if (converted.kind !== 'root') throw new Error("Root's type is not 'root' after conversion from MVS tree to Molstar tree.");
     const condensed = condenseTree<MolstarTree>(converted, molstarNodesToCondense);

@@ -23,7 +23,7 @@ import { MolstarLoadingContext } from './load';
 import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getChildren, getParams } from './tree/generic/tree-schema';
 import { dfs } from './tree/generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './tree/mvs/molstar-tree';
-import { DefaultColor, Defaults } from './tree/mvs/param-defaults';
+import { DefaultColor } from './tree/mvs/mvs-defaults';
 import { ElementOfSet, canonicalJsonString, decodeColor, distinct, isDefined, stringHash } from './helpers/utils';
 
 
@@ -112,7 +112,7 @@ export function collectAnnotationTooltips(tree: SubTreeOfKind<MolstarTree, 'stru
         if (node.kind === 'tooltip_from_uri' || node.kind === 'tooltip_from_source') {
             const annotationId = context.annotationMap?.get(node);
             if (annotationId) {
-                annotationTooltips.push({ annotationId, fieldName: node.params.field_name ?? Defaults[node.kind].field_name });
+                annotationTooltips.push({ annotationId, fieldName: node.params.field_name });
             };
         }
     });
@@ -165,21 +165,21 @@ export function structureProps(node: MolstarNode<'structure'>): StateTransformer
             return {
                 type: {
                     name: 'assembly',
-                    params: { id: params.assembly_id }
+                    params: { id: params.assembly_id } // TODO apply assembly_index if assembly_id is null
                 },
             };
         case 'symmetry':
             return {
                 type: {
                     name: 'symmetry',
-                    params: { ijkMin: params.ijk_min ?? Defaults.structure.ijk_min, ijkMax: params.ijk_max ?? Defaults.structure.ijk_max }
+                    params: { ijkMin: params.ijk_min, ijkMax: params.ijk_max }
                 },
             };
         case 'symmetry_mates':
             return {
                 type: {
                     name: 'symmetry-mates',
-                    params: { radius: params.radius ?? Defaults.structure.radius }
+                    params: { radius: params.radius }
                 }
             };
         default:
@@ -201,7 +201,7 @@ export function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 
 
 export function labelFromUriOrSourceProps(node: MolstarNode<'label_from_uri' | 'label_from_source'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
     const annotationId = context.annotationMap?.get(node);
-    const fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
+    const fieldName = node.params.field_name;
     const nearestReprNode = context.nearestReprMap?.get(node);
     return {
         type: { name: AnnotationLabelRepresentationProvider.name, params: { annotationId, fieldName } },
@@ -214,7 +214,7 @@ export function componentFromUriOrSourceProps(node: MolstarNode<'component_from_
     const { field_name, field_values } = node.params;
     return {
         annotationId,
-        fieldName: field_name ?? Defaults[node.kind].field_name,
+        fieldName: field_name,
         fieldValues: field_values ? { name: 'selected', params: field_values.map(v => ({ value: v })) } : { name: 'all', params: {} },
         nullIfEmpty: false,
     };
@@ -267,7 +267,7 @@ export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'co
         case 'color_from_uri':
         case 'color_from_source':
             annotationId = context.annotationMap?.get(node);
-            fieldName = node.params.field_name ?? Defaults[node.kind].field_name;
+            fieldName = node.params.field_name;
             break;
         case 'color':
             color = node.params.color;

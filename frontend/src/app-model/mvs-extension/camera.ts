@@ -20,7 +20,7 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { decodeColor } from './helpers/utils';
 import { ParamsOfKind } from './tree/generic/tree-schema';
 import { MolstarTree } from './tree/mvs/molstar-tree';
-import { Defaults } from './tree/mvs/param-defaults';
+import { MVSDefaults } from './tree/mvs/mvs-defaults';
 
 
 /** Defined in `molstar/lib/mol-plugin-state/manager/camera.ts` but private */
@@ -35,12 +35,12 @@ const DefaultCanvasBackgroundColor = ColorNames.white;
 export async function focusCameraNode(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'camera'>) {
     const target = Vec3.create(...params.target);
     const position = Vec3.create(...params.position);
-    const up = Vec3.create(...params.up ?? Defaults.camera.up);
+    const up = Vec3.create(...params.up);
     const snapshot: Partial<Camera.Snapshot> = { target, position, up };
     await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
 }
 
-export async function focusStructureNode(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, params: ParamsOfKind<MolstarTree, 'focus'> = Defaults.focus) {
+export async function focusStructureNode(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, params: ParamsOfKind<MolstarTree, 'focus'> = MVSDefaults.focus) {
     let structure: Structure | undefined = undefined;
     if (structureNodeSelector) {
         const cell = plugin.state.data.cells.get(structureNodeSelector.ref);
@@ -59,10 +59,10 @@ export async function focusStructureNode(plugin: PluginContext, structureNodeSel
         const extraRadius = structure ? DefaultCameraFocusOptions.extraRadiusForFocus : DefaultCameraFocusOptions.extraRadiusForZoomAll;
         const sphereRadius = Math.max(boundingSphere.radius + extraRadius, DefaultCameraFocusOptions.minRadius);
         const distance = getFocusDistance(plugin.canvas3d.camera, boundingSphere.center, sphereRadius) ?? 100;
-        const direction = Vec3.create(...params.direction ?? Defaults.focus.direction);
+        const direction = Vec3.create(...params.direction);
         Vec3.setMagnitude(direction, direction, distance);
         const position = Vec3.sub(Vec3(), target, direction);
-        const up = Vec3.create(...params.up ?? Defaults.focus.up);
+        const up = Vec3.create(...params.up);
         const snapshot: Partial<Camera.Snapshot> = { target, position, up, radius: sphereRadius };
         await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
     }

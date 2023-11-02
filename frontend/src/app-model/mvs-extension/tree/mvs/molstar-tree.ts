@@ -25,11 +25,10 @@ export const MolstarTreeSchema = TreeSchema({
         },
         trajectory: {
             format: RequiredField(MolstarParseFormatT),
-            block_header: FullMVSTreeSchema.paramsSchemas.structure.block_header,
-            block_index: FullMVSTreeSchema.paramsSchemas.structure.block_index,
+            ...pickObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index'] as const),
         },
-        model: pickObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['model_index' as const]),
-        structure: omitObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index' as const]),
+        model: pickObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['model_index'] as const),
+        structure: omitObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index'] as const),
         /** Just to collect multiple transform nodes */
         transforms: {},
         color_from_uri: {

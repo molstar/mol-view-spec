@@ -13,9 +13,10 @@ import { BehaviorSubject } from 'rxjs';
 
 import { MolViewSpec } from './mvs-extension/behavior';
 import { MVSData, loadMVS } from './mvs-extension/load';
-import { MVSTree } from './mvs-extension/tree/mvs/mvs-tree';
-import { addDefaults, treeToString } from './mvs-extension/tree/generic/tree-utils';
-import { Defaults } from './mvs-extension/tree/mvs/param-defaults';
+import { MVSTree, MVSTreeSchema } from './mvs-extension/tree/mvs/mvs-tree';
+import { treeToString } from './mvs-extension/tree/generic/tree-utils';
+import { treeSchemaToMarkdown, treeSchemaToString } from './mvs-extension/tree/generic/tree-schema';
+import { MVSDefaults } from './mvs-extension/tree/mvs/mvs-defaults';
 
 
 export class AppModel {

@@ -4,7 +4,7 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { mapObjToObj } from '../../helpers/utils';
+import { mapObjToObj, onelinerJsonString } from '../../helpers/utils';
 import { AllRequired, DefaultsFor, ParamsSchema, ValuesFor, paramsValidationIssues } from './params-schema';
 import { treeToString } from './tree-utils';
 
@@ -87,7 +87,7 @@ export function TreeWithAllRequired<TTreeSchema extends TreeSchema>(schema: TTre
     return {
         ...schema,
         paramsSchemas: mapObjToObj(schema.paramsSchemas, (kind, params) => AllRequired(params)) as any,
-    }
+    };
 }
 
 /** Type of tree node which can occur anywhere in a tree conforming to tree schema `TTreeSchema`,
@@ -138,4 +138,42 @@ export function validateTree(schema: TreeSchema, tree: Tree, label: string): voi
         }
         throw new Error('FormatError');
     }
+}
+
+function treeSchemaToString_<TSchema extends TreeSchema>(schema: TSchema, defaults?: DefaultsForTree<TSchema>, markdown: boolean = false): string {
+    const out: string[] = [];
+    const bold = (str: string) => markdown ? `**${str}**` : str;
+    const code = (str: string) => markdown ? `\`${str}\`` : str;
+    out.push(`Tree schema:`);
+    for (const kind in schema.paramsSchemas) {
+        const params = schema.paramsSchemas[kind];
+        out.push(`  - ${bold(code(kind))}`);
+        if (kind === schema.rootKind) {
+            out.push('    [Root of the tree has to be of this kind]');
+        }
+        out.push(`    Params:${Object.keys(params).length > 0 ? '' : ' none'}`);
+        for (const key in params) {
+            const field = params[key];
+            let typeString = field.type.name;
+            if (typeString.startsWith('(') && typeString.endsWith(')')) {
+                typeString = typeString.slice(1, -1);
+            }
+            out.push(`      - ${bold(code(key + (field.required ? ': ' : '?: ')))}${code(typeString)}`);
+            const defaultValue = (defaults?.[kind] as any)?.[key];
+            if (field.description) {
+                out.push(`        ${field.description}`);
+            }
+            if (defaultValue !== undefined) {
+                out.push(`        Default: ${code(onelinerJsonString(defaultValue))}`);
+            }
+        }
+    }
+    return out.join(markdown ? '\n\n' : '\n');
+}
+
+export function treeSchemaToString<TSchema extends TreeSchema>(schema: TSchema, defaults?: DefaultsForTree<TSchema>): string {
+    return treeSchemaToString_(schema, defaults, false);
+}
+export function treeSchemaToMarkdown<TSchema extends TreeSchema>(schema: TSchema, defaults?: DefaultsForTree<TSchema>): string {
+    return treeSchemaToString_(schema, defaults, true);
 }
