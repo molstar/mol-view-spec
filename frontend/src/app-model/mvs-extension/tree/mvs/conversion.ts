@@ -58,7 +58,7 @@ const molstarNodesToCondense = new Set<MolstarKind>(['download', 'parse', 'traje
 
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
-    const full: FullMVSTree = addDefaults<typeof MVSTreeSchema>(mvsTree, MVSDefaults);
+    const full = addDefaults<typeof MVSTreeSchema>(mvsTree, MVSDefaults) as FullMVSTree;
     const converted = convertTree<FullMVSTree, MolstarTree>(full, mvsToMolstarConversionRules);
     if (converted.kind !== 'root') throw new Error("Root's type is not 'root' after conversion from MVS tree to Molstar tree.");
     const condensed = condenseTree<MolstarTree>(converted, molstarNodesToCondense);

@@ -7,9 +7,13 @@ Tree schema:
 
     [Root of the tree has to be of this kind]
 
+    Auxiliary node kind that only appears as the tree root.
+
     Params: none
 
   - **`download`**
+
+    This node instructs to retrieve a data resource.
 
     Params:
 
@@ -19,6 +23,8 @@ Tree schema:
 
   - **`parse`**
 
+    This node instructs to parse a data resource.
+
     Params:
 
       - **`format: `**`"mmcif" | "bcif" | "pdb"`
@@ -26,6 +32,8 @@ Tree schema:
         Format of the input data resource.
 
   - **`structure`**
+
+    This node instructs to create a structure from a parsed data resource. "Structure" refers to an internal representation of molecular coordinates without any visual representation.
 
     Params:
 
@@ -81,7 +89,27 @@ Tree schema:
 
         Default: `[1, 1, 1]`
 
+  - **`transform`**
+
+    This node instructs to rotate and/or translate structure coordinates.
+
+    Params:
+
+      - **`rotation?: `**`Array<number>`
+
+        Rotation matrix (3x3 matrix flattened in column major format (j*3+i indexing), this is equivalent to Fortran-order in numpy). This matrix will multiply the structure coordinates from the left. The default value is the identity matrix (corresponds to no rotation).
+
+        Default: `[1, 0, 0, 0, 1, 0, 0, 0, 1]`
+
+      - **`translation?: `**`[number, number, number]`
+
+        Translation vector, applied to the structure coordinates after rotation. The default value is the zero vector (corresponds to no translation).
+
+        Default: `[0, 0, 0]`
+
   - **`component`**
+
+    This node instructs to create a component (i.e. a subset of the parent structure).
 
     Params:
 
@@ -92,6 +120,8 @@ Tree schema:
         Default: `"all"`
 
   - **`component_from_uri`**
+
+    This node instructs to create a component, defined by an external annotation resource.
 
     Params:
 
@@ -139,6 +169,8 @@ Tree schema:
 
   - **`component_from_source`**
 
+    This node instructs to create a component, defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
+
     Params:
 
       - **`schema: `**`"whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"`
@@ -177,6 +209,8 @@ Tree schema:
 
   - **`representation`**
 
+    This node instructs to create a visual representation of a component.
+
     Params:
 
       - **`type: `**`"ball_and_stick" | "cartoon" | "surface"`
@@ -185,11 +219,13 @@ Tree schema:
 
   - **`color`**
 
+    This node instructs to apply color to a visual representation.
+
     Params:
 
-      - **`color: `**`HexColorT | ("white" | "gray" | "black" | "red" | "orange" | "yellow" | "green" | "cyan" | "blue" | "magenta")`
+      - **`color: `**`HexColor | ("white" | "gray" | "black" | "red" | "orange" | "yellow" | "green" | "cyan" | "blue" | "magenta")`
 
-        Color to apply to the representation. Can be either a color name (e.g. `"red"`) or hexadecimal code (e.g. `"#FF0011"`).
+        Color to apply to the representation. Can be either a color name (e.g. `"red"`) or a hexadecimal code (e.g. `"#FF0011"`).
 
       - **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water") | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>>`
 
@@ -198,6 +234,8 @@ Tree schema:
         Default: `"all"`
 
   - **`color_from_uri`**
+
+    This node instructs to apply colors to a visual representation. The colors are defined by an external annotation resource.
 
     Params:
 
@@ -239,6 +277,8 @@ Tree schema:
 
   - **`color_from_source`**
 
+    This node instructs to apply colors to a visual representation. The colors are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
+
     Params:
 
       - **`schema: `**`"whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"`
@@ -271,6 +311,8 @@ Tree schema:
 
   - **`label`**
 
+    This node instructs to add a label (textual visual representation) to a component.
+
     Params:
 
       - **`text: `**`string`
@@ -278,6 +320,8 @@ Tree schema:
         Content of the shown label.
 
   - **`label_from_uri`**
+
+    This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an external annotation resource.
 
     Params:
 
@@ -319,6 +363,8 @@ Tree schema:
 
   - **`label_from_source`**
 
+    This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
+
     Params:
 
       - **`schema: `**`"whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"`
@@ -351,6 +397,8 @@ Tree schema:
 
   - **`tooltip`**
 
+    This node instructs to add a tooltip to a component. "Tooltip" is a text which is not a part of the visualization but should be presented to the users when they interact with the component (typically, the tooltip will be shown somewhere on the screen when the user hovers over a visual representation of the component).
+
     Params:
 
       - **`text: `**`string`
@@ -358,6 +406,8 @@ Tree schema:
         Content of the shown tooltip.
 
   - **`tooltip_from_uri`**
+
+    This node instructs to add tooltips to parts of a structure. The tooltips are defined by an external annotation resource.
 
     Params:
 
@@ -399,6 +449,8 @@ Tree schema:
 
   - **`tooltip_from_source`**
 
+    This node instructs to add tooltips to parts of a structure. The tooltips are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
+
     Params:
 
       - **`schema: `**`"whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"`
@@ -431,6 +483,8 @@ Tree schema:
 
   - **`focus`**
 
+    This node instructs to set the camera focus to a component (zoom in).
+
     Params:
 
       - **`direction?: `**`[number, number, number]`
@@ -445,31 +499,9 @@ Tree schema:
 
         Default: `[0, 1, 0]`
 
-  - **`transform`**
-
-    Params:
-
-      - **`rotation?: `**`Array<number>`
-
-        Rotation matrix (3x3 matrix flattened in column major format (j*3+i indexing), this is equivalent to Fortran-order in numpy). This matrix will multiply the structure coordinates from the left. The default value is the identity matrix (corresponds to no rotation).
-
-        Default: `[1, 0, 0, 0, 1, 0, 0, 0, 1]`
-
-      - **`translation?: `**`[number, number, number]`
-
-        Translation vector, applied to the structure coordinates after rotation. The default value is the zero vector (corresponds to no translation).
-
-        Default: `[0, 0, 0]`
-
-  - **`canvas`**
-
-    Params:
-
-      - **`background_color: `**`HexColorT | ("white" | "gray" | "black" | "red" | "orange" | "yellow" | "green" | "cyan" | "blue" | "magenta")`
-
-        Color of the canvas background. Can be either a color name (e.g. `"red"`) or a hexadecimal code (e.g. `"#FF0011"`).
-
   - **`camera`**
+
+    This node instructs to set the camera position and orientation.
 
     Params:
 
@@ -486,3 +518,13 @@ Tree schema:
         Vector which will be aligned with the screen Y axis.
 
         Default: `[0, 1, 0]`
+
+  - **`canvas`**
+
+    This node sets canvas properties.
+
+    Params:
+
+      - **`background_color: `**`HexColor | ("white" | "gray" | "black" | "red" | "orange" | "yellow" | "green" | "cyan" | "blue" | "magenta")`
+
+        Color of the canvas background. Can be either a color name (e.g. `"red"`) or a hexadecimal code (e.g. `"#FF0011"`).

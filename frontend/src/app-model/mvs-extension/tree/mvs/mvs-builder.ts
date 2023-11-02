@@ -19,7 +19,7 @@ class _Base<TKind extends MVSKind> {
 
     /** Create a new node, append as child to current _node, and return the new node */
     protected addChild<TChildKind extends MVSKind>(kind: TChildKind, params: ParamsOfKind<MVSTree, TChildKind>) {
-        const allowedParamNames = Object.keys(MVSTreeSchema.paramsSchemas[kind]) as (keyof ParamsOfKind<MVSTree, TChildKind>)[];
+        const allowedParamNames = Object.keys(MVSTreeSchema.nodes[kind].params) as (keyof ParamsOfKind<MVSTree, TChildKind>)[];
         const node = {
             kind,
             params: pickObjectKeys(params, allowedParamNames) as unknown,

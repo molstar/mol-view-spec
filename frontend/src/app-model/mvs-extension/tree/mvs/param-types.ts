@@ -68,7 +68,7 @@ export function isHexColorString(str: any): str is HexColor {
 }
 
 export const HexColorT = new t.Type<HexColor>(
-    'HexColorT',
+    'HexColor',
     ((value: any) => typeof value === 'string') as any,
     (value, ctx) => isHexColorString(value) ? { _tag: 'Right', right: value } : { _tag: 'Left', left: [{ value: value, context: ctx, message: `"${value}" is not a valid hex color string` }] },
     value => value

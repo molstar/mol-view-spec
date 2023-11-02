@@ -54,47 +54,50 @@ export function getChildren<TTree extends Tree>(tree: TTree): SubTree<TTree>[] {
 }
 
 
-/** Definition of tree node type, specifying its kind and types of params */
-export interface NodeSchema<TKind extends string = string, TParamsSchema extends ParamsSchema = ParamsSchema> {
-    kind: TKind,
-    paramsSchema: TParamsSchema,
-}
-export function NodeSchema<TKind extends string, TParamsSchema extends ParamsSchema>(kind: TKind, paramsSchema: TParamsSchema): NodeSchema<TKind, TParamsSchema> {
-    return { kind, paramsSchema };
-}
-
-/** Type of tree node which conforms to node schema `TNodeSchema` */
-export type NodeFor<TNodeSchema extends NodeSchema> = TNodeSchema extends NodeSchema<infer K, infer P> ? Node<K, ValuesFor<P>> : never
-
+type ParamsSchemas = { [kind: string]: ParamsSchema }
 
 /** Definition of tree type, specifying allowed node kinds, types of their params, and the required kind for the root */
-export interface TreeSchema<TSchemas extends { [kind: string]: ParamsSchema } = { [kind: string]: ParamsSchema }, TRootKind extends string & keyof TSchemas = string> {
+export interface TreeSchema<TParamsSchemas extends ParamsSchemas = ParamsSchemas, TRootKind extends keyof TParamsSchemas = string> {
     rootKind: TRootKind,
-    paramsSchemas: TSchemas,
+    nodes: {
+        [kind in keyof TParamsSchemas]: {
+            params: TParamsSchemas[kind],
+            description?: string,
+        }
+    },
 }
-export function TreeSchema<TTreeSchema extends TreeSchema>(schema: TTreeSchema): TTreeSchema {
-    return schema;
+export function TreeSchema<P extends ParamsSchemas = ParamsSchemas, R extends keyof P = string>(schema: TreeSchema<P, R>): TreeSchema<P, R> {
+    return schema as any;
 }
+
+/** ParamsSchemas per node kind */
+type ParamsSchemasOf<TTreeSchema extends TreeSchema> = TTreeSchema extends TreeSchema<infer TParamsSchema, any> ? TParamsSchema : never;
+
 
 /** Variation of schema `TTreeSchema` where all param fields are required */
 export type TreeWithAllRequired<TTreeSchema extends TreeSchema> = {
     rootKind: TTreeSchema['rootKind'],
-    paramsSchemas: { [kind in keyof TTreeSchema['paramsSchemas']]: AllRequired<TTreeSchema['paramsSchemas'][kind]> },
+    nodes: {
+        [kind in keyof TTreeSchema['nodes']]: {
+            params: AllRequired<TTreeSchema['nodes'][kind]['params']>,
+            description?: string,
+        }
+    },
 }
 
 /** Create of copy of a params schema where all fields are required */
 export function TreeWithAllRequired<TTreeSchema extends TreeSchema>(schema: TTreeSchema): TreeWithAllRequired<TTreeSchema> {
     return {
         ...schema,
-        paramsSchemas: mapObjToObj(schema.paramsSchemas, (kind, params) => AllRequired(params)) as any,
+        nodes: mapObjToObj(schema.nodes, (kind, node) => ({ ...node, params: AllRequired(node.params) })) as any,
     };
 }
 
 /** Type of tree node which can occur anywhere in a tree conforming to tree schema `TTreeSchema`,
  * optionally narrowing down to a given node kind */
-export type NodeForTree<TTreeSchema extends TreeSchema, TKind extends keyof TTreeSchema['paramsSchemas'] = keyof TTreeSchema['paramsSchemas']> = TTreeSchema extends TreeSchema<infer TSchemas, any>
-    ? { [key in keyof TSchemas]: Node<key & string, ValuesFor<TSchemas[key]>> }[TKind]
-    : never
+
+export type NodeForTree<TTreeSchema extends TreeSchema, TKind extends keyof ParamsSchemasOf<TTreeSchema> = keyof ParamsSchemasOf<TTreeSchema>>
+    = { [key in keyof ParamsSchemasOf<TTreeSchema>]: Node<key & string, ValuesFor<ParamsSchemasOf<TTreeSchema>[key]>> }[TKind]
 
 /** Type of tree node which can occur as the root of a tree conforming to tree schema `TTreeSchema` */
 export type RootForTree<TTreeSchema extends TreeSchema> = NodeForTree<TTreeSchema, TTreeSchema['rootKind']>
@@ -103,7 +106,7 @@ export type RootForTree<TTreeSchema extends TreeSchema> = NodeForTree<TTreeSchem
 export type TreeFor<TTreeSchema extends TreeSchema> = Tree<NodeForTree<TTreeSchema>, RootForTree<TTreeSchema> & NodeForTree<TTreeSchema>>
 
 /** Type of default parameter values for each node kind in a tree schema `TTreeSchema` */
-export type DefaultsForTree<TTreeSchema extends TreeSchema> = { [kind in keyof TTreeSchema['paramsSchemas']]: DefaultsFor<TTreeSchema['paramsSchemas'][kind]> }
+export type DefaultsForTree<TTreeSchema extends TreeSchema> = { [kind in keyof TTreeSchema['nodes']]: DefaultsFor<TTreeSchema['nodes'][kind]['params']> }
 
 
 /** Return `undefined` if a tree conforms to the given schema,
@@ -114,7 +117,7 @@ export type DefaultsForTree<TTreeSchema extends TreeSchema> = { [kind in keyof T
  */
 export function treeValidationIssues(schema: TreeSchema, tree: Tree, options: { requireAll?: boolean, noExtra?: boolean, anyRoot?: boolean } = {}): string[] | undefined {
     if (!options.anyRoot && tree.kind !== schema.rootKind) return [`Invalid root node kind "${tree.kind}", root must be of kind "${schema.rootKind}"`];
-    const paramsSchema = schema.paramsSchemas[tree.kind];
+    const paramsSchema = schema.nodes[tree.kind].params;
     if (!paramsSchema) return [`Unknown node kind "${tree.kind}"`];
     const issues = paramsValidationIssues(paramsSchema, getParams(tree), options);
     if (issues) return [`Invalid parameters for node of kind "${tree.kind}":`, ...issues.map(s => '  ' + s)];
@@ -145,11 +148,14 @@ function treeSchemaToString_<TSchema extends TreeSchema>(schema: TSchema, defaul
     const bold = (str: string) => markdown ? `**${str}**` : str;
     const code = (str: string) => markdown ? `\`${str}\`` : str;
     out.push(`Tree schema:`);
-    for (const kind in schema.paramsSchemas) {
-        const params = schema.paramsSchemas[kind];
+    for (const kind in schema.nodes) {
+        const { description, params } = schema.nodes[kind];
         out.push(`  - ${bold(code(kind))}`);
         if (kind === schema.rootKind) {
             out.push('    [Root of the tree has to be of this kind]');
+        }
+        if (description) {
+            out.push(`    ${description}`);
         }
         out.push(`    Params:${Object.keys(params).length > 0 ? '' : ' none'}`);
         for (const key in params) {

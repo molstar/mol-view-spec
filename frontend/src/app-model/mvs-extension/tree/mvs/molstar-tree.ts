@@ -5,8 +5,8 @@
  */
 
 import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
-import { NodeForTree, TreeFor, TreeSchema } from '../generic/tree-schema';
 import { RequiredField, bool } from '../generic/params-schema';
+import { NodeForTree, TreeFor, TreeSchema } from '../generic/tree-schema';
 import { FullMVSTreeSchema } from './mvs-tree';
 import { MolstarParseFormatT } from './param-types';
 
@@ -14,35 +14,49 @@ import { MolstarParseFormatT } from './param-types';
 /** Schema for `MolstarTree` (auxiliary tree representation before creating a real Molstar state) */
 export const MolstarTreeSchema = TreeSchema({
     rootKind: 'root',
-    paramsSchemas: {
-        ...FullMVSTreeSchema.paramsSchemas,
+    nodes: {
+        ...FullMVSTreeSchema.nodes,
         download: {
-            ...FullMVSTreeSchema.paramsSchemas.download,
-            is_binary: RequiredField(bool),
+            ...FullMVSTreeSchema.nodes.download,
+            params: {
+                ...FullMVSTreeSchema.nodes.download.params,
+                is_binary: RequiredField(bool),
+            },
         },
         parse: {
-            format: RequiredField(MolstarParseFormatT),
+            ...FullMVSTreeSchema.nodes.parse,
+            params: {
+                format: RequiredField(MolstarParseFormatT),
+            },
         },
+        /** Auxiliary node corresponding to Molstar's TrajectoryFrom*. */
         trajectory: {
-            format: RequiredField(MolstarParseFormatT),
-            ...pickObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index'] as const),
+            description: "Auxiliary node corresponding to Molstar's TrajectoryFrom*.",
+            params: {
+                format: RequiredField(MolstarParseFormatT),
+                ...pickObjectKeys(FullMVSTreeSchema.nodes.structure.params, ['block_header', 'block_index'] as const),
+            },
         },
-        model: pickObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['model_index'] as const),
-        structure: omitObjectKeys(FullMVSTreeSchema.paramsSchemas.structure, ['block_header', 'block_index', 'model_index'] as const),
-        /** Just to collect multiple transform nodes */
-        transforms: {},
-        color_from_uri: {
-            ...FullMVSTreeSchema.paramsSchemas.color_from_uri,
+        /** Auxiliary node corresponding to Molstar's ModelFromTrajectory. */
+        model: {
+            description: "Auxiliary node corresponding to Molstar's ModelFromTrajectory.",
+            params: pickObjectKeys(FullMVSTreeSchema.nodes.structure.params, ['model_index'] as const),
         },
-        color_from_source: {
-            ...FullMVSTreeSchema.paramsSchemas.color_from_source,
+        structure: {
+            ...FullMVSTreeSchema.nodes.structure,
+            params: omitObjectKeys(FullMVSTreeSchema.nodes.structure.params, ['block_header', 'block_index', 'model_index'] as const),
+        },
+        /** Auxiliary node collecting multiple transform nodes. */
+        transforms: {
+            description: 'Auxiliary node collecting multiple transform nodes.',
+            params: {},
         },
     }
 });
 
 
 /** Node kind in a `MolstarTree` */
-export type MolstarKind = keyof typeof MolstarTreeSchema.paramsSchemas;
+export type MolstarKind = keyof typeof MolstarTreeSchema.nodes;
 
 /** Node in a `MolstarTree` */
 export type MolstarNode<TKind extends MolstarKind = MolstarKind> = NodeForTree<typeof MolstarTreeSchema, TKind>
