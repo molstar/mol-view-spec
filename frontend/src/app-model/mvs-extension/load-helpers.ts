@@ -30,15 +30,14 @@ import { ElementOfSet, canonicalJsonString, decodeColor, distinct, isDefined, st
 /** Function responsible for loading a tree node `node` into Mol*.
  * Should apply changes within `update` but not commit them.
  * Should modify `context` accordingly, if it is needed for loading other nodes later.
- */
-export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
+ * `msParent` is the result of loading the node's parent into Mol* state hierarchy (or the hierarchy root in case of root node). */
+export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msParent: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
 
 /** Loading actions for loading a tree into Mol*, per node kind. */
 export type LoadingActions<TTree extends Tree, TContext> = { [kind in Kind<SubTree<TTree>>]?: LoadingAction<SubTreeOfKind<TTree, kind>, TContext> }
 
 /** Load a tree into Mol*, by applying loading actions in DFS order and then commiting at once.
- * If `deletePrevious`, remove all objects in the current Mol* state; otherwise add to the current state. 
- */
+ * If `deletePrevious`, remove all objects in the current Mol* state; otherwise add to the current state. */
 export async function loadTree<TTree extends Tree, TContext>(plugin: PluginContext, tree: TTree, loadingActions: LoadingActions<TTree, TContext>, context: TContext, deletePrevious: boolean) {
     const mapping = new Map<SubTree<TTree>, StateObjectSelector | undefined>();
     const update = plugin.build();
@@ -50,9 +49,9 @@ export async function loadTree<TTree extends Tree, TContext>(plugin: PluginConte
         const kind: Kind<typeof node> = node.kind;
         const action = loadingActions[kind] as LoadingAction<typeof node, TContext> | undefined;
         if (action) {
-            const msTarget = parent ? mapping.get(parent) : msRoot;
-            if (msTarget) {
-                const msNode = action(update, msTarget, node, context);
+            const msParent = parent ? mapping.get(parent) : msRoot;
+            if (msParent) {
+                const msNode = action(update, msParent, node, context);
                 mapping.set(node, msNode);
             } else {
                 console.warn(`No target found for this "${node.kind}" node`);
@@ -86,7 +85,7 @@ export function transformFromRotationTranslation(rotation: number[] | null | und
     return T;
 }
 
-/** Return an array of props for `TransformStructureConformation` transformers for all 'transform' nodes applied to a 'structure' node. */
+/** Create an array of props for `TransformStructureConformation` transformers from all 'transform' nodes applied to a 'structure' node. */
 export function transformProps(node: SubTreeOfKind<MolstarTree, 'structure'>): StateTransformer.Params<TransformStructureConformation>[] {
     const result = [] as StateTransformer.Params<TransformStructureConformation>[];
     const transforms = getChildren(node).filter(c => c.kind === 'transform') as MolstarNode<'transform'>[];
@@ -150,7 +149,7 @@ export function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structur
                     selector: componentPropsFromSelector(parent.params.selector),
                 });
             } else if (parent?.kind === 'component_from_uri' || parent?.kind === 'component_from_source') {
-                const p = componentFromUriOrSourceProps(parent, context);
+                const p = componentFromXProps(parent, context);
                 if (isDefined(p.annotationId) && isDefined(p.fieldName) && isDefined(p.fieldValues)) {
                     inlineTooltips.push({
                         text: node.params.text,
@@ -172,7 +171,7 @@ export function isPhantomComponent(node: SubTreeOfKind<MolstarTree, 'component' 
     // These nodes could theoretically be removed when converting MVS to Molstar tree, but would get very tricky if we allow nested components
 }
 
-/** Return props for `StructureFromModel` transformers for a 'structure' node. */
+/** Create props for `StructureFromModel` transformer from a structure node. */
 export function structureProps(node: MolstarNode<'structure'>): StateTransformer.Params<StructureFromModel> {
     const params = node.params;
     switch (params.kind) {
@@ -209,6 +208,7 @@ export function structureProps(node: MolstarNode<'structure'>): StateTransformer
     }
 }
 
+/** Create value for `type` prop for `StructureComponent` transformer based on a MVS selector. */
 export function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 'component'>['selector']): StructureComponentParams['type'] {
     if (selector === undefined) {
         return SelectorAll;
@@ -221,7 +221,8 @@ export function componentPropsFromSelector(selector?: ParamsOfKind<MolstarTree, 
     }
 }
 
-export function labelFromUriOrSourceProps(node: MolstarNode<'label_from_uri' | 'label_from_source'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
+/** Create props for `StructureRepresentation3D` transformer from a label_from_* node. */
+export function labelFromXProps(node: MolstarNode<'label_from_uri' | 'label_from_source'>, context: MolstarLoadingContext): Partial<StateTransformer.Params<StructureRepresentation3D>> {
     const annotationId = context.annotationMap?.get(node);
     const fieldName = node.params.field_name;
     const nearestReprNode = context.nearestReprMap?.get(node);
@@ -231,7 +232,8 @@ export function labelFromUriOrSourceProps(node: MolstarNode<'label_from_uri' | '
     };
 }
 
-export function componentFromUriOrSourceProps(node: MolstarNode<'component_from_uri' | 'component_from_source'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
+/** Create props for `AnnotationStructureComponent` transformer from a component_from_* node. */
+export function componentFromXProps(node: MolstarNode<'component_from_uri' | 'component_from_source'>, context: MolstarLoadingContext): Partial<AnnotationStructureComponentProps> {
     const annotationId = context.annotationMap?.get(node);
     const { field_name, field_values } = node.params;
     return {
@@ -242,6 +244,7 @@ export function componentFromUriOrSourceProps(node: MolstarNode<'component_from_
     };
 }
 
+/** Create props for `StructureRepresentation3D` transformer from a representation node. */
 export function representationProps(params: ParamsOfKind<MolstarTree, 'representation'>): Partial<StateTransformer.Params<StructureRepresentation3D>> {
     switch (params.type) {
         case 'cartoon':
@@ -262,6 +265,7 @@ export function representationProps(params: ParamsOfKind<MolstarTree, 'represent
     }
 }
 
+/** Create value for `colorTheme` prop for `StructureRepresentation3D` transformer from a representation node based on color* nodes in its subtree. */
 export function colorThemeForNode(node: SubTreeOfKind<MolstarTree, 'color' | 'color_from_uri' | 'color_from_source' | 'representation'> | undefined, context: MolstarLoadingContext): StateTransformer.Params<StructureRepresentation3D>['colorTheme'] {
     if (node?.kind === 'representation') {
         const children = getChildren(node).filter(c => c.kind === 'color' || c.kind === 'color_from_uri' || c.kind === 'color_from_source') as MolstarNode<'color' | 'color_from_uri' | 'color_from_source'>[];
@@ -315,6 +319,9 @@ function appliesColorToWholeRepr(node: MolstarNode<'color' | 'color_from_uri' | 
     }
 }
 
+/** Create a mapping of nearest representation nodes for each node in the tree
+ * (to transfer coloring to label nodes smartly).
+ * Only considers nodes within the same 'structure' subtree. */
 export function makeNearestReprMap(root: MolstarTree) {
     const map = new Map<MolstarNode, MolstarNode<'representation'>>();
     // Propagate up:

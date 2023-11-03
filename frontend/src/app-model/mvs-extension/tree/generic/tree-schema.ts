@@ -26,8 +26,7 @@ export type Kind<TNode extends Node> = TNode['kind']
 export type Params<TNode extends Node> = NonNullable<TNode['params']>
 
 
-/** Tree (where the root node is of type `TRoot` and other nodes are of type `TNode`),
- * i.e. a node with optional children */
+/** Tree (i.e. a node with optional children) where the root node is of type `TRoot` and other nodes are of type `TNode` */
 export type Tree<TNode extends Node<string, {}> = Node<string, {}>, TRoot extends TNode = TNode> =
     TRoot & {
         children?: Tree<TNode, TNode>[],
@@ -41,7 +40,7 @@ export type SubTreeOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>>
 type RootOfKind<TTree extends Tree, TKind extends Kind<TTree>> = Extract<TTree, Tree<any, Node<TKind>>>
 
 /** Params type for a given kind type within a tree */
-export type ParamsOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>> = Kind<TTree>> = NonNullable<SubTreeOfKind<TTree, TKind>['params']>
+export type ParamsOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>> = Kind<SubTree<TTree>>> = NonNullable<SubTreeOfKind<TTree, TKind>['params']>
 
 
 /** Get params from a tree node */

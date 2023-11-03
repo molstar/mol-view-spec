@@ -32,7 +32,8 @@ const DefaultCameraFocusOptions = {
 const DefaultCanvasBackgroundColor = ColorNames.white;
 
 
-export async function focusCameraNode(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'camera'>) {
+/** Set the camera based on a camera node params. */
+export async function setCamera(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'camera'>) {
     const target = Vec3.create(...params.target);
     const position = Vec3.create(...params.position);
     const up = Vec3.create(...params.up);
@@ -40,7 +41,9 @@ export async function focusCameraNode(plugin: PluginContext, params: ParamsOfKin
     await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
 }
 
-export async function focusStructureNode(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, params: ParamsOfKind<MolstarTree, 'focus'> = MVSDefaults.focus) {
+/** Focus the camera on the bounding sphere of a (sub)structure (or on the whole scene if `structureNodeSelector` is null).
+ * Orient the camera based on a focus node params. */
+export async function setFocus(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, params: ParamsOfKind<MolstarTree, 'focus'> = MVSDefaults.focus) {
     let structure: Structure | undefined = undefined;
     if (structureNodeSelector) {
         const cell = plugin.state.data.cells.get(structureNodeSelector.ref);
@@ -68,12 +71,15 @@ export async function focusStructureNode(plugin: PluginContext, structureNodeSel
     }
 }
 
-function getFocusDistance(camera: Camera, center: Vec3, radius: number) {
-    const p = camera.getFocus(center, radius);
+/** Calculate the necessary distance between the camera position and center of the target,
+ * if we want to zoom the target with the given radius. */
+function getFocusDistance(camera: Camera, target: Vec3, radius: number) {
+    const p = camera.getFocus(target, radius);
     if (!p.position || !p.target) return undefined;
     return Vec3.distance(p.position, p.target);
 }
 
+/** Compute the bounding sphere of the whole scene. */
 function getPluginBoundingSphere(plugin: PluginContext) {
     const renderObjects = getRenderObjects(plugin, false);
     const spheres = renderObjects.map(r => r.values.boundingSphere.ref.value).filter(sphere => sphere.radius > 0);
@@ -98,6 +104,7 @@ function boundingSphereOfSpheres(spheres: Sphere3D[]): Sphere3D {
     return boundaryHelper.getSphere();
 }
 
+/** Set canvas properties based on a canvas node params. */
 export function setCanvas(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'canvas'> | undefined) {
     const backgroundColor = decodeColor(params?.background_color) ?? DefaultCanvasBackgroundColor;
     if (backgroundColor !== plugin.canvas3d?.props.renderer.backgroundColor) {

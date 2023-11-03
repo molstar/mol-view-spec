@@ -21,7 +21,7 @@ import { CustomTooltipsLabelProvider, CustomTooltipsProvider } from './additions
 import { makeMultilayerColorThemeProvider } from './additions/multilayer-color-theme';
 
 
-/** Registers a ton of stuff related to loading MolViewSpec files */
+/** Registers everything needed for loading MolViewSpec files */
 export const MolViewSpec = PluginBehavior.create<{ autoAttach: boolean }>({
     name: 'molviewspec',
     category: 'misc',
