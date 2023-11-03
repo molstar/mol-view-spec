@@ -121,10 +121,10 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
     },
     structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext): StateObjectSelector {
         const props = structureProps(node);
-        const result: StateObjectSelector = update.to(msTarget).apply(StructureFromModel, props).selector;
-        // for (const t of transformProps(node)) {
-        //     result = update.to(result).apply(TransformStructureConformation, t).selector;
-        // }
+        let result: StateObjectSelector = update.to(msTarget).apply(StructureFromModel, props).selector;
+        for (const t of transformProps(node)) {
+            result = update.to(result).apply(TransformStructureConformation, t).selector;
+        }
         const annotationTooltips = collectAnnotationTooltips(node, context);
         const inlineTooltips = collectInlineTooltips(node, context);
         if (annotationTooltips.length + inlineTooltips.length > 0) {
@@ -195,16 +195,6 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
     label_from_source(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'label_from_source'>, context: MolstarLoadingContext): StateObjectSelector {
         const props = labelFromUriOrSourceProps(node, context);
         return update.to(msTarget).apply(StructureRepresentation3D, props).selector;
-    },
-    transforms(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'transforms'>, context: MolstarLoadingContext): StateObjectSelector {
-        let result = msTarget;
-        for (const transform of getChildren(node)) {
-            if (transform.kind !== 'transform' || !transform.params) continue;
-            const { rotation, translation } = transform.params;
-            const matrix = transformFromRotationTranslation(rotation, translation);
-            result = update.to(result).apply(TransformStructureConformation, { transform: { name: 'matrix', params: { data: matrix } } }).selector;
-        }
-        return result;
     },
     focus(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'focus'>, context: MolstarLoadingContext): StateObjectSelector {
         context.focus = { kind: 'focus', focusTarget: msTarget, params: node.params };

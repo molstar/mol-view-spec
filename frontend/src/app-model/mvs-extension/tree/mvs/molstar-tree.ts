@@ -49,16 +49,6 @@ export const MolstarTreeSchema = TreeSchema({
             parent: ['model'],
             params: omitObjectKeys(FullMVSTreeSchema.nodes.structure.params, ['block_header', 'block_index', 'model_index'] as const),
         },
-        /** Auxiliary node collecting multiple transform nodes. */
-        transforms: {
-            description: 'Auxiliary node collecting multiple transform nodes.',
-            parent: ['structure'],
-            params: {},
-        },
-        transform: {
-            ...FullMVSTreeSchema.nodes.transform,
-            parent: ['transforms'],
-        },
     }
 });
 
