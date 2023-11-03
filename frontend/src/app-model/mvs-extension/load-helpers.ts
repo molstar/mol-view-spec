@@ -6,7 +6,7 @@
 
 import { Mat3, Mat4, Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { StructureComponentParams } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
-import { StructureFromModel } from 'molstar/lib/mol-plugin-state/transforms/model';
+import { StructureFromModel, TransformStructureConformation } from 'molstar/lib/mol-plugin-state/transforms/model';
 import { StructureRepresentation3D } from 'molstar/lib/mol-plugin-state/transforms/representation';
 import { StateBuilder, StateObjectSelector, StateTransformer } from 'molstar/lib/mol-state';
 
@@ -20,7 +20,7 @@ import { CustomTooltipsProps } from './additions/custom-tooltips-prop';
 import { MultilayerColorThemeName, MultilayerColorThemeProps, NoColor, SelectorAll } from './additions/multilayer-color-theme';
 import { rowToExpression, rowsToExpression } from './helpers/selections';
 import { MolstarLoadingContext } from './load';
-import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getChildren, getParams } from './tree/generic/tree-schema';
+import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getChildren } from './tree/generic/tree-schema';
 import { dfs } from './tree/generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './tree/mvs/molstar-tree';
 import { DefaultColor } from './tree/mvs/mvs-defaults';
@@ -76,6 +76,16 @@ export function transformFromRotationTranslation(rotation: number[] | null | und
     }
     if (!Mat4.isRotationAndTranslation(T)) throw new Error(`'rotation' param for 'transform' is not a valid rotation matrix: ${rotation}`);
     return T;
+}
+export function transformProps(node: SubTreeOfKind<MolstarTree, 'structure'>): StateTransformer.Params<TransformStructureConformation>[] {
+    const result = [] as StateTransformer.Params<TransformStructureConformation>[];
+    const transforms = getChildren(node).filter(c => c.kind === 'transform') as MolstarNode<'transform'>[];
+    for (const transform of transforms) {
+        const { rotation, translation } = transform.params;
+        const matrix = transformFromRotationTranslation(rotation, translation);
+        result.push({ transform: { name: 'matrix', params: { data: matrix } } });
+    }
+    return result;
 }
 
 /** Collect distinct annotation specs from all nodes in `tree` and set context.annotationMap[node] to respective annotationIds */
@@ -152,7 +162,7 @@ export function isPhantomComponent(node: SubTreeOfKind<MolstarTree, 'component' 
 }
 
 export function structureProps(node: MolstarNode<'structure'>): StateTransformer.Params<StructureFromModel> {
-    const params = getParams(node);
+    const params = node.params;
     switch (params.kind) {
         case 'model':
             return {

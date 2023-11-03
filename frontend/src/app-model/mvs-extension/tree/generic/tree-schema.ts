@@ -4,7 +4,7 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { mapObjToObj, onelinerJsonString } from '../../helpers/utils';
+import { isReallyObject, mapObjToObj, onelinerJsonString } from '../../helpers/utils';
 import { AllRequired, DefaultsFor, ParamsSchema, ValuesFor, paramsValidationIssues } from './params-schema';
 import { treeToString } from './tree-utils';
 
@@ -63,6 +63,7 @@ export interface TreeSchema<TParamsSchemas extends ParamsSchemas = ParamsSchemas
         [kind in keyof TParamsSchemas]: {
             params: TParamsSchemas[kind],
             description?: string,
+            parent?: (string & keyof TParamsSchemas)[],
         }
     },
 }
@@ -81,6 +82,7 @@ export type TreeWithAllRequired<TTreeSchema extends TreeSchema> = {
         [kind in keyof TTreeSchema['nodes']]: {
             params: AllRequired<TTreeSchema['nodes'][kind]['params']>,
             description?: string,
+            parent?: TTreeSchema['nodes'][kind]['parent'],
         }
     },
 }
@@ -115,14 +117,18 @@ export type DefaultsForTree<TTreeSchema extends TreeSchema> = { [kind in keyof T
  * If `options.noExtra` is true, presence of any extra parameters is treated as an issue.
  * If `options.anyRoot` is true, the kind of the root node is not enforced.
  */
-export function treeValidationIssues(schema: TreeSchema, tree: Tree, options: { requireAll?: boolean, noExtra?: boolean, anyRoot?: boolean } = {}): string[] | undefined {
+export function treeValidationIssues(schema: TreeSchema, tree: Tree, options: { requireAll?: boolean, noExtra?: boolean, anyRoot?: boolean, parent?: string } = {}): string[] | undefined {
+    if (!isReallyObject(tree)) return [`Node must be an object, not ${tree}`];
     if (!options.anyRoot && tree.kind !== schema.rootKind) return [`Invalid root node kind "${tree.kind}", root must be of kind "${schema.rootKind}"`];
-    const paramsSchema = schema.nodes[tree.kind].params;
-    if (!paramsSchema) return [`Unknown node kind "${tree.kind}"`];
-    const issues = paramsValidationIssues(paramsSchema, getParams(tree), options);
+    const nodeSchema = schema.nodes[tree.kind];
+    if (!nodeSchema) return [`Unknown node kind "${tree.kind}"`];
+    if (nodeSchema.parent && (options.parent !== undefined) && !nodeSchema.parent.includes(options.parent)) {
+        return [`Node of kind "${tree.kind}" cannot appear as a child of "${options.parent}". Allowed parents for "${tree.kind}" are: ${nodeSchema.parent.map(s => `"${s}"`).join(', ')}`];
+    }
+    const issues = paramsValidationIssues(nodeSchema.params, getParams(tree), options);
     if (issues) return [`Invalid parameters for node of kind "${tree.kind}":`, ...issues.map(s => '  ' + s)];
     for (const child of getChildren(tree)) {
-        const issues = treeValidationIssues(schema, child, { ...options, anyRoot: true });
+        const issues = treeValidationIssues(schema, child, { ...options, anyRoot: true, parent: tree.kind });
         if (issues) return issues;
     }
     return undefined;
@@ -149,14 +155,15 @@ function treeSchemaToString_<TSchema extends TreeSchema>(schema: TSchema, defaul
     const code = (str: string) => markdown ? `\`${str}\`` : str;
     out.push(`Tree schema:`);
     for (const kind in schema.nodes) {
-        const { description, params } = schema.nodes[kind];
+        const { description, params, parent } = schema.nodes[kind];
         out.push(`  - ${bold(code(kind))}`);
         if (kind === schema.rootKind) {
-            out.push('    [Root of the tree has to be of this kind]');
+            out.push('    [Root of the tree must be of this kind]');
         }
         if (description) {
             out.push(`    ${description}`);
         }
+        out.push(`    Parent: ${!parent ? 'any' : parent.length === 0 ? 'none' : parent.map(code).join(' or ')}`);
         out.push(`    Params:${Object.keys(params).length > 0 ? '' : ' none'}`);
         for (const key in params) {
             const field = params[key];

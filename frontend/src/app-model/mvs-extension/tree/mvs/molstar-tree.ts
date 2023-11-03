@@ -32,6 +32,7 @@ export const MolstarTreeSchema = TreeSchema({
         /** Auxiliary node corresponding to Molstar's TrajectoryFrom*. */
         trajectory: {
             description: "Auxiliary node corresponding to Molstar's TrajectoryFrom*.",
+            parent: ['parse'],
             params: {
                 format: RequiredField(MolstarParseFormatT),
                 ...pickObjectKeys(FullMVSTreeSchema.nodes.structure.params, ['block_header', 'block_index'] as const),
@@ -40,16 +41,23 @@ export const MolstarTreeSchema = TreeSchema({
         /** Auxiliary node corresponding to Molstar's ModelFromTrajectory. */
         model: {
             description: "Auxiliary node corresponding to Molstar's ModelFromTrajectory.",
+            parent: ['trajectory'],
             params: pickObjectKeys(FullMVSTreeSchema.nodes.structure.params, ['model_index'] as const),
         },
         structure: {
             ...FullMVSTreeSchema.nodes.structure,
+            parent: ['model'],
             params: omitObjectKeys(FullMVSTreeSchema.nodes.structure.params, ['block_header', 'block_index', 'model_index'] as const),
         },
         /** Auxiliary node collecting multiple transform nodes. */
         transforms: {
             description: 'Auxiliary node collecting multiple transform nodes.',
+            parent: ['structure'],
             params: {},
+        },
+        transform: {
+            ...FullMVSTreeSchema.nodes.transform,
+            parent: ['transforms'],
         },
     }
 });

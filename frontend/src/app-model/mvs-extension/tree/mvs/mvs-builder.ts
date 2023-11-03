@@ -186,7 +186,7 @@ export function builderDemo() {
     cif.modelStructure({ model_index: 2 }).component().representation().color({ color: HexColor('#FFFF00') });
 
     cif.modelStructure({ model_index: 0 }).transform({ translation: [30, 0, 0] }).component().representation().color({ color: HexColor('#ff88bb') });
-    cif.modelStructure({ model_index: '0' as any }).transform({ translation: [60, 0, 0], rotation: [0, 1, 0, -1, 0, 0, 0, 0, 1] }).component().representation().color({ color: HexColor('#aa0077') });
+    cif.modelStructure({ model_index: 0 as any }).transform({ translation: [60, 0, 0], rotation: [0, 1, 0, -1, 0, 0, 0, 0, 1] }).component().representation().color({ color: HexColor('#aa0077') });
 
     return builder.getState();
 }

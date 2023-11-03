@@ -17,7 +17,7 @@ import { CustomLabelProps, CustomLabelRepresentationProvider } from './additions
 import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { focusCameraNode, focusStructureNode, setCanvas } from './camera';
 import { canonicalJsonString } from './helpers/utils';
-import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUriOrSourceProps, componentPropsFromSelector, isPhantomComponent, labelFromUriOrSourceProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformFromRotationTranslation } from './load-helpers';
+import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUriOrSourceProps, componentPropsFromSelector, isPhantomComponent, labelFromUriOrSourceProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformFromRotationTranslation, transformProps } from './load-helpers';
 import { ParamsOfKind, SubTreeOfKind, getChildren, validateTree } from './tree/generic/tree-schema';
 import { convertMvsToMolstar } from './tree/mvs/conversion';
 import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
@@ -121,7 +121,10 @@ const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> 
     },
     structure(update: StateBuilder.Root, msTarget: StateObjectSelector, node: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext): StateObjectSelector {
         const props = structureProps(node);
-        const result = update.to(msTarget).apply(StructureFromModel, props).selector;
+        const result: StateObjectSelector = update.to(msTarget).apply(StructureFromModel, props).selector;
+        // for (const t of transformProps(node)) {
+        //     result = update.to(result).apply(TransformStructureConformation, t).selector;
+        // }
         const annotationTooltips = collectAnnotationTooltips(node, context);
         const inlineTooltips = collectInlineTooltips(node, context);
         if (annotationTooltips.length + inlineTooltips.length > 0) {

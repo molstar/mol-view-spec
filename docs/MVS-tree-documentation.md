@@ -5,15 +5,19 @@ Tree schema:
 
   - **`root`**
 
-    [Root of the tree has to be of this kind]
+    [Root of the tree must be of this kind]
 
     Auxiliary node kind that only appears as the tree root.
+
+    Parent: none
 
     Params: none
 
   - **`download`**
 
     This node instructs to retrieve a data resource.
+
+    Parent: `root`
 
     Params:
 
@@ -25,6 +29,8 @@ Tree schema:
 
     This node instructs to parse a data resource.
 
+    Parent: `download`
+
     Params:
 
       - **`format: `**`"mmcif" | "bcif" | "pdb"`
@@ -34,6 +40,8 @@ Tree schema:
   - **`structure`**
 
     This node instructs to create a structure from a parsed data resource. "Structure" refers to an internal representation of molecular coordinates without any visual representation.
+
+    Parent: `parse`
 
     Params:
 
@@ -93,6 +101,8 @@ Tree schema:
 
     This node instructs to rotate and/or translate structure coordinates.
 
+    Parent: `structure`
+
     Params:
 
       - **`rotation?: `**`Array<number>`
@@ -111,6 +121,8 @@ Tree schema:
 
     This node instructs to create a component (i.e. a subset of the parent structure).
 
+    Parent: `structure`
+
     Params:
 
       - **`selector: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water") | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>>`
@@ -122,6 +134,8 @@ Tree schema:
   - **`component_from_uri`**
 
     This node instructs to create a component, defined by an external annotation resource.
+
+    Parent: `structure`
 
     Params:
 
@@ -171,6 +185,8 @@ Tree schema:
 
     This node instructs to create a component, defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
 
+    Parent: `structure`
+
     Params:
 
       - **`schema: `**`"whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"`
@@ -211,6 +227,8 @@ Tree schema:
 
     This node instructs to create a visual representation of a component.
 
+    Parent: `component` or `component_from_uri` or `component_from_source`
+
     Params:
 
       - **`type: `**`"ball_and_stick" | "cartoon" | "surface"`
@@ -220,6 +238,8 @@ Tree schema:
   - **`color`**
 
     This node instructs to apply color to a visual representation.
+
+    Parent: `representation`
 
     Params:
 
@@ -236,6 +256,8 @@ Tree schema:
   - **`color_from_uri`**
 
     This node instructs to apply colors to a visual representation. The colors are defined by an external annotation resource.
+
+    Parent: `representation`
 
     Params:
 
@@ -279,6 +301,8 @@ Tree schema:
 
     This node instructs to apply colors to a visual representation. The colors are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
 
+    Parent: `representation`
+
     Params:
 
       - **`schema: `**`"whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"`
@@ -313,6 +337,8 @@ Tree schema:
 
     This node instructs to add a label (textual visual representation) to a component.
 
+    Parent: `component` or `component_from_uri` or `component_from_source`
+
     Params:
 
       - **`text: `**`string`
@@ -322,6 +348,8 @@ Tree schema:
   - **`label_from_uri`**
 
     This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an external annotation resource.
+
+    Parent: `structure`
 
     Params:
 
@@ -365,6 +393,8 @@ Tree schema:
 
     This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
 
+    Parent: `structure`
+
     Params:
 
       - **`schema: `**`"whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"`
@@ -399,6 +429,8 @@ Tree schema:
 
     This node instructs to add a tooltip to a component. "Tooltip" is a text which is not a part of the visualization but should be presented to the users when they interact with the component (typically, the tooltip will be shown somewhere on the screen when the user hovers over a visual representation of the component).
 
+    Parent: `component` or `component_from_uri` or `component_from_source`
+
     Params:
 
       - **`text: `**`string`
@@ -408,6 +440,8 @@ Tree schema:
   - **`tooltip_from_uri`**
 
     This node instructs to add tooltips to parts of a structure. The tooltips are defined by an external annotation resource.
+
+    Parent: `structure`
 
     Params:
 
@@ -451,6 +485,8 @@ Tree schema:
 
     This node instructs to add tooltips to parts of a structure. The tooltips are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
 
+    Parent: `structure`
+
     Params:
 
       - **`schema: `**`"whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"`
@@ -485,6 +521,8 @@ Tree schema:
 
     This node instructs to set the camera focus to a component (zoom in).
 
+    Parent: `component` or `component_from_uri` or `component_from_source`
+
     Params:
 
       - **`direction?: `**`[number, number, number]`
@@ -502,6 +540,8 @@ Tree schema:
   - **`camera`**
 
     This node instructs to set the camera position and orientation.
+
+    Parent: `root`
 
     Params:
 
@@ -522,6 +562,8 @@ Tree schema:
   - **`canvas`**
 
     This node sets canvas properties.
+
+    Parent: `root`
 
     Params:
 

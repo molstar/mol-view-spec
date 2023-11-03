@@ -196,7 +196,7 @@ export type Json = string | number | boolean | null | Json[] | { [key: string]: 
 
 
 /** Decide if `obj` is a good old object (not array or null or other type). */
-function isReallyObject(obj: any): boolean {
+export function isReallyObject(obj: any): boolean {
     return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
 }
 
