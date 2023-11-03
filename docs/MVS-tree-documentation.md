@@ -69,15 +69,9 @@ Tree schema:
 
       - **`assembly_id?: `**`string | null`
 
-        Assembly identifier (only applies when `kind` is `"assembly"`). If `null`, assembly is selected based on `assembly_index`.
+        Assembly identifier (only applies when `kind` is `"assembly"`). If `null`, the first assembly is selected.
 
         Default: `null`
-
-      - **`assembly_index?: `**`Integer`
-
-        0-based index of the assembly (only applies when `kind` is `"assembly"` and `assembly_id` is `null`).
-
-        Default: `0`
 
       - **`radius?: `**`number`
 

@@ -20,7 +20,6 @@ export const MVSDefaults = {
         block_index: 0,
         model_index: 0,
         assembly_id: null,
-        assembly_index: 0,
         radius: 5,
         ijk_min: [-1, -1, -1],
         ijk_max: [1, 1, 1],

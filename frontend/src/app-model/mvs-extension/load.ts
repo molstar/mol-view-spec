@@ -18,18 +18,23 @@ import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { focusCameraNode, focusStructureNode, setCanvas } from './camera';
 import { canonicalJsonString } from './helpers/utils';
 import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromUriOrSourceProps, componentPropsFromSelector, isPhantomComponent, labelFromUriOrSourceProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformFromRotationTranslation, transformProps } from './load-helpers';
-import { ParamsOfKind, SubTreeOfKind, getChildren, validateTree } from './tree/generic/tree-schema';
+import { ParamsOfKind, SubTreeOfKind, validateTree } from './tree/generic/tree-schema';
 import { convertMvsToMolstar } from './tree/mvs/conversion';
 import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
 import { MVSTree, MVSTreeSchema } from './tree/mvs/mvs-tree';
 
 
+/** Top level of the MolViewSpec (MVS) data format. */
 export interface MVSData {
+    /** MolViewSpec tree */
     root: MVSTree,
     /** Integer defining the major version of MolViewSpec format (e.g. 2 for '2.1.8') */
     version: number,
 }
 
+/** Load a MolViewSpec (MVS) tree into the Mol* plugin.
+ * If `deletePrevious`, remove all objects in the current Mol* state; otherwise add to the current state. 
+ */
 export async function loadMVS(plugin: PluginContext, data: MVSData | string, deletePrevious: boolean) {
     if (typeof data === 'string') {
         data = JSON.parse(data) as MVSData;
@@ -42,6 +47,10 @@ export async function loadMVS(plugin: PluginContext, data: MVSData | string, del
     await loadMolstarTree(plugin, molstarTree, deletePrevious);
 }
 
+
+/** Load a `MolstarTree` into the Mol* plugin.
+ * If `deletePrevious`, remove all objects in the current Mol* state; otherwise add to the current state.
+ */
 async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deletePrevious: boolean) {
     const context: MolstarLoadingContext = {};
 
@@ -57,7 +66,7 @@ async function loadMolstarTree(plugin: PluginContext, tree: MolstarTree, deleteP
     }
 }
 
-
+/** Mutable context for loading a `MolstarTree`, available throughout the loading. */
 export interface MolstarLoadingContext {
     /** Maps `*_from_[uri|source]` nodes to annotationId they should reference */
     annotationMap?: Map<MolstarNode<AnnotationFromUriKind | AnnotationFromSourceKind>, string>,
@@ -68,6 +77,7 @@ export interface MolstarLoadingContext {
 }
 
 
+/** Actions  */
 const MolstarLoadingActions: LoadingActions<MolstarTree, MolstarLoadingContext> = {
     root(update: StateBuilder.Root, msTarget: StateObjectSelector, node: MolstarNode<'root'>, context: MolstarLoadingContext): StateObjectSelector {
         context.nearestReprMap = makeNearestReprMap(node);

@@ -83,10 +83,8 @@ export const MVSTreeSchema = TreeSchema({
                 block_index: OptionalField(int, '0-based index of the CIF block to read coordinates from (only applies when the input data are from CIF or BinaryCIF and `block_header` is `null`).'),
                 /** 0-based index of model in case the input data contain multiple models. */
                 model_index: OptionalField(int, '0-based index of model in case the input data contain multiple models.'),
-                /** Assembly identifier (only applies when `kind` is `"assembly"`). If `null`, assembly is selected based on `assembly_index`. */
-                assembly_id: OptionalField(nullable(str), 'Assembly identifier (only applies when `kind` is `"assembly"`). If `null`, assembly is selected based on `assembly_index`.'),
-                /** 0-based index of the assembly (only applies when `kind` is `"assembly"` and `assembly_id` is `null`). */
-                assembly_index: OptionalField(int, '0-based index of the assembly (only applies when `kind` is `"assembly"` and `assembly_id` is `null`).'),
+                /** Assembly identifier (only applies when `kind` is `"assembly"`). If `null`, the first assembly is selected. */
+                assembly_id: OptionalField(nullable(str), 'Assembly identifier (only applies when `kind` is `"assembly"`). If `null`, the first assembly is selected.'),
                 /** Distance (in Angstroms) from the original model in which asymmetric units should be included (only applies when `kind` is `"symmetry_mates"`). */
                 radius: OptionalField(float, 'Distance (in Angstroms) from the original model in which asymmetric units should be included (only applies when `kind` is `"symmetry_mates"`).'),
                 /** Miller indices of the bottom-left unit cell to be included (only applies when `kind` is `"symmetry"`). */

@@ -27,10 +27,18 @@ import { DefaultColor } from './tree/mvs/mvs-defaults';
 import { ElementOfSet, canonicalJsonString, decodeColor, distinct, isDefined, stringHash } from './helpers/utils';
 
 
+/** Function responsible for loading a tree node `node` into Mol*.
+ * Should apply changes within `update` but not commit them.
+ * Should modify `context` accordingly, if it is needed for loading other nodes later.
+ */
 export type LoadingAction<TNode extends Tree, TContext> = (update: StateBuilder.Root, msTarget: StateObjectSelector, node: TNode, context: TContext) => StateObjectSelector | undefined
 
+/** Loading actions for loading a tree into Mol*, per node kind. */
 export type LoadingActions<TTree extends Tree, TContext> = { [kind in Kind<SubTree<TTree>>]?: LoadingAction<SubTreeOfKind<TTree, kind>, TContext> }
 
+/** Load a tree into Mol*, by applying loading actions in DFS order and then commiting at once.
+ * If `deletePrevious`, remove all objects in the current Mol* state; otherwise add to the current state. 
+ */
 export async function loadTree<TTree extends Tree, TContext>(plugin: PluginContext, tree: TTree, loadingActions: LoadingActions<TTree, TContext>, context: TContext, deletePrevious: boolean) {
     const mapping = new Map<SubTree<TTree>, StateObjectSelector | undefined>();
     const update = plugin.build();
@@ -63,7 +71,7 @@ export const AnnotationFromSourceKinds = new Set(['color_from_source', 'componen
 export type AnnotationFromSourceKind = ElementOfSet<typeof AnnotationFromSourceKinds>
 
 
-/** Return a 4x4 matrix representing rotation + translation */
+/** Return a 4x4 matrix representing a rotation followed by a translation */
 export function transformFromRotationTranslation(rotation: number[] | null | undefined, translation: number[] | null | undefined): Mat4 {
     if (rotation && rotation.length !== 9) throw new Error(`'rotation' param for 'transform' node must be array of 9 elements, found ${rotation}`);
     if (translation && translation.length !== 3) throw new Error(`'translation' param for 'transform' node must be array of 3 elements, found ${translation}`);
@@ -77,6 +85,8 @@ export function transformFromRotationTranslation(rotation: number[] | null | und
     if (!Mat4.isRotationAndTranslation(T)) throw new Error(`'rotation' param for 'transform' is not a valid rotation matrix: ${rotation}`);
     return T;
 }
+
+/** Return an array of props for `TransformStructureConformation` transformers for all 'transform' nodes applied to a 'structure' node. */
 export function transformProps(node: SubTreeOfKind<MolstarTree, 'structure'>): StateTransformer.Params<TransformStructureConformation>[] {
     const result = [] as StateTransformer.Params<TransformStructureConformation>[];
     const transforms = getChildren(node).filter(c => c.kind === 'transform') as MolstarNode<'transform'>[];
@@ -88,7 +98,7 @@ export function transformProps(node: SubTreeOfKind<MolstarTree, 'structure'>): S
     return result;
 }
 
-/** Collect distinct annotation specs from all nodes in `tree` and set context.annotationMap[node] to respective annotationIds */
+/** Collect distinct annotation specs from all nodes in `tree` and set `context.annotationMap[node]` to respective annotationIds */
 export function collectAnnotationReferences(tree: SubTree<MolstarTree>, context: MolstarLoadingContext): AnnotationSpec[] {
     const distinctSpecs: { [key: string]: AnnotationSpec } = {};
     dfs(tree, node => {
@@ -116,6 +126,7 @@ function blockSpec(header: string | null | undefined, index: number | null | und
     }
 }
 
+/** Collect annotation tooltips from all nodes in `tree` and map them to annotationIds. */
 export function collectAnnotationTooltips(tree: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext) {
     const annotationTooltips: AnnotationTooltipsProps['tooltips'] = [];
     dfs(tree, node => {
@@ -128,6 +139,7 @@ export function collectAnnotationTooltips(tree: SubTreeOfKind<MolstarTree, 'stru
     });
     return distinct(annotationTooltips);
 }
+/** Collect annotation tooltips from all nodes in `tree`. */
 export function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structure'>, context: MolstarLoadingContext) {
     const inlineTooltips: CustomTooltipsProps['tooltips'] = [];
     dfs(tree, (node, parent) => {
@@ -156,11 +168,11 @@ export function collectInlineTooltips(tree: SubTreeOfKind<MolstarTree, 'structur
 
 /** Return `true` for components nodes which only serve for tooltip placement (not to be created in the MolStar object hierarchy) */
 export function isPhantomComponent(node: SubTreeOfKind<MolstarTree, 'component' | 'component_from_uri' | 'component_from_source'>) {
-    // return false;
     return node.children && node.children.every(child => child.kind === 'tooltip' || child.kind === 'tooltip_from_uri' || child.kind === 'tooltip_from_source');
     // These nodes could theoretically be removed when converting MVS to Molstar tree, but would get very tricky if we allow nested components
 }
 
+/** Return props for `StructureFromModel` transformers for a 'structure' node. */
 export function structureProps(node: MolstarNode<'structure'>): StateTransformer.Params<StructureFromModel> {
     const params = node.params;
     switch (params.kind) {
@@ -175,7 +187,7 @@ export function structureProps(node: MolstarNode<'structure'>): StateTransformer
             return {
                 type: {
                     name: 'assembly',
-                    params: { id: params.assembly_id } // TODO apply assembly_index if assembly_id is null
+                    params: { id: params.assembly_id }
                 },
             };
         case 'symmetry':

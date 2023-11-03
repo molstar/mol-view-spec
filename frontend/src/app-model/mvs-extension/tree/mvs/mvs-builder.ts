@@ -63,7 +63,7 @@ export class Download extends _Base<'download'> {
 
 const StructureParamsSubsets = {
     model: ['block_header', 'block_index', 'model_index'],
-    assembly: ['block_header', 'block_index', 'model_index', 'assembly_id', 'assembly_index'],
+    assembly: ['block_header', 'block_index', 'model_index', 'assembly_id'],
     symmetry: ['block_header', 'block_index', 'model_index', 'ijk_min', 'ijk_max'],
     symmetry_mates: ['block_header', 'block_index', 'model_index', 'radius'],
 

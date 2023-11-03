@@ -11,7 +11,7 @@ import { FullMVSTreeSchema } from './mvs-tree';
 import { MolstarParseFormatT } from './param-types';
 
 
-/** Schema for `MolstarTree` (auxiliary tree representation before creating a real Molstar state) */
+/** Schema for `MolstarTree` (intermediate tree representation before creating a real Molstar state) */
 export const MolstarTreeSchema = TreeSchema({
     rootKind: 'root',
     nodes: {
@@ -59,5 +59,5 @@ export type MolstarKind = keyof typeof MolstarTreeSchema.nodes;
 /** Node in a `MolstarTree` */
 export type MolstarNode<TKind extends MolstarKind = MolstarKind> = NodeForTree<typeof MolstarTreeSchema, TKind>
 
-/** Auxiliary tree representation before creating a real Molstar state */
+/** Intermediate tree representation before creating a real Molstar state */
 export type MolstarTree = TreeFor<typeof MolstarTreeSchema>
