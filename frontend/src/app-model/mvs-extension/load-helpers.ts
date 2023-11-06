@@ -17,7 +17,7 @@ import { AnnotationSpec } from './additions/annotation-prop';
 import { AnnotationStructureComponentProps } from './additions/annotation-structure-component';
 import { AnnotationTooltipsProps } from './additions/annotation-tooltips-prop';
 import { CustomTooltipsProps } from './additions/custom-tooltips-prop';
-import { MultilayerColorThemeName, MultilayerColorThemeProps, NoColor, SelectorAll } from './additions/multilayer-color-theme';
+import { MultilayerColorThemeName, MultilayerColorThemeProps, NoColor } from './additions/multilayer-color-theme';
 import { rowToExpression, rowsToExpression } from './helpers/selections';
 import { MolstarLoadingContext } from './load';
 import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getChildren } from './tree/generic/tree-schema';
@@ -25,6 +25,7 @@ import { dfs } from './tree/generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './tree/molstar/molstar-tree';
 import { DefaultColor } from './tree/mvs/mvs-defaults';
 import { ElementOfSet, canonicalJsonString, decodeColor, distinct, isDefined, stringHash } from './helpers/utils';
+import { SelectorAll } from './additions/selector';
 
 
 /** Function responsible for loading a tree node `node` into Mol*.

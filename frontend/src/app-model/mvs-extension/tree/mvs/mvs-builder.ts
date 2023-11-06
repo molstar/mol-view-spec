@@ -4,11 +4,10 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { pickObjectKeys } from '../../helpers/utils';
+import { HexColor, pickObjectKeys } from '../../helpers/utils';
 import { ParamsOfKind, SubTreeOfKind } from '../generic/tree-schema';
 import { MVSDefaults } from './mvs-defaults';
 import { MVSData, MVSKind, MVSNode, MVSTree, MVSTreeSchema, MVS_VERSION } from './mvs-tree';
-import { HexColor } from './param-types';
 
 
 /** Create a new MolViewSpec builder containing only a root node. Example of MVS builder usage:

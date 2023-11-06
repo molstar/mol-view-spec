@@ -4,24 +4,16 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { Choice } from 'molstar/lib/extensions/volumes-and-segmentations/helpers';
-import { SortedArray } from 'molstar/lib/mol-data/int';
 import { Location } from 'molstar/lib/mol-model/location';
-import { Bond, ElementIndex, Structure, StructureElement } from 'molstar/lib/mol-model/structure';
-import { StaticStructureComponentTypes, createStructureComponent } from 'molstar/lib/mol-plugin-state/helpers/structure-component';
-import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
-import { MolScriptBuilder } from 'molstar/lib/mol-script/language/builder';
-import { Expression } from 'molstar/lib/mol-script/language/expression';
+import { Bond, Structure, StructureElement } from 'molstar/lib/mol-model/structure';
 import { ColorTheme, LocationColor } from 'molstar/lib/mol-theme/color';
 import { ThemeDataContext } from 'molstar/lib/mol-theme/theme';
-import { UUID } from 'molstar/lib/mol-util';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
-import { capitalize, stringToWords } from 'molstar/lib/mol-util/string';
+import { stringToWords } from 'molstar/lib/mol-util/string';
 
-import { extend, mapArrToObj, pickObjectKeys, sortIfNeeded } from '../helpers/utils';
-import { AnnotationStructureComponentParams, createAnnotationStructureComponent } from './annotation-structure-component';
+import { ElementSet, SelectorParams, isSelectorAll } from './selector';
 
 
 /** Special value that can be used as color with null-like semantic (i.e. "no color provided").
@@ -34,17 +26,6 @@ function isValidColor(color: Color): boolean {
 }
 
 const DefaultBackgroundColor = ColorNames.white;
-
-const StaticSelectorChoice = new Choice(mapArrToObj(StaticStructureComponentTypes, t => capitalize(t)), 'all');
-
-export const SelectorParams = PD.MappedStatic('static', { // like StructureComponentParams in molstar/lib/mol-plugin-state/helpers/structure-component
-    static: StaticSelectorChoice.PDSelect(),
-    expression: PD.Value<Expression>(MolScriptBuilder.struct.generator.all),
-    bundle: PD.Value<StructureElement.Bundle>(StructureElement.Bundle.Empty),
-    script: PD.Script({ language: 'mol-script', expression: '(sel.atom.all)' }),
-    annotation: PD.Group(pickObjectKeys(AnnotationStructureComponentParams, ['annotationId', 'fieldName', 'fieldValues'])),
-}, { description: 'Define a part of the structure where this layer applies (use Static:all to apply to the whole structure)' }
-);
 
 /** Parameter definition for color theme "Multilayer" */
 export function makeMultilayerColorThemeParams(colorThemeRegistry: ColorTheme.Registry, ctx: ThemeDataContext) {
@@ -72,23 +53,14 @@ export function makeMultilayerColorThemeParams(colorThemeRegistry: ColorTheme.Re
         background: PD.Color(DefaultBackgroundColor, { description: 'Color for elements where no layer applies' }),
     };
 }
+/** Parameter definition for color theme "Multilayer" */
 export type MultilayerColorThemeParams = ReturnType<typeof makeMultilayerColorThemeParams>
 
 /** Parameter values for color theme "Multilayer" */
 export type MultilayerColorThemeProps = PD.Values<MultilayerColorThemeParams>
 
+/** Default values for `MultilayerColorThemeProps` */
 export const DefaultMultilayerColorThemeProps: MultilayerColorThemeProps = { layers: [], background: DefaultBackgroundColor };
-
-
-/** Parameter values for defining a structure selection */
-export type Selector = MultilayerColorThemeProps['layers'][number]['selection']
-
-
-export const SelectorAll = { name: 'static', params: 'all' } satisfies Selector;
-
-export function isSelectorAll(props: Selector): props is typeof SelectorAll {
-    return props.name === 'static' && props.params === 'all';
-}
 
 
 /** Return color theme that assigns colors based on a list of nested color themes (layers).
@@ -116,7 +88,7 @@ function makeMultilayerColorTheme(ctx: ThemeDataContext, props: MultilayerColorT
             case 'groupInstance':
             case 'vertex':
             case 'vertexInstance':
-                const elementSet = isSelectorAll(layer.selection) ? undefined : elementSetFromSelector(ctx.structure, layer.selection); // treating 'all' specially for performance reasons (it's expected to be used most often)
+                const elementSet = isSelectorAll(layer.selection) ? undefined : ElementSet.fromSelector(ctx.structure, layer.selection); // treating 'all' specially for performance reasons (it's expected to be used most often)
                 colorLayers.push({ color: theme.color, elementSet });
                 break;
             default:
@@ -126,7 +98,7 @@ function makeMultilayerColorTheme(ctx: ThemeDataContext, props: MultilayerColorT
 
     function structureElementColor(loc: StructureElement.Location, isSecondary: boolean): Color {
         for (const layer of colorLayers) {
-            const matches = !layer.elementSet || elementSetHas(layer.elementSet, loc);
+            const matches = !layer.elementSet || ElementSet.has(layer.elementSet, loc);
             if (!matches) continue;
             const color = layer.color(loc, isSecondary);
             if (!isValidColor(color)) continue;
@@ -160,6 +132,7 @@ function makeMultilayerColorTheme(ctx: ThemeDataContext, props: MultilayerColorT
 }
 
 
+/** Unique name for "Multilayer" color theme */
 export const MultilayerColorThemeName = 'mvs-multilayer';
 
 /** A thingy that is needed to register color theme "Multilayer" */
@@ -175,42 +148,7 @@ export function makeMultilayerColorThemeProvider(colorThemeRegistry: ColorTheme.
     };
 }
 
-function substructureFromSelector(structure: Structure, selector: Selector): Structure {
-    const pso = (selector.name === 'annotation') ?
-        createAnnotationStructureComponent(structure, { ...selector.params, label: '', nullIfEmpty: false }, { source: structure })
-        : createStructureComponent(structure, { type: selector, label: '', nullIfEmpty: false }, { source: structure });
-    if (PluginStateObject.Molecule.Structure.is(pso)) {
-        return pso.data;
-    } else {
-        return Structure.Empty;
-    }
-}
-
-/** Data structure for fast lookup of a structure element location in a structure */
-export type ElementSet = { [modelId: UUID]: SortedArray<ElementIndex> }
-
-export function elementSetFromSelector(structure: Structure | undefined, selector: Selector): ElementSet {
-    if (!structure) return {};
-    const arrays: { [modelId: UUID]: ElementIndex[] } = {};
-    const selection = substructureFromSelector(structure, selector); // using `getAtomRangesForRow` might (might not) be faster here
-    for (const unit of selection.units) {
-        extend(arrays[unit.model.id] ??= [], unit.elements);
-    }
-    const result: { [modelId: UUID]: SortedArray<ElementIndex> } = {};
-    for (const modelId in arrays) {
-        const array = arrays[modelId as UUID];
-        sortIfNeeded(array, (a, b) => a - b);
-        result[modelId as UUID] = SortedArray.ofSortedArray(array);
-    }
-    return result;
-}
-
-/** Decide if the element set `set` contains structure element location `location` */
-export function elementSetHas(set: ElementSet, location: StructureElement.Location): boolean {
-    const array = set[location.unit.model.id];
-    return array ? SortedArray.has(array, location.element) : false;
-}
-
+/** Measure time of execution of `colorFunction` on all elements in `structure` */
 function benchmarkColorFunction(colorFunction: LocationColor, structure: Structure) {
     console.log('Benchmarking color function', colorFunction, 'on', structure.elementCount, 'atoms');
     console.time('Benchmarking color');

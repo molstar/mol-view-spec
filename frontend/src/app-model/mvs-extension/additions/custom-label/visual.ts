@@ -22,6 +22,8 @@ import { PD_MaybeInteger, PD_MaybeString } from '../../helpers/param-definition'
 import { omitObjectKeys } from '../../helpers/utils';
 
 
+/** Parameter definition for "label-text" visual in "Custom Label" representation */
+export type CustomLabelTextParams = typeof CustomLabelTextParams
 export const CustomLabelTextParams = {
     items: PD.ObjectList(
         {
@@ -69,21 +71,12 @@ export const CustomLabelTextParams = {
     ),
     ...omitObjectKeys(Original.LabelTextParams, ['level', 'chainScale', 'residueScale', 'elementScale']),
     borderColor: { ...Original.LabelTextParams.borderColor, defaultValue: ColorNames.black },
-    // ...ComplexTextParams,
-    // background: PD.Boolean(false),
-    // backgroundMargin: PD.Numeric(0, { min: 0, max: 1, step: 0.01 }),
-    // backgroundColor: PD.Color(ColorNames.black),
-    // backgroundOpacity: PD.Numeric(0.5, { min: 0, max: 1, step: 0.01 }),
-    // borderWidth: PD.Numeric(0.25, { min: 0, max: 0.5, step: 0.01 }),
-    // level: PD.Select('residue', [['chain', 'Chain'], ['residue', 'Residue'], ['element', 'Element']] as const, { isEssential: true }),
-    // chainScale: PD.Numeric(10, { min: 0, max: 20, step: 0.1 }),
-    // residueScale: PD.Numeric(1, { min: 0, max: 20, step: 0.1 }),
-    // elementScale: PD.Numeric(0.5, { min: 0, max: 20, step: 0.1 }),
 };
 
-export type CustomLabelTextParams = typeof CustomLabelTextParams
+/** Parameter values for "label-text" visual in "Custom Label" representation */
 export type CustomLabelTextProps = PD.Values<CustomLabelTextParams>
 
+/** Create "label-text" visual for "Custom Label" representation */
 export function CustomLabelTextVisual(materialId: number): ComplexVisual<CustomLabelTextParams> {
     return ComplexTextVisual<CustomLabelTextParams>({
         defaultProps: PD.getDefaultValues(CustomLabelTextParams),
@@ -101,10 +94,9 @@ function createLabelText(ctx: VisualContext, structure: Structure, theme: Theme,
     const count = props.items.length;
     const builder = TextBuilder.create(props, count, count / 2, text);
     for (const item of props.items) {
-        let scale: number;
         switch (item.position.name) {
             case 'x_y_z':
-                scale = item.position.params.scale;
+                const scale = item.position.params.scale;
                 builder.add(item.text, item.position.params.x, item.position.params.y, item.position.params.z, scale, scale, 0);
                 break;
             case 'selection':

@@ -4,14 +4,14 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import * as t from 'io-ts';
+import * as iots from 'io-ts';
 
 import { fieldValidationIssues, RequiredField, literal, nullable, paramsValidationIssues, OptionalField } from '../params-schema';
 
 
 describe('fieldValidationIssues', () => {
     it('fieldValidationIssues string', async () => {
-        const stringField = RequiredField(t.string);
+        const stringField = RequiredField(iots.string);
         expect(fieldValidationIssues(stringField, 'hello')).toBeUndefined();
         expect(fieldValidationIssues(stringField, '')).toBeUndefined();
         expect(fieldValidationIssues(stringField, 5)).toBeTruthy();
@@ -41,7 +41,7 @@ describe('fieldValidationIssues', () => {
         expect(fieldValidationIssues(numberParam, undefined)).toBeTruthy();
     });
     it('fieldValidationIssues int', async () => {
-        const numberParam = RequiredField(t.Integer);
+        const numberParam = RequiredField(iots.Integer);
         expect(fieldValidationIssues(numberParam, 1)).toBeUndefined();
         expect(fieldValidationIssues(numberParam, 0)).toBeUndefined();
         expect(fieldValidationIssues(numberParam, 0.5)).toBeTruthy();
@@ -50,7 +50,7 @@ describe('fieldValidationIssues', () => {
         expect(fieldValidationIssues(numberParam, undefined)).toBeTruthy();
     });
     it('fieldValidationIssues union', async () => {
-        const stringOrNumberParam = RequiredField(t.union([t.string, t.number]));
+        const stringOrNumberParam = RequiredField(iots.union([iots.string, iots.number]));
         expect(fieldValidationIssues(stringOrNumberParam, 1)).toBeUndefined();
         expect(fieldValidationIssues(stringOrNumberParam, 2)).toBeUndefined();
         expect(fieldValidationIssues(stringOrNumberParam, 'hello')).toBeUndefined();
@@ -60,7 +60,7 @@ describe('fieldValidationIssues', () => {
         expect(fieldValidationIssues(stringOrNumberParam, undefined)).toBeTruthy();
     });
     it('fieldValidationIssues nullable', async () => {
-        const stringOrNullParam = RequiredField(nullable(t.string));
+        const stringOrNullParam = RequiredField(nullable(iots.string));
         expect(fieldValidationIssues(stringOrNullParam, 'hello')).toBeUndefined();
         expect(fieldValidationIssues(stringOrNullParam, '')).toBeUndefined();
         expect(fieldValidationIssues(stringOrNullParam, null)).toBeUndefined();
@@ -71,10 +71,10 @@ describe('fieldValidationIssues', () => {
 });
 
 const schema = {
-    name: OptionalField(t.string),
-    surname: RequiredField(t.string),
-    lunch: RequiredField(t.boolean),
-    age: OptionalField(t.number),
+    name: OptionalField(iots.string),
+    surname: RequiredField(iots.string),
+    lunch: RequiredField(iots.boolean),
+    age: OptionalField(iots.number),
 };
 
 describe('validateParams', () => {

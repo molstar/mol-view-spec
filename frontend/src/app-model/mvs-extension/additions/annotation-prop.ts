@@ -23,7 +23,7 @@ import { IndicesAndSortings } from '../helpers/indexing';
 import { PD_MaybeString } from '../helpers/param-definition';
 import { AnnotationRow, AnnotationSchema, getCifAnnotationSchema } from '../helpers/schemas';
 import { atomQualifies, getAtomRangesForRow } from '../helpers/selections';
-import { Json, Maybe, canonicalJsonString, extend, pickObjectKeys, promiseAllObj, range, safePromise } from '../helpers/utils';
+import { Json, Maybe, canonicalJsonString, extend, pickObjectKeys, promiseAllObj, safePromise } from '../helpers/utils';
 
 
 /** Allowed values for the annotation format parameter */
@@ -32,6 +32,7 @@ type AnnotationFormat = Choice.Values<typeof AnnotationFormat>
 const AnnotationFormatTypes = { json: 'string', cif: 'string', bcif: 'binary' } as const satisfies { [format in AnnotationFormat]: 'string' | 'binary' };
 
 /** Parameter definition for custom model property "Annotations" */
+export type AnnotationsParams = typeof AnnotationsParams
 export const AnnotationsParams = {
     annotations: PD.ObjectList(
         {
@@ -53,7 +54,6 @@ export const AnnotationsParams = {
         obj => obj.id
     ),
 };
-export type AnnotationsParams = typeof AnnotationsParams
 
 /** Parameter values for custom model property "Annotations" */
 export type AnnotationsProps = PD.Values<AnnotationsParams>
@@ -89,20 +89,6 @@ export const AnnotationsProvider: CustomModelProperty.Provider<AnnotationsParams
     }
 });
 
-export function getAnnotationForStructure(structure: Structure, annotationId: string): { annotation: Annotation, model: Model } | { annotation: undefined, model: undefined } {
-    if (structure.isEmpty) return { annotation: undefined, model: undefined };
-    for (const model of structure.models) {
-        if (model.customProperties.has(AnnotationsProvider.descriptor)) {
-            const annots = AnnotationsProvider.get(model).value;
-            const annotation = annots?.getAnnotation(annotationId);
-            if (annotation) {
-                return { annotation, model };
-            }
-        }
-    }
-    return { annotation: undefined, model: undefined };
-}
-
 
 /** Represents multiple annotations retrievable by their ID */
 export class Annotations {
@@ -132,6 +118,21 @@ export class Annotations {
     }
 }
 
+
+/** Retrieve annotation with given `annotationId` from custom model property "Annotations" and the model from which it comes */
+export function getAnnotationForStructure(structure: Structure, annotationId: string): { annotation: Annotation, model: Model } | { annotation: undefined, model: undefined } {
+    const models = structure.isEmpty ? [] : structure.models;
+    for (const model of models) {
+        if (model.customProperties.has(AnnotationsProvider.descriptor)) {
+            const annots = AnnotationsProvider.get(model).value;
+            const annotation = annots?.getAnnotation(annotationId);
+            if (annotation) {
+                return { annotation, model };
+            }
+        }
+    }
+    return { annotation: undefined, model: undefined };
+}
 
 /** Main class for processing annotation */
 export class Annotation {
@@ -379,52 +380,3 @@ function annotationSourceFromSpec(s: AnnotationSpec): AnnotationSource {
             return { kind: 'source-cif' };
     }
 }
-
-interface GroupedArray<T> {
-    /** Number of groups */
-    count: number,
-    /** Get size of i-th group as `offsets[i+1]-offsets[i]`.
-     * Get j-th element in i-th group as `grouped[offsets[i]+j]` */
-    offsets: number[],
-    /** Get j-th element in i-th group as `grouped[offsets[i]+j]` */
-    grouped: T[],
-}
-/** Return row indices grouped by `row.group_id`. Rows with `row.group_id===undefined` are treated as separate groups. */
-export function groupRows(rows: readonly AnnotationRow[]): GroupedArray<number> {
-    let counter = 0;
-    const groupMap = new Map<string, number>();
-    const groups: number[] = [];
-    for (let i = 0; i < rows.length; i++) {
-        const group_id = rows[i].group_id;
-        if (group_id === undefined) {
-            groups.push(counter++);
-        } else {
-            const groupIndex = groupMap.get(group_id);
-            if (groupIndex === undefined) {
-                groupMap.set(group_id, counter);
-                groups.push(counter);
-                counter++;
-            } else {
-                groups.push(groupIndex);
-            }
-        }
-    }
-    const rowIndices = range(rows.length).sort((i, j) => groups[i] - groups[j]);
-    const offsets: number[] = [];
-    for (let i = 0; i < rows.length; i++) {
-        if (i === 0 || groups[rowIndices[i]] !== groups[rowIndices[i - 1]]) offsets.push(i);
-    }
-    offsets.push(rowIndices.length);
-    return { count: offsets.length - 1, offsets, grouped: rowIndices };
-}
-export function testGroupRows() {
-    const rows = [{ label: 'A' }, { label: 'B', group_id: 1 }, { label: 'C', group_id: 'x' }, { label: 'D', group_id: 1 }, { label: 'E' }, { label: 'F' }, { label: 'G', group_id: 'x' }, { label: 'H', group_id: 'x' }] as any as AnnotationRow[];
-    const { count, offsets, grouped } = groupRows(rows);
-    for (let i = 0; i < count; i++) {
-        console.log('Group', i);
-        for (let j = offsets[i], stop = offsets[i + 1]; j < stop; j++) {
-            console.log('   ', rows[grouped[j]]);
-        }
-    }
-}
-// TODO turn into a proper jest test

@@ -13,7 +13,7 @@ import { LociLabelProvider } from 'molstar/lib/mol-plugin-state/manager/loci-lab
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
 import { filterDefined } from '../helpers/utils';
-import { ElementSet, Selector, SelectorParams, elementSetFromSelector, elementSetHas } from './multilayer-color-theme';
+import { ElementSet, Selector, SelectorParams } from './selector';
 
 
 /** Parameter definition for custom structure property "CustomTooltips" */
@@ -68,8 +68,8 @@ export const CustomTooltipsLabelProvider = {
                 if (!tooltipData || tooltipData.length === 0) return undefined;
                 const texts = [];
                 for (const tooltip of tooltipData) {
-                    const elements = tooltip.elementSet ??= elementSetFromSelector(location.structure, tooltip.selector);
-                    if (elementSetHas(elements, location)) texts.push(tooltip.text);
+                    const elements = tooltip.elementSet ??= ElementSet.fromSelector(location.structure, tooltip.selector);
+                    if (ElementSet.has(elements, location)) texts.push(tooltip.text);
                 }
                 return filterDefined(texts).join(' | ');
             default:

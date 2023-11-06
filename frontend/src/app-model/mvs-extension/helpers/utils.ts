@@ -8,8 +8,6 @@ import { hashString } from 'molstar/lib/mol-data/util';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
-import { isHexColorString } from '../tree/mvs/param-types';
-
 
 export function formatObject(obj: {} | undefined) {
     if (!obj) return 'undefined';
@@ -284,4 +282,21 @@ export function decodeColor(colorString: string | undefined): Color | undefined 
     result = ColorNames[colorString.toLowerCase() as keyof typeof ColorNames];
     if (result !== undefined) return result;
     return undefined;
+}
+
+/** Hexadecimal color string, e.g. '#FF1100' */
+export type HexColor = string & { '@type': 'HexColorString' }
+export function HexColor(str: string) {
+    if (!isHexColorString(str)) {
+        throw new Error(`ValueError: "${str}" is not a valid hex color string`);
+    }
+    return str as HexColor;
+}
+
+/** Regular expression matching a hexadecimal color string, e.g. '#FF1100' or '#f10' */
+const hexColorRegex = /^#([0-9A-F]{3}){1,2}$/i;
+
+/** Decide if a string is a valid hexadecimal color string (6-digit or 3-digit, e.g. '#FF1100' or '#f10') */
+export function isHexColorString(str: any): str is HexColor {
+    return typeof str === 'string' && hexColorRegex.test(str);
 }

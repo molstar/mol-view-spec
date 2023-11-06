@@ -19,6 +19,17 @@ import { AnnotationTooltipsLabelProvider, AnnotationTooltipsProvider } from './a
 import { CustomLabelRepresentationProvider } from './additions/custom-label/representation';
 import { CustomTooltipsLabelProvider, CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { makeMultilayerColorThemeProvider } from './additions/multilayer-color-theme';
+import { PluginContext } from 'molstar/lib/mol-plugin/context';
+
+
+/** Collection of things that can be register/unregistered in a plugin */
+interface Registrables {
+    customModelProperties?: CustomModelProperty.Provider<any, any>[],
+    customStructureProperties?: CustomStructureProperty.Provider<any, any>[],
+    representations?: StructureRepresentationProvider<any>[],
+    colorThemes?: ColorTheme.Provider[],
+    lociLabels?: LociLabelProvider[],
+}
 
 
 /** Registers everything needed for loading MolViewSpec files */
@@ -30,68 +41,70 @@ export const MolViewSpec = PluginBehavior.create<{ autoAttach: boolean }>({
         description: 'MolViewSpec extension'
     },
     ctor: class extends PluginBehavior.Handler<{ autoAttach: boolean }> {
-        private readonly customModelProperties: CustomModelProperty.Provider<any, any>[] = [
-            AnnotationsProvider,
-        ];
-        private readonly customStructureProperties: CustomStructureProperty.Provider<any, any>[] = [
-            CustomTooltipsProvider,
-            AnnotationTooltipsProvider,
-        ];
-        private readonly representations: StructureRepresentationProvider<any>[] = [
-            CustomLabelRepresentationProvider,
-            AnnotationLabelRepresentationProvider,
-        ];
-        private readonly colorThemes: ColorTheme.Provider[] = [
-            AnnotationColorThemeProvider,
-            makeMultilayerColorThemeProvider(this.ctx.representation.structure.themes.colorThemeRegistry),
-        ];
-        private readonly lociLabelProviders: LociLabelProvider[] = [
-            CustomTooltipsLabelProvider,
-            AnnotationTooltipsLabelProvider,
-        ];
+        private readonly registrables: Registrables = {
+            customModelProperties: [
+                AnnotationsProvider,
+            ],
+            customStructureProperties: [
+                CustomTooltipsProvider,
+                AnnotationTooltipsProvider,
+            ],
+            representations: [
+                CustomLabelRepresentationProvider,
+                AnnotationLabelRepresentationProvider,
+            ],
+            colorThemes: [
+                AnnotationColorThemeProvider,
+                makeMultilayerColorThemeProvider(this.ctx.representation.structure.themes.colorThemeRegistry),
+            ],
+            lociLabels: [
+                CustomTooltipsLabelProvider,
+                AnnotationTooltipsLabelProvider,
+            ],
+        };
 
         register(): void {
-            for (const prop of this.customModelProperties) {
+            for (const prop of this.registrables.customModelProperties ?? []) {
                 this.ctx.customModelProperties.register(prop, this.params.autoAttach);
             }
-            for (const prop of this.customStructureProperties) {
+            for (const prop of this.registrables.customStructureProperties ?? []) {
                 this.ctx.customStructureProperties.register(prop, this.params.autoAttach);
             }
-            for (const repr of this.representations) {
+            for (const repr of this.registrables.representations ?? []) {
                 this.ctx.representation.structure.registry.add(repr);
             }
-            for (const theme of this.colorThemes) {
+            for (const theme of this.registrables.colorThemes ?? []) {
                 this.ctx.representation.structure.themes.colorThemeRegistry.add(theme);
             }
-            for (const provider of this.lociLabelProviders) {
+            for (const provider of this.registrables.lociLabels ?? []) {
                 this.ctx.managers.lociLabels.addProvider(provider);
             }
         }
         update(p: { autoAttach: boolean }) {
             const updated = this.params.autoAttach !== p.autoAttach;
             this.params.autoAttach = p.autoAttach;
-            for (const prop of this.customModelProperties) {
+            for (const prop of this.registrables.customModelProperties ?? []) {
                 this.ctx.customModelProperties.setDefaultAutoAttach(prop.descriptor.name, this.params.autoAttach);
             }
-            for (const prop of this.customStructureProperties) {
+            for (const prop of this.registrables.customStructureProperties ?? []) {
                 this.ctx.customStructureProperties.setDefaultAutoAttach(prop.descriptor.name, this.params.autoAttach);
             }
             return updated;
         }
         unregister() {
-            for (const prop of this.customModelProperties) {
+            for (const prop of this.registrables.customModelProperties ?? []) {
                 this.ctx.customModelProperties.unregister(prop.descriptor.name);
             }
-            for (const prop of this.customStructureProperties) {
+            for (const prop of this.registrables.customStructureProperties ?? []) {
                 this.ctx.customStructureProperties.unregister(prop.descriptor.name);
             }
-            for (const repr of this.representations) {
+            for (const repr of this.registrables.representations ?? []) {
                 this.ctx.representation.structure.registry.remove(repr);
             }
-            for (const theme of this.colorThemes) {
+            for (const theme of this.registrables.colorThemes ?? []) {
                 this.ctx.representation.structure.themes.colorThemeRegistry.remove(theme);
             }
-            for (const labelProvider of this.lociLabelProviders) {
+            for (const labelProvider of this.registrables.lociLabels ?? []) {
                 this.ctx.managers.lociLabels.removeProvider(labelProvider);
             }
         }
