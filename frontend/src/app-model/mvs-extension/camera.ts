@@ -19,7 +19,7 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 import { decodeColor } from './helpers/utils';
 import { ParamsOfKind } from './tree/generic/tree-schema';
-import { MolstarTree } from './tree/mvs/molstar-tree';
+import { MolstarTree } from './tree/molstar/molstar-tree';
 import { MVSDefaults } from './tree/mvs/mvs-defaults';
 
 

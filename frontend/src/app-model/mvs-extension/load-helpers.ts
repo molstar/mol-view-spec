@@ -22,7 +22,7 @@ import { rowToExpression, rowsToExpression } from './helpers/selections';
 import { MolstarLoadingContext } from './load';
 import { Kind, ParamsOfKind, SubTree, SubTreeOfKind, Tree, getChildren } from './tree/generic/tree-schema';
 import { dfs } from './tree/generic/tree-utils';
-import { MolstarKind, MolstarNode, MolstarTree } from './tree/mvs/molstar-tree';
+import { MolstarKind, MolstarNode, MolstarTree } from './tree/molstar/molstar-tree';
 import { DefaultColor } from './tree/mvs/mvs-defaults';
 import { ElementOfSet, canonicalJsonString, decodeColor, distinct, isDefined, stringHash } from './helpers/utils';
 

@@ -1,8 +1,13 @@
+/**
+ * Copyright (c) 2023 mol* contributors, licensed under MIT, See LICENSE file for more info.
+ *
+ * @author Adam Midlik <midlik@gmail.com>
+ */
+
 import { pickObjectKeys } from '../../helpers/utils';
-import { MVSData } from '../../load';
 import { ParamsOfKind, SubTreeOfKind } from '../generic/tree-schema';
-import { MVSKind, MVSNode, MVSTree, MVSTreeSchema, MVS_VERSION } from './mvs-tree';
 import { MVSDefaults } from './mvs-defaults';
+import { MVSData, MVSKind, MVSNode, MVSTree, MVSTreeSchema, MVS_VERSION } from './mvs-tree';
 import { HexColor } from './param-types';
 
 

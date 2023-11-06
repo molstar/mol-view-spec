@@ -12,8 +12,8 @@ import { PluginSpec } from 'molstar/lib/mol-plugin/spec';
 import { BehaviorSubject } from 'rxjs';
 
 import { MolViewSpec } from './mvs-extension/behavior';
-import { MVSData, loadMVS } from './mvs-extension/load';
-import { MVSTree, MVSTreeSchema } from './mvs-extension/tree/mvs/mvs-tree';
+import { loadMVS } from './mvs-extension/load';
+import { MVSData, MVSTree } from './mvs-extension/tree/mvs/mvs-tree';
 import { treeToString } from './mvs-extension/tree/generic/tree-utils';
 
 

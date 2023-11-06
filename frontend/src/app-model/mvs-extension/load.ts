@@ -15,22 +15,14 @@ import { AnnotationStructureComponent } from './additions/annotation-structure-c
 import { AnnotationTooltipsProvider } from './additions/annotation-tooltips-prop';
 import { CustomLabelProps, CustomLabelRepresentationProvider } from './additions/custom-label/representation';
 import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
-import { setCamera, setFocus, setCanvas } from './camera';
+import { setCamera, setCanvas, setFocus } from './camera';
 import { canonicalJsonString } from './helpers/utils';
-import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromXProps, componentPropsFromSelector, isPhantomComponent, labelFromXProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformFromRotationTranslation, transformProps } from './load-helpers';
+import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromXProps, componentPropsFromSelector, isPhantomComponent, labelFromXProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformProps } from './load-helpers';
 import { ParamsOfKind, SubTreeOfKind, validateTree } from './tree/generic/tree-schema';
-import { convertMvsToMolstar } from './tree/mvs/conversion';
-import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/mvs/molstar-tree';
-import { MVSTree, MVSTreeSchema } from './tree/mvs/mvs-tree';
+import { convertMvsToMolstar } from './tree/molstar/conversion';
+import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar/molstar-tree';
+import { MVSData, MVSTreeSchema } from './tree/mvs/mvs-tree';
 
-
-/** Top level of the MolViewSpec (MVS) data format. */
-export interface MVSData {
-    /** MolViewSpec tree */
-    root: MVSTree,
-    /** Integer defining the major version of MolViewSpec format (e.g. 2 for '2.1.8') */
-    version: number,
-}
 
 /** Load a MolViewSpec (MVS) tree into the Mol* plugin.
  * If `deletePrevious`, remove all objects in the current Mol* state; otherwise add to the current state.

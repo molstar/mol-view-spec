@@ -7,9 +7,9 @@
 import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
 import { ConversionRules, addDefaults, condenseTree, convertTree } from '../generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './molstar-tree';
-import { FullMVSTree, MVSTree, MVSTreeSchema } from './mvs-tree';
-import { MVSDefaults } from './mvs-defaults';
-import { MolstarParseFormatT, ParseFormatT } from './param-types';
+import { FullMVSTree, MVSTree, MVSTreeSchema } from '../mvs/mvs-tree';
+import { MVSDefaults } from '../mvs/mvs-defaults';
+import { MolstarParseFormatT, ParseFormatT } from '../mvs/param-types';
 
 
 /** Convert `format` parameter of `parse` node in `MolstarTree`

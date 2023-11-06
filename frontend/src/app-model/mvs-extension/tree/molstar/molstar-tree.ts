@@ -7,8 +7,8 @@
 import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
 import { RequiredField, bool } from '../generic/params-schema';
 import { NodeFor, TreeFor, TreeSchema } from '../generic/tree-schema';
-import { FullMVSTreeSchema } from './mvs-tree';
-import { MolstarParseFormatT } from './param-types';
+import { FullMVSTreeSchema } from '../mvs/mvs-tree';
+import { MolstarParseFormatT } from '../mvs/param-types';
 
 
 /** Schema for `MolstarTree` (intermediate tree representation between `MVSTree` and a real Molstar state) */

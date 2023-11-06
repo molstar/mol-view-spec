@@ -10,7 +10,17 @@ import { MVSDefaults } from './mvs-defaults';
 import { ColorT, ComponentExpression, ComponentSelectorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
 
 
+/** Integer defining the major version of MolViewSpec format (e.g. 2 for '2.1.8') */
 export const MVS_VERSION = 1;
+
+/** Top level of the MolViewSpec (MVS) data format. */
+export interface MVSData {
+    /** MolViewSpec tree */
+    root: MVSTree,
+    /** Integer defining the major version of MolViewSpec format (e.g. 2 for '2.1.8') */
+    version: number,
+}
+
 
 const _DataFromUriParams = {
     /** URL of the annotation resource. */
