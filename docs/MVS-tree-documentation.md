@@ -127,7 +127,7 @@ Tree schema:
 
   - **`component_from_uri`**
 
-    This node instructs to create a component, defined by an external annotation resource.
+    This node instructs to create a component defined by an external annotation resource.
 
     Parent: `structure`
 
@@ -177,7 +177,7 @@ Tree schema:
 
   - **`component_from_source`**
 
-    This node instructs to create a component, defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
+    This node instructs to create a component defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
 
     Parent: `structure`
 

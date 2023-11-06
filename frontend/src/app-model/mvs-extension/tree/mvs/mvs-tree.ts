@@ -47,14 +47,14 @@ const _DataFromSourceParams = {
 export const MVSTreeSchema = TreeSchema({
     rootKind: 'root',
     nodes: {
-        // TODO ensure descriptions everywhere (temp make req)
-        // TODO copy descriptions to docstrings
+        /** Auxiliary node kind that only appears as the tree root. */
         root: {
             description: 'Auxiliary node kind that only appears as the tree root.',
             parent: [],
             params: {
             },
         },
+        /** This node instructs to retrieve a data resource. */
         download: {
             description: 'This node instructs to retrieve a data resource.',
             parent: ['root'],
@@ -63,6 +63,7 @@ export const MVSTreeSchema = TreeSchema({
                 url: RequiredField(str, 'URL of the data resource.'),
             },
         },
+        /** This node instructs to parse a data resource. */
         parse: {
             description: 'This node instructs to parse a data resource.',
             parent: ['download'],
@@ -71,6 +72,7 @@ export const MVSTreeSchema = TreeSchema({
                 format: RequiredField(ParseFormatT, 'Format of the input data resource.'),
             },
         },
+        /** This node instructs to create a structure from a parsed data resource. "Structure" refers to an internal representation of molecular coordinates without any visual representation. */
         structure: {
             description: 'This node instructs to create a structure from a parsed data resource. "Structure" refers to an internal representation of molecular coordinates without any visual representation.',
             parent: ['parse'],
@@ -93,6 +95,7 @@ export const MVSTreeSchema = TreeSchema({
                 ijk_max: OptionalField(tuple([int, int, int]), 'Miller indices of the top-right unit cell to be included (only applies when `kind` is `"symmetry"`).'),
             },
         },
+        /** This node instructs to rotate and/or translate structure coordinates. */
         transform: {
             description: 'This node instructs to rotate and/or translate structure coordinates.',
             parent: ['structure'],
@@ -103,6 +106,7 @@ export const MVSTreeSchema = TreeSchema({
                 translation: OptionalField(Vector3, 'Translation vector, applied to the structure coordinates after rotation. The default value is the zero vector (corresponds to no translation).'),
             },
         },
+        /** This node instructs to create a component (i.e. a subset of the parent structure). */
         component: {
             description: 'This node instructs to create a component (i.e. a subset of the parent structure).',
             parent: ['structure'],
@@ -111,8 +115,9 @@ export const MVSTreeSchema = TreeSchema({
                 selector: RequiredField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)]), 'Defines what part of the parent structure should be included in this component.'),
             },
         },
+        /** This node instructs to create a component defined by an external annotation resource. */
         component_from_uri: {
-            description: 'This node instructs to create a component, defined by an external annotation resource.',
+            description: 'This node instructs to create a component defined by an external annotation resource.',
             parent: ['structure'],
             params: {
                 ..._DataFromUriParams,
@@ -120,8 +125,9 @@ export const MVSTreeSchema = TreeSchema({
                 field_values: OptionalField(nullable(list(str)), 'List of component identifiers (i.e. values in the field given by `field_name`) which should be included in this component. If `null`, component identifiers are ignored (all annotation rows are included), and `field_name` field can be dropped from the annotation.'),
             },
         },
+        /** This node instructs to create a component defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file. */
         component_from_source: {
-            description: 'This node instructs to create a component, defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.',
+            description: 'This node instructs to create a component defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.',
             parent: ['structure'],
             params: {
                 ..._DataFromSourceParams,
@@ -129,6 +135,7 @@ export const MVSTreeSchema = TreeSchema({
                 field_values: OptionalField(nullable(list(str)), 'List of component identifiers (i.e. values in the field given by `field_name`) which should be included in this component. If `null`, component identifiers are ignored (all annotation rows are included), and `field_name` field can be dropped from the annotation.'),
             },
         },
+        /** This node instructs to create a visual representation of a component. */
         representation: {
             description: 'This node instructs to create a visual representation of a component.',
             parent: ['component', 'component_from_uri', 'component_from_source'],
@@ -137,6 +144,7 @@ export const MVSTreeSchema = TreeSchema({
                 type: RequiredField(RepresentationTypeT, 'Method of visual representation of the component.'),
             },
         },
+        /** This node instructs to apply color to a visual representation. */
         color: {
             description: 'This node instructs to apply color to a visual representation.',
             parent: ['representation'],
@@ -147,6 +155,7 @@ export const MVSTreeSchema = TreeSchema({
                 selector: OptionalField(union([ComponentSelectorT, ComponentExpression, list(ComponentExpression)]), 'Defines to what part of the representation this color should be applied.'),
             },
         },
+        /** This node instructs to apply colors to a visual representation. The colors are defined by an external annotation resource. */
         color_from_uri: {
             description: 'This node instructs to apply colors to a visual representation. The colors are defined by an external annotation resource.',
             parent: ['representation'],
@@ -154,6 +163,7 @@ export const MVSTreeSchema = TreeSchema({
                 ..._DataFromUriParams,
             },
         },
+        /** This node instructs to apply colors to a visual representation. The colors are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file. */
         color_from_source: {
             description: 'This node instructs to apply colors to a visual representation. The colors are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.',
             parent: ['representation'],
@@ -161,6 +171,7 @@ export const MVSTreeSchema = TreeSchema({
                 ..._DataFromSourceParams,
             },
         },
+        /** This node instructs to add a label (textual visual representation) to a component. */
         label: {
             description: 'This node instructs to add a label (textual visual representation) to a component.',
             parent: ['component', 'component_from_uri', 'component_from_source'],
@@ -169,6 +180,7 @@ export const MVSTreeSchema = TreeSchema({
                 text: RequiredField(str, 'Content of the shown label.'),
             },
         },
+        /** This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an external annotation resource. */
         label_from_uri: {
             description: 'This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an external annotation resource.',
             parent: ['structure'],
@@ -176,6 +188,7 @@ export const MVSTreeSchema = TreeSchema({
                 ..._DataFromUriParams,
             },
         },
+        /** This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file. */
         label_from_source: {
             description: 'This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.',
             parent: ['structure'],
@@ -183,6 +196,7 @@ export const MVSTreeSchema = TreeSchema({
                 ..._DataFromSourceParams,
             },
         },
+        /** This node instructs to add a tooltip to a component. "Tooltip" is a text which is not a part of the visualization but should be presented to the users when they interact with the component (typically, the tooltip will be shown somewhere on the screen when the user hovers over a visual representation of the component). */
         tooltip: {
             description: 'This node instructs to add a tooltip to a component. "Tooltip" is a text which is not a part of the visualization but should be presented to the users when they interact with the component (typically, the tooltip will be shown somewhere on the screen when the user hovers over a visual representation of the component).',
             parent: ['component', 'component_from_uri', 'component_from_source'],
@@ -191,6 +205,7 @@ export const MVSTreeSchema = TreeSchema({
                 text: RequiredField(str, 'Content of the shown tooltip.'),
             },
         },
+        /** This node instructs to add tooltips to parts of a structure. The tooltips are defined by an external annotation resource. */
         tooltip_from_uri: {
             description: 'This node instructs to add tooltips to parts of a structure. The tooltips are defined by an external annotation resource.',
             parent: ['structure'],
@@ -198,6 +213,7 @@ export const MVSTreeSchema = TreeSchema({
                 ..._DataFromUriParams,
             },
         },
+        /** This node instructs to add tooltips to parts of a structure. The tooltips are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file. */
         tooltip_from_source: {
             description: 'This node instructs to add tooltips to parts of a structure. The tooltips are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.',
             parent: ['structure'],
@@ -205,6 +221,7 @@ export const MVSTreeSchema = TreeSchema({
                 ..._DataFromSourceParams,
             },
         },
+        /** This node instructs to set the camera focus to a component (zoom in). */
         focus: {
             description: 'This node instructs to set the camera focus to a component (zoom in).',
             parent: ['component', 'component_from_uri', 'component_from_source'],
@@ -215,6 +232,7 @@ export const MVSTreeSchema = TreeSchema({
                 up: OptionalField(Vector3, 'Vector which will be aligned with the screen Y axis.'),
             },
         },
+        /** This node instructs to set the camera position and orientation. */
         camera: {
             description: 'This node instructs to set the camera position and orientation.',
             parent: ['root'],
@@ -227,6 +245,7 @@ export const MVSTreeSchema = TreeSchema({
                 up: OptionalField(Vector3, 'Vector which will be aligned with the screen Y axis.'),
             },
         },
+        /** This node sets canvas properties. */
         canvas: {
             description: 'This node sets canvas properties.',
             parent: ['root'],

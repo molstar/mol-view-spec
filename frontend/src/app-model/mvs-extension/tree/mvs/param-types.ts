@@ -9,18 +9,21 @@ import * as t from 'io-ts';
 import { ValueFor, literal, float, int, list, str, tuple, union } from '../generic/params-schema';
 
 
-/** `format` parameter values of `parse` node in MVS tree */
+/** `format` parameter values for `parse` node in MVS tree */
 export const ParseFormatT = literal('mmcif', 'bcif', 'pdb');
 export type ParseFormatT = ValueFor<typeof ParseFormatT>
 
-/** `format` parameter values of `parse` node in Molstar tree */
+/** `format` parameter values for `parse` node in Molstar tree */
 export const MolstarParseFormatT = literal('cif', 'pdb');
 export type MolstarParseFormatT = ValueFor<typeof MolstarParseFormatT>
 
+/** `kind` parameter values for `structure` node in MVS tree */
 export const StructureKindT = literal('model', 'assembly', 'symmetry', 'symmetry_mates');
 
+/** `selector` parameter values for `component` node in MVS tree */
 export const ComponentSelectorT = literal('all', 'polymer', 'protein', 'nucleic', 'branched', 'ligand', 'ion', 'water');
 
+/** `selector` parameter values for `component` node in MVS tree */
 export const ComponentExpression = t.partial({
     label_entity_id: str,
     label_asym_id: str,
@@ -39,16 +42,19 @@ export const ComponentExpression = t.partial({
     atom_index: int,
 });
 
+/** `type` parameter values for `representation` node in MVS tree */
 export const RepresentationTypeT = literal('ball_and_stick', 'cartoon', 'surface');
 
-export const ColorNamesT = literal('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
-
+/** `schema` parameter values for `*_from_uri` and `*_from_source` nodes in MVS tree */
 export const SchemaT = literal('whole_structure', 'entity', 'chain', 'auth_chain', 'residue', 'auth_residue', 'residue_range', 'auth_residue_range', 'atom', 'auth_atom', 'all_atomic');
 
+/** `format` parameter values for `*_from_uri` nodes in MVS tree */
 export const SchemaFormatT = literal('cif', 'bcif', 'json');
 
+/** Parameter values for vector params, e.g. `position` */
 export const Vector3 = tuple([float, float, float]);
 
+/** Parameter values for matrix params, e.g. `rotation` */
 export const Matrix = list(float);
 
 /** Hexadecimal color string, e.g. '#FF1100' */
@@ -60,13 +66,15 @@ export function HexColor(str: string) {
     return str as HexColor;
 }
 
-const hexColorRegex = /^#([0-9A-F]{3}){1,2}$/i; // matches #FF1100 or #f10
+/** Regular expression matching a hexadecimal color string, e.g. '#FF1100' or '#f10' */
+const hexColorRegex = /^#([0-9A-F]{3}){1,2}$/i;
 
 /** Decide if a string is a valid hexadecimal color string (6-digit or 3-digit, e.g. '#FF1100' or '#f10') */
 export function isHexColorString(str: any): str is HexColor {
     return typeof str === 'string' && hexColorRegex.test(str);
 }
 
+/** `color` parameter values for `color` node in MVS tree */
 export const HexColorT = new t.Type<HexColor>(
     'HexColor',
     ((value: any) => typeof value === 'string') as any,
@@ -74,4 +82,8 @@ export const HexColorT = new t.Type<HexColor>(
     value => value
 );
 
+/** `color` parameter values for `color` node in MVS tree */
+export const ColorNamesT = literal('white', 'gray', 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'magenta');
+
+/** `color` parameter values for `color` node in MVS tree */
 export const ColorT = union([HexColorT, ColorNamesT]);
