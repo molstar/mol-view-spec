@@ -11,7 +11,7 @@ router.include_router(examples_router, prefix="/examples")
 app = FastAPI(
     title="Mol View Spec Server",
     description="""
-Compose Mol* views using a simple Python library, which allows you to compose complex scenes in a step-wise manner.
+Generate Mol* views using this simple Python library, which allows you to compose complex scenes in a step-wise manner.
 
 This API demonstrates the capabilities of that library and provides a range of examples to:
 * load structure data

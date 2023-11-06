@@ -1,6 +1,9 @@
 MolViewSpec
 =============
 
+## MolViewSpec Python Library
+Colab Notebook: https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9
+
 ### Setting up the environment
 
 ```

@@ -8,19 +8,19 @@ from molviewspec.nodes import (
     CameraParams,
     CanvasParams,
     ColorFromSourceParams,
+    ColorFromUriParams,
     ColorInlineParams,
     ColorT,
-    ColorFromUriParams,
-    ComponentFromSourceParams,
     ComponentExpression,
+    ComponentFromSourceParams,
+    ComponentFromUriParams,
     ComponentInlineParams,
     ComponentSelectorT,
-    ComponentFromUriParams,
     DownloadParams,
     FocusInlineParams,
     LabelFromSourceParams,
-    LabelInlineParams,
     LabelFromUriParams,
+    LabelInlineParams,
     LineParams,
     Node,
     ParseFormatT,
@@ -33,8 +33,8 @@ from molviewspec.nodes import (
     State,
     StructureParams,
     TooltipFromSourceParams,
-    TooltipInlineParams,
     TooltipFromUriParams,
+    TooltipInlineParams,
     TransformParams,
 )
 from molviewspec.params_utils import make_params
@@ -357,7 +357,9 @@ class Component(_Base):
         self._add_child(node)
         return self
 
-    def focus(self, *, direction: tuple[float, float, float] | None = None, up: tuple[float, float, float] | None = None) -> Component:
+    def focus(
+        self, *, direction: tuple[float, float, float] | None = None, up: tuple[float, float, float] | None = None
+    ) -> Component:
         """
         Focus on this structure or component.
         :return: this builder
@@ -369,15 +371,31 @@ class Component(_Base):
 
 
 class Representation(_Base):
-    def color_from_source(self, *, schema: SchemaT, category_name: str,
-                       field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
+    def color_from_source(
+        self,
+        *,
+        schema: SchemaT,
+        category_name: str,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+    ) -> Representation:
         params = make_params(ColorFromSourceParams, locals())
         node = Node(kind="color_from_source", params=params)
         self._add_child(node)
         return self
 
-    def color_from_uri(self, *, schema: SchemaT, uri: str, format: str, category_name: str | None = None,
-                       field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
+    def color_from_uri(
+        self,
+        *,
+        schema: SchemaT,
+        uri: str,
+        format: str,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+    ) -> Representation:
         params = make_params(ColorFromUriParams, locals())
         node = Node(kind="color_from_uri", params=params)
         self._add_child(node)
