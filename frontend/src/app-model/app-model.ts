@@ -13,8 +13,9 @@ import { BehaviorSubject } from 'rxjs';
 
 import { MolViewSpec } from './mvs-extension/behavior';
 import { loadMVS } from './mvs-extension/load';
-import { MVSData, MVSTree } from './mvs-extension/tree/mvs/mvs-tree';
+import { MVSData } from './mvs-extension/mvs-data';
 import { treeToString } from './mvs-extension/tree/generic/tree-utils';
+import { MVSTree } from './mvs-extension/tree/mvs/mvs-tree';
 
 
 export class AppModel {
@@ -91,9 +92,9 @@ export class AppModel {
     }
 }
 
-async function getTreeFromUrl(url: string): Promise<{ version: number, root: MVSTree }> {
+async function getTreeFromUrl(url: string): Promise<MVSData> {
     console.log(url);
     const response = await fetch(url);
-    const data = await response.json();
-    return data;
+    const data = await response.text();
+    return MVSData.fromMVSJ(data);
 }

@@ -5,21 +5,8 @@
  */
 
 import { OptionalField, RequiredField, float, int, list, nullable, str, tuple, union } from '../generic/params-schema';
-import { NodeFor, TreeFor, TreeSchema, TreeSchemaWithAllRequired, treeSchemaToMarkdown, treeSchemaToString } from '../generic/tree-schema';
-import { MVSDefaults } from './mvs-defaults';
+import { NodeFor, TreeFor, TreeSchema, TreeSchemaWithAllRequired } from '../generic/tree-schema';
 import { ColorT, ComponentExpression, ComponentSelectorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
-
-
-/** Integer defining the major version of MolViewSpec format (e.g. 2 for '2.1.8') */
-export const MVS_VERSION = 1;
-
-/** Top level of the MolViewSpec (MVS) data format. */
-export interface MVSData {
-    /** MolViewSpec tree */
-    root: MVSTree,
-    /** Integer defining the major version of MolViewSpec format (e.g. 2 for '2.1.8') */
-    version: number,
-}
 
 
 const _DataFromUriParams = {
@@ -283,6 +270,3 @@ export const FullMVSTreeSchema = TreeSchemaWithAllRequired(MVSTreeSchema);
 
 /** MolViewSpec tree with all params provided */
 export type FullMVSTree = TreeFor<typeof FullMVSTreeSchema>
-
-console.log(treeSchemaToMarkdown(MVSTreeSchema, MVSDefaults))
-// console.log(treeSchemaToString(MVSTreeSchema, MVSDefaults))

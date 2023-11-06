@@ -9,7 +9,8 @@ import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 
-export function formatObject(obj: {} | undefined) {
+/** Convert object to a human-friendly string (similar to JSON.stringify but without quoting keys) */
+export function formatObject(obj: {} | undefined): string {
     if (!obj) return 'undefined';
     return JSON.stringify(obj).replace(/,("\w+":)/g, ', $1').replace(/"(\w+)":/g, '$1: ');
 }
@@ -32,76 +33,6 @@ export function omitObjectKeys<T extends {}, K extends keyof T>(obj: T, omitKeys
         delete result[key];
     }
     return result as Omit<T, K>;
-}
-
-/** Return an array containing integers from [start, end) if `end` is given,
- * or from [0, start) if `end` is omitted. */
-export function range(start: number, end?: number): number[] {
-    if (end === undefined) {
-        end = start;
-        start = 0;
-    }
-    const length = Math.max(end - start, 0);
-    const result = Array(length);
-    for (let i = 0; i < length; i++) {
-        result[i] = start + i;
-    }
-    return result;
-}
-
-/** Copy all elements from `src` to the end of `dst`.
- * Equivalent to `dst.push(...src)`, but avoids storing element on call stack. Faster that `extend` from Underscore.js.
- * `extend(a, a)` will double the array
- */
-export function extend<T>(dst: T[], src: ArrayLike<T>): void {
-    const offset = dst.length;
-    const nCopy = src.length;
-    dst.length += nCopy;
-    for (let i = 0; i < nCopy; i++) {
-        dst[offset + i] = src[i];
-    }
-}
-
-export function sortIfNeeded<T>(array: T[], compareFn: (a: T, b: T) => number): T[] {
-    const n = array.length;
-    for (let i = 1; i < array.length; i++) {
-        if (compareFn(array[i - 1], array[i]) > 0) {
-            return array.sort(compareFn);
-        }
-    }
-    return array;
-}
-
-/** Return a slice of `array` starting at the first element fulfilling `fromPredicate`
- * up to the last element thenceforward ;) fulfilling `whilePredicate`.
- * E.g. `takeFromWhile([1,2,3,4,6,2,5,6], x => x>=4, x => x%2===0)` -> `[4,6,2]` */
-export function takeFromWhile<T>(array: T[], fromPredicate: (x: T) => boolean, whilePredicate: (x: T) => boolean): T[] {
-    const start = array.findIndex(fromPredicate);
-    if (start < 0) return []; // no elements fulfil fromPredicate
-    const n = array.length;
-    let stop = start;
-    while (stop < n && whilePredicate(array[stop])) stop++;
-    return array.slice(start, stop);
-}
-/** Return a slice of `array` starting at `fromIndex`
- * up to the last element thenceforward ;) fulfilling `whilePredicate`. */
-export function takeWhile<T>(array: T[], whilePredicate: (x: T) => boolean, fromIndex: number = 0): T[] {
-    const n = array.length;
-    let stop = fromIndex;
-    while (stop < n && whilePredicate(array[stop])) stop++;
-    return array.slice(fromIndex, stop);
-}
-/** Remove all elements from the array which do not fulfil `predicate`. Return the modified array itself. */
-export function filterInPlace<T>(array: T[], predicate: (x: T) => boolean): T[] {
-    const n = array.length;
-    let iDest = 0;
-    for (let iSrc = 0; iSrc < n; iSrc++) {
-        if (predicate(array[iSrc])) {
-            array[iDest++] = array[iSrc];
-        }
-    }
-    array.length = iDest;
-    return array;
 }
 
 /** Create an object from keys and values (first key maps to first value etc.) */
@@ -131,6 +62,23 @@ export function mapObjToObj<K extends keyof any, VIn, VOut>(obj: Record<K, VIn>,
     return result;
 }
 
+/** Decide if `obj` is a good old object (not array or null or other type). */
+export function isReallyObject(obj: any): boolean {
+    return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+}
+
+/** Return a copy of object `obj` with sorted keys and dropped keys whose value is undefined. */
+export function sortObjectKeys<T extends {}>(obj: T): T {
+    const result = {} as T;
+    for (const key of Object.keys(obj).sort() as (keyof T)[]) {
+        const value = obj[key];
+        if (value !== undefined) {
+            result[key] = value;
+        }
+    }
+    return result;
+}
+
 /** Like `Promise.all` but with objects instead of arrays */
 export async function promiseAllObj<T extends {}>(promisesObj: { [key in keyof T]: Promise<T[key]> }): Promise<T> {
     const keys = Object.keys(promisesObj);
@@ -138,6 +86,81 @@ export async function promiseAllObj<T extends {}>(promisesObj: { [key in keyof T
     const results = await Promise.all(promises);
     return objectFromKeysAndValues(keys, results) as any;
 }
+
+
+/** Return an array containing integers from [start, end) if `end` is given,
+ * or from [0, start) if `end` is omitted. */
+export function range(start: number, end?: number): number[] {
+    if (end === undefined) {
+        end = start;
+        start = 0;
+    }
+    const length = Math.max(end - start, 0);
+    const result = Array(length);
+    for (let i = 0; i < length; i++) {
+        result[i] = start + i;
+    }
+    return result;
+}
+
+/** Copy all elements from `src` to the end of `dst`.
+ * Equivalent to `dst.push(...src)`, but avoids storing element on call stack. Faster that `extend` from Underscore.js.
+ * `extend(a, a)` will double the array
+ */
+export function extend<T>(dst: T[], src: ArrayLike<T>): void {
+    const offset = dst.length;
+    const nCopy = src.length;
+    dst.length += nCopy;
+    for (let i = 0; i < nCopy; i++) {
+        dst[offset + i] = src[i];
+    }
+}
+
+/** Check whether `array` is sorted, sort if not. */
+export function sortIfNeeded<T>(array: T[], compareFn: (a: T, b: T) => number): T[] {
+    const n = array.length;
+    for (let i = 1; i < array.length; i++) {
+        if (compareFn(array[i - 1], array[i]) > 0) {
+            return array.sort(compareFn);
+        }
+    }
+    return array;
+}
+
+/** Return a slice of `array` starting at the first element fulfilling `fromPredicate`
+ * up to the last element thenceforward ;) fulfilling `whilePredicate`.
+ * E.g. `takeFromWhile([1,2,3,4,6,2,5,6], x => x>=4, x => x%2===0)` -> `[4,6,2]` */
+export function takeFromWhile<T>(array: T[], fromPredicate: (x: T) => boolean, whilePredicate: (x: T) => boolean): T[] {
+    const start = array.findIndex(fromPredicate);
+    if (start < 0) return []; // no elements fulfil fromPredicate
+    const n = array.length;
+    let stop = start;
+    while (stop < n && whilePredicate(array[stop])) stop++;
+    return array.slice(start, stop);
+}
+
+/** Return a slice of `array` starting at `fromIndex`
+ * up to the last element thenceforward ;) fulfilling `whilePredicate`. */
+export function takeWhile<T>(array: T[], whilePredicate: (x: T) => boolean, fromIndex: number = 0): T[] {
+    const n = array.length;
+    let stop = fromIndex;
+    while (stop < n && whilePredicate(array[stop])) stop++;
+    return array.slice(fromIndex, stop);
+}
+
+/** Remove all elements from the array which do not fulfil `predicate`. Return the modified array itself. */
+export function filterInPlace<T>(array: T[], predicate: (x: T) => boolean): T[] {
+    const n = array.length;
+    let iDest = 0;
+    for (let iSrc = 0; iSrc < n; iSrc++) {
+        if (predicate(array[iSrc])) {
+            array[iDest++] = array[iSrc];
+        }
+    }
+    array.length = iDest;
+    return array;
+}
+
 
 /** Represents either the result or the reason of failure of an operation that might have failed */
 export type Maybe<T> = { ok: true, value: T } | { ok: false, error: any }
@@ -152,6 +175,7 @@ export async function safePromise<T>(promise: T): Promise<Maybe<Awaited<T>>> {
     }
 }
 
+
 /** A map where values are arrays. Handles missing keys when adding values. */
 export class MultiMap<K, V> extends Map<K, V[]> {
     /** Append value to a key (handles missing keys) */
@@ -163,10 +187,8 @@ export class MultiMap<K, V> extends Map<K, V[]> {
     }
 }
 
-
 /** Basic subset of `Map<K, V>`, only needs to have `get` method */
 export type Mapping<K, V> = Pick<Map<K, V>, 'get'>
-
 
 /** Implementation of `Map` where keys are integers
  * and most keys are expected to be from interval `[0, limit)`.
@@ -192,23 +214,6 @@ export class NumberMap<K extends number, V> implements Mapping<K, V> {
 /** A JSON-serializable value */
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json | undefined }
 
-
-/** Decide if `obj` is a good old object (not array or null or other type). */
-export function isReallyObject(obj: any): boolean {
-    return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
-}
-
-/** Return a copy of object `obj` with sorted keys and dropped keys whose value is undefined. */
-export function sortObjectKeys<T extends {}>(obj: T): T {
-    const result = {} as T;
-    for (const key of Object.keys(obj).sort() as (keyof T)[]) {
-        const value = obj[key];
-        if (value !== undefined) {
-            result[key] = value;
-        }
-    }
-    return result;
-}
 
 /** Return a canonical string representation for a JSON-able object,
  * independent from object key order and undefined properties. */

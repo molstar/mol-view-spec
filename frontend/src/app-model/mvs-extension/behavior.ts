@@ -19,7 +19,6 @@ import { AnnotationTooltipsLabelProvider, AnnotationTooltipsProvider } from './a
 import { CustomLabelRepresentationProvider } from './additions/custom-label/representation';
 import { CustomTooltipsLabelProvider, CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { makeMultilayerColorThemeProvider } from './additions/multilayer-color-theme';
-import { PluginContext } from 'molstar/lib/mol-plugin/context';
 
 
 /** Collection of things that can be register/unregistered in a plugin */

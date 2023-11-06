@@ -46,9 +46,9 @@ const mvsToMolstarConversionRules: ConversionRules<FullMVSTree, MolstarTree> = {
         ] satisfies MolstarNode[];
     },
 };
+
 /** Node kinds in `MolstarTree` that it makes sense to condense */
 const molstarNodesToCondense = new Set<MolstarKind>(['download', 'parse', 'trajectory', 'model'] satisfies MolstarKind[]);
-
 
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {

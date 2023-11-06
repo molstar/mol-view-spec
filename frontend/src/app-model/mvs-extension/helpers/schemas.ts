@@ -27,10 +27,11 @@ export const AnnotationSchema = new Choice(
         auth_atom: 'Atom (auth*)',
         all_atomic: 'All atomic selectors',
     },
-    'all_atomic');
+    'all_atomic',
+);
 
 /** Represents a set of criteria for selection of atoms in a model (in `all_atomic` schema).
-* Missing/undefined values mean that we do not care about that specific atom property. */
+ * Missing/undefined values mean that we do not care about that specific atom property. */
 export type AnnotationRow = Partial<Table.Row<typeof AllAtomicCifAnnotationSchema>>
 
 
@@ -89,4 +90,3 @@ const FieldsForSchemas = {
     auth_atom: ['group_id', 'auth_asym_id', 'auth_seq_id', 'pdbx_PDB_ins_code', 'auth_atom_id', 'type_symbol', 'atom_id', 'atom_index'],
     all_atomic: Object.keys(AllAtomicCifAnnotationSchema) as (keyof typeof AllAtomicCifAnnotationSchema)[],
 } satisfies { [schema in AnnotationSchema]: (keyof typeof AllAtomicCifAnnotationSchema)[] };
-

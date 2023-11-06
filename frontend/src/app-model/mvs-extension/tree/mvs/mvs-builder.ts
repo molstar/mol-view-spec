@@ -5,13 +5,14 @@
  */
 
 import { HexColor, pickObjectKeys } from '../../helpers/utils';
+import { MVSData } from '../../mvs-data';
 import { ParamsOfKind, SubTreeOfKind } from '../generic/tree-schema';
 import { MVSDefaults } from './mvs-defaults';
-import { MVSData, MVSKind, MVSNode, MVSTree, MVSTreeSchema, MVS_VERSION } from './mvs-tree';
+import { MVSKind, MVSNode, MVSTree, MVSTreeSchema } from './mvs-tree';
 
 
 /** Create a new MolViewSpec builder containing only a root node. Example of MVS builder usage:
- * 
+ *
  * ```
  * const builder = createBuilder();
  * builder.canvas({ background_color: 'white' });
@@ -54,7 +55,7 @@ export class Root extends _Base<'root'> {
     }
     /** Return the current state of the builder as object in MVS format. */
     getState(): MVSData {
-        return { version: MVS_VERSION, root: this._node };
+        return { version: MVSData.SupportedVersion, root: this._node };
     }
     // omitting `saveState`, filesystem operations are responsibility of the caller code (platform-dependent)
 

@@ -17,6 +17,7 @@ import { ElementSet, Selector, SelectorParams } from './selector';
 
 
 /** Parameter definition for custom structure property "CustomTooltips" */
+export type CustomTooltipsParams = typeof CustomTooltipsParams
 export const CustomTooltipsParams = {
     tooltips: PD.ObjectList(
         {
@@ -26,7 +27,6 @@ export const CustomTooltipsParams = {
         obj => obj.text
     ),
 };
-export type CustomTooltipsParams = typeof CustomTooltipsParams
 
 /** Parameter values of custom structure property "CustomTooltips" */
 export type CustomTooltipsProps = PD.Values<CustomTooltipsParams>
@@ -56,7 +56,7 @@ export const CustomTooltipsProvider: CustomStructureProperty.Provider<CustomTool
 });
 
 
-/** Label provider based on  custom structure property "CustomTooltips" */
+/** Label provider based on custom structure property "CustomTooltips" */
 export const CustomTooltipsLabelProvider = {
     label: (loci: Loci): string | undefined => {
         switch (loci.kind) {

@@ -296,7 +296,6 @@ function getRowsFromJson(data: Json, schema: AnnotationSchema): AnnotationRow[] 
 
 function getRowsFromCif(data: CifCategory, schema: AnnotationSchema): AnnotationRow[] {
     const rows: AnnotationRow[] = [];
-    // const cifSchema = pickObjectKeys(CIFAnnotationSchema, FieldsForSchemas[schema]);
     const cifSchema = getCifAnnotationSchema(schema);
     const table = toTable(cifSchema, data);
     extend(rows, getRowsFromTable(table)); // Avoiding Table.getRows(table) as it replaces . and ? fields by 0 or ''
@@ -321,11 +320,10 @@ function getRowsFromTable<S extends Table.Schema>(table: Table<S>): Partial<Tabl
     return rows;
 }
 
-
 async function getFileFromSource(ctx: CustomProperty.Context, source: AnnotationSource, model?: Model): Promise<AnnotationFile> {
     switch (source.kind) {
         case 'source-cif':
-            return { format: 'cif', data: getFileFromModel(model) };
+            return { format: 'cif', data: getSourceFileFromModel(model) };
         case 'url':
             const url = Asset.getUrlAsset(ctx.assetManager, source.url);
             const dataType = AnnotationFormatTypes[source.format];
@@ -344,6 +342,7 @@ async function getFileFromSource(ctx: CustomProperty.Context, source: Annotation
             }
     }
 }
+
 /** Like `sources.map(s => safePromise(getFileFromSource(ctx, s)))`
  * but downloads a repeating source only once. */
 async function getFilesFromSources(ctx: CustomProperty.Context, sources: AnnotationSource[], model?: Model): Promise<Maybe<AnnotationFile>[]> {
@@ -356,7 +355,7 @@ async function getFilesFromSources(ctx: CustomProperty.Context, sources: Annotat
     return sources.map(src => files[canonicalJsonString(src)]);
 }
 
-function getFileFromModel(model?: Model): CifFile {
+function getSourceFileFromModel(model?: Model): CifFile {
     if (model && MmcifFormat.is(model.sourceData)) {
         if (model.sourceData.data.file) {
             return model.sourceData.data.file;

@@ -18,10 +18,11 @@ import { CustomTooltipsProvider } from './additions/custom-tooltips-prop';
 import { setCamera, setCanvas, setFocus } from './camera';
 import { canonicalJsonString } from './helpers/utils';
 import { AnnotationFromSourceKind, AnnotationFromUriKind, LoadingActions, collectAnnotationReferences, collectAnnotationTooltips, collectInlineTooltips, colorThemeForNode, componentFromXProps, componentPropsFromSelector, isPhantomComponent, labelFromXProps, loadTree, makeNearestReprMap, representationProps, structureProps, transformProps } from './load-helpers';
+import { MVSData } from './mvs-data';
 import { ParamsOfKind, SubTreeOfKind, validateTree } from './tree/generic/tree-schema';
 import { convertMvsToMolstar } from './tree/molstar/conversion';
 import { MolstarNode, MolstarTree, MolstarTreeSchema } from './tree/molstar/molstar-tree';
-import { MVSData, MVSTreeSchema } from './tree/mvs/mvs-tree';
+import { MVSTreeSchema } from './tree/mvs/mvs-tree';
 
 
 /** Load a MolViewSpec (MVS) tree into the Mol* plugin.
