@@ -31,6 +31,7 @@ class _Base<TKind extends MVSKind> {
 
 }
 
+// TODO continue here adding docstrings
 export class Root extends _Base<'root'> {
     constructor() {
         const node: MVSNode<'root'> = { kind: 'root' };

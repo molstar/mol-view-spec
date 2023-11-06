@@ -37,6 +37,7 @@ export type SubTree<TTree extends Tree> = NonNullable<TTree['children']>[number]
 
 /** Type of any subtree that can occur within given `TTree` tree type and has kind type `TKind` */
 export type SubTreeOfKind<TTree extends Tree, TKind extends Kind<SubTree<TTree>> = Kind<SubTree<TTree>>> = RootOfKind<SubTree<TTree>, TKind>
+
 type RootOfKind<TTree extends Tree, TKind extends Kind<TTree>> = Extract<TTree, Tree<any, Node<TKind>>>
 
 /** Params type for a given kind type within a tree */
@@ -55,13 +56,18 @@ export function getChildren<TTree extends Tree>(tree: TTree): SubTree<TTree>[] {
 
 type ParamsSchemas = { [kind: string]: ParamsSchema }
 
-/** Definition of tree type, specifying allowed node kinds, types of their params, and the required kind for the root */
+/** Definition of tree type, specifying allowed node kinds, types of their params, required kind for the root, and allowed parent-child kind combinations */
 export interface TreeSchema<TParamsSchemas extends ParamsSchemas = ParamsSchemas, TRootKind extends keyof TParamsSchemas = string> {
+    /** Required kind of the root node */
     rootKind: TRootKind,
+    /** Definition of allowed node kinds */
     nodes: {
         [kind in keyof TParamsSchemas]: {
+            /** Params schema for this node kind */
             params: TParamsSchemas[kind],
+            /** Documentation for this node kind */
             description?: string,
+            /** Node kinds that can serve as parent for this node kind (`undefined` means the parent can be of any kind) */
             parent?: (string & keyof TParamsSchemas)[],
         }
     },
@@ -73,38 +79,28 @@ export function TreeSchema<P extends ParamsSchemas = ParamsSchemas, R extends ke
 /** ParamsSchemas per node kind */
 type ParamsSchemasOf<TTreeSchema extends TreeSchema> = TTreeSchema extends TreeSchema<infer TParamsSchema, any> ? TParamsSchema : never;
 
+/** Variation of params schemas where all param fields are required */
+type ParamsSchemasWithAllRequired<TParamsSchemas extends ParamsSchemas> = { [kind in keyof TParamsSchemas]: AllRequired<TParamsSchemas[kind]> }
 
-/** Variation of schema `TTreeSchema` where all param fields are required */
-export type TreeWithAllRequired<TTreeSchema extends TreeSchema> = {
-    rootKind: TTreeSchema['rootKind'],
-    nodes: {
-        [kind in keyof TTreeSchema['nodes']]: {
-            params: AllRequired<TTreeSchema['nodes'][kind]['params']>,
-            description?: string,
-            parent?: TTreeSchema['nodes'][kind]['parent'],
-        }
-    },
-}
-
-/** Create of copy of a params schema where all fields are required */
-export function TreeWithAllRequired<TTreeSchema extends TreeSchema>(schema: TTreeSchema): TreeWithAllRequired<TTreeSchema> {
+/** Variation of a tree schema where all param fields are required */
+export type TreeSchemaWithAllRequired<TTreeSchema extends TreeSchema> = TreeSchema<ParamsSchemasWithAllRequired<ParamsSchemasOf<TTreeSchema>>, TTreeSchema['rootKind']>
+export function TreeSchemaWithAllRequired<TTreeSchema extends TreeSchema>(schema: TTreeSchema): TreeSchemaWithAllRequired<TTreeSchema> {
     return {
         ...schema,
         nodes: mapObjToObj(schema.nodes, (kind, node) => ({ ...node, params: AllRequired(node.params) })) as any,
     };
 }
 
+/** Type of tree node which can occur as the root of a tree conforming to tree schema `TTreeSchema` */
+export type RootFor<TTreeSchema extends TreeSchema> = NodeFor<TTreeSchema, TTreeSchema['rootKind']>
+
 /** Type of tree node which can occur anywhere in a tree conforming to tree schema `TTreeSchema`,
  * optionally narrowing down to a given node kind */
-
-export type NodeForTree<TTreeSchema extends TreeSchema, TKind extends keyof ParamsSchemasOf<TTreeSchema> = keyof ParamsSchemasOf<TTreeSchema>>
+export type NodeFor<TTreeSchema extends TreeSchema, TKind extends keyof ParamsSchemasOf<TTreeSchema> = keyof ParamsSchemasOf<TTreeSchema>>
     = { [key in keyof ParamsSchemasOf<TTreeSchema>]: Node<key & string, ValuesFor<ParamsSchemasOf<TTreeSchema>[key]>> }[TKind]
 
-/** Type of tree node which can occur as the root of a tree conforming to tree schema `TTreeSchema` */
-export type RootForTree<TTreeSchema extends TreeSchema> = NodeForTree<TTreeSchema, TTreeSchema['rootKind']>
-
 /** Type of tree which conforms to tree schema `TTreeSchema` */
-export type TreeFor<TTreeSchema extends TreeSchema> = Tree<NodeForTree<TTreeSchema>, RootForTree<TTreeSchema> & NodeForTree<TTreeSchema>>
+export type TreeFor<TTreeSchema extends TreeSchema> = Tree<NodeFor<TTreeSchema>, RootFor<TTreeSchema> & NodeFor<TTreeSchema>>
 
 /** Type of default parameter values for each node kind in a tree schema `TTreeSchema` */
 export type DefaultsForTree<TTreeSchema extends TreeSchema> = { [kind in keyof TTreeSchema['nodes']]: DefaultsFor<TTreeSchema['nodes'][kind]['params']> }
@@ -148,7 +144,15 @@ export function validateTree(schema: TreeSchema, tree: Tree, label: string): voi
     }
 }
 
-function treeSchemaToString_<TSchema extends TreeSchema>(schema: TSchema, defaults?: DefaultsForTree<TSchema>, markdown: boolean = false): string {
+/** Return documentation for a tree schema as plain text */
+export function treeSchemaToString<S extends TreeSchema>(schema: S, defaults?: DefaultsForTree<S>): string {
+    return treeSchemaToString_(schema, defaults, false);
+}
+/** Return documentation for a tree schema as markdown text */
+export function treeSchemaToMarkdown<S extends TreeSchema>(schema: S, defaults?: DefaultsForTree<S>): string {
+    return treeSchemaToString_(schema, defaults, true);
+}
+function treeSchemaToString_<S extends TreeSchema>(schema: S, defaults?: DefaultsForTree<S>, markdown: boolean = false): string {
     const out: string[] = [];
     const bold = (str: string) => markdown ? `**${str}**` : str;
     const code = (str: string) => markdown ? `\`${str}\`` : str;
@@ -181,11 +185,4 @@ function treeSchemaToString_<TSchema extends TreeSchema>(schema: TSchema, defaul
         }
     }
     return out.join(markdown ? '\n\n' : '\n');
-}
-
-export function treeSchemaToString<TSchema extends TreeSchema>(schema: TSchema, defaults?: DefaultsForTree<TSchema>): string {
-    return treeSchemaToString_(schema, defaults, false);
-}
-export function treeSchemaToMarkdown<TSchema extends TreeSchema>(schema: TSchema, defaults?: DefaultsForTree<TSchema>): string {
-    return treeSchemaToString_(schema, defaults, true);
 }

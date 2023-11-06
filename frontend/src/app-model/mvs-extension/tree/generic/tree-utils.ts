@@ -5,22 +5,21 @@
  */
 
 import { canonicalJsonString, formatObject } from '../../helpers/utils';
-import { DefaultsForTree, Kind, SubTree, SubTreeOfKind, Tree, TreeFor, TreeSchema, TreeWithAllRequired, getParams } from './tree-schema';
+import { DefaultsForTree, Kind, SubTree, SubTreeOfKind, Tree, TreeFor, TreeSchema, TreeSchemaWithAllRequired, getParams } from './tree-schema';
 
-
-function _dfs<TTree extends Tree>(root: TTree, parent: SubTree<TTree> | undefined, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
-    if (visit) visit(root, parent);
-    for (const child of root.children ?? []) {
-        _dfs<SubTree<TTree>>(child, root, visit, postVisit);
-    }
-    if (postVisit) postVisit(root, parent);
-}
 
 /** Run DFS (depth-first search) algorithm on a rooted tree.
  * Runs `visit` function when a node is discovered (before visiting any descendants).
  * Runs `postVisit` function when leaving a node (after all descendants have been visited). */
 export function dfs<TTree extends Tree>(root: TTree, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
     return _dfs<SubTree<TTree>>(root, undefined, visit, postVisit);
+}
+function _dfs<TTree extends Tree>(root: TTree, parent: SubTree<TTree> | undefined, visit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any, postVisit?: (node: SubTree<TTree>, parent?: SubTree<TTree>) => any) {
+    if (visit) visit(root, parent);
+    for (const child of root.children ?? []) {
+        _dfs<SubTree<TTree>>(child, root, visit, postVisit);
+    }
+    if (postVisit) postVisit(root, parent);
 }
 
 /** Convert a tree into a pretty-printed string. */
@@ -123,7 +122,7 @@ export function condenseTree<T extends Tree>(root: T, condenseNodes?: Set<Kind<T
 }
 
 /** Create a copy of the tree where missing optional params for each node are added based on `defaults`. */
-export function addDefaults<S extends TreeSchema>(tree: TreeFor<S>, defaults: DefaultsForTree<S>): TreeFor<TreeWithAllRequired<S>> {
+export function addDefaults<S extends TreeSchema>(tree: TreeFor<S>, defaults: DefaultsForTree<S>): TreeFor<TreeSchemaWithAllRequired<S>> {
     const rules: ConversionRules<TreeFor<S>, TreeFor<S>> = {};
     for (const kind in defaults) {
         rules[kind] = node => [{ kind: node.kind, params: { ...defaults[kind], ...node.params } } as any];

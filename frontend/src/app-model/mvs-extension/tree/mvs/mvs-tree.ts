@@ -5,7 +5,7 @@
  */
 
 import { OptionalField, RequiredField, float, int, list, nullable, str, tuple, union } from '../generic/params-schema';
-import { NodeForTree, TreeFor, TreeSchema, TreeWithAllRequired, treeSchemaToMarkdown, treeSchemaToString } from '../generic/tree-schema';
+import { NodeFor, TreeFor, TreeSchema, TreeSchemaWithAllRequired, treeSchemaToMarkdown, treeSchemaToString } from '../generic/tree-schema';
 import { MVSDefaults } from './mvs-defaults';
 import { ColorT, ComponentExpression, ComponentSelectorT, Matrix, ParseFormatT, RepresentationTypeT, SchemaFormatT, SchemaT, StructureKindT, Vector3 } from './param-types';
 
@@ -243,14 +243,14 @@ export const MVSTreeSchema = TreeSchema({
 export type MVSKind = keyof typeof MVSTreeSchema.nodes
 
 /** Node in a `MVSTree` */
-export type MVSNode<TKind extends MVSKind = MVSKind> = NodeForTree<typeof MVSTreeSchema, TKind>
+export type MVSNode<TKind extends MVSKind = MVSKind> = NodeFor<typeof MVSTreeSchema, TKind>
 
 /** MolViewSpec tree */
 export type MVSTree = TreeFor<typeof MVSTreeSchema>
 
 
 /** Schema for `MVSTree` (MolViewSpec tree with all params provided) */
-export const FullMVSTreeSchema = TreeWithAllRequired(MVSTreeSchema);
+export const FullMVSTreeSchema = TreeSchemaWithAllRequired(MVSTreeSchema);
 
 /** MolViewSpec tree with all params provided */
 export type FullMVSTree = TreeFor<typeof FullMVSTreeSchema>

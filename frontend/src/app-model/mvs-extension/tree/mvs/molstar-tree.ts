@@ -6,12 +6,12 @@
 
 import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
 import { RequiredField, bool } from '../generic/params-schema';
-import { NodeForTree, TreeFor, TreeSchema } from '../generic/tree-schema';
+import { NodeFor, TreeFor, TreeSchema } from '../generic/tree-schema';
 import { FullMVSTreeSchema } from './mvs-tree';
 import { MolstarParseFormatT } from './param-types';
 
 
-/** Schema for `MolstarTree` (intermediate tree representation before creating a real Molstar state) */
+/** Schema for `MolstarTree` (intermediate tree representation between `MVSTree` and a real Molstar state) */
 export const MolstarTreeSchema = TreeSchema({
     rootKind: 'root',
     nodes: {
@@ -44,6 +44,7 @@ export const MolstarTreeSchema = TreeSchema({
             parent: ['trajectory'],
             params: pickObjectKeys(FullMVSTreeSchema.nodes.structure.params, ['model_index'] as const),
         },
+        /** Auxiliary node corresponding to Molstar's StructureFromModel. */
         structure: {
             ...FullMVSTreeSchema.nodes.structure,
             parent: ['model'],
@@ -57,7 +58,7 @@ export const MolstarTreeSchema = TreeSchema({
 export type MolstarKind = keyof typeof MolstarTreeSchema.nodes;
 
 /** Node in a `MolstarTree` */
-export type MolstarNode<TKind extends MolstarKind = MolstarKind> = NodeForTree<typeof MolstarTreeSchema, TKind>
+export type MolstarNode<TKind extends MolstarKind = MolstarKind> = NodeFor<typeof MolstarTreeSchema, TKind>
 
-/** Intermediate tree representation before creating a real Molstar state */
+/** Intermediate tree representation between `MVSTree` and a real Molstar state */
 export type MolstarTree = TreeFor<typeof MolstarTreeSchema>

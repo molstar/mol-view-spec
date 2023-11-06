@@ -56,13 +56,13 @@ interface Field<V extends AllowedValueTypes = any, R extends boolean = boolean> 
 export interface RequiredField<V extends AllowedValueTypes = any> extends Field<V> {
     required: true,
 }
+export function RequiredField<V extends AllowedValueTypes>(type: t.Type<V>, description?: string): RequiredField<V> {
+    return { type, required: true, description };
+}
+
 /** Schema for param field which can be dropped (meaning that a default value will be used) */
 export interface OptionalField<V extends AllowedValueTypes = any> extends Field<V> {
     required: false,
-}
-
-export function RequiredField<V extends AllowedValueTypes>(type: t.Type<V>, description?: string): RequiredField<V> {
-    return { type, required: true, description };
 }
 export function OptionalField<V extends AllowedValueTypes>(type: t.Type<V>, description?: string): OptionalField<V> {
     return { type, required: false, description };
@@ -91,7 +91,6 @@ export type ParamsSchema<TKey extends string = string> = { [key in TKey]: Field 
 
 /** Variation of a params schema where all fields are required */
 export type AllRequired<TParamsSchema extends ParamsSchema> = { [key in keyof TParamsSchema]: TParamsSchema[key] extends Field<infer V> ? RequiredField<V> : never }
-
 export function AllRequired<TParamsSchema extends ParamsSchema>(paramsSchema: TParamsSchema): AllRequired<TParamsSchema> {
     return mapObjToObj(paramsSchema, (key, field) => RequiredField(field.type, field.description)) as AllRequired<TParamsSchema>;
 }
@@ -100,8 +99,10 @@ export function AllRequired<TParamsSchema extends ParamsSchema>(paramsSchema: TP
 export type ValuesFor<P extends ParamsSchema> =
     { [key in keyof P as (P[key] extends RequiredField<any> ? key : never)]: ValueFor<P[key]> }
     & { [key in keyof P as (P[key] extends OptionalField<any> ? key : never)]?: ValueFor<P[key]> }
+
 /** Type of full values for a params schema, i.e. including all optional fields */
 export type FullValuesFor<P extends ParamsSchema> = { [key in keyof P]: ValueFor<P[key]> }
+
 /** Type of default values for a params schema, i.e. including only optional fields */
 export type DefaultsFor<P extends ParamsSchema> = { [key in keyof P as (P[key] extends Field<any, false> ? key : never)]: ValueFor<P[key]> }
 
