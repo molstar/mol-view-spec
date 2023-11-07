@@ -175,7 +175,7 @@ export function isPhantomComponent(node: SubTreeOfKind<MolstarTree, 'component' 
 /** Create props for `StructureFromModel` transformer from a structure node. */
 export function structureProps(node: MolstarNode<'structure'>): StateTransformer.Params<StructureFromModel> {
     const params = node.params;
-    switch (params.kind) {
+    switch (params.type) {
         case 'model':
             return {
                 type: {
@@ -205,7 +205,7 @@ export function structureProps(node: MolstarNode<'structure'>): StateTransformer
                 }
             };
         default:
-            throw new Error(`NotImplementedError: Loading action for "structure" node, kind "${params.kind}"`);
+            throw new Error(`NotImplementedError: Loading action for "structure" node, type "${params.type}"`);
     }
 }
 

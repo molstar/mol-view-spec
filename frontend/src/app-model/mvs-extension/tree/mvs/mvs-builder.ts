@@ -91,7 +91,7 @@ const StructureParamsSubsets = {
     assembly: ['block_header', 'block_index', 'model_index', 'assembly_id'],
     symmetry: ['block_header', 'block_index', 'model_index', 'ijk_min', 'ijk_max'],
     symmetry_mates: ['block_header', 'block_index', 'model_index', 'radius'],
-} satisfies { [kind in ParamsOfKind<MVSTree, 'structure'>['kind']]: (keyof ParamsOfKind<MVSTree, 'structure'>)[] };
+} satisfies { [kind in ParamsOfKind<MVSTree, 'structure'>['type']]: (keyof ParamsOfKind<MVSTree, 'structure'>)[] };
 
 
 /** MVS builder pointing to a 'parse' node */
@@ -100,7 +100,7 @@ export class Parse extends _Base<'parse'> {
      * Return builder pointing to the new node. */
     modelStructure(params: Pick<ParamsOfKind<MVSTree, 'structure'>, typeof StructureParamsSubsets['model'][number]> = {}): Structure {
         return new Structure(this._root, this.addChild('structure', {
-            kind: 'model',
+            type: 'model',
             ...pickObjectKeys(params, StructureParamsSubsets.model),
         }));
     }
@@ -108,7 +108,7 @@ export class Parse extends _Base<'parse'> {
      * Return builder pointing to the new node. */
     assemblyStructure(params: Pick<ParamsOfKind<MVSTree, 'structure'>, typeof StructureParamsSubsets['assembly'][number]> = {}): Structure {
         return new Structure(this._root, this.addChild('structure', {
-            kind: 'assembly',
+            type: 'assembly',
             ...pickObjectKeys(params, StructureParamsSubsets.assembly),
         }));
     }
@@ -116,7 +116,7 @@ export class Parse extends _Base<'parse'> {
      * Return builder pointing to the new node. */
     symmetryStructure(params: Pick<ParamsOfKind<MVSTree, 'structure'>, typeof StructureParamsSubsets['symmetry'][number]> = {}): Structure {
         return new Structure(this._root, this.addChild('structure', {
-            kind: 'symmetry',
+            type: 'symmetry',
             ...pickObjectKeys(params, StructureParamsSubsets.symmetry),
         }));
     }
@@ -124,7 +124,7 @@ export class Parse extends _Base<'parse'> {
      * Return builder pointing to the new node. */
     symmetryMatesStructure(params: Pick<ParamsOfKind<MVSTree, 'structure'>, typeof StructureParamsSubsets['symmetry_mates'][number]> = {}): Structure {
         return new Structure(this._root, this.addChild('structure', {
-            kind: 'symmetry_mates',
+            type: 'symmetry_mates',
             ...pickObjectKeys(params, StructureParamsSubsets.symmetry_mates),
         }));
     }

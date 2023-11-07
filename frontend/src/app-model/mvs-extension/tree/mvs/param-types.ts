@@ -19,7 +19,7 @@ export const MolstarParseFormatT = literal('cif', 'pdb');
 export type MolstarParseFormatT = ValueFor<typeof MolstarParseFormatT>
 
 /** `kind` parameter values for `structure` node in MVS tree */
-export const StructureKindT = literal('model', 'assembly', 'symmetry', 'symmetry_mates');
+export const StructureTypeT = literal('model', 'assembly', 'symmetry', 'symmetry_mates');
 
 /** `selector` parameter values for `component` node in MVS tree */
 export const ComponentSelectorT = literal('all', 'polymer', 'protein', 'nucleic', 'branched', 'ligand', 'ion', 'water');

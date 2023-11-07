@@ -126,7 +126,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="model")
+        params = make_params(StructureParams, locals(), type="model")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -146,7 +146,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="assembly")
+        params = make_params(StructureParams, locals(), type="assembly")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -166,7 +166,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="symmetry")
+        params = make_params(StructureParams, locals(), type="symmetry")
         if ijk_min is None:
             params["ijk_min"] = (-1, -1, -1)
         if ijk_max is None:
@@ -188,7 +188,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="symmetry_mates")
+        params = make_params(StructureParams, locals(), type="symmetry_mates")
         if radius is None:
             params["radius"] = 5.0
         node = Node(kind="structure", params=params)
