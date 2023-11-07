@@ -61,8 +61,6 @@ class StructureParams(Params):
     kind: StructureKindT
     assembly_id: NotRequired[str]
     """Use the name to specify which assembly to load"""
-    assembly_index: NotRequired[int]
-    """0-based assembly index, use this to load the 1st assembly"""
     model_index: NotRequired[int]
     """0-based model index in case multiple NMR frames are present"""
     block_index: NotRequired[int]

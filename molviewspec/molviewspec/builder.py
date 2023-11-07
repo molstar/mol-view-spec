@@ -135,7 +135,6 @@ class Parse(_Base):
         self,
         *,
         assembly_id: str | None = None,
-        assembly_index: int | None = None,
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
@@ -143,13 +142,10 @@ class Parse(_Base):
         """
         Create an assembly structure.
         :param assembly_id: Use the name to specify which assembly to load
-        :param assembly_index: 0-based assembly index, use this to load the 1st assembly
         :param model_index: 0-based model index in case multiple NMR frames are present
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        if assembly_id is None and assembly_index is None:
-            assembly_index = 0
         params = make_params(StructureParams, locals(), kind="assembly")
         node = Node(kind="structure", params=params)
         self._add_child(node)
