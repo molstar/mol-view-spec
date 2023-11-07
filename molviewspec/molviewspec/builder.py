@@ -156,6 +156,7 @@ class Parse(_Base):
         *,
         ijk_min: tuple[int, int, int] | None = None,
         ijk_max: tuple[int, int, int] | None = None,
+        model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> Structure:
@@ -179,6 +180,7 @@ class Parse(_Base):
         self,
         *,
         radius: float | None = None,
+        model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> Structure:
