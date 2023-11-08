@@ -67,11 +67,11 @@ class ParseParams(Params):
     format: ParseFormatT = Field(description="The format of the structure data.")
 
 
-StructureKindT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
+StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 
 class StructureParams(Params):
-    kind: StructureKindT
+    type: StructureTypeT
     assembly_id: Optional[str] = Field(description="Use the name to specify which assembly to load")
     assembly_index: Optional[int] = Field(description="0-based assembly index, use this to load the 1st assembly")
     model_index: Optional[int] = Field(description="0-based model index in case multiple NMR frames are present")
@@ -147,7 +147,7 @@ class _DataFromUriParams(Params):
         description="Name of the column in CIF or field name (key) in JSON that "
         "contains the desired value (color/label/tooltip/component...); the "
         "default value is 'color'/'label'/'tooltip'/'component' depending "
-        "on the node type"
+        "on the node kind"
     )
     block_header: Optional[str] = Field(description="Only applies when format is 'cif' or 'bcif'")
     block_index: Optional[int] = Field(description="Only applies when format is 'cif' or 'bcif'")
@@ -159,7 +159,7 @@ class _DataFromSourceParams(Params):
     field_name: Optional[str] = Field(
         description="Name of the column in CIF that contains the desired value ("
         "color/label/tooltip/component...); the default value is "
-        "'color'/'label'/'tooltip'/'component' depending on the node type"
+        "'color'/'label'/'tooltip'/'component' depending on the node kind"
     )
     block_header: Optional[str]
     block_index: Optional[int]

@@ -4,11 +4,11 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { AtomRanges, unionOfRanges } from '../atom-ranges';
+import { AtomRanges } from '../atom-ranges';
 
 
-describe('mergeRanges', () => {
-    it('mergeRanges non-overlapping', async () => {
+describe('union', () => {
+    it('union non-overlapping', async () => {
         const a = {
             from: [0, 20, 40, 60, 80],
             to: [10, 30, 50, 70, 90],
@@ -25,9 +25,9 @@ describe('mergeRanges', () => {
             from: [-10, 0, 11, 20, 37, 40, 51, 60, 80, 200, 205, 300],
             to: [-5, 10, 15, 30, 39, 50, 55, 70, 90, 202, 210, 305],
         } as AtomRanges;
-        expect(unionOfRanges([a, b, c])).toEqual(result);
+        expect(AtomRanges.union([a, b, c])).toEqual(result);
     });
-    it('mergeRanges overlapping', async () => {
+    it('union overlapping', async () => {
         const a = {
             from: [0, 20, 40, 60, 80],
             to: [10, 30, 50, 70, 90],
@@ -44,7 +44,7 @@ describe('mergeRanges', () => {
             from: [-10, 20, 37, 51, 60, 200, 300],
             to: [15, 30, 50, 55, 90, 220, 305],
         } as AtomRanges;
-        expect(unionOfRanges([a, b, c])).toEqual(result);
+        expect(AtomRanges.union([a, b, c])).toEqual(result);
     });
 });
 

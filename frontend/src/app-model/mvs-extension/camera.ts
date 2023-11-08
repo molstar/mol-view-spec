@@ -18,9 +18,9 @@ import { StateObjectSelector } from 'molstar/lib/mol-state';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
 import { decodeColor } from './helpers/utils';
-import { ParamsOfKind } from './tree/generic/generic';
-import { MolstarTree } from './tree/mvs/molstar-tree';
-import { Defaults } from './tree/mvs/param-defaults';
+import { ParamsOfKind } from './tree/generic/tree-schema';
+import { MolstarTree } from './tree/molstar/molstar-tree';
+import { MVSDefaults } from './tree/mvs/mvs-defaults';
 
 
 /** Defined in `molstar/lib/mol-plugin-state/manager/camera.ts` but private */
@@ -32,15 +32,18 @@ const DefaultCameraFocusOptions = {
 const DefaultCanvasBackgroundColor = ColorNames.white;
 
 
-export async function focusCameraNode(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'camera'>) {
+/** Set the camera based on a camera node params. */
+export async function setCamera(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'camera'>) {
     const target = Vec3.create(...params.target);
     const position = Vec3.create(...params.position);
-    const up = Vec3.create(...params.up ?? Defaults.camera.up);
+    const up = Vec3.create(...params.up);
     const snapshot: Partial<Camera.Snapshot> = { target, position, up };
     await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
 }
 
-export async function focusStructureNode(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, params: ParamsOfKind<MolstarTree, 'focus'> = {}) {
+/** Focus the camera on the bounding sphere of a (sub)structure (or on the whole scene if `structureNodeSelector` is null).
+ * Orient the camera based on a focus node params. */
+export async function setFocus(plugin: PluginContext, structureNodeSelector: StateObjectSelector | undefined, params: ParamsOfKind<MolstarTree, 'focus'> = MVSDefaults.focus) {
     let structure: Structure | undefined = undefined;
     if (structureNodeSelector) {
         const cell = plugin.state.data.cells.get(structureNodeSelector.ref);
@@ -59,21 +62,24 @@ export async function focusStructureNode(plugin: PluginContext, structureNodeSel
         const extraRadius = structure ? DefaultCameraFocusOptions.extraRadiusForFocus : DefaultCameraFocusOptions.extraRadiusForZoomAll;
         const sphereRadius = Math.max(boundingSphere.radius + extraRadius, DefaultCameraFocusOptions.minRadius);
         const distance = getFocusDistance(plugin.canvas3d.camera, boundingSphere.center, sphereRadius) ?? 100;
-        const direction = Vec3.create(...params.direction ?? Defaults.focus.direction);
+        const direction = Vec3.create(...params.direction);
         Vec3.setMagnitude(direction, direction, distance);
         const position = Vec3.sub(Vec3(), target, direction);
-        const up = Vec3.create(...params.up ?? Defaults.focus.up);
+        const up = Vec3.create(...params.up);
         const snapshot: Partial<Camera.Snapshot> = { target, position, up, radius: sphereRadius };
         await PluginCommands.Camera.SetSnapshot(plugin, { snapshot });
     }
 }
 
-function getFocusDistance(camera: Camera, center: Vec3, radius: number) {
-    const p = camera.getFocus(center, radius);
+/** Calculate the necessary distance between the camera position and center of the target,
+ * if we want to zoom the target with the given radius. */
+function getFocusDistance(camera: Camera, target: Vec3, radius: number) {
+    const p = camera.getFocus(target, radius);
     if (!p.position || !p.target) return undefined;
     return Vec3.distance(p.position, p.target);
 }
 
+/** Compute the bounding sphere of the whole scene. */
 function getPluginBoundingSphere(plugin: PluginContext) {
     const renderObjects = getRenderObjects(plugin, false);
     const spheres = renderObjects.map(r => r.values.boundingSphere.ref.value).filter(sphere => sphere.radius > 0);
@@ -98,6 +104,7 @@ function boundingSphereOfSpheres(spheres: Sphere3D[]): Sphere3D {
     return boundaryHelper.getSphere();
 }
 
+/** Set canvas properties based on a canvas node params. */
 export function setCanvas(plugin: PluginContext, params: ParamsOfKind<MolstarTree, 'canvas'> | undefined) {
     const backgroundColor = decodeColor(params?.background_color) ?? DefaultCanvasBackgroundColor;
     if (backgroundColor !== plugin.canvas3d?.props.renderer.backgroundColor) {

@@ -151,7 +151,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="model")
+        params = make_params(StructureParams, locals(), type="model")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -160,7 +160,6 @@ class Parse(_Base):
         self,
         *,
         assembly_id: str | None = None,
-        assembly_index: int | None = None,
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
@@ -168,14 +167,11 @@ class Parse(_Base):
         """
         Create an assembly structure.
         :param assembly_id: Use the name to specify which assembly to load
-        :param assembly_index: 0-based assembly index, use this to load the 1st assembly
         :param model_index: 0-based model index in case multiple NMR frames are present
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        if assembly_id is None and assembly_index is None:
-            assembly_index = 0
-        params = make_params(StructureParams, locals(), kind="assembly")
+        params = make_params(StructureParams, locals(), type="assembly")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -185,6 +181,7 @@ class Parse(_Base):
         *,
         ijk_min: tuple[int, int, int] | None = None,
         ijk_max: tuple[int, int, int] | None = None,
+        model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> Structure:
@@ -195,7 +192,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="symmetry")
+        params = make_params(StructureParams, locals(), type="symmetry")
         if ijk_min is None:
             params.ijk_min = (-1, -1, -1)
         if ijk_max is None:
@@ -208,6 +205,7 @@ class Parse(_Base):
         self,
         *,
         radius: float | None = None,
+        model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> Structure:
@@ -217,7 +215,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="symmetry_mates")
+        params = make_params(StructureParams, locals(), type="symmetry_mates")
         if radius is None:
             params.radius = 5.0
         node = Node(kind="structure", params=params)

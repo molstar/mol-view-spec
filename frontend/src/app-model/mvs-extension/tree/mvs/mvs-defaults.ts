@@ -4,105 +4,102 @@
  * @author Adam Midlik <midlik@gmail.com>
  */
 
-import { MVSKind, MVSTreeSchema } from './mvs-tree';
-import { DefaultsFor } from '../generic/params-schema';
+import { DefaultsForTree } from '../generic/tree-schema';
+import { MVSTreeSchema } from './mvs-tree';
 
 
-export const Defaults = {
+/** Default values for params in `MVSTree` */
+export const MVSDefaults = {
     root: {},
     download: {
-    },
-    raw: {
-        data: 'DEFAULT_DATA',
     },
     parse: {
     },
     structure: {
+        block_header: null,
+        block_index: 0,
         model_index: 0,
         assembly_id: null,
-        assembly_index: null,
-        block_index: null,
-        block_header: null,
-        radius: 0,
+        radius: 5,
         ijk_min: [-1, -1, -1],
         ijk_max: [1, 1, 1],
     },
     component: {
-        selector: 'all',
+        selector: 'all' as const,
     },
     component_from_uri: {
+        block_header: null,
+        block_index: 0,
         category_name: null,
         field_name: 'component',
-        block_index: null,
-        block_header: null,
         field_values: null,
     },
     component_from_source: {
+        block_header: null,
+        block_index: 0,
         category_name: null,
         field_name: 'component',
-        block_index: null,
-        block_header: null,
         field_values: null,
     },
     representation: {
     },
     color: {
-        selector: 'all',
+        selector: 'all' as const,
     },
     color_from_uri: {
+        block_header: null,
+        block_index: 0,
         category_name: null,
         field_name: 'color',
-        block_index: null,
-        block_header: null,
     },
     color_from_source: {
+        block_header: null,
+        block_index: 0,
         category_name: null,
         field_name: 'color',
-        block_index: null,
-        block_header: null,
     },
     label: {
     },
     label_from_uri: {
+        block_header: null,
+        block_index: 0,
         category_name: null,
         field_name: 'label',
-        block_index: null,
-        block_header: null,
     },
     label_from_source: {
+        block_header: null,
+        block_index: 0,
         category_name: null,
         field_name: 'label',
-        block_index: null,
-        block_header: null,
     },
     tooltip: {
     },
     tooltip_from_uri: {
+        block_header: null,
+        block_index: 0,
         category_name: null,
         field_name: 'tooltip',
-        block_index: null,
-        block_header: null,
     },
     tooltip_from_source: {
+        block_header: null,
+        block_index: 0,
         category_name: null,
         field_name: 'tooltip',
-        block_index: null,
-        block_header: null,
     },
     focus: {
         direction: [0, 0, -1],
         up: [0, 1, 0],
     },
     transform: {
-        rotation: null,
-        translation: null,
+        rotation: [1, 0, 0, 0, 1, 0, 0, 0, 1], // 3x3 identitity matrix
+        translation: [0, 0, 0],
     },
     canvas: {
     },
     camera: {
         up: [0, 1, 0],
     },
-} satisfies { [kind in MVSKind]: DefaultsFor<(typeof MVSTreeSchema)['paramsSchemas'][kind]> };
-// TODO apply default to MVS tree (before conversion), not Molstar tree
+} satisfies DefaultsForTree<typeof MVSTreeSchema>;
 
+/** Color to be used e.g. for representations without 'color' node */
 export const DefaultColor = 'white';
