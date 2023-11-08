@@ -54,15 +54,13 @@ class ParseParams(Params):
     format: ParseFormatT
 
 
-StructureKindT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
+StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 
 class StructureParams(Params):
-    kind: StructureKindT
+    type: StructureTypeT
     assembly_id: NotRequired[str]
     """Use the name to specify which assembly to load"""
-    assembly_index: NotRequired[int]
-    """0-based assembly index, use this to load the 1st assembly"""
     model_index: NotRequired[int]
     """0-based model index in case multiple NMR frames are present"""
     block_index: NotRequired[int]
@@ -138,7 +136,7 @@ class _DataFromUriParams(Params):
     category_name: NotRequired[str]
     """Only applies when format is 'cif' or 'bcif'"""
     field_name: NotRequired[str]
-    """Name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node type"""
+    """Name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind"""
     block_header: NotRequired[str]
     """Only applies when format is 'cif' or 'bcif'"""
     block_index: NotRequired[int]
@@ -149,7 +147,7 @@ class _DataFromUriParams(Params):
 class _DataFromSourceParams(Params):
     category_name: str
     field_name: NotRequired[str]
-    """Name of the column in CIF that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node type"""
+    """Name of the column in CIF that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind"""
     block_header: NotRequired[str]
     block_index: NotRequired[int]
     schema: SchemaT

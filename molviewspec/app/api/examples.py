@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 
 from app.config import settings
-from molviewspec.builder import Root
+from molviewspec.builder import Root, Representation
 from molviewspec.nodes import ComponentExpression
 
 MVSResponse: TypeAlias = Response
@@ -1357,7 +1357,145 @@ async def portfolio_plddt() -> MVSResponse:
     return JSONResponse(builder.get_state())
 
 
-# TODO add portfolio examples from all the documents we have who knows where (https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0)
+@router.get("/portfolio/pdbe_entry_page")
+async def portfolio_pdbe_entry_page(id: str = "7xv8") -> MVSResponse:
+    """
+    "PDBe entry page 3D view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
+    """
+    builder = Root()
+    structure_url = _url_for_mmcif(id)
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    struct.component(selector="protein").tooltip(text="protein").representation(type="cartoon").color(color="#1d9671")
+    struct.component(selector="nucleic").tooltip(text="nucleic").representation(type="cartoon").color(color="#ff449e")
+    _color_by_symbol(struct.component(selector="ligand").tooltip(text="ligand").representation(type="ball_and_stick"), base="#888888")
+    _color_by_symbol(struct.component(selector="ion").tooltip(text="ion").representation(type="ball_and_stick"), base="#888888")
+    _color_by_symbol(struct.component(selector="branched").tooltip(text="branched").representation(type="ball_and_stick"), base="#888888")
+    struct.component(selector="water").tooltip(text="water").representation(type="ball_and_stick").color(color="#98170f")
+    builder.canvas(background_color="#000000")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/pdbe_entry_page_entity")
+async def portfolio_pdbe_entry_page_entity(id: str = "7xv8", entity_id: str = "1") -> MVSResponse:
+    """
+    "PDBe entry page entity view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
+    """
+    builder = Root()
+    structure_url = _url_for_mmcif(id)
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    struct.component(selector="polymer").representation(type="cartoon").color(color="#dfc2c1").color(selector=ComponentExpression(label_entity_id=entity_id), color="#720202")
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color="#dfc2c1")
+    struct.component(selector="ion").representation(type="ball_and_stick").color(color="#dfc2c1")
+    struct.component(selector="branched").representation(type="ball_and_stick").color(color="#dfc2c1")
+    struct.component(selector="water").representation(type="ball_and_stick").color(color="#dfc2c1")
+    struct.component(selector=ComponentExpression(label_entity_id=entity_id)).tooltip(text=f"Entity {entity_id}")
+    builder.canvas(background_color="#000000")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/pdbekb_default")
+async def portfolio_pdbekb_default(id: str = "7xv8", entity_id: str = "1") -> MVSResponse:
+    """
+    "PDBe-KB default view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
+    """
+    builder = Root()
+    structure_url = _url_for_mmcif(id)
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    struct.component(selector="polymer").representation(type="cartoon").color(color="#dcbfbe").color(selector=ComponentExpression(label_entity_id=entity_id), color="#2b6bd2")
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color="#dcbfbe")
+    struct.component(selector="ion").representation(type="ball_and_stick").color(color="#dcbfbe")
+    struct.component(selector="branched").representation(type="ball_and_stick").color(color="#dcbfbe")
+    struct.component(selector="water").representation(type="ball_and_stick").color(color="#dcbfbe")
+    struct.component(selector=ComponentExpression(label_entity_id=entity_id)).tooltip(text=f"Entity {entity_id}")
+    builder.canvas(background_color="#ffffff")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/pdbekb_segment_superpose")
+async def portfolio_pdbekb_segment_superpose(id1: str = "1tqn", chain1: str = "A", id2: str = "2nnj", chain2: str = "A") -> MVSResponse:
+    """
+    "PDBe-KB segment superpose view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
+    (We are missing putty representation!)
+    """
+    builder = Root()
+    structure_url1 = _url_for_mmcif(id1)  # TODO use model server, only retrieve the chain
+    structure_url2 = _url_for_mmcif(id2)  # TODO use model server, only retrieve the chain
+    struct1 = builder.download(url=structure_url1).parse(format="mmcif").model_structure()
+    struct2 = builder.download(url=structure_url2).parse(format="mmcif").model_structure()
+    (
+        struct1
+        .component(selector=ComponentExpression(label_asym_id=chain1))
+        .tooltip(text=f"{id1}, chain {chain1}")
+        .representation(type="cartoon")
+        .color(color="#1d9873")
+    )
+    (
+        struct2
+        .transform(rotation=[
+            0.60487772, 0.37558753, 0.70218010,
+            0.79239364, -0.19644937, -0.57751176,
+            -0.07896334, 0.90572706, -0.41644101,
+        ], translation=[
+            -66.71238433, -12.06107678, -46.34873616,
+        ])
+        .component(selector=ComponentExpression(label_asym_id=chain2))
+        .tooltip(text=f"{id2}, chain {chain2}")
+        .representation(type="cartoon")  # should be putty
+        .color(color="#cc5a03")
+    )
+    builder.canvas(background_color="#ffffff")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/pdbekb_ligand_superpose")
+async def portfolio_pdbekb_ligand_superpose(chains: str = "1tqn:A,2nnj:A") -> MVSResponse:
+    """
+    "PDBe-KB ligand superpose view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
+    (We are missing putty representation!)
+    """
+    builder = Root()
+    for i, id_chain in enumerate(chains.split(',')):
+        id, chain = id_chain.split(':')
+        print(id, chain)
+        structure_url1 = _url_for_mmcif(id)  # TODO use model server, only retrieve what's needed
+        struct = builder.download(url=structure_url1).parse(format="mmcif").model_structure()
+        if i > 0:  # this is just an example, transform will have to be different for each structure, of course
+            struct.transform(rotation=[
+                0.60487772, 0.37558753, 0.70218010,
+                0.79239364, -0.19644937, -0.57751176,
+                -0.07896334, 0.90572706, -0.41644101,
+            ], translation=[
+                -66.71238433, -12.06107678, -46.34873616,
+            ])
+        if i == 0:
+            struct.component(selector=ComponentExpression(label_asym_id=chain)).representation(type="cartoon").color(color="#1d9873")  # should be putty
+        struct.component(selector="ligand").representation(type="ball_and_stick").color(color="#f602f7")
+        struct.component(selector="ion").representation(type="ball_and_stick").color(color="#f602f7")
+    builder.canvas(background_color="#ffffff")
+    return JSONResponse(builder.get_state())
+
+
+@router.get("/portfolio/rcsb_entry")
+async def portfolio_rcsb_entry(id: str = "3sn6") -> MVSResponse:
+    """
+    "RCSB PDB entry page 3D view" from https://docs.google.com/spreadsheets/d/1QQ_P0VlURzpMhqa8rI-D2nJ8f1lfrHTpqrN0q5PbACs/edit#gid=0
+    (The document says color by entity, but the image looks more like color by auth_asym_id (which is also MolStar's preset))
+    """
+    builder = Root()
+    structure_url = _url_for_mmcif(id)
+    struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    _color_by_entity(struct.component(selector="protein").tooltip(text="protein").representation(type="cartoon"))
+    _color_by_entity(struct.component(selector="nucleic").tooltip(text="nucleic").representation(type="cartoon"))
+    _color_by_entity(struct.component(selector="ligand").tooltip(text="ligand").representation(type="ball_and_stick"), use_symbol=True)
+    _color_by_entity(struct.component(selector="ion").tooltip(text="ion").representation(type="ball_and_stick"), use_symbol=True)
+    _color_by_entity(struct.component(selector="branched").tooltip(text="branched").representation(type="ball_and_stick"), use_symbol=True)
+    struct.component(selector="water").tooltip(text="water").representation(type="ball_and_stick").color(color=SYMBOL_COLORS["O"])
+    builder.canvas(background_color="#ffffff")
+    return JSONResponse(builder.get_state())
+
+
+# TODO add portfolio examples from all the documents we have who knows where
+# RCSB: https://docs.google.com/spreadsheets/d/1QQ_P0VlURzpMhqa8rI-D2nJ8f1lfrHTpqrN0q5PbACs/edit#gid=0
 
 
 ##############################################################################
@@ -1399,3 +1537,28 @@ def _url_for_bcif(id: str) -> str:
 def _url_for_pdb(id: str) -> str:
     """Return URL for good old PDB file from PDBe server"""
     return f"https://www.ebi.ac.uk/pdbe/entry-files/download/pdb{id.lower()}.ent"
+
+
+SYMBOL_COLORS = {"N": "#3050F8", "O": "#FF0D0D", "S": "#FFFF30", "FE": "#E06633"}
+
+ENTITY_COLORS = ["#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D",
+                 "#666666", "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33",
+                 "#A65628", "#F781BF", "#999999", "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3",
+                 "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3"]
+
+
+def _color_by_symbol(repr: Representation, base: str = "#888888") -> Representation:
+    repr.color(color=base)
+    for symbol, color in SYMBOL_COLORS.items():
+        repr.color(selector=ComponentExpression(type_symbol=symbol), color=color)
+    return repr
+
+
+def _color_by_entity(repr: Representation, n_entities: int = 6, colors: list[str] = ENTITY_COLORS, use_symbol: bool = False) -> Representation:
+    for i in range(n_entities):
+        entity_id = str(i+1)
+        repr.color(selector=ComponentExpression(label_entity_id=entity_id), color=colors[i % len(colors)])
+        if use_symbol:
+            for symbol, color in SYMBOL_COLORS.items():
+                repr.color(selector=ComponentExpression(label_entity_id=entity_id, type_symbol=symbol), color=color)
+    return repr

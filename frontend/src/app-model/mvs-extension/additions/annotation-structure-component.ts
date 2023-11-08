@@ -16,6 +16,7 @@ import { omitObjectKeys } from '../helpers/utils';
 import { getAnnotationForStructure } from './annotation-prop';
 
 
+/** Parameter definition for `AnnotationStructureComponent` transformer */
 export const AnnotationStructureComponentParams = {
     annotationId: PD.Text('', { description: 'Reference to "Annotation" custom model property' }),
     fieldName: PD.Text('component', { description: 'Annotation field (column) from which to take component identifier' }),
@@ -28,11 +29,15 @@ export const AnnotationStructureComponentParams = {
     nullIfEmpty: PD.Optional(PD.Boolean(true, { isHidden: false })),
     label: PD.Text('', { isHidden: false }),
 };
+
+/** Parameter values for `AnnotationStructureComponent` transformer */
 export type AnnotationStructureComponentProps = PD.ValuesFor<typeof AnnotationStructureComponentParams>
 
 
+/** Transformer builder for MVS extension */
 export const MVSTransform = StateTransformer.builderFactory('mvs');
 
+/** Transformer for creating a structure component based on custom model property "Annotations" */
 export type AnnotationStructureComponent = typeof AnnotationStructureComponent
 export const AnnotationStructureComponent = MVSTransform({
     name: 'structure-component-from-annotation',
@@ -41,11 +46,11 @@ export const AnnotationStructureComponent = MVSTransform({
     to: SO.Molecule.Structure,
     params: AnnotationStructureComponentParams,
 })({
-    apply({ a, params, cache }) {
-        return createAnnotationStructureComponent(a.data, params, cache as any);
+    apply({ a, params }) {
+        return createAnnotationStructureComponent(a.data, params);
     },
-    update: ({ a, b, oldParams, newParams, cache }) => {
-        return updateAnnotationStructureComponent(a.data, b, oldParams, newParams, cache as any);
+    update: ({ a, b, oldParams, newParams }) => {
+        return updateAnnotationStructureComponent(a.data, b, oldParams, newParams);
     },
     dispose({ b }) {
         b?.data.customPropertyDescriptors.dispose();
@@ -53,11 +58,9 @@ export const AnnotationStructureComponent = MVSTransform({
 });
 
 
-export function createAnnotationStructureComponent(structure: Structure, params: AnnotationStructureComponentProps, cache: { source: Structure, entry?: StructureQueryHelper.CacheEntry }) {
-    cache.source = structure;
-
+/** Create a substructure based on `AnnotationStructureComponentProps` */
+export function createAnnotationSubstructure(structure: Structure, params: AnnotationStructureComponentProps): Structure {
     const { annotation } = getAnnotationForStructure(structure, params.annotationId);
-    let component: Structure = Structure.Empty;
     if (annotation) {
         let rows = annotation.getRows();
         if (params.fieldValues.name === 'selected') {
@@ -66,10 +69,16 @@ export function createAnnotationStructureComponent(structure: Structure, params:
         }
         const expression = rowsToExpression(rows);
 
-        const { selection, entry } = StructureQueryHelper.createAndRun(structure, expression);
-        cache.entry = entry;
-        component = StructureSelection.unionStructure(selection);
+        const { selection } = StructureQueryHelper.createAndRun(structure, expression);
+        return StructureSelection.unionStructure(selection);
+    } else {
+        return Structure.Empty;
     }
+}
+
+/** Create a substructure PSO based on `AnnotationStructureComponentProps` */
+export function createAnnotationStructureComponent(structure: Structure, params: AnnotationStructureComponentProps) {
+    const component = createAnnotationSubstructure(structure, params);
 
     if (params.nullIfEmpty && component.elementCount === 0) return StateObject.Null;
 
@@ -87,7 +96,8 @@ export function createAnnotationStructureComponent(structure: Structure, params:
     return new SO.Molecule.Structure(component, props);
 }
 
-export function updateAnnotationStructureComponent(a: Structure, b: SO.Molecule.Structure, oldParams: AnnotationStructureComponentProps, newParams: AnnotationStructureComponentProps, cache: { source: Structure, entry?: StructureQueryHelper.CacheEntry }) {
+/** Update a substructure PSO based on `AnnotationStructureComponentProps` */
+export function updateAnnotationStructureComponent(a: Structure, b: SO.Molecule.Structure, oldParams: AnnotationStructureComponentProps, newParams: AnnotationStructureComponentProps) {
     const change = !deepEqual(newParams, oldParams);
     const needsRecreate = !deepEqual(omitObjectKeys(newParams, ['label']), omitObjectKeys(oldParams, ['label']));
     if (!change) {

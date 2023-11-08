@@ -10,17 +10,22 @@ import { Vec3 } from 'molstar/lib/mol-math/linear-algebra';
 import { ElementIndex, Model, Structure, StructureElement, StructureProperties } from 'molstar/lib/mol-model/structure';
 import { UUID } from 'molstar/lib/mol-util';
 
-import { AtomRanges, selectAtomsInRanges } from './atom-ranges';
-import { getIndicesAndSortings } from './indexing';
+import { AtomRanges } from './atom-ranges';
+import { IndicesAndSortings } from './indexing';
 import { AnnotationRow } from './schemas';
 import { getAtomRangesForRows } from './selections';
 import { extend } from './utils';
 
 
-interface TextProps {
+/** Properties describing position, size, etc. of a text in 3D */
+export interface TextProps {
+    /** Anchor point for the text (i.e. the center of the text will appear in front of `center`) */
     center: Vec3,
-    radius: number,
+    /** Depth of the text wrt anchor point (i.e. the text will appear in distance `radius` in front of the anchor point) */
+    depth: number,
+    /** Relative text size */
     scale: number,
+    /** Index of the first atom within structure, to which this text is bound (for coloring and similar purposes) */
     group: number,
 }
 
@@ -30,6 +35,8 @@ const boundaryHelper = new BoundaryHelper('98');
 const outAtoms: ElementIndex[] = [];
 const outFirstAtomIndex: { value?: number } = {};
 
+/** Return `TextProps` (position, size, etc.) for a text that is to be bound to a substructure of `structure` defined by union of `rows`.
+ * Derives `center` and `depth` from the boundary sphere of the substructure, `scale` from the number of heavy atoms in the substructure. */
 export function textPropsForSelection(structure: Structure, sizeFunction: (location: StructureElement.Location) => number, rows: AnnotationRow | AnnotationRow[], onlyInModel?: Model): TextProps | undefined {
     const loc = StructureElement.Location.create(structure);
     const { units } = structure;
@@ -43,10 +50,10 @@ export function textPropsForSelection(structure: Structure, sizeFunction: (locat
     for (let iUnit = 0, nUnits = units.length; iUnit < nUnits; iUnit++) {
         const unit = units[iUnit];
         if (onlyInModel && unit.model.id !== onlyInModel.id) continue;
-        const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRows(unit.model, rows, getIndicesAndSortings(unit.model));
+        const ranges = rangesByModel[unit.model.id] ??= getAtomRangesForRows(unit.model, rows, IndicesAndSortings.get(unit.model));
         const position = unit.conformation.position;
         loc.unit = unit;
-        selectAtomsInRanges(unit.elements, ranges, outAtoms, outFirstAtomIndex);
+        AtomRanges.selectAtomsInRanges(unit.elements, ranges, outAtoms, outFirstAtomIndex);
         for (const atom of outAtoms) {
             loc.element = atom;
             position(atom, tmpVec);
@@ -60,7 +67,7 @@ export function textPropsForSelection(structure: Structure, sizeFunction: (locat
     if (includedAtoms > 0) {
         const { center, radius } = (includedAtoms > 1) ? boundarySphere(tmpArray) : { center: Vec3.fromArray(Vec3(), tmpArray, 0), radius: 1.1 * atomSize! };
         const scale = (includedHeavyAtoms || includedAtoms) ** (1 / 3);
-        return { center, radius, scale, group: group! };
+        return { center, depth: radius, scale, group: group! };
     }
 }
 
@@ -78,30 +85,4 @@ function boundarySphere(flatCoords: readonly number[]): Sphere3D {
         boundaryHelper.radiusPosition(tmpVec);
     }
     return boundaryHelper.getSphere();
-}
-// This doesn't really compute the boundary sphere, but is much faster (400->15ms for 3j3q)
-function boundarySphereApproximation(flatCoords: readonly number[]): Sphere3D {
-    let x = 0.0, y = 0.0, z = 0.0;
-    let cumX = 0, cumY = 0, cumZ = 0;
-
-    const length = flatCoords.length;
-    const nPoints = Math.floor(length / 3);
-    if (nPoints < 0) return { center: Vec3.zero(), radius: 0 };
-    for (let offset = 0; offset < length; offset += 3) {
-        cumX += flatCoords[offset];
-        cumY += flatCoords[offset + 1];
-        cumZ += flatCoords[offset + 2];
-    }
-    cumX /= nPoints;
-    cumY /= nPoints;
-    cumZ /= nPoints;
-    let maxSqDist = 0;
-    for (let offset = 0; offset < length; offset += 3) {
-        x = flatCoords[offset];
-        y = flatCoords[offset + 1];
-        z = flatCoords[offset + 2];
-        const sqDist = (x - cumX) ** 2 + (y - cumY) ** 2 + (z - cumZ) ** 2;
-        if (sqDist > maxSqDist) maxSqDist = sqDist;
-    }
-    return { center: Vec3.create(cumX, cumY, cumZ), radius: maxSqDist ** 0.5 };
 }

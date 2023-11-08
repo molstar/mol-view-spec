@@ -5,41 +5,35 @@
  */
 
 import { omitObjectKeys, pickObjectKeys } from '../../helpers/utils';
-import { ConversionRules, condenseTree, convertTree } from '../generic/tree-utils';
+import { ConversionRules, addDefaults, condenseTree, convertTree } from '../generic/tree-utils';
 import { MolstarKind, MolstarNode, MolstarTree } from './molstar-tree';
-import { MVSTree } from './mvs-tree';
-import { MolstarParseFormatT, ParseFormatT } from './param-types';
+import { FullMVSTree, MVSTree, MVSTreeSchema } from '../mvs/mvs-tree';
+import { MVSDefaults } from '../mvs/mvs-defaults';
+import { MolstarParseFormatT, ParseFormatT } from '../mvs/param-types';
 
 
-/** Convert `format` parameter of `parse` node in MVS tree
- * into `format` and `is_binary` parameters in Molstar tree */
+/** Convert `format` parameter of `parse` node in `MolstarTree`
+ * into `format` and `is_binary` parameters in `MolstarTree` */
 export const ParseFormatMvsToMolstar = {
     mmcif: { format: 'cif', is_binary: false },
     bcif: { format: 'cif', is_binary: true },
     pdb: { format: 'pdb', is_binary: false },
 } satisfies { [p in ParseFormatT]: { format: MolstarParseFormatT, is_binary: boolean } };
 
-
-const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
+/** Conversion rules for conversion from `MVSTree` (with all parameter values) to `MolstarTree` */
+const mvsToMolstarConversionRules: ConversionRules<FullMVSTree, MolstarTree> = {
     'download': node => [],
-    'raw': node => [],
     'parse': (node, parent) => {
         const { format, is_binary } = ParseFormatMvsToMolstar[node.params.format];
         const convertedNode: MolstarNode<'parse'> = { kind: 'parse', params: { ...node.params, format } };
-        switch (parent?.kind) {
-            case 'download':
-                return [
-                    { kind: 'download', params: { ...parent.params, is_binary } },
-                    convertedNode,
-                ] satisfies MolstarNode[];
-            case 'raw':
-                return [
-                    { kind: 'raw', params: { ...parent.params, is_binary } },
-                    convertedNode,
-                ] satisfies MolstarNode[];
-            default:
-                console.warn('"parse" node is not being converted, this is suspicious');
-                return [convertedNode] satisfies MolstarNode[];
+        if (parent?.kind === 'download') {
+            return [
+                { kind: 'download', params: { ...parent.params, is_binary } },
+                convertedNode,
+            ] satisfies MolstarNode[];
+        } else {
+            console.warn('"parse" node is not being converted, this is suspicious');
+            return [convertedNode] satisfies MolstarNode[];
         }
     },
     'structure': (node, parent) => {
@@ -51,19 +45,15 @@ const mvsToMolstarConversionRules: ConversionRules<MVSTree, MolstarTree> = {
             { kind: 'structure', params: omitObjectKeys(node.params, ['block_header', 'block_index', 'model_index']) },
         ] satisfies MolstarNode[];
     },
-    'transform': node => {
-        return [
-            { kind: 'transforms' },
-            { kind: node.kind, params: node.params },
-        ];
-    },
 };
-/** Node kinds that it makes sense to condense */
-const molstarNodesToCondense = new Set<MolstarKind>(['download', 'raw', 'parse', 'trajectory', 'model', 'transforms'] satisfies MolstarKind[]);
+
+/** Node kinds in `MolstarTree` that it makes sense to condense */
+const molstarNodesToCondense = new Set<MolstarKind>(['download', 'parse', 'trajectory', 'model'] satisfies MolstarKind[]);
 
 /** Convert MolViewSpec tree into MolStar tree */
 export function convertMvsToMolstar(mvsTree: MVSTree): MolstarTree {
-    const converted = convertTree<MVSTree, MolstarTree>(mvsTree, mvsToMolstarConversionRules);
+    const full = addDefaults<typeof MVSTreeSchema>(mvsTree, MVSDefaults) as FullMVSTree;
+    const converted = convertTree<FullMVSTree, MolstarTree>(full, mvsToMolstarConversionRules);
     if (converted.kind !== 'root') throw new Error("Root's type is not 'root' after conversion from MVS tree to Molstar tree.");
     const condensed = condenseTree<MolstarTree>(converted, molstarNodesToCondense);
     return condensed;

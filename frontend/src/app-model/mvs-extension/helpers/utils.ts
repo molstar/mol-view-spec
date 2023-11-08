@@ -8,16 +8,15 @@ import { hashString } from 'molstar/lib/mol-data/util';
 import { Color } from 'molstar/lib/mol-util/color';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 
-import { isHexColorString } from '../tree/mvs/param-types';
 
-
-export function formatObject(obj: {} | undefined) {
+/** Convert object to a human-friendly string (similar to JSON.stringify but without quoting keys) */
+export function formatObject(obj: {} | undefined): string {
     if (!obj) return 'undefined';
     return JSON.stringify(obj).replace(/,("\w+":)/g, ', $1').replace(/"(\w+)":/g, '$1: ');
 }
 
 /** Return an object with keys `keys` and their values same as in `obj` */
-export function pickObjectKeys<T extends {}, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+export function pickObjectKeys<T extends {}, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K> {
     const result: Partial<Pick<T, K>> = {};
     for (const key of keys) {
         if (Object.hasOwn(obj, key)) {
@@ -28,13 +27,66 @@ export function pickObjectKeys<T extends {}, K extends keyof T>(obj: T, keys: K[
 }
 
 /** Return an object same as `obj` but without keys `keys` */
-export function omitObjectKeys<T extends {}, K extends keyof T>(obj: T, omitKeys: K[]): Omit<T, K> {
+export function omitObjectKeys<T extends {}, K extends keyof T>(obj: T, omitKeys: readonly K[]): Omit<T, K> {
     const result: T = { ...obj };
     for (const key of omitKeys) {
         delete result[key];
     }
     return result as Omit<T, K>;
 }
+
+/** Create an object from keys and values (first key maps to first value etc.) */
+export function objectFromKeysAndValues<K extends keyof any, V>(keys: K[], values: V[]): Record<K, V> {
+    const obj: Partial<Record<K, V>> = {};
+    for (let i = 0; i < keys.length; i++) {
+        obj[keys[i]] = values[i];
+    }
+    return obj as Record<K, V>;
+}
+
+/** Equivalent to Pythonic `{k: getValue(k) for k in array}` */
+export function mapArrToObj<K extends keyof any, V>(array: readonly K[], getValue: (key: K) => V): Record<K, V> {
+    const result = {} as Record<K, V>;
+    for (const key of array) {
+        result[key] = getValue(key);
+    }
+    return result;
+}
+
+/** Equivalent to Pythonic `{k: getValue(k, v) for k, v in obj.items()}` */
+export function mapObjToObj<K extends keyof any, VIn, VOut>(obj: Record<K, VIn>, getValue: (key: K, value: VIn) => VOut): Record<K, VOut> {
+    const result = {} as Record<K, VOut>;
+    for (const key in obj) {
+        result[key] = getValue(key, obj[key]);
+    }
+    return result;
+}
+
+/** Decide if `obj` is a good old object (not array or null or other type). */
+export function isReallyObject(obj: any): boolean {
+    return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+}
+
+/** Return a copy of object `obj` with sorted keys and dropped keys whose value is undefined. */
+export function sortObjectKeys<T extends {}>(obj: T): T {
+    const result = {} as T;
+    for (const key of Object.keys(obj).sort() as (keyof T)[]) {
+        const value = obj[key];
+        if (value !== undefined) {
+            result[key] = value;
+        }
+    }
+    return result;
+}
+
+/** Like `Promise.all` but with objects instead of arrays */
+export async function promiseAllObj<T extends {}>(promisesObj: { [key in keyof T]: Promise<T[key]> }): Promise<T> {
+    const keys = Object.keys(promisesObj);
+    const promises = Object.values(promisesObj);
+    const results = await Promise.all(promises);
+    return objectFromKeysAndValues(keys, results) as any;
+}
+
 
 /** Return an array containing integers from [start, end) if `end` is given,
  * or from [0, start) if `end` is omitted. */
@@ -64,6 +116,7 @@ export function extend<T>(dst: T[], src: ArrayLike<T>): void {
     }
 }
 
+/** Check whether `array` is sorted, sort if not. */
 export function sortIfNeeded<T>(array: T[], compareFn: (a: T, b: T) => number): T[] {
     const n = array.length;
     for (let i = 1; i < array.length; i++) {
@@ -85,6 +138,7 @@ export function takeFromWhile<T>(array: T[], fromPredicate: (x: T) => boolean, w
     while (stop < n && whilePredicate(array[stop])) stop++;
     return array.slice(start, stop);
 }
+
 /** Return a slice of `array` starting at `fromIndex`
  * up to the last element thenceforward ;) fulfilling `whilePredicate`. */
 export function takeWhile<T>(array: T[], whilePredicate: (x: T) => boolean, fromIndex: number = 0): T[] {
@@ -93,6 +147,7 @@ export function takeWhile<T>(array: T[], whilePredicate: (x: T) => boolean, from
     while (stop < n && whilePredicate(array[stop])) stop++;
     return array.slice(fromIndex, stop);
 }
+
 /** Remove all elements from the array which do not fulfil `predicate`. Return the modified array itself. */
 export function filterInPlace<T>(array: T[], predicate: (x: T) => boolean): T[] {
     const n = array.length;
@@ -106,38 +161,6 @@ export function filterInPlace<T>(array: T[], predicate: (x: T) => boolean): T[] 
     return array;
 }
 
-export function foreachOfGenerator<T>(items: Generator<T>, func: (item: T) => any) {
-    while (true) {
-        const next = items.next();
-        if (next.done) return;
-        func(next.value);
-    }
-}
-
-/** Create an object from keys and values (first key maps to first value etc.) */
-export function objectFromKeysAndValues<K extends keyof any, V>(keys: K[], values: V[]): Record<K, V> {
-    const obj: Partial<Record<K, V>> = {};
-    for (let i = 0; i < keys.length; i++) {
-        obj[keys[i]] = values[i];
-    }
-    return obj as Record<K, V>;
-}
-
-export function mapArrToObj<K extends keyof any, V>(array: readonly K[], getValue: (key: K) => V): Record<K, V> {
-    const result = {} as Record<K, V>;
-    for (const key of array) {
-        result[key] = getValue(key);
-    }
-    return result;
-}
-
-/** Like `Promise.all` but with objects instead of arrays */
-export async function promiseAllObj<T extends {}>(promisesObj: { [key in keyof T]: Promise<T[key]> }): Promise<T> {
-    const keys = Object.keys(promisesObj);
-    const promises = Object.values(promisesObj);
-    const results = await Promise.all(promises);
-    return objectFromKeysAndValues(keys, results) as any;
-}
 
 /** Represents either the result or the reason of failure of an operation that might have failed */
 export type Maybe<T> = { ok: true, value: T } | { ok: false, error: any }
@@ -152,22 +175,10 @@ export async function safePromise<T>(promise: T): Promise<Maybe<Awaited<T>>> {
     }
 }
 
-export class DefaultMap<K, V> extends Map<K, V> {
-    constructor(public defaultFactory: (key: K) => V) {
-        super();
-    }
-    /** Return the same as `this.get(key)` if `key` is present.
-     * Set `key`'s value to `this.defaultFactory(key)` and return it if `key` is not present.
-     */
-    safeGet(key: K): V {
-        if (!this.has(key)) {
-            this.set(key, this.defaultFactory(key));
-        }
-        return this.get(key)!;
-    }
-}
 
+/** A map where values are arrays. Handles missing keys when adding values. */
 export class MultiMap<K, V> extends Map<K, V[]> {
+    /** Append value to a key (handles missing keys) */
     add(key: K, value: V) {
         if (!this.has(key)) {
             this.set(key, []);
@@ -176,11 +187,14 @@ export class MultiMap<K, V> extends Map<K, V[]> {
     }
 }
 
+/** Basic subset of `Map<K, V>`, only needs to have `get` method */
+export type Mapping<K, V> = Pick<Map<K, V>, 'get'>
+
 /** Implementation of `Map` where keys are integers
  * and most keys are expected to be from interval `[0, limit)`.
  * For the keys within this interval, performance is better than `Map` (implemented by array).
  * For the keys out of this interval, performance is slightly worse than `Map`. */
-export class NumberMap<K extends number, V> {
+export class NumberMap<K extends number, V> implements Mapping<K, V> {
     private array: V[];
     private map: Map<K, V>;
     constructor(public readonly limit: K) {
@@ -196,32 +210,21 @@ export class NumberMap<K extends number, V> {
         else this.map.set(key, value);
     }
 }
-export type BasicReadonlyMap<K, V> = Pick<Map<K, V>, 'get'>
 
+/** A JSON-serializable value */
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json | undefined }
 
-
-/** Decide if `obj` is a good old object (not array or null or other type). */
-function isReallyObject(obj: any): boolean {
-    return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
-}
-
-/** Return a copy of object `obj` with sorted keys and dropped keys whose value is undefined. */
-export function sortObjectKeys<T extends {}>(obj: T): T {
-    const result = {} as T;
-    for (const key of Object.keys(obj).sort() as (keyof T)[]) {
-        const value = obj[key];
-        if (value !== undefined) {
-            result[key] = value;
-        }
-    }
-    return result;
-}
 
 /** Return a canonical string representation for a JSON-able object,
  * independent from object key order and undefined properties. */
 export function canonicalJsonString(obj: Json) {
     return JSON.stringify(obj, (key, value) => isReallyObject(value) ? sortObjectKeys(value) : value);
+}
+
+/** Return a pretty JSON representation for a JSON-able object,
+ * (single line, but use space after comma). E.g. '{"name": "Bob", "favorite_numbers": [1, 2, 3]}' */
+export function onelinerJsonString(obj: Json) {
+    return JSON.stringify(obj, undefined, '\t').replace(/,\n\t*/g, ', ').replace(/\n\t*/g, '');
 }
 
 /** Return an array of all distinct values from `values`
@@ -284,4 +287,21 @@ export function decodeColor(colorString: string | undefined): Color | undefined 
     result = ColorNames[colorString.toLowerCase() as keyof typeof ColorNames];
     if (result !== undefined) return result;
     return undefined;
+}
+
+/** Hexadecimal color string, e.g. '#FF1100' */
+export type HexColor = string & { '@type': 'HexColorString' }
+export function HexColor(str: string) {
+    if (!isHexColorString(str)) {
+        throw new Error(`ValueError: "${str}" is not a valid hex color string`);
+    }
+    return str as HexColor;
+}
+
+/** Regular expression matching a hexadecimal color string, e.g. '#FF1100' or '#f10' */
+const hexColorRegex = /^#([0-9A-F]{3}){1,2}$/i;
+
+/** Decide if a string is a valid hexadecimal color string (6-digit or 3-digit, e.g. '#FF1100' or '#f10') */
+export function isHexColorString(str: any): str is HexColor {
+    return typeof str === 'string' && hexColorRegex.test(str);
 }

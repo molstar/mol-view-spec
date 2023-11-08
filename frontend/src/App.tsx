@@ -6,6 +6,7 @@ import { useBehavior } from 'molstar/lib/mol-plugin-ui/hooks/use-behavior';
 
 import './App.css';
 import { AppModel } from './app-model/app-model';
+import { builderDemo } from './app-model/mvs-extension/tree/mvs/mvs-builder';
 
 
 export function App() {
@@ -69,6 +70,13 @@ function Main() {
         'modres': 'http://localhost:9000/api/v1/examples/portfolio/modres',
         'bfactor': 'http://localhost:9000/api/v1/examples/portfolio/bfactor',
         'plddt': 'http://localhost:9000/api/v1/examples/portfolio/plddt',
+
+        'pdbe entry page': 'http://localhost:9000/api/v1/examples/portfolio/pdbe_entry_page?id=7xv8',
+        'pdbe entry page entity': 'http://localhost:9000/api/v1/examples/portfolio/pdbe_entry_page_entity?id=7xv8&entity_id=2',
+        'pdbe-kb default view': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_default?id=7xv8&entity_id=1',
+        'pdbe-kb segment superpose': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_segment_superpose?id1=1tqn&chain1=A&id2=2nnj&chain2=A',
+        'pdbe-kb ligand superpose': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_ligand_superpose?chains=1tqn:A,2nnj:A',
+        'rcsb entry page': 'http://localhost:9000/api/v1/examples/portfolio/rcsb_entry?id=3sn6',
     };
 
     return (
@@ -87,6 +95,9 @@ function Main() {
                             {name}
                         </Button>
                     )}
+
+                    <Button variant={'<inline>' === loadedUrl ? 'contained' : 'outlined'} onClick={() => model.loadMvs(builderDemo())}>Builder demo</Button>
+
                     <Typography variant='caption'>{status}</Typography>
 
                     {loadedUrl &&
@@ -105,9 +116,6 @@ function Main() {
                         </div>
                     </>}
                 </div>
-                {/* <div>
-                    <Button onClick={() => model.printCamera()}>Print camera</Button>
-                </div> */}
             </div>
         </div>
     );

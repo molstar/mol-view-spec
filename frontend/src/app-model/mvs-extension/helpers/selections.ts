@@ -9,8 +9,8 @@ import { ChainIndex, ElementIndex, Model, ResidueIndex } from 'molstar/lib/mol-m
 import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder';
 import { Expression } from 'molstar/lib/mol-script/language/expression';
 
-import { AtomRanges, addRange, emptyRanges, singleRange, unionOfRanges } from './atom-ranges';
-import { IndicesAndSortings, getKeysWithValue, getKeysWithValueInRange } from './indexing';
+import { AtomRanges } from './atom-ranges';
+import { IndicesAndSortings, Sorting } from './indexing';
 import { AnnotationRow } from './schemas';
 import { extend, filterInPlace, isAnyDefined, isDefined, range } from './utils';
 
@@ -30,19 +30,19 @@ export function getAtomRangesForRow(model: Model, row: AnnotationRow, indices: I
 
     if (hasAtomIds) {
         const theAtom = getTheAtomForRow(model, row, indices);
-        return theAtom !== undefined ? singleRange(theAtom, theAtom + 1 as ElementIndex) : emptyRanges();
+        return theAtom !== undefined ? AtomRanges.single(theAtom, theAtom + 1 as ElementIndex) : AtomRanges.empty();
     }
 
     if (!hasChainFilter && !hasResidueFilter && !hasAtomFilter) {
-        return singleRange(0 as ElementIndex, nAtoms as ElementIndex);
+        return AtomRanges.single(0 as ElementIndex, nAtoms as ElementIndex);
     }
 
     const qualifyingChains = getQualifyingChains(model, row, indices);
     if (!hasResidueFilter && !hasAtomFilter) {
         const chainOffsets = h.chainAtomSegments.offsets;
-        const ranges = emptyRanges();
+        const ranges = AtomRanges.empty();
         for (const iChain of qualifyingChains) {
-            addRange(ranges, chainOffsets[iChain], chainOffsets[iChain + 1]);
+            AtomRanges.add(ranges, chainOffsets[iChain], chainOffsets[iChain + 1]);
         }
         return ranges;
     }
@@ -50,17 +50,17 @@ export function getAtomRangesForRow(model: Model, row: AnnotationRow, indices: I
     const qualifyingResidues = getQualifyingResidues(model, row, indices, qualifyingChains);
     if (!hasAtomFilter) {
         const residueOffsets = h.residueAtomSegments.offsets;
-        const ranges = emptyRanges();
+        const ranges = AtomRanges.empty();
         for (const iRes of qualifyingResidues) {
-            addRange(ranges, residueOffsets[iRes], residueOffsets[iRes + 1]);
+            AtomRanges.add(ranges, residueOffsets[iRes], residueOffsets[iRes + 1]);
         }
         return ranges;
     }
 
     const qualifyingAtoms = getQualifyingAtoms(model, row, indices, qualifyingResidues);
-    const ranges = emptyRanges();
+    const ranges = AtomRanges.empty();
     for (const iAtom of qualifyingAtoms) {
-        addRange(ranges, iAtom, iAtom + 1 as ElementIndex);
+        AtomRanges.add(ranges, iAtom, iAtom + 1 as ElementIndex);
     }
     return ranges;
 }
@@ -68,7 +68,7 @@ export function getAtomRangesForRow(model: Model, row: AnnotationRow, indices: I
 /** Return atom ranges in `model` which satisfy criteria given by any of `rows` (atoms that satisfy more rows are still included only once) */
 export function getAtomRangesForRows(model: Model, rows: AnnotationRow | AnnotationRow[], indices: IndicesAndSortings): AtomRanges {
     if (Array.isArray(rows)) {
-        return unionOfRanges(rows.map(row => getAtomRangesForRow(model, row, indices)));
+        return AtomRanges.union(rows.map(row => getAtomRangesForRow(model, row, indices)));
     } else {
         return getAtomRangesForRow(model, rows, indices);
     }
@@ -109,14 +109,14 @@ function getQualifyingResidues(model: Model, row: AnnotationRow, indices: Indice
         let residuesHere: readonly ResidueIndex[] | undefined = undefined;
         if (isDefined(row.label_seq_id)) {
             const sorting = indices.residuesSortedByLabelSeqId.get(iChain)!;
-            residuesHere = getKeysWithValue(sorting, row.label_seq_id);
+            residuesHere = Sorting.getKeysWithValue(sorting, row.label_seq_id);
         }
         if (isDefined(row.auth_seq_id)) {
             if (residuesHere) {
                 residuesHere = residuesHere.filter(i => auth_seq_id.valueKind(i) === Present && auth_seq_id.value(i) === row.auth_seq_id);
             } else {
                 const sorting = indices.residuesSortedByAuthSeqId.get(iChain)!;
-                residuesHere = getKeysWithValue(sorting, row.auth_seq_id);
+                residuesHere = Sorting.getKeysWithValue(sorting, row.auth_seq_id);
             }
         }
         if (isDefined(row.pdbx_PDB_ins_code)) {
@@ -136,7 +136,7 @@ function getQualifyingResidues(model: Model, row: AnnotationRow, indices: Indice
                 }
             } else {
                 const sorting = indices.residuesSortedByLabelSeqId.get(iChain)!;
-                residuesHere = getKeysWithValueInRange(sorting, row.beg_label_seq_id, row.end_label_seq_id);
+                residuesHere = Sorting.getKeysWithValueInRange(sorting, row.beg_label_seq_id, row.end_label_seq_id);
             }
         }
         if (isDefined(row.beg_auth_seq_id) || isDefined(row.end_auth_seq_id)) {
@@ -149,7 +149,7 @@ function getQualifyingResidues(model: Model, row: AnnotationRow, indices: Indice
                 }
             } else {
                 const sorting = indices.residuesSortedByAuthSeqId.get(iChain)!;
-                residuesHere = getKeysWithValueInRange(sorting, row.beg_auth_seq_id, row.end_auth_seq_id);
+                residuesHere = Sorting.getKeysWithValueInRange(sorting, row.beg_auth_seq_id, row.end_auth_seq_id);
             }
         }
         if (!residuesHere) {
@@ -258,7 +258,7 @@ function matchesRange<T>(requiredMin: T | undefined | null, requiredMax: T | und
 
 
 
-
+/** Convert an annotation row into a MolScript expression */
 export function rowToExpression(row: AnnotationRow): Expression {
     const { and } = MS.core.logic;
     const { eq, gre: gte, lte } = MS.core.rel;
@@ -307,9 +307,14 @@ export function rowToExpression(row: AnnotationRow): Expression {
 
     return MS.struct.generator.atomGroups(propTests);
 }
+
+/** Convert multiple annotation rows into a MolScript expression.
+ * (with union semantics, i.e. an atom qualifies if it qualifies for at least one of the rows) */
 export function rowsToExpression(rows: readonly AnnotationRow[]): Expression {
     return unionExpression(rows.map(rowToExpression));
 }
+
+/** Create MolScript expression covering the set union of the given expressions */
 function unionExpression(expressions: Expression[]): Expression {
     return MS.struct.combinator.merge(expressions.map(e => MS.struct.modifier.union([e])));
 }
