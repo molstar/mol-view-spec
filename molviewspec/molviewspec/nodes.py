@@ -4,8 +4,6 @@ from typing import Any, Literal, Mapping, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from .params_utils import Params
-
 KindT = Literal[
     "root",
     "camera",
@@ -56,21 +54,21 @@ class State(BaseModel):
     metadata: Metadata = Field(description="Associated metadata.")
 
 
-class DownloadParams(Params):
+class DownloadParams(BaseModel):
     url: str = Field(description="URL from which to pull structure data.")
 
 
 ParseFormatT = Literal["mmcif", "bcif", "pdb"]
 
 
-class ParseParams(Params):
+class ParseParams(BaseModel):
     format: ParseFormatT = Field(description="The format of the structure data.")
 
 
 StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 
-class StructureParams(Params):
+class StructureParams(BaseModel):
     type: StructureTypeT
     assembly_id: Optional[str] = Field(description="Use the name to specify which assembly to load")
     assembly_index: Optional[int] = Field(description="0-based assembly index, use this to load the 1st assembly")
@@ -95,23 +93,25 @@ class ComponentExpression(BaseModel):  # Feel free to rename (this used to be In
     auth_seq_id: Optional[int]
     pdbx_PDB_ins_code: Optional[str]
     beg_label_seq_id: Optional[int] = Field(
-        "Defines a consecutive range of residues when combined with " "`end_label_seq_id`."
+        description="Defines a consecutive range of residues when combined with `end_label_seq_id`."
     )
     end_label_seq_id: Optional[int] = Field(
-        "Defines a consecutive range of residues when combined with " "`beg_label_seq_id`. End indices are inclusive."
+        description="Defines a consecutive range of residues when combined with `beg_label_seq_id`. End indices are inclusive."
     )
     beg_auth_seq_id: Optional[int] = Field(
-        "Defines a consecutive range of residues when combined with " "`end_auth_seq_id`."
+        description="Defines a consecutive range of residues when combined with `end_auth_seq_id`."
     )
     end_auth_seq_id: Optional[int] = Field(
-        "Defines a consecutive range of residues when combined with " "`beg_auth_seq_id`. End indices are inclusive."
+        description="Defines a consecutive range of residues when combined with `beg_auth_seq_id`. End indices are inclusive."
     )
-    residue_index: Optional[int] = Field("0-based residue index in the source file")
-    label_atom_id: Optional[int] = Field("Atom name like 'CA', 'N', 'O' (`_atom_site.label_atom_id`)")
-    auth_atom_id: Optional[int] = Field("Atom name like 'CA', 'N', 'O' (`_atom_site.auth_atom_id`)")
-    type_symbol: Optional[str] = Field("Element symbol like 'H', 'HE', 'LI', 'BE' (`_atom_site.type_symbol`)")
-    atom_id: Optional[int] = Field("Unique atom identifier (`_atom_site.id`)")
-    atom_index: Optional[int] = Field("0-based atom index in the source file")
+    residue_index: Optional[int] = Field(description="0-based residue index in the source file")
+    label_atom_id: Optional[int] = Field(description="Atom name like 'CA', 'N', 'O' (`_atom_site.label_atom_id`)")
+    auth_atom_id: Optional[int] = Field(description="Atom name like 'CA', 'N', 'O' (`_atom_site.auth_atom_id`)")
+    type_symbol: Optional[str] = Field(
+        description="Element symbol like 'H', 'HE', 'LI', 'BE' (`_atom_site.type_symbol`)"
+    )
+    atom_id: Optional[int] = Field(description="Unique atom identifier (`_atom_site.id`)")
+    atom_index: Optional[int] = Field(description="0-based atom index in the source file")
 
 
 RepresentationTypeT = Literal["ball_and_stick", "cartoon", "surface"]
@@ -119,7 +119,7 @@ ColorNamesT = Literal["white", "gray", "black", "red", "orange", "yellow", "gree
 ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
 
 
-class RepresentationParams(Params):
+class RepresentationParams(BaseModel):
     type: RepresentationTypeT
 
 
@@ -139,7 +139,7 @@ SchemaT = Literal[
 SchemaFormatT = Literal["cif", "bcif", "json"]
 
 
-class _DataFromUriParams(Params):
+class _DataFromUriParams(BaseModel):
     uri: str
     format: SchemaFormatT
     category_name: Optional[str] = Field(description="Only applies when format is 'cif' or 'bcif'")
@@ -147,27 +147,31 @@ class _DataFromUriParams(Params):
         description="Name of the column in CIF or field name (key) in JSON that "
         "contains the desired value (color/label/tooltip/component...); the "
         "default value is 'color'/'label'/'tooltip'/'component' depending "
-        "on the node kind"
+        "on the node kind",
+        default="component",
     )
     block_header: Optional[str] = Field(description="Only applies when format is 'cif' or 'bcif'")
     block_index: Optional[int] = Field(description="Only applies when format is 'cif' or 'bcif'")
-    schema_: SchemaT
+    schema_: SchemaT = Field(alias="schema")  # must be aliased to not shadow BaseModel attribute
 
 
-class _DataFromSourceParams(Params):
+class _DataFromSourceParams(BaseModel):
     category_name: str
     field_name: Optional[str] = Field(
         description="Name of the column in CIF that contains the desired value ("
         "color/label/tooltip/component...); the default value is "
-        "'color'/'label'/'tooltip'/'component' depending on the node kind"
+        "'color'/'label'/'tooltip'/'component' depending on the node kind",
+        default="component",
     )
     block_header: Optional[str]
     block_index: Optional[int]
-    schema_: SchemaT
+    schema_: SchemaT = Field(alias="schema")  # must be aliased to not shadow BaseModel attribute
 
 
-class ComponentInlineParams(Params):
-    selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression]
+class ComponentInlineParams(BaseModel):
+    selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = Field(
+        description="Describes one or more selections or one of the enumerated selectors."
+    )
 
 
 class ComponentFromUriParams(_DataFromUriParams):
@@ -198,7 +202,7 @@ class ColorFromSourceParams(_DataFromSourceParams):
     pass
 
 
-class LabelInlineParams(Params):
+class LabelInlineParams(BaseModel):
     text: str
     # schema and other stuff not needed here, the label will be applied on the whole parent Structure or Component
 
@@ -211,7 +215,7 @@ class LabelFromSourceParams(_DataFromSourceParams):
     pass
 
 
-class TooltipInlineParams(Params):
+class TooltipInlineParams(BaseModel):
     text: str
     # schema and other stuff not needed here, the tooltip will be applied on the whole parent Structure or Component
 
@@ -224,37 +228,35 @@ class TooltipFromSourceParams(_DataFromSourceParams):
     pass
 
 
-class FocusInlineParams(Params):
+class FocusInlineParams(BaseModel):
     direction: Optional[tuple[float, float, float]] = Field(
-        description="Direction of the view (vector position -> " "target)"
+        description="Direction of the view (vector position -> target)"
     )
     up: Optional[tuple[float, float, float]] = Field(
-        description="Controls the rotation around the vector between " "target and position"
+        description="Controls the rotation around the vector between target and position"
     )
 
 
-class TransformParams(Params):
+class TransformParams(BaseModel):
     rotation: Optional[tuple[float, ...]] = Field(
-        description="In a column major (j * 3 + i indexing) format, this is "
-        "equivalent to Fortran-order in numpy, to be multiplied"
-        " from the left"
+        description="In a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
-    translation: Optional[tuple[float, float, float]]
+    translation: Optional[tuple[float, float, float]] = Field()
 
 
-class CameraParams(Params):
+class CameraParams(BaseModel):
     target: tuple[float, float, float] = Field(description="What to look at")
     position: tuple[float, float, float] = Field(description="The position of the camera")
-    up: Optional[tuple[float, float, float]] = Field(
-        description="Controls the rotation around the vector between " "target and position"
+    up: tuple[float, float, float] = Field(
+        description="Controls the rotation around the vector between target and position", required=True
     )
 
 
-class CanvasParams(Params):
+class CanvasParams(BaseModel):
     background_color: ColorT
 
 
-class SphereParams(Params):
+class SphereParams(BaseModel):
     position: tuple[float, float, float]
     radius: float
     color: ColorT
@@ -262,7 +264,7 @@ class SphereParams(Params):
     tooltip: Optional[str]
 
 
-class LineParams(Params):
+class LineParams(BaseModel):
     position1: tuple[float, float, float]
     position2: tuple[float, float, float]
     radius: float

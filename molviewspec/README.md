@@ -10,7 +10,6 @@ described by its parent node.
 The corresponding MolViewSpec tree is provided in JSON and may look like this:
 ```json
 {
-  "version": 6,
   "root": {
     "kind": "root",
     "children": [
@@ -29,7 +28,7 @@ The corresponding MolViewSpec tree is provided in JSON and may look like this:
               {
                 "kind": "structure",
                 "params": {
-                  "kind": "model"
+                  "type": "model"
                 },
                 "children": [
                   {
@@ -53,6 +52,10 @@ The corresponding MolViewSpec tree is provided in JSON and may look like this:
         ]
       }
     ]
+  },
+  "metadata": {
+    "version": "1",
+    "timestamp": "2023-11-16T11:41:07.421220"
   }
 }
 ```
@@ -61,12 +64,16 @@ Mol* is the reference implementation for reading MolViewSpec files.
 
 ## The Tree Root
 
-Every tree starts with a single `root` node, which contains all nodes in a structure fashion, and a `version` number.
+Every tree starts with a single `root` node, which contains all nodes in a structure fashion, and a `metadata` node, 
+which can hold additional information such as a `version` tag as well as the `timestamp` when a view was created.
 
 ```json
 {
   "root": {},
-  "version": 6
+  "metadata": {
+    "version": "1",
+    "timestamp": "2023-11-16T11:41:07.421220"
+  }
 }
 ```
 

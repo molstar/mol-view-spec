@@ -44,7 +44,7 @@ from molviewspec.nodes import (
 )
 from molviewspec.params_utils import make_params
 
-VERSION = 8
+VERSION = "1"
 
 
 def create_builder() -> Root:
@@ -73,7 +73,7 @@ class Root(_Base):
     def get_state(
         self, *, title: str = None, description: str = None, description_format: DescriptionFormatT = None
     ) -> State:
-        # TODO jamming title and description in here prolly isn't the best idea
+        # TODO jamming title and description in here prolly isn't the best idea -- could have a mini-builder for that
         metadata = Metadata(
             version=VERSION,
             timestamp=datetime.now().isoformat(),
@@ -101,11 +101,9 @@ class Root(_Base):
         *,
         target: tuple[float, float, float],
         position: tuple[float, float, float],
-        up: tuple[float, float, float] | None = None,
+        up: tuple[float, float, float] | None = (0, 1, 0),
     ):
         params = make_params(CameraParams, locals())
-        if up is None:
-            params.up = (0, 1, 0)
         node = Node(kind="camera", params=params)
         self._add_child(node)
         return self
@@ -129,7 +127,6 @@ class Root(_Base):
 
 
 class Download(_Base):
-    # TODO defaults in signature makes them more obvious to users but this can't accommodate more complex cases
     def parse(self, *, format: ParseFormatT) -> Parse:
         params = make_params(ParseParams, locals())
         node = Node(kind="parse", params=params)
@@ -141,8 +138,8 @@ class Parse(_Base):
     def model_structure(
         self,
         *,
-        model_index: int | None = None,  # TODO default candidate
-        block_index: int | None = None,  # TODO default candidate
+        model_index: int | None = None,
+        block_index: int | None = None,
         block_header: str | None = None,
     ) -> Structure:
         """
@@ -179,8 +176,8 @@ class Parse(_Base):
     def symmetry_structure(
         self,
         *,
-        ijk_min: tuple[int, int, int] | None = None,
-        ijk_max: tuple[int, int, int] | None = None,
+        ijk_min: tuple[int, int, int] | None = (-1, -1, -1),
+        ijk_max: tuple[int, int, int] | None = (1, 1, 1),
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
@@ -193,10 +190,6 @@ class Parse(_Base):
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
         params = make_params(StructureParams, locals(), type="symmetry")
-        if ijk_min is None:
-            params.ijk_min = (-1, -1, -1)
-        if ijk_max is None:
-            params.ijk_max = (1, 1, 1)
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -204,7 +197,7 @@ class Parse(_Base):
     def symmetry_mates_structure(
         self,
         *,
-        radius: float | None = None,
+        radius: float | None = 5.0,
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
@@ -216,8 +209,6 @@ class Parse(_Base):
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
         params = make_params(StructureParams, locals(), type="symmetry_mates")
-        if radius is None:
-            params.radius = 5.0
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -350,7 +341,6 @@ class Structure(_Base):
         self._add_child(node)
         return self
 
-    # TODO factor out as general purpose validation?
     @staticmethod
     def _is_rotation_matrix(t: Sequence[float], eps: float = 0.005):
         a00, a01, a02, a10, a11, a12, a20, a21, a22 = t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]

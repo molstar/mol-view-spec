@@ -2,21 +2,22 @@ from typing import Type, TypeVar
 
 from pydantic import BaseModel
 
-
-class Params(BaseModel):
-    """Base class for all params classes"""
+TParams = TypeVar("TParams", bound=BaseModel)
 
 
-TParams = TypeVar("TParams", bound=Params)
-
-
-def make_params(params_type: Type[TParams], values: dict = {}, /, **more_values: object) -> TParams:
+def make_params(params_type: Type[TParams], values=None, /, **more_values: object) -> TParams:
+    if values is None:
+        values = {}
     result = {}
-    for key in params_type.__annotations__:
+
+    for field in params_type.__fields__.values():
+        # must use alias here to properly resolve goodies like `schema_`
+        key = field.alias
         if more_values.get(key) is not None:
-            result[key] = more_values.get(key)
+            result[key] = more_values[key]
         elif values.get(key) is not None:
-            result[key] = values.get(key)
-    # TODO reimpl validation
-    # _validate_params(params_type, result)
+            result[key] = values[key]
+        elif field.default is not None:  # currently not used
+            result[key] = field.default
+
     return result  # type: ignore
