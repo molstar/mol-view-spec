@@ -1,11 +1,11 @@
-from typing import Type, TypeVar
+from typing import Any, Mapping, Type, TypeVar
 
 from pydantic import BaseModel
 
 TParams = TypeVar("TParams", bound=BaseModel)
 
 
-def make_params(params_type: Type[TParams], values=None, /, **more_values: object) -> TParams:
+def make_params(params_type: Type[TParams], values=None, /, **more_values: object) -> Mapping[str, Any]:
     if values is None:
         values = {}
     result = {}

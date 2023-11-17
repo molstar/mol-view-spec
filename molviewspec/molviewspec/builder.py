@@ -17,7 +17,6 @@ from molviewspec.nodes import (
     ComponentExpression,
     ComponentFromSourceParams,
     ComponentFromUriParams,
-    ComponentInlineParams,
     ComponentSelectorT,
     DescriptionFormatT,
     DownloadParams,
@@ -71,7 +70,11 @@ class Root(_Base):
         super().__init__(root=self, node=Node(kind="root"))
 
     def get_state(
-        self, *, title: str = None, description: str = None, description_format: DescriptionFormatT = None
+        self,
+        *,
+        title: str | None = None,
+        description: str | None = None,
+        description_format: DescriptionFormatT | None = None,
     ) -> State:
         # TODO jamming title and description in here prolly isn't the best idea -- could have a mini-builder for that
         metadata = Metadata(
@@ -88,9 +91,9 @@ class Root(_Base):
         *,
         destination: str,
         indent: int = 0,
-        title: str = None,
-        description: str = None,
-        description_format: DescriptionFormatT = None,
+        title: str | None = None,
+        description: str | None = None,
+        description_format: DescriptionFormatT | None = None,
     ):
         state = self.get_state(title=title, description=description, description_format=description_format)
         with open(destination, "w") as out:
@@ -115,7 +118,7 @@ class Root(_Base):
         return self
 
     def download(self, *, url: str) -> Download:
-        params: DownloadParams = {"url": url}
+        params = make_params(DownloadParams, locals())
         node = Node(kind="download", params=params)
         self._add_child(node)
         return Download(node=node, root=self._root)
@@ -218,7 +221,7 @@ class Structure(_Base):
     def component(
         self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
     ) -> Component:
-        params: ComponentInlineParams = {"selector": selector}
+        params = make_params(ColorInlineParams, locals())
         node = Node(kind="component", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
