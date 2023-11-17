@@ -271,3 +271,12 @@ class LineParams(BaseModel):
     color: ColorT
     label: Optional[str]
     tooltip: Optional[str]
+
+
+def validate_state_tree(json: str) -> None:
+    """
+    Validates a JSON string and checks whether it's a valid state representation.
+    :param json: payload to validate
+    :raises ValidationError if JSON is malformed or state tree type definitions are violated
+    """
+    State.parse_raw(json)

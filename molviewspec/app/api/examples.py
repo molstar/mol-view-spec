@@ -4,10 +4,12 @@ from typing import Literal, TypeAlias
 import requests
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
+from pydantic import ValidationError
 
 from app.config import settings
 from molviewspec.builder import Representation, Root
 from molviewspec.nodes import ComponentExpression
+from molviewspec.nodes import validate_state_tree as validate_state_tree_internal
 
 MVSResponse: TypeAlias = Response
 """Response containing a MVS tree (as JSON)"""
@@ -264,6 +266,15 @@ async def validation_data(id: str) -> Response:
                 transformed_data.append(transformed_residue)
 
     return JSONResponse(transformed_data)
+
+
+@router.get("/validate-state-tree")
+async def validate_state_tree(json: str) -> Response:
+    try:
+        validate_state_tree_internal(json)
+        return JSONResponse({"valid": True})
+    except ValidationError as e:
+        return JSONResponse(status_code=422, content=e.json())
 
 
 ##############################################################################
