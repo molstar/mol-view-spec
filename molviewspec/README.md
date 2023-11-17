@@ -54,7 +54,7 @@ The corresponding MolViewSpec tree is provided in JSON and may look like this:
     ]
   },
   "metadata": {
-    "version": "1",
+    "version": "0.1",
     "timestamp": "2023-11-16T11:41:07.421220"
   }
 }
@@ -71,7 +71,7 @@ which can hold additional information such as a `version` tag as well as the `ti
 {
   "root": {},
   "metadata": {
-    "version": "1",
+    "version": "0.1",
     "timestamp": "2023-11-16T11:41:07.421220"
   }
 }

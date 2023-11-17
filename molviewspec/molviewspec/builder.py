@@ -41,9 +41,7 @@ from molviewspec.nodes import (
     TooltipInlineParams,
     TransformParams,
 )
-from molviewspec.params_utils import make_params
-
-VERSION = "1"
+from molviewspec.utils import get_major_version_tag, make_params
 
 
 def create_builder() -> Root:
@@ -78,7 +76,7 @@ class Root(_Base):
     ) -> State:
         # TODO jamming title and description in here prolly isn't the best idea -- could have a mini-builder for that
         metadata = Metadata(
-            version=VERSION,
+            version=get_major_version_tag(),
             timestamp=datetime.now().isoformat(),
             title=title,
             description=description,

@@ -1,15 +1,18 @@
+import inspect
 import math
 from typing import Literal, TypeAlias
 
 import requests
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
+import molviewspec
 from app.config import settings
 from molviewspec.builder import Representation, Root
 from molviewspec.nodes import ComponentExpression
 from molviewspec.nodes import validate_state_tree as validate_state_tree_internal
+from molviewspec.utils import get_major_version_tag
 
 MVSResponse: TypeAlias = Response
 """Response containing a MVS tree (as JSON)"""
@@ -172,6 +175,10 @@ async def generic_visuals() -> MVSResponse:
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
 
+##############################################################################
+# meta endpoints
+
+
 @router.get("/data/{id}/molecule")
 async def cif_data_molecule(id: str) -> Response:
     """
@@ -266,6 +273,27 @@ async def validation_data(id: str) -> Response:
                 transformed_data.append(transformed_residue)
 
     return JSONResponse(transformed_data)
+
+
+# Create a custom endpoint to serve the OpenAPI JSON for your Pydantic models
+@router.get("/models/openapi.json")
+async def models_openapi() -> JSONResponse:
+    openapi_models = {}
+
+    # collect relevant impls
+    for name, clazz in inspect.getmembers(molviewspec.nodes) + inspect.getmembers(molviewspec.builder):
+        # TODO suppress 'private' classes?
+        if inspect.isclass(clazz) and issubclass(clazz, BaseModel) and clazz != BaseModel:
+            openapi_models[clazz.__name__] = clazz.schema()
+
+    openapi_spec = {
+        "openapi": "3.0.0",
+        "info": {"title": "MolViewSpec Node Schema OpenAPI", "version": get_major_version_tag()},
+        "paths": {},
+        "components": {"schemas": openapi_models},
+    }
+
+    return JSONResponse(content=openapi_spec)
 
 
 @router.get("/validate-state-tree")
