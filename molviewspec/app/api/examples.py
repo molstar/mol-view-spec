@@ -21,7 +21,7 @@ MVSResponse: TypeAlias = Response
 router = APIRouter()
 
 
-@router.get("/load/{id}")
+@router.get("/load")
 async def download_example(id: str = "1cbs") -> MVSResponse:
     """
     Download a minimal example that visualizes a given PDB entry in cartoon representation.
@@ -31,7 +31,7 @@ async def download_example(id: str = "1cbs") -> MVSResponse:
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
 
-@router.get("/label/{id}")
+@router.get("/label")
 async def label_example(id: str = "1lap") -> MVSResponse:
     """
     The minimal example enriched by custom labels and labels read from the CIF source file.
@@ -51,7 +51,7 @@ async def label_example(id: str = "1lap") -> MVSResponse:
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
 
-@router.get("/color/{id}")
+@router.get("/color")
 async def color_example(id: str = "1cbs") -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
@@ -91,7 +91,7 @@ async def component_example() -> MVSResponse:
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
 
-@router.get("/symmetry-mates/{id}")
+@router.get("/symmetry-mates")
 async def symmetry_mates_example(id: str = "1cbs") -> MVSResponse:
     """
     Add symmetry mates within a distance threshold.
@@ -101,7 +101,7 @@ async def symmetry_mates_example(id: str = "1cbs") -> MVSResponse:
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
 
-@router.get("/symmetry/{id}")
+@router.get("/symmetry")
 async def symmetry_example(id: str = "1cbs") -> MVSResponse:
     """
     Create symmetry mates by specifying Miller indices.
@@ -133,7 +133,7 @@ async def transform_example() -> MVSResponse:
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
 
-@router.get("/validation/{id}")
+@router.get("/validation")
 async def validation_example(id: str = "1cbs") -> MVSResponse:
     """
     Color a structure by annotation data in JSON.
