@@ -148,7 +148,6 @@ class _DataFromUriParams(BaseModel):
         "contains the desired value (color/label/tooltip/component...); the "
         "default value is 'color'/'label'/'tooltip'/'component' depending "
         "on the node kind",
-        default="component",
     )
     block_header: Optional[str] = Field(description="Only applies when format is 'cif' or 'bcif'")
     block_index: Optional[int] = Field(description="Only applies when format is 'cif' or 'bcif'")
@@ -161,7 +160,6 @@ class _DataFromSourceParams(BaseModel):
         description="Name of the column in CIF that contains the desired value ("
         "color/label/tooltip/component...); the default value is "
         "'color'/'label'/'tooltip'/'component' depending on the node kind",
-        default="component",
     )
     block_header: Optional[str]
     block_index: Optional[int]
