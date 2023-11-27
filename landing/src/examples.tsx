@@ -130,7 +130,7 @@ function ExamplePreview({ example, setCurrent, current }: { example: ExampleSpec
 }
 
 function CurrentExample({ example }: { example: ExampleSpec }) {
-
+    const CB = CopyBlock as any;
     return <>
         <div className='row' style={{ marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
             <div className='nine columns'>
@@ -142,7 +142,7 @@ function CurrentExample({ example }: { example: ExampleSpec }) {
         </div>
         <div className='row'>
             <div className='twelve columns'>
-                <CopyBlock text={example.python as any} language='python' wrapLongLines theme={dracula} showLineNumbers />
+                <CB text={example.python as any} language='python' wrapLongLines theme={dracula} showLineNumbers />
             </div>
         </div>
     </>
