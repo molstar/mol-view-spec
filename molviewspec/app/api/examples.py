@@ -27,7 +27,14 @@ async def download_example(id: str = "1cbs") -> MVSResponse:
     Download a minimal example that visualizes a given PDB entry in cartoon representation.
     """
     builder = Root()
-    (builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").model_structure().component().representation())
+    (
+        builder.download(url=_url_for_mmcif(id))
+        .parse(format="mmcif")
+        .model_structure()
+        .component()
+        .representation()
+        .color(color="blue")
+    )
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
 
@@ -39,14 +46,17 @@ async def label_example(id: str = "1lap") -> MVSResponse:
     builder = Root()
     structure = builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").model_structure()
 
-    # represent everything as cartoon
-    whole = structure.component()
-    whole.representation()
+    # Reference a residue of interest
+    residue = ComponentExpression(label_asym_id="A", label_seq_id=120)
 
-    # label some residues with custom text
-    structure.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=120)).label(text="Residue 1")
-    structure.component(selector=ComponentExpression(label_asym_id="C", label_seq_id=271)).label(text="Residue 2")
-    structure.label_from_source(schema="residue", category_name="my_custom_cif_category")
+    # Represent everything as cartoon & color the residue red
+    whole = structure.component()
+    (whole.representation().color(color="red", selector=ComponentExpression(label_asym_id="A", label_seq_id=120)))
+
+    # label the residues with custom text & focus it
+    (structure.component(selector=residue).label(text="ALA 120 A: My Label").focus())
+
+    # structure.label_from_source(schema="residue", category_name="my_custom_cif_category")
 
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
@@ -102,7 +112,7 @@ async def symmetry_mates_example(id: str = "1cbs") -> MVSResponse:
 
 
 @router.get("/symmetry")
-async def symmetry_example(id: str = "1cbs") -> MVSResponse:
+async def symmetry_example(id: str = "1tqn") -> MVSResponse:
     """
     Create symmetry mates by specifying Miller indices.
     """
@@ -111,6 +121,9 @@ async def symmetry_example(id: str = "1cbs") -> MVSResponse:
         builder.download(url=_url_for_mmcif(id))
         .parse(format="mmcif")
         .symmetry_structure(ijk_min=(-1, -1, -1), ijk_max=(1, 1, 1))
+        .component()
+        .representation()
+        .color(color="#008080")
     )
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
@@ -121,15 +134,32 @@ async def transform_example() -> MVSResponse:
     Superimpose 4hhb and 1oj6 by transforming the latter.
     """
     builder = Root()
-    (builder.download(url=_url_for_mmcif("4hhb")).parse(format="mmcif").model_structure())
+
+    # Load first structure and color it red
+    (
+        builder.download(url=_url_for_mmcif("4hhb"))
+        .parse(format="mmcif")
+        .model_structure()
+        .component()
+        .representation()
+        .color(color="red")
+    )
+
+    # Load second structure, apply matrix transform, and color it blue
     (
         builder.download(url=_url_for_mmcif("1oj6"))
         .parse(format="mmcif")
         .model_structure()
         .transform(
-            rotation=[-0.72, -0.33, -0.61, 0.36, 0.57, -0.74, 0.59, -0.75, -0.30], translation=[-12.54, 46.79, 94.50]
+            # TODO: fix rotation matrix
+            rotation=[-0.72, -0.33, -0.61, 0.36, 0.57, -0.74, 0.59, -0.75, -0.30],
+            translation=[-12.54, 46.79, 94.50],
         )
+        .component()
+        .representation()
+        .color(color="blue")
     )
+
     return JSONResponse(builder.get_state().dict(exclude_none=True))
 
 

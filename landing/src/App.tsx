@@ -1,13 +1,13 @@
 import { ExamplesUI } from "./examples";
 
-const DocsLink = 'https://molstar.org/viewer-docs/mol-view-spec/overview/';
+const DocsLink = 'https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9';
 
 export function App() {
     return <div className='container' style={{ marginBottom: 20 }}>
         <div className='row' style={{ textAlign: 'center', marginTop: 40 }}>
             <img style={{ maxWidth: 160, width: '100%', marginBottom: 20 }} src='img/molstar-logo.png' alt='logo' />
             <h2 style={{ fontWeight: 'bold' }}>
-                Mol View Spec
+                MolViewSpec
             </h2>
         </div>
 
@@ -15,7 +15,7 @@ export function App() {
             <div className='two columns'>&nbsp;</div>
             <div className='eight columns' style={{ borderTop: '1px solid #E0DDD4', paddingTop: 20 }}>
                 <h5 className='hero-heading'>
-                    Toolkit for Describing Molecular Visualizations
+                    Toolkit and <a href='https://molstar.org/'>Mol*</a> Extension for Describing Molecular Visualizations
                 </h5>
             </div>
             <div className='two columns'>&nbsp;</div>
@@ -24,16 +24,24 @@ export function App() {
         <div className='row' style={{ marginTop: 0, display: 'flex' }}>
             <div className='twelve columns' style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ margin: 5, textAlign: 'justify' }}>
-                    <b>Mol View Spec</b> provides a generic mechanism to describe visual scenes or views that are used in molecular visualizations. 
-                    It adopts declarative data-driven approach to descrive, load, render, and visually deliver molecular structures, along with 3D representations, 
-                    coloring schemes, and associated structural, biological, or functional annotations. The toolkit allows for describing the information required 
-                    for representing a <i>molecular view state</i> as data in a nested tree format that can be consumed by visualization software tools 
-                    such as Mol*. 
+                    <p>
+                        <b>MolViewSpec</b> provides a generic mechanism for describing visual scenes or views that are used in molecular visualizations.
+                        It adopts declarative data-driven approach to describe, load, render, and visually deliver molecular structures, along with 3D representations,
+                        coloring schemes, and associated structural, biological, or functional annotations. The toolkit allows for describing the information required
+                        for representing a <i>molecular view state</i> as data in a nested tree format that can be consumed by visualization software tools
+                        such as Mol*.
+                    </p>
+
+                    <p style={{ fontStyle: 'italic' }}>
+                        The toolkit is available as a <a href='https://pypi.org/project/molviewspec/' target='_blank' rel='noreferrer'>Python package</a> that enables
+                        building molecular scenes via a declarative and API and <a href='https://github.com/molstar/molstar/tree/master/src/extensions/mvs'  target='_blank' rel='noreferrer'>Mol* extension</a> to enable both
+                        scene building and visualization.
+                    </p>
                 </div>
             </div>
         </div>
 
-        <div className='row' style={{ marginTop: 20, display: 'flex' }}>
+        <div className='row' style={{ display: 'flex' }}>
             <div className='four columns'>
                 <a className='button button-primary' href='https://github.com/molstar/mol-view-spec/' style={{ fontSize: '2rem', width: '100%' }} target='_blank' rel='noreferrer'>
                     <svg width='14' height='14' style={{ marginRight: '0.75rem' }}><use href='#github-logo' /></svg>
@@ -52,23 +60,34 @@ export function App() {
             </div>
         </div>
 
-        <div className='row' style={{ textAlign: 'center', marginTop: 20,  borderTop: '1px solid #E0DDD4', paddingTop: 20 }}>
+        <div className='row' style={{ textAlign: 'center', marginTop: 20, borderTop: '1px solid #E0DDD4', paddingTop: 20 }}>
             <div className='twelve columns'>
-                <h5 className='hero-heading' style={{ marginBottom: 30 }}><b>Examples</b></h5>
-                {/* <div style={{ fontSize: '0.95rem', maxWidth: 500, margin: '10px auto 40px auto', color: '#555' }}>
+                <h5 className='hero-heading' style={{ marginBottom: 0 }}><b>Examples</b></h5>
+                <div>
+                    The below examples show molecular scenes described using the <a href='https://pypi.org/project/molviewspec/' target='_blank' rel='noreferrer'>MolViewSpec Python package</a><br/>and can be opened in Mol* using the <b>Open in Mol*</b> button.
+                </div>
+                <div style={{ fontSize: '0.95rem', margin: '0 auto 20px auto', color: '#555' }}>
                     WebGL2 support is required to view the interactive examples. The examples were tested in Firefox, Chrome & Safari on PC, Linux and MacOS/iOS.
-                    Some users experienced rendering problems with integrated Intel graphics cards.
-                </div> */}
+                </div>
             </div>
         </div>
 
         <ExamplesUI />
 
-        <div style={{ borderTop: '1px solid #E0DDD4', margin: '30px 0' }} />
+        <div className='row' style={{ textAlign: 'center', marginTop: 40 }}>
+            <div className='twelve columns' style={{ borderTop: '1px solid #E0DDD4', paddingTop: 30 }}>
+                <h5 className='hero-heading'>The project is an open collaboration started by</h5>
+                <div className='founders'>
+                    <a href='https://pdbe.org'><img alt='PDBe' src='img/pdbe_logo.png' /></a>
+                    <a href='https://rcsb.org'><img alt='RCSB' src='img/rcsb_logo.png' /></a>
+                    <a href='https://ceitec.cz'><img alt='CEITEC' src='img/ceitec_logo.jpg' /></a>
+                </div>
+            </div>
+        </div>
 
 
-        <div className='row' style={{ textAlign: 'right', color: '#999' }}>
-            Copyright 2023–now, Mol View Spec Contributors | <a href='terms-of-use.html' style={{ color: '#999' }}>Terms of Use &
+        <div className='row' style={{ textAlign: 'right', color: '#999', marginTop: 20 }}>
+            Copyright 2023–now, MolViewSpec Contributors | <a href='terms-of-use.html' style={{ color: '#999' }}>Terms of Use &
                 GDPR</a>
         </div>
 
