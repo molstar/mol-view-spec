@@ -35,7 +35,7 @@ async def download_example(id: str = "1cbs") -> MVSResponse:
         .representation()
         .color(color="blue")
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/label")
@@ -58,7 +58,7 @@ async def label_example(id: str = "1lap") -> MVSResponse:
 
     # structure.label_from_source(schema="residue", category_name="my_custom_cif_category")
 
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/color")
@@ -78,7 +78,7 @@ async def color_example(id: str = "1cbs") -> MVSResponse:
     structure.component(selector="ligand").representation(type="ball_and_stick").color_from_source(
         schema="residue", category_name="my_custom_cif_category"
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/component")
@@ -98,7 +98,7 @@ async def component_example() -> MVSResponse:
         schema="chain", uri=f"/data/1cbs/components.cif", format="cif", category_name="mvs_test_component2"
     ).representation(type="ball_and_stick").color(color="yellow")
 
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/symmetry-mates")
@@ -108,7 +108,7 @@ async def symmetry_mates_example(id: str = "1cbs") -> MVSResponse:
     """
     builder = Root()
     (builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").symmetry_mates_structure(radius=5.0))
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/symmetry")
@@ -125,7 +125,7 @@ async def symmetry_example(id: str = "1tqn") -> MVSResponse:
         .representation()
         .color(color="#008080")
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/transform")
@@ -159,7 +159,7 @@ async def transform_example() -> MVSResponse:
         .color(color="blue")
     )
 
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/validation")
@@ -179,7 +179,7 @@ async def validation_example(id: str = "1cbs") -> MVSResponse:
         .color(color="#ffffff")
         .color_from_uri(schema="residue", uri=f"/data/{id.lower()}/validation", format="json")
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/generic-visuals")
@@ -201,7 +201,7 @@ async def generic_visuals() -> MVSResponse:
         .sphere(position=(1, 1, 1), color="#325880", radius=0.1)
         .line(position1=(0, 0, 0), position2=(1, 1, 1), color="#05d0e7", radius=0.05)
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 ##############################################################################
@@ -366,7 +366,7 @@ async def testing_formats_example() -> MVSResponse:
         .representation()
         .color(color="red")
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/structures")
@@ -405,7 +405,7 @@ async def testing_structures_example() -> MVSResponse:
     model_0 = cif_1wrf.model_structure(model_index=0).component().representation().color(color="#CC0000")
     model_1 = cif_1wrf.model_structure(model_index=1).component().representation().color(color="#EE7700")
     model_2 = cif_1wrf.model_structure(model_index=2).component().representation().color(color="#FFFF00")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/symmetry_structures")
@@ -424,7 +424,7 @@ async def testing_symmetry_structures_example(id: str = "1tqn") -> MVSResponse:
     model.symmetry_mates_structure(block_index=2, radius=40).transform(
         translation=(-130, 0, 0)
     ).component().representation().color(color="green")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/transforms")
@@ -498,7 +498,7 @@ async def testing_transforms_example(id: str = "1cbs") -> MVSResponse:
         .representation()
         .color(color="orange")
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/components")
@@ -531,7 +531,7 @@ async def testing_components_example() -> MVSResponse:
     )
     struct3.component(selector="protein").representation(type="surface").color(color="white")
     struct3.component(selector="nucleic").representation(type="cartoon").color(color="red")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_from_source")
@@ -563,7 +563,7 @@ async def testing_color_from_source_example(tooltips: bool = False) -> MVSRespon
             category_name="mvs_test_chain_label_annotation",
             field_name="color",
         )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_rainbow")
@@ -583,7 +583,7 @@ async def testing_color_rainbow_example() -> MVSResponse:
         uri="http://0.0.0.0:9000/api/v1/examples/data/1cbs/json/rainbow",
         format="json",
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_cif")
@@ -605,7 +605,7 @@ async def testing_color_cif_example() -> MVSResponse:
         uri=annotation_url,
         format="cif",
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_multicategory_cif")
@@ -632,7 +632,7 @@ async def testing_color_cif_multicategory_example() -> MVSResponse:
         block_header="block2",
         category_name="black_is_good",
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_bcif")
@@ -654,7 +654,7 @@ async def testing_color_bcif_example() -> MVSResponse:
         uri=annotation_url,
         format="bcif",
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_small")
@@ -670,7 +670,7 @@ async def testing_color_small_example() -> MVSResponse:
         uri="http://0.0.0.0:9000/api/v1/examples/data/2bvk/json/atoms",
         format="json",
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_domains")
@@ -705,7 +705,7 @@ async def testing_color_domains_example(colors: bool = True, tooltips: bool = Fa
             format="json",
             field_name="label_asym_id",
         )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_validation")
@@ -743,7 +743,7 @@ async def testing_color_validation_example(
             format="json",
             field_name="tooltip",
         )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/color_multilayer")
@@ -791,7 +791,7 @@ async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
         .color(color="yellow", selector=[ComponentExpression(type_symbol="S")])
         .color(color="#AA0022", selector=[ComponentExpression(type_symbol="FE")])
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/component_from_uri")
@@ -840,7 +840,7 @@ async def testing_component_from_uri(id: str = "1h9t") -> MVSResponse:
         field_name="tooltip",
         field_values="Gold",
     ).representation(type="surface").color(color="orange")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/component_from_source")
@@ -879,7 +879,7 @@ async def testing_component_from_source(id: str = "1h9t") -> MVSResponse:
         field_name="label_entity_id",
         field_values=["5"],
     ).representation(type="surface").color(color="green")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/focus")
@@ -897,7 +897,7 @@ async def testing_focus_example() -> MVSResponse:
         type="ball_and_stick"
     ).color(color="green")
     builder.canvas(background_color="#BBDDFF")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/camera")
@@ -913,7 +913,7 @@ async def testing_camera_example() -> MVSResponse:
     target, position, up = _target_spherical_to_tpu((17, 21, 27), phi=30, theta=15, radius=100)
     builder.camera(target=target, position=position, up=up)
     builder.canvas(background_color="black")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 def _target_spherical_to_pdr(target: tuple[float, float, float], phi: float = 0, theta: float = 0, radius: float = 100):
@@ -996,7 +996,7 @@ async def testing_labels_example(id="1h9t") -> MVSResponse:
     structure.component(
         selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=203, end_label_seq_id=205)
     ).label(text="Ligand binding")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/tooltips")
@@ -1100,7 +1100,7 @@ async def testing_tooltips_example(id="1h9t") -> MVSResponse:
     structure.component(
         selector=ComponentExpression(label_asym_id="B", beg_label_seq_id=203, end_label_seq_id=205)
     ).tooltip(text="Ligand binding")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/labels_from_uri")
@@ -1131,7 +1131,7 @@ async def testing_labels_from_uri_example(id="1h9t", annotation_name="domains") 
         format="json",
     )
     structure.label_from_uri(uri=annotation_url, format="json", schema="all_atomic", field_name="tooltip")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/testing/labels_from_source")
@@ -1152,7 +1152,7 @@ async def testing_labels_from_source_example() -> MVSResponse:
     structure.label_from_source(
         schema="all_atomic", category_name="mvs_test_chain_label_annotation", field_name="tooltip"
     )
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 ##############################################################################
@@ -1213,7 +1213,7 @@ async def portfolio_entry_or_assembly(
         uri=annotation_url, format="cif", schema="all_atomic", category_name=f"color_{coloring}"
     ).color_from_uri(uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol")
     builder.camera(**CAMERA_FOR_1HDA)
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/entity")
@@ -1234,7 +1234,7 @@ async def portfolio_entity(entity_id: str = "1", assembly_id: str = "1") -> MVSR
         selector=ComponentExpression(label_entity_id=entity_id), color=highlight
     )
     builder.camera(**CAMERA_FOR_1HDA)
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/domain")
@@ -1271,7 +1271,7 @@ async def portfolio_domain() -> MVSResponse:
     ligand.representation(type="ball_and_stick").color(color=BASE_COLOR)
     struct.tooltip_from_uri(uri=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic")
     builder.camera(**CAMERA_FOR_1HDA_A)
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/ligand")
@@ -1332,7 +1332,7 @@ async def portfolio_ligand() -> MVSResponse:
     )
     struct.tooltip_from_uri(uri=annotation_url, format="cif", category_name=f"ligand_{LIGAND}", schema="all_atomic")
     builder.camera(**CAMERA_FOR_1HDA_HEM)
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/validation")
@@ -1353,7 +1353,7 @@ async def portfolio_validation() -> MVSResponse:
     )
     struct.tooltip_from_uri(uri=annotation_url, format="json", schema="all_atomic")
     builder.camera(**CAMERA_FOR_1HDA)
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/modres")
@@ -1373,7 +1373,7 @@ async def portfolio_modres() -> MVSResponse:
         text="Modified residue SUI: (3-amino-2,5-dioxo-1-pyrrolidinyl)acetic acid"
     ).representation(type="ball_and_stick").color(color="#ED645A")
     builder.camera(**CAMERA_FOR_1GKT)
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/bfactor")
@@ -1401,7 +1401,7 @@ async def portfolio_bfactor() -> MVSResponse:
         uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor", field_name="B_iso_or_equiv"
     )
     builder.camera(**(CAMERA_FOR_1TQN if ID == "1tqn" else CAMERA_FOR_1HDA))
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/plddt")
@@ -1422,7 +1422,7 @@ async def portfolio_plddt() -> MVSResponse:
         uri=annotation_url, format="cif", schema="all_atomic", category_name=f"plddt", field_name="plddt"
     )
     builder.camera(**CAMERA_FOR_Q5VSL9)
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/pdbe_entry_page")
@@ -1449,7 +1449,7 @@ async def portfolio_pdbe_entry_page(id: str = "7xv8") -> MVSResponse:
         color="#98170f"
     )
     builder.canvas(background_color="#000000")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/pdbe_entry_page_entity")
@@ -1469,7 +1469,7 @@ async def portfolio_pdbe_entry_page_entity(id: str = "7xv8", entity_id: str = "1
     struct.component(selector="water").representation(type="ball_and_stick").color(color="#dfc2c1")
     struct.component(selector=ComponentExpression(label_entity_id=entity_id)).tooltip(text=f"Entity {entity_id}")
     builder.canvas(background_color="#000000")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/pdbekb_default")
@@ -1489,7 +1489,7 @@ async def portfolio_pdbekb_default(id: str = "7xv8", entity_id: str = "1") -> MV
     struct.component(selector="water").representation(type="ball_and_stick").color(color="#dcbfbe")
     struct.component(selector=ComponentExpression(label_entity_id=entity_id)).tooltip(text=f"Entity {entity_id}")
     builder.canvas(background_color="#ffffff")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/pdbekb_segment_superpose")
@@ -1536,7 +1536,7 @@ async def portfolio_pdbekb_segment_superpose(
         .color(color="#cc5a03")
     )
     builder.canvas(background_color="#ffffff")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/pdbekb_ligand_superpose")
@@ -1577,7 +1577,7 @@ async def portfolio_pdbekb_ligand_superpose(chains: str = "1tqn:A,2nnj:A") -> MV
         struct.component(selector="ligand").representation(type="ball_and_stick").color(color="#f602f7")
         struct.component(selector="ion").representation(type="ball_and_stick").color(color="#f602f7")
     builder.canvas(background_color="#ffffff")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 @router.get("/portfolio/rcsb_entry")
@@ -1606,7 +1606,7 @@ async def portfolio_rcsb_entry(id: str = "3sn6") -> MVSResponse:
         color=SYMBOL_COLORS["O"]
     )
     builder.canvas(background_color="#ffffff")
-    return JSONResponse(builder.get_state().dict(exclude_none=True))
+    return JSONResponse(builder.get_state())
 
 
 # TODO add portfolio examples from all the documents we have who knows where

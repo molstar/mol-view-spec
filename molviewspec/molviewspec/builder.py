@@ -74,6 +74,13 @@ class Root(_Base):
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
     ) -> State:
+        """
+        Emits JSON representation of the current state. Can be enriched with metadata.
+        :param title: optional title of the scene
+        :param description: optional detailed description of the scene
+        :param description_format: format of the description
+        :return: JSON that resembles that whole state
+        """
         # TODO jamming title and description in here prolly isn't the best idea -- could have a mini-builder for that
         metadata = Metadata(
             version=get_major_version_tag(),
@@ -82,7 +89,7 @@ class Root(_Base):
             description=description,
             description_format=description_format,
         )
-        return State(root=self._node, metadata=metadata)
+        return State(root=self._node, metadata=metadata).dict(exclude_none=True)
 
     def save_state(
         self,
