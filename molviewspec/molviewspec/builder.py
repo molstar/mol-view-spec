@@ -2,26 +2,30 @@ from __future__ import annotations
 
 import json
 import math
+from datetime import datetime
 from typing import Sequence
+
+from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
     CameraParams,
     CanvasParams,
-    ColorCifCategoryParams,
+    ColorFromSourceParams,
+    ColorFromUriParams,
     ColorInlineParams,
     ColorT,
-    ColorUrlParams,
-    ComponentCifCategoryParams,
     ComponentExpression,
-    ComponentInlineParams,
+    ComponentFromSourceParams,
+    ComponentFromUriParams,
     ComponentSelectorT,
-    ComponentUrlParams,
+    DescriptionFormatT,
     DownloadParams,
     FocusInlineParams,
-    LabelCifCategoryParams,
+    LabelFromSourceParams,
+    LabelFromUriParams,
     LabelInlineParams,
-    LabelUrlParams,
     LineParams,
+    Metadata,
     Node,
     ParseFormatT,
     ParseParams,
@@ -32,56 +36,75 @@ from molviewspec.nodes import (
     SphereParams,
     State,
     StructureParams,
-    TooltipCifCategoryParams,
+    TooltipFromSourceParams,
+    TooltipFromUriParams,
     TooltipInlineParams,
-    TooltipUrlParams,
     TransformParams,
 )
-from molviewspec.params_utils import make_params
-
-VERSION = 6
+from molviewspec.utils import get_major_version_tag, make_params
 
 
 def create_builder() -> Root:
     return Root()
 
 
-class _Base:
-    _root: Root
-    _node: Node
+class _Base(BaseModel):
+    _root: Root = PrivateAttr()
+    _node: Node = PrivateAttr()
 
     def __init__(self, *, root: Root, node: Node) -> None:
+        super().__init__()
         self._root = root
         self._node = node
 
     def _add_child(self, node: Node) -> None:
-        if "children" not in self._node:
-            self._node["children"] = []
-        self._node["children"].append(node)
+        if self._node.children is None:
+            self._node.children = []
+        self._node.children.append(node)
 
 
 class Root(_Base):
     def __init__(self) -> None:
         super().__init__(root=self, node=Node(kind="root"))
 
-    def get_state(self) -> State:
-        return State(version=VERSION, root=self._node)
+    def get_state(
+        self,
+        *,
+        title: str | None = None,
+        description: str | None = None,
+        description_format: DescriptionFormatT | None = None,
+    ) -> State:
+        # TODO jamming title and description in here prolly isn't the best idea -- could have a mini-builder for that
+        metadata = Metadata(
+            version=get_major_version_tag(),
+            timestamp=datetime.now().isoformat(),
+            title=title,
+            description=description,
+            description_format=description_format,
+        )
+        return State(root=self._node, metadata=metadata)
 
-    def save_state(self, *, destination: str):
-        state = self.get_state()
+    def save_state(
+        self,
+        *,
+        destination: str,
+        indent: int = 0,
+        title: str | None = None,
+        description: str | None = None,
+        description_format: DescriptionFormatT | None = None,
+    ):
+        state = self.get_state(title=title, description=description, description_format=description_format)
         with open(destination, "w") as out:
-            out.write(json.dumps(state, indent=2))
+            out.write(json.dumps(state, indent=indent))
 
     def camera(
         self,
         *,
         target: tuple[float, float, float],
         position: tuple[float, float, float],
-        up: tuple[float, float, float] | None = None,
+        up: tuple[float, float, float] | None = (0, 1, 0),
     ):
         params = make_params(CameraParams, locals())
-        if up is None:
-            params["up"] = (0, 1, 0)
         node = Node(kind="camera", params=params)
         self._add_child(node)
         return self
@@ -93,20 +116,18 @@ class Root(_Base):
         return self
 
     def download(self, *, url: str) -> Download:
-        node = Node(kind="download", params=DownloadParams(url=url))
+        params = make_params(DownloadParams, locals())
+        node = Node(kind="download", params=params)
         self._add_child(node)
         return Download(node=node, root=self._root)
 
     def generic_visuals(self) -> GenericVisuals:
-        node = Node(kind="generic-visuals")
+        node = Node(kind="generic_visuals")
         self._add_child(node)
         return GenericVisuals(node=node, root=self._root)
 
-    # TODO Root inherit from _Base and have special __init__ with `self.root = self`? (to be able to use `add_child` in `download`)
-
 
 class Download(_Base):
-    # TODO defaults in signature makes them more obvious to users but this can't accommodate more complex cases
     def parse(self, *, format: ParseFormatT) -> Parse:
         params = make_params(ParseParams, locals())
         node = Node(kind="parse", params=params)
@@ -118,8 +139,8 @@ class Parse(_Base):
     def model_structure(
         self,
         *,
-        model_index: int | None = None,  # TODO default candidate
-        block_index: int | None = None,  # TODO default candidate
+        model_index: int | None = None,
+        block_index: int | None = None,
         block_header: str | None = None,
     ) -> Structure:
         """
@@ -128,7 +149,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="model")
+        params = make_params(StructureParams, locals(), type="model")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -137,7 +158,6 @@ class Parse(_Base):
         self,
         *,
         assembly_id: str | None = None,
-        assembly_index: int | None = None,
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
@@ -145,14 +165,11 @@ class Parse(_Base):
         """
         Create an assembly structure.
         :param assembly_id: Use the name to specify which assembly to load
-        :param assembly_index: 0-based assembly index, use this to load the 1st assembly
         :param model_index: 0-based model index in case multiple NMR frames are present
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        if assembly_id is None and assembly_index is None:
-            assembly_index = 0
-        params = make_params(StructureParams, locals(), kind="assembly")
+        params = make_params(StructureParams, locals(), type="assembly")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -160,8 +177,9 @@ class Parse(_Base):
     def symmetry_structure(
         self,
         *,
-        ijk_min: tuple[int, int, int] | None = None,
-        ijk_max: tuple[int, int, int] | None = None,
+        ijk_min: tuple[int, int, int] | None = (-1, -1, -1),
+        ijk_max: tuple[int, int, int] | None = (1, 1, 1),
+        model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> Structure:
@@ -172,11 +190,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="symmetry")
-        if ijk_min is None:
-            params["ijk_min"] = (-1, -1, -1)
-        if ijk_max is None:
-            params["ijk_max"] = (1, 1, 1)
+        params = make_params(StructureParams, locals(), type="symmetry")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -184,7 +198,8 @@ class Parse(_Base):
     def symmetry_mates_structure(
         self,
         *,
-        radius: float | None = None,
+        radius: float | None = 5.0,
+        model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
     ) -> Structure:
@@ -194,9 +209,7 @@ class Parse(_Base):
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         """
-        params = make_params(StructureParams, locals(), kind="symmetry-mates")
-        if radius is None:
-            params["radius"] = 5.0
+        params = make_params(StructureParams, locals(), type="symmetry_mates")
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
@@ -206,15 +219,15 @@ class Structure(_Base):
     def component(
         self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
     ) -> Component:
-        params: ComponentInlineParams = {"selector": selector}
+        params = make_params(ColorInlineParams, locals())
         node = Node(kind="component", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
 
-    def component_from_url(
+    def component_from_uri(
         self,
         *,
-        url: str,
+        uri: str,
         format: SchemaFormatT,
         category_name: str | None = None,
         field_name: str | None = None,
@@ -225,12 +238,12 @@ class Structure(_Base):
     ) -> Component:
         if isinstance(field_values, str):
             field_values = [field_values]
-        params = make_params(ComponentUrlParams, locals())
-        node = Node(kind="component-from-url", params=params)
+        params = make_params(ComponentFromUriParams, locals())
+        node = Node(kind="component_from_uri", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
 
-    def component_from_cif(
+    def component_from_source(
         self,
         *,
         category_name: str,
@@ -242,15 +255,15 @@ class Structure(_Base):
     ) -> Component:
         if isinstance(field_values, str):
             field_values = [field_values]
-        params = make_params(ComponentCifCategoryParams, locals())
-        node = Node(kind="component-from-cif", params=params)
+        params = make_params(ComponentFromSourceParams, locals())
+        node = Node(kind="component_from_source", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
 
-    def label_from_url(
+    def label_from_uri(
         self,
         *,
-        url: str,
+        uri: str,
         format: SchemaFormatT,
         category_name: str | None = None,
         field_name: str | None = None,
@@ -258,12 +271,12 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
-        params = make_params(LabelUrlParams, locals())
-        node = Node(kind="label-from-url", params=params)
+        params = make_params(LabelFromUriParams, locals())
+        node = Node(kind="label_from_uri", params=params)
         self._add_child(node)
         return self
 
-    def label_from_cif(
+    def label_from_source(
         self,
         *,
         category_name: str,
@@ -272,15 +285,15 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
-        params = make_params(LabelCifCategoryParams, locals())
-        node = Node(kind="label-from-cif", params=params)
+        params = make_params(LabelFromSourceParams, locals())
+        node = Node(kind="label_from_source", params=params)
         self._add_child(node)
         return self
 
-    def tooltip_from_url(
+    def tooltip_from_uri(
         self,
         *,
-        url: str,
+        uri: str,
         format: SchemaFormatT,
         category_name: str | None = None,
         field_name: str | None = None,
@@ -288,12 +301,12 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
-        params = make_params(TooltipUrlParams, locals())
-        node = Node(kind="tooltip-from-url", params=params)
+        params = make_params(TooltipFromUriParams, locals())
+        node = Node(kind="tooltip_from_uri", params=params)
         self._add_child(node)
         return self
 
-    def tooltip_from_cif(
+    def tooltip_from_source(
         self,
         *,
         category_name: str,
@@ -302,8 +315,8 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
-        params = make_params(TooltipCifCategoryParams, locals())
-        node = Node(kind="tooltip-from-cif", params=params)
+        params = make_params(TooltipFromSourceParams, locals())
+        node = Node(kind="tooltip_from_source", params=params)
         self._add_child(node)
         return self
 
@@ -329,7 +342,6 @@ class Structure(_Base):
         self._add_child(node)
         return self
 
-    # TODO factor out as general purpose validation?
     @staticmethod
     def _is_rotation_matrix(t: Sequence[float], eps: float = 0.005):
         a00, a01, a02, a10, a11, a12, a20, a21, a22 = t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
@@ -359,7 +371,9 @@ class Component(_Base):
         self._add_child(node)
         return self
 
-    def focus(self, *, direction: tuple[float, float, float] | None = None, up: tuple[float, float, float] | None = None) -> Component:
+    def focus(
+        self, *, direction: tuple[float, float, float] | None = None, up: tuple[float, float, float] | None = None
+    ) -> Component:
         """
         Focus on this structure or component.
         :return: this builder
@@ -371,17 +385,33 @@ class Component(_Base):
 
 
 class Representation(_Base):
-    def color_from_cif(self, *, schema: SchemaT, category_name: str,
-                       field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
-        params = make_params(ColorCifCategoryParams, locals())
-        node = Node(kind="color-from-cif", params=params)
+    def color_from_source(
+        self,
+        *,
+        schema: SchemaT,
+        category_name: str,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+    ) -> Representation:
+        params = make_params(ColorFromSourceParams, locals())
+        node = Node(kind="color_from_source", params=params)
         self._add_child(node)
         return self
 
-    def color_from_url(self, *, schema: SchemaT, url: str, format: str, category_name: str | None = None,
-                       field_name: str | None = None, block_header: str | None = None, block_index: int | None = None) -> Representation:
-        params = make_params(ColorUrlParams, locals())
-        node = Node(kind="color-from-url", params=params)
+    def color_from_uri(
+        self,
+        *,
+        schema: SchemaT,
+        uri: str,
+        format: str,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+    ) -> Representation:
+        params = make_params(ColorFromUriParams, locals())
+        node = Node(kind="color_from_uri", params=params)
         self._add_child(node)
         return self
 

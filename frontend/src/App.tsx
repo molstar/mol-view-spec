@@ -6,6 +6,7 @@ import { useBehavior } from 'molstar/lib/mol-plugin-ui/hooks/use-behavior';
 
 import './App.css';
 import { AppModel } from './app-model/app-model';
+import { builderDemo } from './app-model/mvs-extension/tree/mvs/mvs-builder';
 
 
 export function App() {
@@ -26,36 +27,56 @@ function Main() {
     const loadedTree = useBehavior(model.tree);
 
     const exampleUrls = {
-        load: 'http://localhost:9000/api/v1/examples/load/1cbs',
-        // label: 'http://localhost:9000/api/v1/examples/label/1cbs',
-        // color: 'http://localhost:9000/api/v1/examples/color/1cbs',
-        formats: 'http://localhost:9000/api/v1/examples/testing/formats',
-        structures: 'http://localhost:9000/api/v1/examples/testing/structures',
-        transforms: 'http://localhost:9000/api/v1/examples/testing/transforms',
-        components: 'http://localhost:9000/api/v1/examples/testing/components',
-        'colors-from-cif': 'http://localhost:9000/api/v1/examples/testing/color_from_cif',
-        'colors rainbow': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
-        'colors cif': 'http://localhost:9000/api/v1/examples/testing/color_cif',
-        'colors cif multicategory': 'http://localhost:9000/api/v1/examples/testing/color_multicategory_cif',
-        'colors bcif': 'http://localhost:9000/api/v1/examples/testing/color_bcif',
-        'colors small': 'http://localhost:9000/api/v1/examples/testing/color_small',
-        'colors domains': 'http://localhost:9000/api/v1/examples/testing/color_domains',
-        'tooltips domains': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=false&tooltips=true',
-        'colors+tooltips domains': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=true&tooltips=true',
-        'colors+tooltips from cif': 'http://localhost:9000/api/v1/examples/testing/color_from_cif?tooltips=True',
-        'colors validation 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn&tooltips=true',
-        'colors validation 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true',
-        'colors multilayer': 'http://localhost:9000/api/v1/examples/testing/color_multilayer?id=1tqn',
-        'labels': 'http://localhost:9000/api/v1/examples/testing/labels',
-        'tooltips': 'http://localhost:9000/api/v1/examples/testing/tooltips',
-        'labels from url': 'http://localhost:9000/api/v1/examples/testing/labels_from_url',
-        'labels from url grouped': 'http://localhost:9000/api/v1/examples/testing/labels_from_url?annotation_name=domains-grouped',
-        'labels from url 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true&labels=true',
-        'labels from cif': 'http://localhost:9000/api/v1/examples/testing/labels_from_cif',
-        'component from url': 'http://localhost:9000/api/v1/examples/testing/component_from_url',
-        'component from cif': 'http://localhost:9000/api/v1/examples/testing/component_from_cif',
-        'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
+        'load': 'http://localhost:9000/api/v1/examples/load/1cbs',
+        'formats': 'http://localhost:9000/api/v1/examples/testing/formats',
+        'structures': 'http://localhost:9000/api/v1/examples/testing/structures',
+        'structures with symmetry': 'http://localhost:9000/api/v1/examples/testing/symmetry_structures',
+        'transforms': 'http://localhost:9000/api/v1/examples/testing/transforms',
+        'components': 'http://localhost:9000/api/v1/examples/testing/components',
+        'color_from_source': 'http://localhost:9000/api/v1/examples/testing/color_from_source',
+        'color_from_uri (json)': 'http://localhost:9000/api/v1/examples/testing/color_rainbow',
+        'color_from_uri (cif)': 'http://localhost:9000/api/v1/examples/testing/color_cif',
+        'color_from_uri (cif multicat.)': 'http://localhost:9000/api/v1/examples/testing/color_multicategory_cif',
+        'color_from_uri (bcif)': 'http://localhost:9000/api/v1/examples/testing/color_bcif',
+        'color_from_uri small': 'http://localhost:9000/api/v1/examples/testing/color_small',
+        'color_from_uri valid. 1tqn': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=1tqn&tooltips=true',
+        'color_from_uri valid. 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true',
+        'color multilayer': 'http://localhost:9000/api/v1/examples/testing/color_multilayer?id=1tqn',
+        'color_from_uri': 'http://localhost:9000/api/v1/examples/testing/color_domains',
+        'tooltip_from_uri': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=false&tooltips=true',
+        'color+tooltip_from_uri': 'http://localhost:9000/api/v1/examples/testing/color_domains?colors=true&tooltips=true',
+        'color+tooltip_from_source': 'http://localhost:9000/api/v1/examples/testing/color_from_source?tooltips=True',
+        'tooltip': 'http://localhost:9000/api/v1/examples/testing/tooltips',
+        'label': 'http://localhost:9000/api/v1/examples/testing/labels',
+        'label_from_uri': 'http://localhost:9000/api/v1/examples/testing/labels_from_uri',
+        'label_from_uri grouped': 'http://localhost:9000/api/v1/examples/testing/labels_from_uri?annotation_name=domains-grouped',
+        'label_from_uri 3j3q': 'http://localhost:9000/api/v1/examples/testing/color_validation?id=3j3q&tooltips=true&labels=true',
+        'label_from_source': 'http://localhost:9000/api/v1/examples/testing/labels_from_source',
+        'component_from_uri': 'http://localhost:9000/api/v1/examples/testing/component_from_uri',
+        'component_from_source': 'http://localhost:9000/api/v1/examples/testing/component_from_source',
         'camera': 'http://localhost:9000/api/v1/examples/testing/camera',
+        'focus': 'http://localhost:9000/api/v1/examples/testing/focus',
+
+        'entry by chain': 'http://localhost:9000/api/v1/examples/portfolio/entry?coloring=by_chain',
+        'entry by entity': 'http://localhost:9000/api/v1/examples/portfolio/entry?coloring=by_entity',
+        'assembly by chain': 'http://localhost:9000/api/v1/examples/portfolio/entry?assembly_id=1&coloring=by_chain',
+        'assembly by entity': 'http://localhost:9000/api/v1/examples/portfolio/entry?assembly_id=1&coloring=by_entity',
+        'entity 1': 'http://localhost:9000/api/v1/examples/portfolio/entity?entity_id=1',
+        'entity 2': 'http://localhost:9000/api/v1/examples/portfolio/entity?entity_id=2',
+        'entity 3': 'http://localhost:9000/api/v1/examples/portfolio/entity?entity_id=3',
+        'domain': 'http://localhost:9000/api/v1/examples/portfolio/domain',
+        'ligand': 'http://localhost:9000/api/v1/examples/portfolio/ligand',
+        'validation': 'http://localhost:9000/api/v1/examples/portfolio/validation',
+        'modres': 'http://localhost:9000/api/v1/examples/portfolio/modres',
+        'bfactor': 'http://localhost:9000/api/v1/examples/portfolio/bfactor',
+        'plddt': 'http://localhost:9000/api/v1/examples/portfolio/plddt',
+
+        'pdbe entry page': 'http://localhost:9000/api/v1/examples/portfolio/pdbe_entry_page?id=7xv8',
+        'pdbe entry page entity': 'http://localhost:9000/api/v1/examples/portfolio/pdbe_entry_page_entity?id=7xv8&entity_id=2',
+        'pdbe-kb default view': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_default?id=7xv8&entity_id=1',
+        'pdbe-kb segment superpose': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_segment_superpose?id1=1tqn&chain1=A&id2=2nnj&chain2=A',
+        'pdbe-kb ligand superpose': 'http://localhost:9000/api/v1/examples/portfolio/pdbekb_ligand_superpose?chains=1tqn:A,2nnj:A',
+        'rcsb entry page': 'http://localhost:9000/api/v1/examples/portfolio/rcsb_entry?id=3sn6',
     };
 
     return (
@@ -74,6 +95,9 @@ function Main() {
                             {name}
                         </Button>
                     )}
+
+                    <Button variant={'<inline>' === loadedUrl ? 'contained' : 'outlined'} onClick={() => model.loadMvs(builderDemo())}>Builder demo</Button>
+
                     <Typography variant='caption'>{status}</Typography>
 
                     {loadedUrl &&
@@ -92,9 +116,6 @@ function Main() {
                         </div>
                     </>}
                 </div>
-                {/* <div>
-                    <Button onClick={() => model.printCamera()}>Print camera</Button>
-                </div> */}
             </div>
         </div>
     );

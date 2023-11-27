@@ -1,6 +1,16 @@
 MolViewSpec
 =============
 
+## See the MolViewSpec Python Library in Action
+Colab Notebook: https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9
+
+## Install from PyPI
+```shell
+pip install molviewspec
+```
+
+Find the package at: https://pypi.org/project/molviewspec/
+
 ### Setting up the environment
 
 ```
