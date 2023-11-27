@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
 from app.api.examples import router as examples_router
+from app.api.utils import router as utils_router
 
 router = APIRouter()
 router.include_router(examples_router, prefix="/examples")
+router.include_router(utils_router, prefix="/utils")
 
 
 app = FastAPI(
