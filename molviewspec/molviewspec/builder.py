@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Sequence
 
 from pydantic import BaseModel, PrivateAttr
@@ -84,7 +84,7 @@ class Root(_Base):
         # TODO jamming title and description in here prolly isn't the best idea -- could have a mini-builder for that
         metadata = Metadata(
             version=get_major_version_tag(),
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             title=title,
             description=description,
             description_format=description_format,
