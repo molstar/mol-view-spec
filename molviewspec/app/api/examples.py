@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 
 from app.config import settings
-from molviewspec.builder import Representation, Root
+from molviewspec.builder import create_builder, Representation
 from molviewspec.nodes import ComponentExpression
 
 MVSResponse: TypeAlias = Response
@@ -21,7 +21,7 @@ async def download_example(id: str = "1cbs") -> MVSResponse:
     """
     Download a minimal example that visualizes a given PDB entry in cartoon representation.
     """
-    builder = Root()
+    builder = create_builder()
     (
         builder.download(url=_url_for_mmcif(id))
         .parse(format="mmcif")
@@ -38,7 +38,7 @@ async def label_example(id: str = "1lap") -> MVSResponse:
     """
     The minimal example enriched by custom labels and labels read from the CIF source file.
     """
-    builder = Root()
+    builder = create_builder()
     structure = builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").model_structure()
 
     # Reference a residue of interest
@@ -61,7 +61,7 @@ async def color_example(id: str = "1cbs") -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
-    builder = Root()
+    builder = create_builder()
     structure = builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").model_structure()
 
     structure.component(selector="protein").representation(type="cartoon").color(color="white")
@@ -83,7 +83,7 @@ async def component_example() -> MVSResponse:
     in cartoon representation and select the REA ligand in chain B, which will be depicted in ball_and_stick
     representation.
     """
-    builder = Root()
+    builder = create_builder()
     structure = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure()
 
     structure.component_from_uri(
@@ -101,7 +101,7 @@ async def symmetry_mates_example(id: str = "1cbs") -> MVSResponse:
     """
     Add symmetry mates within a distance threshold.
     """
-    builder = Root()
+    builder = create_builder()
     (builder.download(url=_url_for_mmcif(id)).parse(format="mmcif").symmetry_mates_structure(radius=5.0))
     return JSONResponse(builder.get_state())
 
@@ -111,7 +111,7 @@ async def symmetry_example(id: str = "1tqn") -> MVSResponse:
     """
     Create symmetry mates by specifying Miller indices.
     """
-    builder = Root()
+    builder = create_builder()
     (
         builder.download(url=_url_for_mmcif(id))
         .parse(format="mmcif")
@@ -128,7 +128,7 @@ async def transform_example() -> MVSResponse:
     """
     Superimpose 4hhb and 1oj6 by transforming the latter.
     """
-    builder = Root()
+    builder = create_builder()
 
     # Load first structure and color it red
     (
@@ -164,7 +164,7 @@ async def validation_example(id: str = "1cbs") -> MVSResponse:
     :param id: the entry to process
     :return: view spec of a structure that will color residues depending on the number of validation report issues
     """
-    builder = Root()
+    builder = create_builder()
     (
         builder.download(url=_url_for_mmcif(id))
         .parse(format="mmcif")
@@ -284,7 +284,7 @@ async def validation_data(id: str) -> Response:
 @router.get("/testing/formats")
 async def testing_formats_example() -> MVSResponse:
     """Return state with three proteins loaded in mmCIF, binaryCIF, and PDB format"""
-    builder = Root()
+    builder = create_builder()
     parse_cif = (
         builder.download(url=_url_for_mmcif("1tqn"))
         .parse(format="mmcif")
@@ -319,7 +319,7 @@ async def testing_structures_example() -> MVSResponse:
     two assemblies for 1og5 (monomers, blue and cyan);
     and three models for 1wrf (NMR conformations)
     """
-    builder = Root()
+    builder = create_builder()
     entry = (
         builder.download(url=_url_for_mmcif("1og2"))
         .parse(format="mmcif")
@@ -357,7 +357,7 @@ async def testing_symmetry_structures_example(id: str = "1tqn") -> MVSResponse:
     Return state with deposited model structure for 1tqn (white),
     along with symmetry structure (blue) and symmetry_mates structure (green).
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs_2nnj_1tqn.cif"
     model = builder.download(url=structure_url).parse(format="mmcif")
     model.model_structure(block_header="1TQN", model_index=0).component().representation().color(color="white")
@@ -377,7 +377,7 @@ async def testing_transforms_example(id: str = "1cbs") -> MVSResponse:
     1cbs in original conformation (white), moved (blue), rotated +90 deg around Z (green),
     # and rotated twice(+90 deg around X then +90 deg around Y, orange)
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif(id)
     model = builder.download(url=structure_url).parse(format="bcif")
     original = model.model_structure().component(selector="all").representation().color(color="white")
@@ -450,7 +450,7 @@ async def testing_components_example() -> MVSResponse:
     Return state demonstrating different static components
     (polymer, ligand, ion, water, branched, protein, nucleic)
     """
-    builder = Root()
+    builder = create_builder()
     struct1 = builder.download(url=_url_for_mmcif("2nnj")).parse(format="mmcif").model_structure()
     struct1.component(selector="polymer").representation(type="cartoon").color(color="white")
     struct1.component(selector="ligand").representation(type="surface").color(color="blue")
@@ -482,7 +482,7 @@ async def testing_color_from_source_example(tooltips: bool = False) -> MVSRespon
     """
     Color from the same CIF as structure
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = f"http://0.0.0.0:9000/api/v1/examples/data/1cbs/molecule-and-cif-annotations"
     structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_source(
@@ -514,7 +514,7 @@ async def testing_color_rainbow_example() -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
-    builder = Root()
+    builder = create_builder()
     structure = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure()
     structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_uri(
         schema="all_atomic",
@@ -534,7 +534,7 @@ async def testing_color_cif_example() -> MVSResponse:
     """
     An example with CIF-encoded coloring.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif("1cbs")
     annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs/custom.cif"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
@@ -556,7 +556,7 @@ async def testing_color_cif_multicategory_example() -> MVSResponse:
     """
     An example with CIF-encoded coloring.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif("1cbs")
     annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs/custom-multicategory.cif"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
@@ -583,7 +583,7 @@ async def testing_color_bcif_example() -> MVSResponse:
     """
     An example with BCIF-encoded coloring.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif("1cbs")
     annotation_url = "http://0.0.0.0:9000/api/v1/examples/data/file/1cbs/custom.bcif"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
@@ -605,7 +605,7 @@ async def testing_color_small_example() -> MVSResponse:
     """
     An example with a small structure coloring applied down to atom level.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif("2bvk")
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="all").representation(type="ball_and_stick").color(color="white").color_from_uri(
@@ -621,7 +621,7 @@ async def testing_color_domains_example(colors: bool = True, tooltips: bool = Fa
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif("1h9t")
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     reprs = [
@@ -658,7 +658,7 @@ async def testing_color_validation_example(
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif(id)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/validation"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
@@ -694,7 +694,7 @@ async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
     """
     An example with different representations and coloring for polymer and non-polymer chains.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif(id)
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     (
@@ -742,7 +742,7 @@ async def testing_component_from_uri(id: str = "1h9t") -> MVSResponse:
     """
     An example with component_from_uri.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif(id)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/domains"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
@@ -791,7 +791,7 @@ async def testing_component_from_source(id: str = "1h9t") -> MVSResponse:
     """
     An example with component_from_source.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif(id)
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component_from_source(
@@ -830,7 +830,7 @@ async def testing_focus_example() -> MVSResponse:
     """
     An example for "focus" node.
     """
-    builder = Root()
+    builder = create_builder()
     position, direction, radius = _target_spherical_to_pdr((17, 21, 27), phi=-30, theta=15, radius=100)
     up = (0.2, 1, 0)
     structure_url = _url_for_local_bcif("1cbs")
@@ -848,7 +848,7 @@ async def testing_camera_example() -> MVSResponse:
     """
     An example for "camera" node.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif("1cbs")
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="orange")
@@ -881,7 +881,7 @@ async def testing_labels_example(id="1h9t") -> MVSResponse:
     """
     An example with different labels for polymer and non-polymer chains.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif(id)
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
     structure.component(selector="protein").representation(type="cartoon").color(color="white").color_from_uri(
@@ -947,7 +947,7 @@ async def testing_tooltips_example(id="1h9t") -> MVSResponse:
     """
     An example with different labels for polymer and non-polymer chains.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif(id)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/{id}/json/domains"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
@@ -1051,7 +1051,7 @@ async def testing_labels_from_uri_example(id="1h9t", annotation_name="domains") 
     """
     An example with different labels for polymer and non-polymer chains.
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_local_bcif(id)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/1h9t/json/{annotation_name}"
     structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
@@ -1082,7 +1082,7 @@ async def testing_labels_from_source_example() -> MVSResponse:
     """
     Labels from the same CIF as structure
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = f"http://0.0.0.0:9000/api/v1/examples/data/1cbs/molecule-and-cif-annotations"
     structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_source(
@@ -1144,7 +1144,7 @@ async def portfolio_entry_or_assembly(
     (We are missing coloring by symmetry operator for assemblies!)
     """
     ID = "1hda"
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/portfolio.cif"
     model = builder.download(url=structure_url).parse(format="mmcif")
@@ -1166,7 +1166,7 @@ async def portfolio_entity(entity_id: str = "1", assembly_id: str = "1") -> MVSR
     (We are missing advanced styling, like size-factor and opacity!)
     """
     ID = "1hda"
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=assembly_id)
     highlight = ENTITY_COLORS_1HDA.get(entity_id, "black")
@@ -1188,7 +1188,7 @@ async def portfolio_domain() -> MVSResponse:
     """
     ID = "1hda"
     DOMAIN = "Pfam_PF00042_A"
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/portfolio.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
@@ -1225,7 +1225,7 @@ async def portfolio_ligand() -> MVSResponse:
     """
     ID = "1hda"
     LIGAND = "HEM"
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/portfolio.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
@@ -1284,7 +1284,7 @@ async def portfolio_validation() -> MVSResponse:
     Entry structure colored by validation report issues, as created by PDBImages.
     """
     ID = "1hda"
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/validation.json"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
@@ -1307,7 +1307,7 @@ async def portfolio_modres() -> MVSResponse:
     """
     ID = "1gkt"
     ASSEMBLY = "1"
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=ASSEMBLY)
     struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR)
@@ -1326,7 +1326,7 @@ async def portfolio_bfactor() -> MVSResponse:
     (We are missing putty representation and size theme!)
     """
     ID = "1tqn"
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/bfactor.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
@@ -1353,7 +1353,7 @@ async def portfolio_plddt() -> MVSResponse:
     AlphaFold predicted structure colored by pLDDT, as created by PDBImages.
     """
     ID = "AF-Q5VSL9-F1-model_v4"
-    builder = Root()
+    builder = create_builder()
     structure_url = f"https://alphafold.ebi.ac.uk/files/{ID}.cif"
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/plddt.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
@@ -1373,7 +1373,7 @@ async def portfolio_pdbe_entry_page(id: str = "7xv8") -> MVSResponse:
     """
     "PDBe entry page 3D view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(id)
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
     struct.component(selector="protein").tooltip(text="protein").representation(type="cartoon").color(color="#1d9671")
@@ -1400,7 +1400,7 @@ async def portfolio_pdbe_entry_page_entity(id: str = "7xv8", entity_id: str = "1
     """
     "PDBe entry page entity view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(id)
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
     struct.component(selector="polymer").representation(type="cartoon").color(color="#dfc2c1").color(
@@ -1420,7 +1420,7 @@ async def portfolio_pdbekb_default(id: str = "7xv8", entity_id: str = "1") -> MV
     """
     "PDBe-KB default view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(id)
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
     struct.component(selector="polymer").representation(type="cartoon").color(color="#dcbfbe").color(
@@ -1443,7 +1443,7 @@ async def portfolio_pdbekb_segment_superpose(
     "PDBe-KB segment superpose view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
     (We are missing putty representation!)
     """
-    builder = Root()
+    builder = create_builder()
     structure_url1 = _url_for_mmcif(id1)  # TODO use model server, only retrieve the chain
     structure_url2 = _url_for_mmcif(id2)  # TODO use model server, only retrieve the chain
     struct1 = builder.download(url=structure_url1).parse(format="mmcif").model_structure()
@@ -1488,7 +1488,7 @@ async def portfolio_pdbekb_ligand_superpose(chains: str = "1tqn:A,2nnj:A") -> MV
     "PDBe-KB ligand superpose view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
     (We are missing putty representation!)
     """
-    builder = Root()
+    builder = create_builder()
     for i, id_chain in enumerate(chains.split(",")):
         id, chain = id_chain.split(":")
         print(id, chain)
@@ -1529,7 +1529,7 @@ async def portfolio_rcsb_entry(id: str = "3sn6") -> MVSResponse:
     "RCSB PDB entry page 3D view" from https://docs.google.com/spreadsheets/d/1QQ_P0VlURzpMhqa8rI-D2nJ8f1lfrHTpqrN0q5PbACs/edit#gid=0
     (The document says color by entity, but the image looks more like color by auth_asym_id (which is also MolStar's preset))
     """
-    builder = Root()
+    builder = create_builder()
     structure_url = _url_for_mmcif(id)
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
     _color_by_entity(struct.component(selector="protein").tooltip(text="protein").representation(type="cartoon"))
