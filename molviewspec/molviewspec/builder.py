@@ -73,7 +73,7 @@ class Root(_Base):
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
-    ) -> State:
+    ) -> dict[str, any]:
         """
         Emits JSON representation of the current state. Can be enriched with metadata.
         :param title: optional title of the scene
