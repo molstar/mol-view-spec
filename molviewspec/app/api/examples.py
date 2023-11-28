@@ -177,28 +177,6 @@ async def validation_example(id: str = "1cbs") -> MVSResponse:
     return JSONResponse(builder.get_state())
 
 
-@router.get("/generic-visuals")
-async def generic_visuals() -> MVSResponse:
-    """
-    Create a scene using generic visuals.
-    :return: view spec of a scene leveraging generic visuals/primitives
-    """
-    builder = Root()
-    (
-        builder.generic_visuals()
-        .sphere(position=(0, 0, 0), color="#325880", radius=0.1)
-        .sphere(position=(0, 0, 1), color="#325880", radius=0.1)
-        .sphere(position=(0, 1, 0), color="#325880", radius=0.1)
-        .sphere(position=(0, 1, 1), color="#325880", radius=0.1)
-        .sphere(position=(1, 0, 0), color="#325880", radius=0.1)
-        .sphere(position=(1, 0, 1), color="#325880", radius=0.1)
-        .sphere(position=(1, 1, 0), color="#325880", radius=0.1)
-        .sphere(position=(1, 1, 1), color="#325880", radius=0.1)
-        .line(position1=(0, 0, 0), position2=(1, 1, 1), color="#05d0e7", radius=0.05)
-    )
-    return JSONResponse(builder.get_state())
-
-
 ##############################################################################
 # meta endpoints
 
