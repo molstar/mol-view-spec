@@ -54,6 +54,53 @@ whole = structure.component()
 
 return builder.get_state()`,
 }, {
+    header: 'Components',
+    description: 'An aaRS (PDB ID 1c0a) visualization with different selections. Protein in orange, RNA in blue, ligand in green, and active site residues colored red.',
+    name: 'components',
+    python: `builder = mvs.create_builder()
+
+structure = (builder
+    .download(url="https://www.ebi.ac.uk/pdbe/entry-files/download/1c0a_updated.cif")
+    .parse(format="mmcif")
+    .assembly_structure()
+)
+
+# represent protein & RNA as cartoon
+(
+    structure.component(selector="protein")
+    .representation()
+    .color(color="#e19039")
+)
+(
+    structure.component(selector="nucleic")
+    .representation()
+    .color(color="#4b7fcc")
+)
+# represent ligand in active site as ball-and-stick
+ligand = structure.component(selector=mvs.ComponentExpression(label_asym_id='E'))
+ligand.representation(type="ball_and_stick").color(color="#229954")
+
+# represent 2 crucial arginine residues as red ball-and-stick and label with custom text
+arg_b_217 = (structure
+    .component(selector=mvs.ComponentExpression(label_asym_id="B", label_seq_id=217))
+)
+arg_b_217.representation(type="ball_and_stick").color(color="#ff0000")
+arg_b_217.label(text="aaRS Class II Signature")
+arg_b_537 = (structure
+    .component(selector=mvs.ComponentExpression(label_asym_id="B", label_seq_id=537))
+)
+arg_b_537.representation(type="ball_and_stick").color(color="#ff0000")
+arg_b_537.label(text="aaRS Class II Signature")
+
+# position camera to zoom in on ligand and signature residues
+focus = (structure.component(selector=[
+    mvs.ComponentExpression(label_asym_id='E'),
+    mvs.ComponentExpression(label_asym_id="B", label_seq_id=217),
+    mvs.ComponentExpression(label_asym_id="B", label_seq_id=537)
+]).focus()
+
+return builder.get_state()`,
+}, {
     header: 'Superposition',
     description: 'Two molecules superposed by applying a matrix transform.',
     name: 'superposition',
@@ -75,7 +122,11 @@ return builder.get_state()`,
     .parse(format="mmcif")
     .model_structure()
     .transform(
-        rotation=[-0.72, -0.33, -0.61, 0.36, 0.57, -0.74, 0.59, -0.75, -0.30],
+        rotation=[
+            -0.7202161, -0.33009904, -0.61018308,
+            0.36257631, 0.57075962, -0.73673053,
+            0.59146191, -0.75184312, -0.29138417
+        ],
         translation=[-12.54, 46.79, 94.50]
     )
     .component()
@@ -134,7 +185,7 @@ function CurrentExample({ example }: { example: ExampleSpec }) {
     return <>
         <div className='row' style={{ marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
             <div className='nine columns'>
-                <b>{example.header}:</b><br/> {example.description}    
+                <b>{example.header}:</b><br/> {example.description}
             </div>
             <div className='three columns' style={{ display: 'flex', alignItems: 'flex-end' }}>
                 <a className='button button-primary' href={resolveExampleSnapshotURL(example.name)} target='_blank' rel='noreferrer' style={{ width: '100%', fontWeight: 'bold', fontSize: '1.5rem', marginBottom: 0 }}>Open in Mol*</a>
