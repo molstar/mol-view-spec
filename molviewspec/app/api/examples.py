@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 
 from app.config import settings
-from molviewspec.builder import create_builder, Representation
+from molviewspec.builder import Representation, create_builder
 from molviewspec.nodes import ComponentExpression
 
 MVSResponse: TypeAlias = Response
@@ -146,7 +146,17 @@ async def transform_example() -> MVSResponse:
         .parse(format="mmcif")
         .model_structure()
         .transform(
-            rotation=[-0.7202161, -0.33009904, -0.61018308, 0.36257631, 0.57075962, -0.73673053, 0.59146191, -0.75184312, -0.29138417],
+            rotation=[
+                -0.7202161,
+                -0.33009904,
+                -0.61018308,
+                0.36257631,
+                0.57075962,
+                -0.73673053,
+                0.59146191,
+                -0.75184312,
+                -0.29138417,
+            ],
             translation=[-12.54, 46.79, 94.50],
         )
         .component()
