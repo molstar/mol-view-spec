@@ -150,6 +150,71 @@ structure = (builder
 )
 
 return builder.get_state()`,
+}, {
+    header: 'Annotations',
+    description: 'Load a structure (PDB ID 1h9t) and apply coloring and labels based on data from an MVS annotation file.',
+    name: 'annotations',
+    python: `builder = create_builder()
+structure_url = "https://www.ebi.ac.uk/pdbe/entry-files/download/1h9t_updated.cif"
+annotation_url = "https://molstar.org/mol-view-spec/examples/annotations/annotations.cif"
+
+# Load structure
+structure = (builder
+    .download(url=structure_url)
+    .parse(format="mmcif")
+    .model_structure()
+)
+
+# Show and color protein, nucleic acids, and ions
+(structure
+    .component(selector="protein")
+    .representation(type="cartoon")
+    .color(color="white")
+    .color_from_uri(
+        schema="all_atomic",
+        uri=annotation_url,
+        format="cif",
+        category_name="annotations",
+        field_name="color",
+    )
+)
+(structure
+    .component(selector="nucleic")
+    .representation(type="ball_and_stick").color(color="white").color_from_uri(
+        schema="all_atomic",
+        uri=annotation_url,
+        format="cif",
+        category_name="annotations",
+        field_name="color",
+    )
+)
+(structure
+    .component(selector="ion")
+    .representation(type="surface").color_from_uri(
+        schema="all_atomic",
+        uri=annotation_url,
+        format="cif",
+        category_name="annotations",
+        field_name="color",
+    )
+)
+
+# Add labels and tooltips
+structure.label_from_uri(
+    schema="all_atomic", 
+    uri=annotation_url, 
+    format="cif", 
+    category_name="annotations",
+    field_name="label",
+).tooltip_from_uri(
+    schema="all_atomic", 
+    uri=annotation_url, 
+    format="cif", 
+    category_name="annotations",
+    field_name="label",
+)
+
+return builder.get_state()`,
 }];
 
 export function ExamplesUI() {

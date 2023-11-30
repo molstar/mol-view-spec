@@ -1,0 +1,147 @@
+{
+    "root": {
+        "kind": "root",
+        "children": [
+            {
+                "kind": "download",
+                "params": {
+                    "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1h9t_updated.cif"
+                },
+                "children": [
+                    {
+                        "kind": "parse",
+                        "params": {
+                            "format": "mmcif"
+                        },
+                        "children": [
+                            {
+                                "kind": "structure",
+                                "params": {
+                                    "type": "model"
+                                },
+                                "children": [
+                                    {
+                                        "kind": "component",
+                                        "params": {
+                                            "selector": "protein"
+                                        },
+                                        "children": [
+                                            {
+                                                "kind": "representation",
+                                                "params": {
+                                                    "type": "cartoon"
+                                                },
+                                                "children": [
+                                                    {
+                                                        "kind": "color",
+                                                        "params": {
+                                                            "selector": "all",
+                                                            "color": "white"
+                                                        }
+                                                    },
+                                                    {
+                                                        "kind": "color_from_uri",
+                                                        "params": {
+                                                            "uri": "https://molstar.org/mol-view-spec/examples/annotations/annotations.cif",
+                                                            "format": "cif",
+                                                            "category_name": "annotations",
+                                                            "field_name": "color",
+                                                            "schema": "all_atomic"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "kind": "component",
+                                        "params": {
+                                            "selector": "nucleic"
+                                        },
+                                        "children": [
+                                            {
+                                                "kind": "representation",
+                                                "params": {
+                                                    "type": "ball_and_stick"
+                                                },
+                                                "children": [
+                                                    {
+                                                        "kind": "color",
+                                                        "params": {
+                                                            "selector": "all",
+                                                            "color": "white"
+                                                        }
+                                                    },
+                                                    {
+                                                        "kind": "color_from_uri",
+                                                        "params": {
+                                                            "uri": "https://molstar.org/mol-view-spec/examples/annotations/annotations.cif",
+                                                            "format": "cif",
+                                                            "category_name": "annotations",
+                                                            "field_name": "color",
+                                                            "schema": "all_atomic"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "kind": "component",
+                                        "params": {
+                                            "selector": "ion"
+                                        },
+                                        "children": [
+                                            {
+                                                "kind": "representation",
+                                                "params": {
+                                                    "type": "surface"
+                                                },
+                                                "children": [
+                                                    {
+                                                        "kind": "color_from_uri",
+                                                        "params": {
+                                                            "uri": "https://molstar.org/mol-view-spec/examples/annotations/annotations.cif",
+                                                            "format": "cif",
+                                                            "category_name": "annotations",
+                                                            "field_name": "color",
+                                                            "schema": "all_atomic"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "kind": "label_from_uri",
+                                        "params": {
+                                            "uri": "https://molstar.org/mol-view-spec/examples/annotations/annotations.cif",
+                                            "format": "cif",
+                                            "category_name": "annotations",
+                                            "field_name": "label",
+                                            "schema": "all_atomic"
+                                        }
+                                    },
+                                    {
+                                        "kind": "tooltip_from_uri",
+                                        "params": {
+                                            "uri": "https://molstar.org/mol-view-spec/examples/annotations/annotations.cif",
+                                            "format": "cif",
+                                            "category_name": "annotations",
+                                            "field_name": "label",
+                                            "schema": "all_atomic"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "version": "0.1",
+        "timestamp": "2023-11-30T16:24:54.739465+00:00"
+    }
+}
