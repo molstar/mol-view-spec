@@ -33,8 +33,8 @@ export function App() {
                     </p>
 
                     <p style={{ fontStyle: 'italic' }}>
-                        The toolkit is available as a <a href='https://pypi.org/project/molviewspec/' target='_blank' rel='noreferrer'>Python package</a> that enables
-                        building molecular scenes via a declarative and API and <a href='https://github.com/molstar/molstar/tree/master/src/extensions/mvs'  target='_blank' rel='noreferrer'>Mol* extension</a> to enable both
+                        The toolkit is available under <a href='https://github.com/molstar/mol-view-spec/blob/master/LICENSE' target='_blank' rel='noreferrer'>MIT license</a> (free for both commertial and non-commerial use) as a <a href='https://pypi.org/project/molviewspec/' target='_blank' rel='noreferrer'>Python package</a> that enables
+                        building molecular scenes via a declarative API and <a href='https://github.com/molstar/molstar/tree/master/src/extensions/mvs'  target='_blank' rel='noreferrer'>Mol* extension</a> to enable both
                         scene building and visualization.
                     </p>
                 </div>

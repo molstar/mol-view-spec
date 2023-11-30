@@ -1,3 +1,15 @@
+# Building landing page for molstar.org
+
+- Build script in `package.json` needs to contain base path, currently https://molstar.org/mol-view-spec:
+
+```
+"build": "tsc && vite build --base=/mol-view-spec/"
+```
+
+- Run `npm run build`
+- Clone [molstar.github.io](https://github.com/molstar/molstar.github.io) and copy contents of the `dist` folder to `molstar.github.io/mol-view-spec`
+
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
