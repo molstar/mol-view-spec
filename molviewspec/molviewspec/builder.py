@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import math
 from datetime import datetime, timezone
 from typing import Sequence
@@ -73,13 +72,15 @@ class Root(_Base):
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
-    ) -> dict[str, any]:
+        indent: int = 2,
+    ) -> str:
         """
         Emits JSON representation of the current state. Can be enriched with metadata.
         :param title: optional title of the scene
         :param description: optional detailed description of the scene
         :param description_format: format of the description
-        :return: JSON that resembles that whole state
+        :param indent: control format by specifying if and how much attributes should be indented
+        :return: JSON string that resembles that whole state
         """
         # TODO jamming title and description in here prolly isn't the best idea -- could have a mini-builder for that
         metadata = Metadata(
@@ -89,20 +90,20 @@ class Root(_Base):
             description=description,
             description_format=description_format,
         )
-        return State(root=self._node, metadata=metadata).dict(exclude_none=True)
+        return State(root=self._node, metadata=metadata).json(exclude_none=True, indent=indent)
 
     def save_state(
-        self,
-        *,
-        destination: str,
-        indent: int = 0,
-        title: str | None = None,
-        description: str | None = None,
-        description_format: DescriptionFormatT | None = None,
+            self,
+            *,
+            destination: str,
+            indent: int = 0,
+            title: str | None = None,
+            description: str | None = None,
+            description_format: DescriptionFormatT | None = None,
     ):
-        state = self.get_state(title=title, description=description, description_format=description_format)
+        state = self.get_state(title=title, description=description, description_format=description_format, indent=indent)
         with open(destination, "w") as out:
-            out.write(json.dumps(state, indent=indent))
+            out.write(state)
 
     def camera(
         self,
