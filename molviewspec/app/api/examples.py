@@ -1,5 +1,5 @@
 import math
-from typing import Literal, TypeAlias
+from typing import Literal, TypeAlias, Union
 
 import requests
 from fastapi import APIRouter
@@ -1147,7 +1147,7 @@ BASE_COLOR = "#CCCCCC"  # should be #787878 but that's too dark because of missi
 
 @router.get("/portfolio/entry")
 async def portfolio_entry_or_assembly(
-    coloring: Literal["by_chain", "by_entity"] = "by_chain", assembly_id: str | None = None
+    coloring: Literal["by_chain", "by_entity"] = "by_chain", assembly_id: Union[str, None] = None
 ) -> MVSResponse:
     """
     Entry or assembly structure colored by chain, as created by PDBImages.
