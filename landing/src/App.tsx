@@ -1,6 +1,7 @@
 import { ExamplesUI } from "./examples";
 
 const DocsLink = 'https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9';
+const MolstarExtensionDocsLink = 'https://github.com/molstar/molstar/blob/master/docs/extensions/mvs/README.md';
 
 export function App() {
     return <div className='container' style={{ marginBottom: 20 }}>
@@ -42,21 +43,28 @@ export function App() {
         </div>
 
         <div className='row' style={{ display: 'flex' }}>
-            <div className='four columns'>
+            <div className='six columns'>
                 <a className='button button-primary' href='https://github.com/molstar/mol-view-spec/' style={{ fontSize: '2rem', width: '100%' }} target='_blank' rel='noreferrer'>
                     <svg width='14' height='14' style={{ marginRight: '0.75rem' }}><use href='#github-logo' /></svg>
                     GitHub
                 </a>
             </div>
 
-            <div className='four columns'>
+            <div className='six columns'>
                 <a className='button' href={DocsLink} style={{ fontSize: '2rem', width: '100%' }}
-                    target='_blank' rel='noreferrer'>Documentation</a>
+                    target='_blank' rel='noreferrer'>Python Package Documentation</a>
             </div>
+        </div>
 
-            <div className='four columns'>
+        <div className='row' style={{ display: 'flex' }}>
+            <div className='six columns'>
                 <a className='button' href='https://github.com/molstar/mol-view-spec/issues' style={{ fontSize: '2rem', width: '100%', marginBottom: 0 }}
                     target='_blank' rel='noreferrer'>Issues and Feedback</a>
+            </div>
+
+            <div className='six columns'>
+                <a className='button' href={MolstarExtensionDocsLink} style={{ fontSize: '2rem', width: '100%' }}
+                    target='_blank' rel='noreferrer'>Mol* Extension Documentation</a>
             </div>
         </div>
 
