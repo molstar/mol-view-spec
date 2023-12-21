@@ -95,7 +95,7 @@ export function App() {
 
 
         <div className='row' style={{ textAlign: 'right', color: '#999', marginTop: 20 }}>
-            Copyright 2023–now, MolViewSpec Contributors | <a href='terms-of-use.html' style={{ color: '#999' }}>Terms of Use &
+        Copyright 2023–now, MolViewSpec Contributors | <a href='/mol-view-spec/terms-of-use.html' style={{ color: '#999' }}>Terms of Use &
                 GDPR</a>
         </div>
 
