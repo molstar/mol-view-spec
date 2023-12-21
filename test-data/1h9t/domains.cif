@@ -1,0 +1,34 @@
+data_1h9t_annotations
+
+loop_
+_domains.label_asym_id
+_domains.beg_label_seq_id
+_domains.end_label_seq_id
+_domains.atom_id
+_domains.color
+_domains.label
+A   9  83    . "#dd6600" "DNA-binding"
+A  84 231    . "#008800" "Acyl-CoA binding"
+B   9  83    . "#cc8800" "DNA-binding"
+B  84 231    . "#008888" "Acyl-CoA binding"
+C   .   .    . "#1100aa" "DNA X"
+D   .   .    . "#dddddd" "DNA Y"
+D   .   . 4016 "#ff0044" "DNA Y - O5'"
+D   .   . 4391 "#4400ff" "DNA Y - O3'"
+E   .   .    . "#ffff00" "Gold"
+H   .   .    . "#ffff00" "Gold"
+F   .   .    . "#00dd00" "Chloride"
+G   .   .    . "#00dd00" "Chloride"
+I   .   .    . "#00dd00" "Chloride"
+A  57  57    . "#ff0000" "Ligand binding site"
+A  67  67    . "#ff0000" "Ligand binding site"
+A 121 121    . "#ff0000" "Ligand binding site"
+A 125 125    . "#ff0000" "Ligand binding site"
+A 129 129    . "#ff0000" "Ligand binding site"
+A 178 178    . "#ff0000" "Ligand binding site"
+A 203 205    . "#ff0000" "Ligand binding site"
+B  67  67    . "#ff0000" "Ligand binding site"
+B 121 121    . "#ff0000" "Ligand binding site"
+B 125 125    . "#ff0000" "Ligand binding site"
+B 129 129    . "#ff0000" "Ligand binding site"
+B 203 205    . "#ff0000" "Ligand binding site"
