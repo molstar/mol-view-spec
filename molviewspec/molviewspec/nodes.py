@@ -315,7 +315,7 @@ class _DataFromSourceParams(BaseModel):
 
 
 class ComponentInlineParams(BaseModel):
-    selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = Field(
+    selector: Union[ComponentSelectorT, ComponentExpression, list[ComponentExpression]] = Field(
         description="Describes one or more selections or one of the enumerated selectors."
     )
 

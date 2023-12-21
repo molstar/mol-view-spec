@@ -2,13 +2,13 @@ name: mol-view-spec-dev
 channels:
   - https://conda.anaconda.org/conda-forge
 dependencies:
-  - python >=3.10
+  - python >=3.9
   - pip
   - fastapi==0.93.0
   - uvicorn==0.21.0
   - requests
   - types-requests
-  - pydantic
+  - pydantic==1.10.13
 
   - nodejs >=18
 
