@@ -105,8 +105,8 @@ class ComponentExpression(BaseModel):  # Feel free to rename (this used to be In
         description="Defines a consecutive range of residues when combined with `beg_auth_seq_id`. End indices are inclusive."
     )
     residue_index: Optional[int] = Field(description="0-based residue index in the source file")
-    label_atom_id: Optional[int] = Field(description="Atom name like 'CA', 'N', 'O' (`_atom_site.label_atom_id`)")
-    auth_atom_id: Optional[int] = Field(description="Atom name like 'CA', 'N', 'O' (`_atom_site.auth_atom_id`)")
+    label_atom_id: Optional[str] = Field(description="Atom name like 'CA', 'N', 'O' (`_atom_site.label_atom_id`)")
+    auth_atom_id: Optional[str] = Field(description="Atom name like 'CA', 'N', 'O' (`_atom_site.auth_atom_id`)")
     type_symbol: Optional[str] = Field(
         description="Element symbol like 'H', 'HE', 'LI', 'BE' (`_atom_site.type_symbol`)"
     )
