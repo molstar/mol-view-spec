@@ -93,15 +93,17 @@ class Root(_Base):
         return State(root=self._node, metadata=metadata).json(exclude_none=True, indent=indent)
 
     def save_state(
-            self,
-            *,
-            destination: str,
-            indent: int = 0,
-            title: str | None = None,
-            description: str | None = None,
-            description_format: DescriptionFormatT | None = None,
+        self,
+        *,
+        destination: str,
+        indent: int = 0,
+        title: str | None = None,
+        description: str | None = None,
+        description_format: DescriptionFormatT | None = None,
     ):
-        state = self.get_state(title=title, description=description, description_format=description_format, indent=indent)
+        state = self.get_state(
+            title=title, description=description, description_format=description_format, indent=indent
+        )
         with open(destination, "w") as out:
             out.write(state)
 
