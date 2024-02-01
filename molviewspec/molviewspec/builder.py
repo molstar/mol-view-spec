@@ -72,7 +72,7 @@ class Root(_Base):
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
-        indent: int = 2,
+        indent: int | None = 2,
     ) -> str:
         """
         Emits JSON representation of the current state. Can be enriched with metadata.
@@ -95,8 +95,8 @@ class Root(_Base):
     def save_state(
         self,
         *,
-        destination: str,
-        indent: int = 0,
+        destination: str | path,
+        indent: int | None = 2,
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
