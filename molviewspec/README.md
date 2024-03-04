@@ -16,7 +16,7 @@ The corresponding MolViewSpec tree is provided in JSON and may look like this:
       {
         "kind": "download",
         "params": {
-          "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif"
+          "url": "https://files.wwpdb.org/download/1cbs.cif"
         },
         "children": [
           {
@@ -100,7 +100,7 @@ which data will be loaded from.
   "kind": "download",
   "children": [],
   "params": {
-    "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif"
+    "url": "https://files.wwpdb.org/download/1cbs.cif"
   }
 }
 ```
