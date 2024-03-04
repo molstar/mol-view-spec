@@ -1594,7 +1594,7 @@ def _url_for_local_bcif(id: str) -> str:
 
 def _url_for_mmcif(id: str) -> str:
     """Return URL for updated mmCIF file from PDBe server"""
-    return f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}_updated.cif"
+    return f"https://files.wwpdb.org/download/{id.lower()}.cif"
 
 
 def _url_for_bcif(id: str) -> str:
@@ -1604,7 +1604,7 @@ def _url_for_bcif(id: str) -> str:
 
 def _url_for_pdb(id: str) -> str:
     """Return URL for good old PDB file from PDBe server"""
-    return f"https://www.ebi.ac.uk/pdbe/entry-files/download/pdb{id.lower()}.ent"
+    return f"https://files.wwpdb.org/download/{id.lower()}.pdb"
 
 
 SYMBOL_COLORS = {"N": "#3050F8", "O": "#FF0D0D", "S": "#FFFF30", "FE": "#E06633"}
