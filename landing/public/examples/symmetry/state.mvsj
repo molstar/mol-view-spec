@@ -5,7 +5,7 @@
             {
                 "kind": "download",
                 "params": {
-                    "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif"
+                    "url": "https://files.wwpdb.org/download/1tqn.cif"
                 },
                 "children": [
                     {

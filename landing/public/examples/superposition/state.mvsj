@@ -5,7 +5,7 @@
             {
                 "kind": "download",
                 "params": {
-                    "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/4hhb_updated.cif"
+                    "url": "https://files.wwpdb.org/download/4hhb.cif"
                 },
                 "children": [
                     {
@@ -52,7 +52,7 @@
             {
                 "kind": "download",
                 "params": {
-                    "url": "https://www.ebi.ac.uk/pdbe/entry-files/download/1oj6_updated.cif"
+                    "url": "https://files.wwpdb.org/download/1oj6.cif"
                 },
                 "children": [
                     {
