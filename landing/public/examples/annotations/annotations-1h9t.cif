@@ -1,0 +1,44 @@
+data_1h9t_annotations
+
+loop_
+_components.label_asym_id
+_components.component
+A Protein
+B Protein
+C DNA
+D DNA
+E Gold
+H Gold
+F Chloride
+G Chloride
+I Chloride
+
+loop_
+_annotations.label_asym_id
+_annotations.beg_label_seq_id
+_annotations.end_label_seq_id
+_annotations.color
+_annotations.label
+_annotations.group_id
+A    9   83  '#dd6600'  'DNA-binding'          .
+A   84  231  '#008800'  'Acyl-CoA binding'     .
+B    9   83  '#cc8800'  'DNA-binding'          .
+B   84  231  '#008888'  'Acyl-CoA binding'     .
+C    .    .  '#1100aa'  'DNA X'                .
+D    .    .  '#dddddd'  'DNA Y'                .
+E    .    .  '#ffff00'  'Gold'                 .
+H    .    .  '#ffff00'  'Gold'                 .
+F    .    .  '#00dd00'  'Chloride'             .
+G    .    .  '#00dd00'  'Chloride'             .
+I    .    .  '#00dd00'  'Chloride'             .
+A   57   57  'red'      'Ligand binding site'  1
+A   67   67  'red'      'Ligand binding site'  1
+A  121  121  'red'      'Ligand binding site'  2
+A  125  125  'red'      'Ligand binding site'  2
+A  129  129  'red'      'Ligand binding site'  2
+A  178  178  'red'      'Ligand binding site'  3
+A  203  205  'red'      'Ligand binding site'  2
+B  121  121  'red'      'Ligand binding site'  4
+B  125  125  'red'      'Ligand binding site'  4
+B  129  129  'red'      'Ligand binding site'  4
+B  203  205  'red'      'Ligand binding site'  4

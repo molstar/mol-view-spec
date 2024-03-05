@@ -155,64 +155,58 @@ return builder.get_state()`,
     description: 'Load a structure (PDB ID 1h9t) and apply coloring and labels based on data from an MVS annotation file.',
     name: 'annotations',
     python: `builder = create_builder()
-structure_url = "https://www.ebi.ac.uk/pdbe/entry-files/download/1h9t_updated.cif"
-annotation_url = "https://molstar.org/mol-view-spec/examples/annotations/annotations.cif"
+
+structure_url = "https://files.wwpdb.org/download/1h9t.cif"
+annotation_url = "https://molstar.org/mol-view-spec/examples/annotations/annotations-1h9t.cif"
 
 # Load structure
 structure = (builder
-    .download(url=structure_url)
-    .parse(format="mmcif")
-    .model_structure()
-)
+             .download(url=structure_url)
+             .parse(format="mmcif")
+             .model_structure()
+             )
 
-# Show and color protein, nucleic acids, and ions
-(structure
-    .component(selector="protein")
-    .representation(type="cartoon")
-    .color(color="white")
-    .color_from_uri(
-        schema="all_atomic",
-        uri=annotation_url,
-        format="cif",
-        category_name="annotations",
-        field_name="color",
-    )
-)
-(structure
-    .component(selector="nucleic")
-    .representation(type="ball_and_stick").color(color="white").color_from_uri(
-        schema="all_atomic",
-        uri=annotation_url,
-        format="cif",
-        category_name="annotations",
-        field_name="color",
-    )
-)
-(structure
-    .component(selector="ion")
-    .representation(type="surface").color_from_uri(
-        schema="all_atomic",
-        uri=annotation_url,
-        format="cif",
-        category_name="annotations",
-        field_name="color",
-    )
-)
+# Create components using MVS annotations
+protein = structure.component_from_uri(
+    uri=annotation_url, format="cif",
+    block_header="1h9t_annotations", category_name="components",
+    field_name="component", field_values="Protein", schema="chain")
+dna = structure.component_from_uri(
+    uri=annotation_url, format="cif",
+    category_name="components", field_values="DNA", schema="chain")
+ions = structure.component_from_uri(
+    uri=annotation_url, format="cif",
+    category_name="components", field_values=["Gold", "Chloride"],
+    schema="chain")
 
-# Add labels and tooltips
+# Create representations
+protein_repr = protein.representation(type="cartoon")
+dna_repr = dna.representation(type="ball_and_stick")
+ions_repr = ions.representation(type="surface")
+
+# Apply coloring using MVS annotations
+protein_repr.color_from_uri(
+    uri=annotation_url, format="cif",
+    block_header="1h9t_annotations", category_name="annotations",
+    field_name="color", schema="residue_range")
+dna_repr.color_from_uri(
+    uri=annotation_url, format="cif",
+    category_name="annotations", schema="residue_range")
+ions_repr.color_from_uri(
+    uri=annotation_url, format="cif",
+    category_name="annotations", schema="residue_range")
+
+# Add labels using MVS annotations
 structure.label_from_uri(
-    schema="all_atomic", 
-    uri=annotation_url, 
-    format="cif", 
-    category_name="annotations",
-    field_name="label",
-).tooltip_from_uri(
-    schema="all_atomic", 
-    uri=annotation_url, 
-    format="cif", 
-    category_name="annotations",
-    field_name="label",
-)
+    uri=annotation_url, format="cif",
+    block_header="1h9t_annotations", category_name="annotations",
+    field_name="label", schema="residue_range")
+
+# Add tooltips using MVS annotations
+structure.tooltip_from_uri(
+    uri=annotation_url, format="cif",
+    block_header="1h9t_annotations", category_name="annotations",
+    field_name="label", schema="residue_range")
 
 return builder.get_state()`,
 }];
