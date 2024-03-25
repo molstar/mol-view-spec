@@ -1,3 +1,7 @@
+"""
+A collection of MolViewSpec examples that showcase common visualization tasks that can be addressed using the builder.
+"""
+
 import math
 from typing import Literal, TypeAlias, Union
 
@@ -1560,10 +1564,6 @@ async def portfolio_rcsb_entry(id: str = "3sn6") -> MVSResponse:
     )
     builder.canvas(background_color="#ffffff")
     return PlainTextResponse(builder.get_state())
-
-
-# TODO add portfolio examples from all the documents we have who knows where
-# RCSB: https://docs.google.com/spreadsheets/d/1QQ_P0VlURzpMhqa8rI-D2nJ8f1lfrHTpqrN0q5PbACs/edit#gid=0
 
 
 ##############################################################################

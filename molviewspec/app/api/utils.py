@@ -1,3 +1,7 @@
+"""
+Helper functions used by examples.py.
+"""
+
 import inspect
 
 from fastapi import APIRouter
