@@ -40,6 +40,7 @@ class Node(BaseModel):
     """
     Base impl of all state tree nodes.
     """
+
     kind: KindT = Field(description="The type of this node.")
     params: Optional[Mapping[str, Any]] = Field(description="Optional params that are needed for this node.")
     children: Optional[list[Node]] = Field(description="Optional collection of nested child nodes.")
@@ -52,6 +53,7 @@ class Metadata(BaseModel):
     """
     Global metadata, which describes the purpose and creation date of a state tree.
     """
+
     version: str = Field(description="Version of the spec used to write this tree.")
     title: Optional[str] = Field(description="Name of this view.")
     description: Optional[str] = Field(description="Detailed description of this view.")
@@ -63,6 +65,7 @@ class State(BaseModel):
     """
     Root node of all state trees.
     """
+
     root: Node = Field(description="Root of the node tree.")
     metadata: Metadata = Field(description="Associated metadata.")
 
@@ -71,6 +74,7 @@ class DownloadParams(BaseModel):
     """
     Download node, describing where structure data should be fetched from.
     """
+
     url: str = Field(description="URL from which to pull structure data.")
 
 
@@ -81,6 +85,7 @@ class ParseParams(BaseModel):
     """
     Parse node, describing how to parse downloaded data.
     """
+
     format: ParseFormatT = Field(description="The format of the structure data.")
 
 
@@ -91,6 +96,7 @@ class StructureParams(BaseModel):
     """
     Structure node, describing which type (assembly 1, deposited coordinates, etc.) of the parsed data to create.
     """
+
     type: StructureTypeT = Field(description="How to interpret the loaded data")
     assembly_id: Optional[str] = Field(description="Use the name to specify which assembly to load")
     assembly_index: Optional[int] = Field(description="0-based assembly index, use this to load the 1st assembly")
@@ -111,12 +117,19 @@ class ComponentExpression(BaseModel):
     """
     Component expressions are used to make selections.
     """
+
     label_entity_id: Optional[str] = Field(description="Select an entity by its identifier")
-    label_asym_id: Optional[str] = Field(description="Select a chain using its standard, programmatically-assigned identifier")
+    label_asym_id: Optional[str] = Field(
+        description="Select a chain using its standard, programmatically-assigned identifier"
+    )
     auth_asym_id: Optional[str] = Field(description="Select a chain using its legacy, author-assigned identifier")
-    label_seq_id: Optional[int] = Field(description="Select a residue by its standard, programmatically-assigned sequence position")
+    label_seq_id: Optional[int] = Field(
+        description="Select a residue by its standard, programmatically-assigned sequence position"
+    )
     auth_seq_id: Optional[int] = Field(description="Select a residue by its legacy, author-assigned sequence position")
-    pdbx_PDB_ins_code: Optional[str] = Field(description="Optional legacy insertion code, only relevant for `auth_seq_id`")
+    pdbx_PDB_ins_code: Optional[str] = Field(
+        description="Optional legacy insertion code, only relevant for `auth_seq_id`"
+    )
     beg_label_seq_id: Optional[int] = Field(
         description="Defines a consecutive range of residues when combined with `end_label_seq_id`."
     )
@@ -296,6 +309,7 @@ class RepresentationParams(BaseModel):
     """
     Representation node, describing how to represent a component.
     """
+
     type: RepresentationTypeT = Field(description="Representation type, i.e. cartoon, ball-and-stick, etc.")
 
 
@@ -319,17 +333,24 @@ class _DataFromUriParams(BaseModel):
     """
     Abstract node that's shared by all resource-based selections.
     """
+
     uri: str = Field(description="Location of the resource")
     format: SchemaFormatT = Field(description="Format of the resource, i.e. 'cif', 'bcif', or 'json'")
-    category_name: Optional[str] = Field(description="Category wherein selection is located. Only applies when format is 'cif' or 'bcif'.")
+    category_name: Optional[str] = Field(
+        description="Category wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+    )
     field_name: Optional[str] = Field(
         description="Name of the column in CIF or field name (key) in JSON that "
         "contains the desired value (color/label/tooltip/component...); the "
         "default value is 'color'/'label'/'tooltip'/'component' depending "
         "on the node kind",
     )
-    block_header: Optional[str] = Field(description="Block name wherein selection is located. Only applies when format is 'cif' or 'bcif'.")
-    block_index: Optional[int] = Field(description="Block index wherein selection is located. Only applies when format is 'cif' or 'bcif'.")
+    block_header: Optional[str] = Field(
+        description="Block name wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+    )
+    block_index: Optional[int] = Field(
+        description="Block index wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+    )
     # must be aliased to not shadow BaseModel attribute
     schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
 
@@ -338,6 +359,7 @@ class _DataFromSourceParams(BaseModel):
     """
     Abstract node that's shared by all selections based on the source file.
     """
+
     category_name: str = Field(description="Category wherein selection is located.")
     field_name: Optional[str] = Field(
         description="Name of the column in CIF that contains the desired value ("
@@ -354,6 +376,7 @@ class ComponentInlineParams(BaseModel):
     """
     Selection based on function arguments.
     """
+
     selector: Union[ComponentSelectorT, ComponentExpression, list[ComponentExpression]] = Field(
         description="Describes one or more selections or one of the enumerated selectors."
     )
@@ -363,6 +386,7 @@ class ComponentFromUriParams(_DataFromUriParams):
     """
     Selection based on another resource.
     """
+
     field_values: Optional[list[str]] = Field(
         description="Create the component from rows that have any of these "
         "values in the field specified by `field_name`. If not "
@@ -374,6 +398,7 @@ class ComponentFromSourceParams(_DataFromSourceParams):
     """
     Selection based on a category in the source file.
     """
+
     field_values: Optional[list[str]] = Field(
         description="Create the component from rows that have any of these "
         "values in the field specified by `field_name`. If not "
@@ -385,6 +410,7 @@ class ColorInlineParams(ComponentInlineParams):
     """
     Color based on function arguments.
     """
+
     color: ColorT = Field(description="Color using SVG color names or RGB hex code")
 
 
@@ -392,20 +418,19 @@ class ColorFromUriParams(_DataFromUriParams):
     """
     Color based on another resource.
     """
-    pass
 
 
 class ColorFromSourceParams(_DataFromSourceParams):
     """
     Color based on a category in the source file.
     """
-    pass
 
 
 class LabelInlineParams(BaseModel):
     """
     Label based on function arguments.
     """
+
     text: str = Field(description="Text to show as label")
     # schema and other stuff not needed here, the label will be applied on the whole parent Structure or Component
 
@@ -414,14 +439,12 @@ class LabelFromUriParams(_DataFromUriParams):
     """
     Label based on another resource.
     """
-    pass
 
 
 class LabelFromSourceParams(_DataFromSourceParams):
     """
     Label based on a category in the source file.
     """
-    pass
 
 
 class TooltipInlineParams(BaseModel):
@@ -441,6 +464,7 @@ class FocusInlineParams(BaseModel):
     """
     Define the camera focus based on function arguments.
     """
+
     direction: Optional[tuple[float, float, float]] = Field(
         description="Direction of the view (vector position -> target)"
     )
@@ -453,6 +477,7 @@ class TransformParams(BaseModel):
     """
     Define a transformation.
     """
+
     rotation: Optional[tuple[float, ...]] = Field(
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
@@ -463,6 +488,7 @@ class CameraParams(BaseModel):
     """
     Controls the global camera position.
     """
+
     target: tuple[float, float, float] = Field(description="What to look at")
     position: tuple[float, float, float] = Field(description="The position of the camera")
     up: tuple[float, float, float] = Field(
@@ -474,6 +500,7 @@ class CanvasParams(BaseModel):
     """
     Controls global canvas properties.
     """
+
     background_color: ColorT = Field(description="Background color using SVG color names or RGB hex code")
 
 
@@ -481,6 +508,7 @@ class SphereParams(BaseModel):
     """
     Experimental: Defines a sphere primitive.
     """
+
     position: tuple[float, float, float] = Field(description="Position of the primitive")
     radius: float = Field(description="Radius of the sphere")
     color: ColorT = Field(description="Color of the sphere")
@@ -492,6 +520,7 @@ class LineParams(BaseModel):
     """
     Experimental: Defines a line primitive.
     """
+
     position1: tuple[float, float, float] = Field(description="Start position of the primitive")
     position2: tuple[float, float, float] = Field(description="End position of the primitive")
     radius: float = Field(description="Radius of the line")

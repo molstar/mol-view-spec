@@ -61,6 +61,7 @@ class _Base(BaseModel):
     """
     Internal base node from which all other nodes are derived.
     """
+
     _root: Root = PrivateAttr()
     _node: Node = PrivateAttr()
 
@@ -84,6 +85,7 @@ class Root(_Base):
     The builder for MolViewSpec state descriptions. Provides fine-grained options as well as global properties such as
     canvas color or camera position and functionality to eventually export this scene.
     """
+
     def __init__(self) -> None:
         super().__init__(root=self, node=Node(kind="root"))
 
@@ -190,6 +192,7 @@ class Download(_Base):
     """
     Builder step with operations needed after downloading structure data.
     """
+
     def parse(self, *, format: ParseFormatT) -> Parse:
         """
         Parse the content by specifying the file format.
@@ -206,6 +209,7 @@ class Parse(_Base):
     """
     Builder step with operations needed after parsing structure data.
     """
+
     def model_structure(
         self,
         *,
@@ -293,6 +297,7 @@ class Structure(_Base):
     """
     Builder step with operations needed after defining the structure to work with.
     """
+
     def component(
         self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
     ) -> Component:
@@ -506,6 +511,7 @@ class Component(_Base):
     """
     Builder step with operations relevant for a particular component.
     """
+
     def representation(self, *, type: RepresentationTypeT = "cartoon") -> Representation:
         """
         Add a representation for this component.
@@ -558,6 +564,7 @@ class Representation(_Base):
     """
     Builder step with operations relating to particular representations.
     """
+
     def color_from_source(
         self,
         *,
@@ -627,6 +634,7 @@ class GenericVisuals(_Base):
     """
     Experimental builder for custom, primitive visuals.
     """
+
     def sphere(
         self,
         *,
