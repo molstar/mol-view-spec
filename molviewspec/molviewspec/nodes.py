@@ -1,3 +1,7 @@
+"""
+Definitions of all 'nodes' used by the MolViewSpec format specification and its builder implementation.
+"""
+
 from __future__ import annotations
 
 from typing import Any, Literal, Mapping, Optional, Union

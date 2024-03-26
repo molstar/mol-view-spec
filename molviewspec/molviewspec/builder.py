@@ -1,7 +1,13 @@
+"""
+Use this builder to navigate the creating of MolViewSpec files. Chain operations together as needed and invoke
+`get_state` or `save_state` to export the corresponding JSON needed to recreate that scene.
+"""
+
 from __future__ import annotations
 
 import math
 from datetime import datetime, timezone
+from os import path
 from typing import Sequence
 
 from pydantic import BaseModel, PrivateAttr
@@ -44,10 +50,17 @@ from molviewspec.utils import get_major_version_tag, make_params
 
 
 def create_builder() -> Root:
+    """
+    Entry point, which instantiates a new builder instance.
+    :return: a new builder instance
+    """
     return Root()
 
 
 class _Base(BaseModel):
+    """
+    Internal base node from which all other nodes are derived.
+    """
     _root: Root = PrivateAttr()
     _node: Node = PrivateAttr()
 
@@ -57,12 +70,20 @@ class _Base(BaseModel):
         self._node = node
 
     def _add_child(self, node: Node) -> None:
+        """
+        Register a child node.
+        :param node: obj to add
+        """
         if self._node.children is None:
             self._node.children = []
         self._node.children.append(node)
 
 
 class Root(_Base):
+    """
+    The builder for MolViewSpec state descriptions. Provides fine-grained options as well as global properties such as
+    canvas color or camera position and functionality to eventually export this scene.
+    """
     def __init__(self) -> None:
         super().__init__(root=self, node=Node(kind="root"))
 
@@ -79,10 +100,9 @@ class Root(_Base):
         :param title: optional title of the scene
         :param description: optional detailed description of the scene
         :param description_format: format of the description
-        :param indent: control format by specifying if and how much attributes should be indented
+        :param indent: control format by specifying if and how to indent attributes
         :return: JSON string that resembles that whole state
         """
-        # TODO jamming title and description in here prolly isn't the best idea -- could have a mini-builder for that
         metadata = Metadata(
             version=get_major_version_tag(),
             timestamp=datetime.now(timezone.utc).isoformat(),
@@ -100,7 +120,15 @@ class Root(_Base):
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
-    ):
+    ) -> None:
+        """
+        Saves the JSON representation of the current state to a file. Can be enriched with metadata.
+        :param destination: file path to write
+        :param title: optional title of the scene
+        :param description: optional detailed description of the scene
+        :param description_format: format of the description
+        :param indent: control format by specifying if and how to indent attributes
+        """
         state = self.get_state(
             title=title, description=description, description_format=description_format, indent=indent
         )
@@ -114,31 +142,60 @@ class Root(_Base):
         position: tuple[float, float, float],
         up: tuple[float, float, float] | None = (0, 1, 0),
     ):
+        """
+        Manually position the camera.
+        :param target: what to look at
+        :param position: the position of the camera
+        :param up: controls the rotation around the vector between target and position
+        :return: this builder
+        """
         params = make_params(CameraParams, locals())
         node = Node(kind="camera", params=params)
         self._add_child(node)
         return self
 
     def canvas(self, *, background_color: ColorT | None = None) -> Root:
+        """
+        Customize canvas properties such as background color.
+        :param background_color: desired background color, either as SVG color name or hex code
+        :return: this builder
+        """
         params = make_params(CanvasParams, locals())
         node = Node(kind="canvas", params=params)
         self._add_child(node)
         return self
 
     def download(self, *, url: str) -> Download:
+        """
+        Add a new structure to the builder by downloading structure data from a URL.
+        :param url: source of structure data
+        :return: a builder that handles operations on the downloaded resource
+        """
         params = make_params(DownloadParams, locals())
         node = Node(kind="download", params=params)
         self._add_child(node)
         return Download(node=node, root=self._root)
 
     def generic_visuals(self) -> GenericVisuals:
+        """
+        Experimental: Allows the definition of generic visuals such as spheres and lines.
+        :return: a builder for generic visuals
+        """
         node = Node(kind="generic_visuals")
         self._add_child(node)
         return GenericVisuals(node=node, root=self._root)
 
 
 class Download(_Base):
+    """
+    Builder step with operations needed after downloading structure data.
+    """
     def parse(self, *, format: ParseFormatT) -> Parse:
+        """
+        Parse the content by specifying the file format.
+        :param format: specify the format of your structure data
+        :return: a builder that handles operations on the parsed content
+        """
         params = make_params(ParseParams, locals())
         node = Node(kind="parse", params=params)
         self._add_child(node)
@@ -146,6 +203,9 @@ class Download(_Base):
 
 
 class Parse(_Base):
+    """
+    Builder step with operations needed after parsing structure data.
+    """
     def model_structure(
         self,
         *,
@@ -158,6 +218,7 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="model")
         node = Node(kind="structure", params=params)
@@ -178,6 +239,7 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="assembly")
         node = Node(kind="structure", params=params)
@@ -199,6 +261,7 @@ class Parse(_Base):
         :param ijk_max: Top-right Miller indices
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="symmetry")
         node = Node(kind="structure", params=params)
@@ -218,6 +281,7 @@ class Parse(_Base):
         :param radius: Radius of symmetry partners to include
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="symmetry_mates")
         node = Node(kind="structure", params=params)
@@ -226,9 +290,17 @@ class Parse(_Base):
 
 
 class Structure(_Base):
+    """
+    Builder step with operations needed after defining the structure to work with.
+    """
     def component(
         self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
     ) -> Component:
+        """
+        Define a new component/selection for the given structure.
+        :param selector: a predefined component selector or one or more component selection expressions
+        :return: a builder that handles operations at component level
+        """
         params = make_params(ColorInlineParams, locals())
         node = Node(kind="component", params=params)
         self._add_child(node)
@@ -246,6 +318,18 @@ class Structure(_Base):
         schema: SchemaT,
         field_values: str | list[str] | None = None,
     ) -> Component:
+        """
+        Define a new component/selection for the given structure by fetching additional data from a resource.
+        :param uri: resource location
+        :param format: format ('cif', 'bcif', 'json') of the content
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param schema: granularity/type of the selection
+        :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
+        :return: a builder that handles operations at component level
+        """
         if isinstance(field_values, str):
             field_values = [field_values]
         params = make_params(ComponentFromUriParams, locals())
@@ -263,6 +347,16 @@ class Structure(_Base):
         schema: SchemaT,
         field_values: str | list[str] | None = None,
     ) -> Component:
+        """
+        Define a new component/selection for the given structure by using categories from the source file.
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param schema: granularity/type of the selection
+        :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
+        :return: a builder that handles operations at component level
+        """
         if isinstance(field_values, str):
             field_values = [field_values]
         params = make_params(ComponentFromSourceParams, locals())
@@ -281,6 +375,17 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
+        """
+        Define a new label for the given structure by fetching additional data from a resource.
+        :param uri: resource location
+        :param format: format ('cif', 'bcif', 'json') of the content
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param schema: granularity/type of the selection
+        :return: this builder
+        """
         params = make_params(LabelFromUriParams, locals())
         node = Node(kind="label_from_uri", params=params)
         self._add_child(node)
@@ -295,6 +400,15 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
+        """
+        Define a new label for the given structure by fetching additional data from the source file.
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param schema: granularity/type of the selection
+        :return: this builder
+        """
         params = make_params(LabelFromSourceParams, locals())
         node = Node(kind="label_from_source", params=params)
         self._add_child(node)
@@ -311,6 +425,17 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
+        """
+        Define a new tooltip for the given structure by fetching additional data from a resource.
+        :param uri: resource location
+        :param format: format ('cif', 'bcif', 'json') of the content
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param schema: granularity/type of the selection
+        :return: this builder
+        """
         params = make_params(TooltipFromUriParams, locals())
         node = Node(kind="tooltip_from_uri", params=params)
         self._add_child(node)
@@ -325,6 +450,15 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
     ) -> Structure:
+        """
+        Define a new tooltip for the given structure by fetching additional data from the source file.
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param schema: granularity/type of the selection
+        :return: this builder
+        """
         params = make_params(TooltipFromSourceParams, locals())
         node = Node(kind="tooltip_from_source", params=params)
         self._add_child(node)
@@ -336,6 +470,12 @@ class Structure(_Base):
         rotation: Sequence[float] | None = None,
         translation: Sequence[float] | None = None,
     ) -> Structure:
+        """
+        Transform a structure by applying a rotation matrix and/or translation vector.
+        :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left
+        :param translation: 3d vector describing the translation
+        :return: this builder
+        """
         if rotation is not None:
             rotation = tuple(rotation)
             if len(rotation) != 9:
@@ -363,19 +503,37 @@ class Structure(_Base):
 
 
 class Component(_Base):
+    """
+    Builder step with operations relevant for a particular component.
+    """
     def representation(self, *, type: RepresentationTypeT = "cartoon") -> Representation:
+        """
+        Add a representation for this component.
+        :param type: the type of representation, defaults to 'cartoon'
+        :return: a builder that handles operations at representation level
+        """
         params = make_params(RepresentationParams, locals())
         node = Node(kind="representation", params=params)
         self._add_child(node)
         return Representation(node=node, root=self._root)
 
     def label(self, *, text: str) -> Component:
+        """
+        Add a text label to a component.
+        :param text: label to add in 3D
+        :return: this builder
+        """
         params = make_params(LabelInlineParams, locals())
         node = Node(kind="label", params=params)
         self._add_child(node)
         return self
 
     def tooltip(self, *, text: str) -> Component:
+        """
+        Add a tooltip that shows additional information of a component when hovering over it.
+        :param text: text to show upon hover
+        :return: this builder
+        """
         params = make_params(TooltipInlineParams, locals())
         node = Node(kind="tooltip", params=params)
         self._add_child(node)
@@ -386,6 +544,8 @@ class Component(_Base):
     ) -> Component:
         """
         Focus on this structure or component.
+        :param direction: the direction from which to look at this component
+        :param up: where is up relative to the view direction
         :return: this builder
         """
         params = make_params(FocusInlineParams, locals())
@@ -395,6 +555,9 @@ class Component(_Base):
 
 
 class Representation(_Base):
+    """
+    Builder step with operations relating to particular representations.
+    """
     def color_from_source(
         self,
         *,
@@ -404,6 +567,15 @@ class Representation(_Base):
         block_header: str | None = None,
         block_index: int | None = None,
     ) -> Representation:
+        """
+        Use a custom category from the source file to define colors of this representation.
+        :param schema: granularity/type of the selection
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :return: this builder
+        """
         params = make_params(ColorFromSourceParams, locals())
         node = Node(kind="color_from_source", params=params)
         self._add_child(node)
@@ -420,6 +592,17 @@ class Representation(_Base):
         block_header: str | None = None,
         block_index: int | None = None,
     ) -> Representation:
+        """
+        Use another resource to define colors of this representation.
+        :param schema: granularity/type of the selection
+        :param uri: resource location
+        :param format: format ('cif', 'bcif', 'json') of the content
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :return: this builder
+        """
         params = make_params(ColorFromUriParams, locals())
         node = Node(kind="color_from_uri", params=params)
         self._add_child(node)
@@ -428,6 +611,12 @@ class Representation(_Base):
     def color(
         self, *, color: ColorT, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
     ) -> Representation:
+        """
+        Customize the color of this representation.
+        :param color: color using SVG color names or RGB hex code
+        :param selector: optional selector, defaults to applying the color to the whole representation
+        :return: this builder
+        """
         params = make_params(ColorInlineParams, locals())
         node = Node(kind="color", params=params)
         self._add_child(node)
@@ -435,6 +624,9 @@ class Representation(_Base):
 
 
 class GenericVisuals(_Base):
+    """
+    Experimental builder for custom, primitive visuals.
+    """
     def sphere(
         self,
         *,
@@ -444,6 +636,15 @@ class GenericVisuals(_Base):
         label: str | None = None,
         tooltip: str | None = None,
     ) -> GenericVisuals:
+        """
+        Draw a sphere.
+        :param position: position of the sphere
+        :param radius: size of the sphere
+        :param color: color of the sphere, either SVG color name or RGB hex code
+        :param label: optional text label
+        :param tooltip: optional tooltip to show upon hover
+        :return:
+        """
         params = make_params(SphereParams, locals())
         node = Node(kind="sphere", params=params)
         self._add_child(node)
@@ -459,6 +660,16 @@ class GenericVisuals(_Base):
         label: str | None = None,
         tooltip: str | None = None,
     ) -> GenericVisuals:
+        """
+        Draw a line.
+        :param position1: start of line
+        :param position2: end of line
+        :param radius: width of line segment
+        :param color: color of line, either SVG color name or RGB hex code
+        :param label: optional text label
+        :param tooltip: optional tooltip to show upon hover
+        :return:
+        """
         params = make_params(LineParams, locals())
         node = Node(kind="line", params=params)
         self._add_child(node)
