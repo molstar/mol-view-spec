@@ -16,12 +16,14 @@ In the long run, MolViewSpec aims to re-imagine how users define molecular scene
 concrete 3D viewer.
 
 MolViewSpec's workflow is:
+1. `define scene using MolViewSpec`
+2. `generic state description as .msvj`
+3. `open in any MolViewSpec-compatible 3D viewer`
 
-`define scene using MolViewSpec` -> `generic state tree description as .msvj` ->  `open in any MolViewSpec-compatible 3D viewer`
-
-Opposed to the current workflow that locks users into using a specific 3D viewer, such as:
-
-`define scene in Mol*` -> `Mol*-specific state format` -> `open only in Mol*`
+Opposed to the traditional workflow that locks users into using a specific 3D viewer, such as:
+1. `define scene in Mol*`
+2. `Mol*-specific state format`
+3. `open only in Mol*`
 
 
 ## See the MolViewSpec in Action
