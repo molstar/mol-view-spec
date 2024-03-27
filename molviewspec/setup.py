@@ -8,7 +8,7 @@ with open("molviewspec/__init__.py", "r", encoding="utf-8") as fd:
     match = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE)
     version = match.group(1) if match is not None else None
 
-with open("README.md", "r", encoding="utf-8") as ifh:
+with open("../README.md", "r", encoding="utf-8") as ifh:
     longDescription = ifh.read()
 
 if not version:
