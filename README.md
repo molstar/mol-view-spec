@@ -32,9 +32,8 @@ Colab Notebook: https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vW
 
 ## Access Type Definitions
 All type definitions can be found here:
-- as openapi-schema.json: https://github.com/molstar/mol-view-spec/blob/master/docs/molviewspec-v1-openapi-schema.json
-- in Markdown: https://github.com/molstar/mol-view-spec/blob/master/docs/MVS-tree-documentation.md
 - using a dedicated Server endpoint: http://localhost:9000/api/v1/utils/models/openapi.json
+- in Markdown: https://molstar.org/mol-view-spec-docs/tree-schema/
 
 
 ## Description of the MolViewSpec State Tree
