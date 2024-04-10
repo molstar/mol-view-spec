@@ -33,6 +33,7 @@ Colab Notebook: https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vW
 ## Access Type Definitions
 All type definitions can be found here:
 - using a dedicated Server endpoint: http://localhost:9000/api/v1/utils/models/openapi.json
+- same content as static file: https://molstar.org/mol-view-spec-docs/files/molviewspec-v1-openapi-schema.json
 - in Markdown: https://molstar.org/mol-view-spec-docs/tree-schema/
 
 
