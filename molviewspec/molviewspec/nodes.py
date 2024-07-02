@@ -54,11 +54,12 @@ class Metadata(BaseModel):
     Global metadata, which describes the purpose and creation date of a state tree.
     """
 
-    version: str = Field(description="Version of the spec used to write this tree.")
-    title: Optional[str] = Field(description="Name of this view.")
     description: Optional[str] = Field(description="Detailed description of this view.")
     description_format: Optional[DescriptionFormatT] = Field(description="Format of the description.")
+    key: Optional[str] = Field(description="Unique identifier of this state, useful when working with collections of states.")
     timestamp: str = Field(description="Timestamp when this view was exported.")
+    title: Optional[str] = Field(description="Name of this view.")
+    version: str = Field(description="Version of the spec used to write this tree.")
 
 
 """
