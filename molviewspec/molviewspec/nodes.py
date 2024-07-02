@@ -61,13 +61,36 @@ class Metadata(BaseModel):
     timestamp: str = Field(description="Timestamp when this view was exported.")
 
 
+"""
+Type of a state description, either 'basic' (individual state) or 'sequence' (ordered collection of multiple states).
+"""
+StateTreeT = Literal['basic', 'sequence']
+
+
 class State(BaseModel):
     """
-    Root node of all state trees.
+    Root node of an individual state trees.
     """
 
-    root: Node = Field(description="Root of the node tree.")
+    kind: StateTreeT = Field(description="Specifies whether this is an individual state or a collection of states.")
     metadata: Metadata = Field(description="Associated metadata.")
+    root: Node = Field(description="Root of the node tree.")
+
+
+class States(BaseModel):
+    """
+    Root node of state descriptions that encompass multiple distinct state trees.
+    """
+
+    kind: StateTreeT = Field(description="Specifies whether this is an individual state or a collection of states.")
+    metadata: Metadata = Field(description="Associated metadata.")
+    snapshots: list[State] = Field(description="Ordered collection of individual states.")
+
+
+"""
+Flavors of MolViewSpec states.
+"""
+MVSData = Union[State, States]
 
 
 class DownloadParams(BaseModel):
