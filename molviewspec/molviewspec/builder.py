@@ -95,6 +95,7 @@ class Root(_Base):
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
+        key: str | None = None,
         indent: int | None = 2,
     ) -> str:
         """
@@ -102,17 +103,19 @@ class Root(_Base):
         :param title: optional title of the scene
         :param description: optional detailed description of the scene
         :param description_format: format of the description
+        :param key: (unique) identifier of this state
         :param indent: control format by specifying if and how to indent attributes
         :return: JSON string that resembles that whole state
         """
         metadata = Metadata(
-            version=get_major_version_tag(),
-            timestamp=datetime.now(timezone.utc).isoformat(),
-            title=title,
             description=description,
             description_format=description_format,
+            key=key,
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            title=title,
+            version=get_major_version_tag(),
         )
-        return State(root=self._node, metadata=metadata).json(exclude_none=True, indent=indent)
+        return State(root=self._node, metadata=metadata, kind="basic").json(exclude_none=True, indent=indent)
 
     def save_state(
         self,
