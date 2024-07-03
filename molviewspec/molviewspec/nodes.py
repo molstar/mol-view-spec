@@ -86,6 +86,7 @@ class States(BaseModel):
     kind: StateTreeT = Field(description="Specifies whether this is an individual state or a collection of states.")
     metadata: Metadata = Field(description="Associated metadata.")
     snapshots: list[State] = Field(description="Ordered collection of individual states.")
+    # TODO add ordered collection that describes transition/interpolation wrt previous state
 
 
 """
