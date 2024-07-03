@@ -56,7 +56,7 @@ class Metadata(BaseModel):
 
     description: Optional[str] = Field(description="Detailed description of this view.")
     description_format: Optional[DescriptionFormatT] = Field(description="Format of the description.")
-    key: Optional[str] = Field(description="Unique identifier of this state, useful when working with collections of states.")
+    key: str = Field(description="Unique identifier of this state, useful when working with collections of states.")
     timestamp: str = Field(description="Timestamp when this view was exported.")
     title: Optional[str] = Field(description="Name of this view.")
     version: str = Field(description="Version of the spec used to write this tree.")
