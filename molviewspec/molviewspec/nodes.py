@@ -65,7 +65,7 @@ class Metadata(BaseModel):
 """
 Type of a state description, either 'single' (individual state) or 'multiple' (ordered collection of multiple states).
 """
-StateTreeT = Literal['single', 'multiple']
+StateTreeT = Literal["single", "multiple"]
 
 
 class State(BaseModel):
