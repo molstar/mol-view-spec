@@ -96,7 +96,7 @@ class Root(_Base):
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
-        key: str | None = str(uuid4()),
+        key: str | None = None,
         indent: int | None = 2,
     ) -> str:
         """
@@ -108,6 +108,8 @@ class Root(_Base):
         :param indent: control format by specifying if and how to indent attributes
         :return: JSON string that resembles that whole state
         """
+        if key is None:
+            key = str(uuid4())
         metadata = Metadata(
             description=description,
             description_format=description_format,
