@@ -5,6 +5,7 @@ Use this builder to navigate the creating of MolViewSpec files. Chain operations
 
 from __future__ import annotations
 
+import copy
 import math
 from datetime import datetime, timezone
 from os import path
@@ -142,6 +143,14 @@ class Root(_Base):
         )
         with open(destination, "w") as out:
             out.write(state)
+
+    def clone(self) -> Root:
+        """
+        Functionality to deep-clone an existing state. Useful to change individual values of existing trees when
+        combining multiple snapshots.
+        :return: independent clone of an existing state tree
+        """
+        return copy.deepcopy(self)
 
     def camera(
         self,
