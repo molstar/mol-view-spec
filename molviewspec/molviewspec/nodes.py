@@ -74,7 +74,7 @@ class State(BaseModel):
     Root node of an individual state trees.
     """
 
-    kind: StateTreeT = Field(default="single", description="Specifies whether this is an individual state or a collection of states.")
+    kind: Optional[StateTreeT] = Field(default="single", description="Specifies whether this is an individual state or a collection of states.")  # optional for backwards compatibility
     metadata: Metadata = Field(description="Associated metadata.")
     root: Node = Field(description="Root of the node tree.")
 
