@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import copy
 import math
-from datetime import datetime, timezone
 from os import path
 from typing import Sequence
 from uuid import uuid4
@@ -109,17 +108,14 @@ class Root(_Base):
         :param indent: control format by specifying if and how to indent attributes
         :return: JSON string that resembles that whole state
         """
-        if key is None:
-            key = str(uuid4())
         metadata = Metadata(
             description=description,
             description_format=description_format,
-            key=key,
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            key=key or str(uuid4()),
             title=title,
             version=get_major_version_tag(),
         )
-        return State(root=self._node, metadata=metadata, kind="single").json(exclude_none=True, indent=indent)
+        return State(root=self._node, metadata=metadata).json(exclude_none=True, indent=indent)
 
     def save_state(
         self,
