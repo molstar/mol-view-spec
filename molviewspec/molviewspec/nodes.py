@@ -4,8 +4,9 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 
 from __future__ import annotations
 
-from typing import Any, Literal, Mapping, Optional, Union
 from datetime import datetime, timezone
+from typing import Any, Literal, Mapping, Optional, Union
+from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
@@ -47,20 +48,48 @@ class Node(BaseModel):
     children: Optional[list[Node]] = Field(description="Optional collection of nested child nodes.")
 
 
+class FormatMetadata(BaseModel):
+    """
+    Metadata describing global properties relating to the format specification.
+    """
+
+    timestamp: str = Field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        description="Timestamp when this view was exported.",
+    )
+    version: str = Field(description="Version of the spec used to write this tree.")
+
+
 DescriptionFormatT = Literal["markdown", "plaintext"]
 
 
-class Metadata(BaseModel):
+def generate_uuid():
+    return str(uuid4())
+
+
+class SnapshotMetadata(BaseModel):
     """
-    Global metadata, which describes the purpose and creation date of a state tree.
+    Metadata describing details of an individual state/snapshot.
     """
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        if self.key is None:
+            self.key = generate_uuid()
 
     description: Optional[str] = Field(description="Detailed description of this view.")
     description_format: Optional[DescriptionFormatT] = Field(description="Format of the description.")
-    key: str = Field(description="Unique identifier of this state, useful when working with collections of states.")
-    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat(), description="Timestamp when this view was exported.")
+    key: Optional[str] = Field(
+        default_factory=generate_uuid,
+        description="Unique identifier of this state, useful when working with collections of states.",
+    )
     title: Optional[str] = Field(description="Name of this view.")
-    version: str = Field(description="Version of the spec used to write this tree.")
+
+
+class Metadata(FormatMetadata, SnapshotMetadata):
+    """
+    Union of all metadata properties.
+    """
 
 
 """
@@ -69,14 +98,24 @@ Type of a state description, either 'single' (individual state) or 'multiple' (o
 StateTreeT = Literal["single", "multiple"]
 
 
-class State(BaseModel):
+class Snapshot(BaseModel):
     """
-    Root node of an individual state trees.
+    Root node of an individual state trees. Intended to use when combining multiple snapshots.
     """
 
-    kind: Optional[StateTreeT] = Field(default="single", description="Specifies whether this is an individual state or a collection of states.")  # optional for backwards compatibility
-    metadata: Metadata = Field(description="Associated metadata.")
+    kind: StateTreeT = Field(
+        default="single", description="Specifies whether this is an individual state or a collection of states."
+    )
     root: Node = Field(description="Root of the node tree.")
+    metadata: SnapshotMetadata = Field(description="Associated metadata.")
+
+
+class State(Snapshot):
+    """
+    Root node of an individual state trees with metadata.
+    """
+
+    metadata: Metadata = Field(description="Associated metadata.")
 
 
 class States(BaseModel):
@@ -84,9 +123,11 @@ class States(BaseModel):
     Root node of state descriptions that encompass multiple distinct state trees.
     """
 
-    kind: StateTreeT = Field(default="multiple", description="Specifies whether this is an individual state or a collection of states.")
+    kind: StateTreeT = Field(
+        default="multiple", description="Specifies whether this is an individual state or a collection of states."
+    )
     metadata: Metadata = Field(description="Associated metadata.")
-    snapshots: list[State] = Field(description="Ordered collection of individual states.")
+    snapshots: list[Snapshot] = Field(description="Ordered collection of individual states.")
     # TODO add ordered collection that describes transition/interpolation wrt previous state
 
 

@@ -8,7 +8,6 @@ from __future__ import annotations
 import math
 from os import path
 from typing import Sequence
-from uuid import uuid4
 
 from pydantic import BaseModel, PrivateAttr
 
@@ -89,6 +88,9 @@ class Root(_Base):
     def __init__(self) -> None:
         super().__init__(root=self, node=Node(kind="root"))
 
+    def get_node(self) -> Node:
+        return self._node
+
     def get_state(
         self,
         *,
@@ -110,7 +112,7 @@ class Root(_Base):
         metadata = Metadata(
             description=description,
             description_format=description_format,
-            key=key or str(uuid4()),
+            key=key,
             title=title,
             version=get_major_version_tag(),
         )

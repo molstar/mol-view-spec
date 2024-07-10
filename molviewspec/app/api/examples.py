@@ -2,6 +2,7 @@
 A collection of MolViewSpec examples that showcase common visualization tasks that can be addressed using the builder.
 """
 
+import itertools
 import math
 from typing import Literal, TypeAlias, Union
 
@@ -11,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 
 from app.config import settings
 from molviewspec.builder import Representation, create_builder
-from molviewspec.nodes import ComponentExpression
+from molviewspec.nodes import ComponentExpression, Metadata, Snapshot, SnapshotMetadata, States
 
 MVSResponse: TypeAlias = Response
 """Response containing a MVS tree (as JSON)"""
@@ -189,6 +190,59 @@ async def validation_example(id: str = "1cbs") -> MVSResponse:
         .color_from_uri(schema="residue", uri=f"/data/{id.lower()}/validation", format="json")
     )
     return PlainTextResponse(builder.get_state())
+
+
+@router.get("/description")
+async def description_example(id: str = "1cbs") -> MVSResponse:
+    """
+    Download a minimal example that visualizes a given PDB entry in cartoon representation.
+    """
+    builder = create_builder()
+    (
+        builder.download(url=_url_for_mmcif(id))
+        .parse(format="mmcif")
+        .model_structure()
+        .component()
+        .representation()
+        .color(color="blue")
+    )
+    return PlainTextResponse(
+        builder.get_state(
+            title="Metadata Example", description_format="markdown", description="My Custom State", key="#initial"
+        )
+    )
+
+
+@router.get("/multiple-states")
+async def multiple_states() -> MVSResponse:
+    """
+    Use a custom template to define a collection of related states.
+    :return: view spec that combines multiple individual snapshots
+    """
+    ids = ["1tqn", "4hhb", "1exr"]
+    representations = ["cartoon", "ball_and_stick"]
+    snapshots = [
+        _multistate_template(key=index, url=url, repr=repr)
+        for index, (url, repr) in enumerate(itertools.product(ids, representations))
+    ]
+    metadata = Metadata(description="test", version="1")
+    return PlainTextResponse(
+        States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
+    )
+
+
+def _multistate_template(key: str, url: str, repr: Literal["ball_and_stick", "cartoon", "surface"]) -> Snapshot:
+    """
+    Helper function that demonstrates how to define a "template" that can define states using a number of variables.
+    :param key: custom key to assign
+    :param url: source of structure data
+    :param repr: the desired representation
+    :return: all variables wrapped into a state
+    """
+    template = create_builder()
+    template.download(url=url).parse(format="mmcif").assembly_structure().component().representation(type=repr)
+    metadata = SnapshotMetadata(key=key)
+    return Snapshot(kind="single", root=template.get_node(), metadata=metadata)
 
 
 ##############################################################################
