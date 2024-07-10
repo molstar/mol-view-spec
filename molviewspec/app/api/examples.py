@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 from app.config import settings
 from molviewspec.builder import Representation, create_builder
 from molviewspec.nodes import ComponentExpression, Metadata, Snapshot, SnapshotMetadata, States
+from molviewspec.utils import get_major_version_tag
 
 MVSResponse: TypeAlias = Response
 """Response containing a MVS tree (as JSON)"""
@@ -225,7 +226,7 @@ async def multiple_states() -> MVSResponse:
         _multistate_template(key=index, url=_url_for_mmcif(id), repr=repr)
         for index, (id, repr) in enumerate(itertools.product(ids, representations))
     ]
-    metadata = Metadata(description="test", version="1")
+    metadata = Metadata(description="test", version=get_major_version_tag())
     return PlainTextResponse(
         States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
     )
