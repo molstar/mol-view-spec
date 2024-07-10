@@ -222,8 +222,8 @@ async def multiple_states() -> MVSResponse:
     ids = ["1tqn", "4hhb", "1exr"]
     representations = ["cartoon", "ball_and_stick"]
     snapshots = [
-        _multistate_template(key=index, url=url, repr=repr)
-        for index, (url, repr) in enumerate(itertools.product(ids, representations))
+        _multistate_template(key=index, url=_url_for_mmcif(id), repr=repr)
+        for index, (id, repr) in enumerate(itertools.product(ids, representations))
     ]
     metadata = Metadata(description="test", version="1")
     return PlainTextResponse(
