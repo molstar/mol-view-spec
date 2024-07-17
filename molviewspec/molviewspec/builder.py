@@ -22,6 +22,7 @@ from molviewspec.nodes import (
     ComponentExpression,
     ComponentFromSourceParams,
     ComponentFromUriParams,
+    ComponentInlineParams,
     ComponentSelectorT,
     DescriptionFormatT,
     DownloadParams,
@@ -306,7 +307,7 @@ class Structure(_Base):
         :param selector: a predefined component selector or one or more component selection expressions
         :return: a builder that handles operations at component level
         """
-        params = make_params(ColorInlineParams, locals())
+        params = make_params(ComponentInlineParams, locals())
         node = Node(kind="component", params=params)
         self._add_child(node)
         return Component(node=node, root=self._root)
