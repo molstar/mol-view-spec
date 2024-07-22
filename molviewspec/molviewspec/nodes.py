@@ -84,6 +84,12 @@ class SnapshotMetadata(BaseModel):
         description="Unique identifier of this state, useful when working with collections of states.",
     )
     title: Optional[str] = Field(description="Name of this view.")
+    lingerDurationMs: Optional[int] = Field(
+        description="How long to linger on one snapshot. Leave empty to not transition automatically."
+    )
+    transitionDurationMs: Optional[int] = Field(
+        description="Timespan for the animation to the next snapshot. Leave empty to skip animations."
+    )
 
 
 class Metadata(FormatMetadata, SnapshotMetadata):
