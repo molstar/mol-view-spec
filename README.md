@@ -9,6 +9,8 @@ This Python toolkit allows for describing the information required for represent
 tree format that can be consumed by visualization software tools such as 
 [Mol*](https://github.com/molstar/molstar/tree/master/src/extensions/mvs).
 
+When using MolViewSpec, please cite:
+Sebastian Bittrich, Adam Midlik, Mihaly Varadi, Sameer Velankar, Stephen K. Burley, Jasmine Y. Young, David Sehnal, Brinda Vallat: Describing and Sharing Molecular Visualizations Using the MolViewSpec Toolkit, Current Protocols, 2024; https://doi.org/10.1002/cpz1.1099.
 
 ## The Idea behind MolViewSpec
 
