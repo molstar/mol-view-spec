@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 
 from app.config import settings
 from molviewspec.builder import Representation, create_builder
-from molviewspec.nodes import ComponentExpression, Metadata, Snapshot, SnapshotMetadata, States
+from molviewspec.nodes import ComponentExpression, Metadata, RepresentationTypeT, Snapshot, SnapshotMetadata, States
 from molviewspec.utils import get_major_version_tag
 
 MVSResponse: TypeAlias = Response
@@ -221,9 +221,9 @@ async def multiple_states() -> MVSResponse:
     :return: view spec that combines multiple individual snapshots
     """
     ids = ["1tqn", "4hhb", "1exr"]
-    representations = ["cartoon", "ball_and_stick"]
+    representations: list[RepresentationTypeT] = ["cartoon", "ball_and_stick"]
     snapshots = [
-        _multistate_template(key=index, url=_url_for_mmcif(id), repr=repr)
+        _multistate_template(key=str(index), url=_url_for_mmcif(id), repr=repr)
         for index, (id, repr) in enumerate(itertools.product(ids, representations))
     ]
     metadata = Metadata(description="test", version=get_major_version_tag())
@@ -231,8 +231,7 @@ async def multiple_states() -> MVSResponse:
         States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
     )
 
-
-def _multistate_template(key: str, url: str, repr: Literal["ball_and_stick", "cartoon", "surface"]) -> Snapshot:
+def _multistate_template(key: str, url: str, repr: RepresentationTypeT) -> Snapshot:
     """
     Helper function that demonstrates how to define a "template" that can define states using a number of variables.
     :param key: custom key to assign

@@ -6,7 +6,7 @@ Use this builder to navigate the creating of MolViewSpec files. Chain operations
 from __future__ import annotations
 
 import math
-from os import path
+import os
 from typing import Sequence
 
 from pydantic import BaseModel, PrivateAttr
@@ -122,7 +122,7 @@ class Root(_Base):
     def save_state(
         self,
         *,
-        destination: str | path,
+        destination: str | os.PathLike,
         indent: int | None = 2,
         title: str | None = None,
         description: str | None = None,
