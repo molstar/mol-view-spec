@@ -54,8 +54,8 @@ async def label_example(id: str = "1lap") -> MVSResponse:
     whole = structure.component()
     (whole.representation().color(color="red", selector=ComponentExpression(label_asym_id="A", label_seq_id=120)))
 
-    # label the residues with custom text & focus it
-    (structure.component(selector=residue).label(text="ALA 120 A: My Label").focus())
+    # label the residues with custom text & focus it & show surrounding non-covalent interactions
+    (structure.component(selector=residue).label(text="ALA 120 A: My Label").focus().apply_selection())
 
     # structure.label_from_source(schema="residue", category_name="my_custom_cif_category")
 
