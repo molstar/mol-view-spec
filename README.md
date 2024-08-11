@@ -1,3 +1,6 @@
+[![PyPI version](https://badge.fury.io/py/molviewspec.svg)](https://badge.fury.io/py/molviewspec)
+[![Changelog](https://img.shields.io/badge/changelog--lightgrey.svg?style=flat)](https://github.com/molstar/mol-view-spec/blob/master/CHANGELOG.md)
+
 MolViewSpec
 =============
 
