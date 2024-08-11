@@ -231,6 +231,7 @@ async def multiple_states() -> MVSResponse:
         States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
     )
 
+
 def _multistate_template(key: str, url: str, repr: RepresentationTypeT) -> Snapshot:
     """
     Helper function that demonstrates how to define a "template" that can define states using a number of variables.

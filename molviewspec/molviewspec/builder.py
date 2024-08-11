@@ -46,6 +46,7 @@ from molviewspec.nodes import (
     TooltipFromUriParams,
     TooltipInlineParams,
     TransformParams,
+    TransparencyInlineParams,
 )
 from molviewspec.utils import get_major_version_tag, make_params
 
@@ -567,7 +568,7 @@ class Component(_Base):
 
     # TODO: make representation customizable
     def apply_selection(
-            self, *, surroundings_radius: float = 5.0, show_non_covalent_interactions: bool = True
+        self, *, surroundings_radius: float = 5.0, show_non_covalent_interactions: bool = True
     ) -> Component:
         """
         Show the surroundings of this component. Typically, you'll want to chain this with `#focus()`.
@@ -647,6 +648,17 @@ class Representation(_Base):
         """
         params = make_params(ColorInlineParams, locals())
         node = Node(kind="color", params=params)
+        self._add_child(node)
+        return self
+
+    def transparency(self, *, transparency: float = 0.8) -> Representation:
+        """
+        Customize the transparency/opacity of this representation.
+        :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent
+        :return: this builder
+        """
+        params = make_params(TransparencyInlineParams, locals())
+        node = Node(kind="transparency", params=params)
         self._add_child(node)
         return self
 

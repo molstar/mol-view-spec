@@ -36,6 +36,7 @@ KindT = Literal[
     "tooltip_from_source",
     "tooltip_from_uri",
     "transform",
+    "transparency",
 ]
 
 
@@ -500,6 +501,16 @@ class ColorFromSourceParams(_DataFromSourceParams):
     """
 
 
+class TransparencyInlineParams(ComponentInlineParams):
+    """
+    Change the transparency of a representation based on function arguments.
+    """
+
+    transparency: float = Field(
+        description="Transparency of a representation. 0.0: fully opaque, 1.0: fully transparent"
+    )
+
+
 class LabelInlineParams(BaseModel):
     """
     Label based on function arguments.
@@ -552,9 +563,11 @@ class ApplySelectionInlineParams(BaseModel):
     Params to customize how surroundings of a Component are presented.
     """
 
-    surroundings_radius: Optional[float] = Field(
-        description="Distance threshold in Angstrom, everything below this cutoff will be included as surroundings"
-    ),
+    surroundings_radius: Optional[float] = (
+        Field(
+            description="Distance threshold in Angstrom, everything below this cutoff will be included as surroundings"
+        ),
+    )
     show_non_covalent_interactions: Optional[bool] = Field(
         description="Show non-covalent interactions between this component and its surroundings?"
     )
