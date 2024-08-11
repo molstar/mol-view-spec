@@ -237,8 +237,8 @@ Find the package at: https://pypi.org/project/molviewspec/
 ### Setting up the environment
 
 ```
-mamba env create -f ./environment.yaml
-conda activate mol-view-spec-dev
+micromamba env create -f ./environment.yaml
+micromamba activate mol-view-spec-dev
 ```
 
 ### Running the server
@@ -256,6 +256,7 @@ will run the server on `localhost:9000` with reload mode on.
 ### Formatting the Project
 
 ```
+cd molviewspec
 make format
 make mypy
 ```
