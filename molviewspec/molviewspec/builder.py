@@ -270,6 +270,7 @@ class Parse(_Base):
         Create symmetry structure for a given range of Miller indices.
         :param ijk_min: Bottom-left Miller indices
         :param ijk_max: Top-right Miller indices
+        :param model_index: 0-based model index in case multiple NMR frames are present
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         :return: a builder that handles operations at structure level
