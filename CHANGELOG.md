@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file, following t
 - Configurable transitions/animations between states
 - `Component#apply_selection()` now allows defining of an environment around a Component
 - Configurable transparency of representations
+- Add `additional_properties` support, allowing users to store custom data
 - Fixes several issues with defined types
 
 ## [v1.0.0] - 2024-04-10

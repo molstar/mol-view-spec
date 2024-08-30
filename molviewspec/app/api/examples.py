@@ -246,6 +246,26 @@ def _multistate_template(key: str, url: str, repr: RepresentationTypeT) -> Snaps
     return Snapshot(kind="single", root=template.get_node(), metadata=metadata)
 
 
+@router.get("/additional-properties")
+async def additional_properties_example() -> MVSResponse:
+    """
+    MolViewSpec accepts typed parameters depending on the current node type. Additionally, arbitrary information can be
+    attached to each node using an optional `additional_properties` argument. Data must be provided as dict and won't
+    have any direct effect. Nonetheless, this information will propagate and be added to the final JSON, allowing users
+    to build custom functionality independent of the official schema defined by MolViewSpec.
+    """
+    builder = create_builder()
+    (
+        builder.download(url=_url_for_mmcif("1cbs"))
+        .parse(format="mmcif", additional_properties={"global_property": "You can put whatever is needed here"})
+        .model_structure()
+        .component()
+        .representation()
+        .color(color="blue")
+    )
+    return PlainTextResponse(builder.get_state())
+
+
 ##############################################################################
 # meta endpoints
 

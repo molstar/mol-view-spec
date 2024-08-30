@@ -13,6 +13,10 @@ def make_params(params_type: Type[TParams], values=None, /, **more_values: objec
     result = {}
 
     for field in params_type.__fields__.values():
+        # special `additional_properties` param that might be part of locals() too but should never be part of `params`
+        if field.alias == "additional_properties":
+            continue
+
         # must use alias here to properly resolve goodies like `schema_`
         key = field.alias
         if more_values.get(key) is not None:
