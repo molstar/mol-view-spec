@@ -152,7 +152,7 @@ async def transform_example() -> MVSResponse:
         .parse(format="mmcif")
         .model_structure()
         .transform(
-            rotation=[
+            rotation=(
                 -0.7202161,
                 -0.33009904,
                 -0.61018308,
@@ -162,8 +162,8 @@ async def transform_example() -> MVSResponse:
                 0.59146191,
                 -0.75184312,
                 -0.29138417,
-            ],
-            translation=[-12.54, 46.79, 94.50],
+            ),
+            translation=(-12.54, 46.79, 94.50),
         )
         .component()
         .representation()

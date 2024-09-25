@@ -37,10 +37,10 @@ from molviewspec.nodes import (
     Node,
     ParseFormatT,
     ParseParams,
-    RepresentationParams,
-    RepresentationTypeT,
     PlaneParams,
     PolygonParams,
+    RepresentationParams,
+    RepresentationTypeT,
     SchemaFormatT,
     SchemaT,
     StarParams,
@@ -516,8 +516,8 @@ class Structure(_Base):
     def transform(
         self,
         *,
-        rotation: Vec3[float] | None = None,
-        translation: Mat9[float] | None = None,
+        rotation: Mat9[float] | None = None,
+        translation: Vec3[float] | None = None,
         additional_properties: AdditionalProperties = None,
     ) -> Structure:
         """
@@ -528,13 +528,11 @@ class Structure(_Base):
         :return: this builder
         """
         if rotation is not None:
-            rotation = tuple(rotation)
             if len(rotation) != 9:
                 raise ValueError(f"Parameter `rotation` must have length 9")
             if not self._is_rotation_matrix(rotation):
                 raise ValueError(f"Parameter `rotation` must be a rotation matrix")
         if translation is not None:
-            translation = tuple(translation)
             if len(translation) != 3:
                 raise ValueError(f"Parameter `translation` must have length 3")
 
@@ -730,7 +728,15 @@ class Representation(_Base):
 
 
 class GeometricPrimitive(_Base):
-    def polygon(self, *, center: Vec3[float], normal: Vec3[float], side_count: int, radius: float, additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+    def polygon(
+        self,
+        *,
+        center: Vec3[float],
+        normal: Vec3[float],
+        side_count: int,
+        radius: float,
+        additional_properties: AdditionalProperties = None,
+    ) -> GeometricPrimitiveOptions:
         """
         Add a polygon.
         :param center: Center coordinates of this item
@@ -746,7 +752,14 @@ class GeometricPrimitive(_Base):
         # TODO better to provide options here to should primitives be "chainable"?
         return GeometricPrimitiveOptions(node=node, root=self._root)
 
-    def circle(self, *, center: Vec3[float], normal: Vec3[float], radius: float, additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+    def circle(
+        self,
+        *,
+        center: Vec3[float],
+        normal: Vec3[float],
+        radius: float,
+        additional_properties: AdditionalProperties = None,
+    ) -> GeometricPrimitiveOptions:
         """
         Add a polygon.
         :param center: Center coordinates of this item
@@ -760,7 +773,9 @@ class GeometricPrimitive(_Base):
         self._add_child(node)
         return GeometricPrimitiveOptions(node=node, root=self._root)
 
-    def plane(self, *, center: Vec3[float], normal: Vec3[float], additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+    def plane(
+        self, *, center: Vec3[float], normal: Vec3[float], additional_properties: AdditionalProperties = None
+    ) -> GeometricPrimitiveOptions:
         """
         Add a polygon.
         :param center: Center coordinates of this item
@@ -773,7 +788,16 @@ class GeometricPrimitive(_Base):
         self._add_child(node)
         return GeometricPrimitiveOptions(node=node, root=self._root)
 
-    def star(self, *, center: Vec3[float], normal: Vec3[float], inner_radius: float, outer_radius: float, point_count: int, additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+    def star(
+        self,
+        *,
+        center: Vec3[float],
+        normal: Vec3[float],
+        inner_radius: float,
+        outer_radius: float,
+        point_count: int,
+        additional_properties: AdditionalProperties = None,
+    ) -> GeometricPrimitiveOptions:
         """
         Add a polygon.
         :param center: Center coordinates of this item
@@ -796,10 +820,10 @@ class GeometricPrimitiveOptions(_Base):
     """
 
     def color(
-            self,
-            *,
-            color: ColorT,
-            additional_properties: AdditionalProperties = None,
+        self,
+        *,
+        color: ColorT,
+        additional_properties: AdditionalProperties = None,
     ) -> GeometricPrimitiveOptions:
         """
         Customize the color of this representation.
@@ -813,7 +837,7 @@ class GeometricPrimitiveOptions(_Base):
         return self
 
     def transparency(
-            self, *, transparency: float = 0.8, additional_properties: AdditionalProperties = None
+        self, *, transparency: float = 0.8, additional_properties: AdditionalProperties = None
     ) -> GeometricPrimitiveOptions:
         """
         Customize the transparency/opacity of this representation.
@@ -851,11 +875,11 @@ class GeometricPrimitiveOptions(_Base):
         return self
 
     def focus(
-            self,
-            *,
-            direction: Vec3[float] | None = None,
-            up: Vec3[float] | None = None,
-            additional_properties: AdditionalProperties = None,
+        self,
+        *,
+        direction: Vec3[float] | None = None,
+        up: Vec3[float] | None = None,
+        additional_properties: AdditionalProperties = None,
     ) -> GeometricPrimitiveOptions:
         """
         Focus on this geometric primitive.
