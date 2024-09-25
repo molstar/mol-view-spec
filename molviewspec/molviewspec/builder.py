@@ -16,6 +16,7 @@ from molviewspec.nodes import (
     ApplySelectionInlineParams,
     CameraParams,
     CanvasParams,
+    CircleParams,
     ColorFromSourceParams,
     ColorFromUriParams,
     ColorInlineParams,
@@ -31,16 +32,18 @@ from molviewspec.nodes import (
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
-    LineParams,
+    Mat9,
     Metadata,
     Node,
     ParseFormatT,
     ParseParams,
     RepresentationParams,
     RepresentationTypeT,
+    PlaneParams,
+    PolygonParams,
     SchemaFormatT,
     SchemaT,
-    SphereParams,
+    StarParams,
     State,
     StructureParams,
     TooltipFromSourceParams,
@@ -48,6 +51,7 @@ from molviewspec.nodes import (
     TooltipInlineParams,
     TransformParams,
     TransparencyInlineParams,
+    Vec3,
 )
 from molviewspec.utils import get_major_version_tag, make_params
 
@@ -148,9 +152,9 @@ class Root(_Base):
     def camera(
         self,
         *,
-        target: tuple[float, float, float],
-        position: tuple[float, float, float],
-        up: tuple[float, float, float] | None = (0, 1, 0),
+        target: Vec3[float],
+        position: Vec3[float],
+        up: Vec3[float] | None = (0, 1, 0),
         additional_properties: AdditionalProperties = None,
     ):
         """
@@ -192,14 +196,14 @@ class Root(_Base):
         self._add_child(node)
         return Download(node=node, root=self._root)
 
-    def generic_visuals(self) -> GenericVisuals:
+    def geometric_primitive(self) -> GeometricPrimitive:
         """
-        Experimental: Allows the definition of generic visuals such as spheres and lines.
-        :return: a builder for generic visuals
+        Allows the definition of geometric primitives such as spheres and planes.
+        :return: a builder for geometric primitives
         """
-        node = Node(kind="generic_visuals")
+        node = Node(kind="geometric_primitive")
         self._add_child(node)
-        return GenericVisuals(node=node, root=self._root)
+        return GeometricPrimitive(node=node, root=self._root)
 
 
 class Download(_Base):
@@ -272,8 +276,8 @@ class Parse(_Base):
     def symmetry_structure(
         self,
         *,
-        ijk_min: tuple[int, int, int] | None = (-1, -1, -1),
-        ijk_max: tuple[int, int, int] | None = (1, 1, 1),
+        ijk_min: Vec3[int] | None = (-1, -1, -1),
+        ijk_max: Vec3[int] | None = (1, 1, 1),
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
@@ -512,8 +516,8 @@ class Structure(_Base):
     def transform(
         self,
         *,
-        rotation: Sequence[float] | None = None,
-        translation: Sequence[float] | None = None,
+        rotation: Vec3[float] | None = None,
+        translation: Mat9[float] | None = None,
         additional_properties: AdditionalProperties = None,
     ) -> Structure:
         """
@@ -595,8 +599,8 @@ class Component(_Base):
     def focus(
         self,
         *,
-        direction: tuple[float, float, float] | None = None,
-        up: tuple[float, float, float] | None = None,
+        direction: Vec3[float] | None = None,
+        up: Vec3[float] | None = None,
         additional_properties: AdditionalProperties = None,
     ) -> Component:
         """
@@ -725,59 +729,142 @@ class Representation(_Base):
         return self
 
 
-class GenericVisuals(_Base):
+class GeometricPrimitive(_Base):
+    def polygon(self, *, center: Vec3[float], normal: Vec3[float], side_count: int, radius: float, additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+        """
+        Add a polygon.
+        :param center: Center coordinates of this item
+        :param normal: Orientation of this item
+        :param side_count: Number of corners
+        :param radius: Distance of corners from the center
+        :param additional_properties: optional, custom data to attach to this node
+        :return: the corresponding geometric primitive builder, allowing further customization
+        """
+        params = make_params(PolygonParams, locals())
+        node = Node(kind="polygon", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        # TODO better to provide options here to should primitives be "chainable"?
+        return GeometricPrimitiveOptions(node=node, root=self._root)
+
+    def circle(self, *, center: Vec3[float], normal: Vec3[float], radius: float, additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+        """
+        Add a polygon.
+        :param center: Center coordinates of this item
+        :param normal: Orientation of this item
+        :param radius: Radius of circle
+        :param additional_properties: optional, custom data to attach to this node
+        :return: the corresponding geometric primitive builder, allowing further customization
+        """
+        params = make_params(CircleParams, locals())
+        node = Node(kind="circle", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return GeometricPrimitiveOptions(node=node, root=self._root)
+
+    def plane(self, *, center: Vec3[float], normal: Vec3[float], additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+        """
+        Add a polygon.
+        :param center: Center coordinates of this item
+        :param normal: Orientation of this item
+        :param additional_properties: optional, custom data to attach to this node
+        :return: the corresponding geometric primitive builder, allowing further customization
+        """
+        params = make_params(PlaneParams, locals())
+        node = Node(kind="plane", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return GeometricPrimitiveOptions(node=node, root=self._root)
+
+    def star(self, *, center: Vec3[float], normal: Vec3[float], inner_radius: float, outer_radius: float, point_count: int, additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+        """
+        Add a polygon.
+        :param center: Center coordinates of this item
+        :param normal: Orientation of this item
+        :param inner_radius: Radius of the inner rim
+        :param outer_radius Radius of the outer rim
+        :param point_count: Number of outer corners
+        :param additional_properties: optional, custom data to attach to this node
+        :return: the corresponding geometric primitive builder, allowing further customization
+        """
+        params = make_params(StarParams, locals())
+        node = Node(kind="star", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return GeometricPrimitiveOptions(node=node, root=self._root)
+
+
+class GeometricPrimitiveOptions(_Base):
     """
-    Experimental builder for custom, primitive visuals.
+    Shared customizations that are applicable to all geometric primitives.
     """
 
-    def sphere(
-        self,
-        *,
-        position: tuple[float, float, float],
-        radius: float,
-        color: ColorT,
-        label: str | None = None,
-        tooltip: str | None = None,
-        additional_properties: AdditionalProperties = None,
-    ) -> GenericVisuals:
+    def color(
+            self,
+            *,
+            color: ColorT,
+            additional_properties: AdditionalProperties = None,
+    ) -> GeometricPrimitiveOptions:
         """
-        Draw a sphere.
-        :param position: position of the sphere
-        :param radius: size of the sphere
-        :param color: color of the sphere, either SVG color name or RGB hex code
-        :param label: optional text label
-        :param tooltip: optional tooltip to show upon hover
+        Customize the color of this representation.
+        :param color: color using SVG color names or RGB hex code
         :param additional_properties: optional, custom data to attach to this node
-        :return:
+        :return: this builder
         """
-        params = make_params(SphereParams, locals())
-        node = Node(kind="sphere", params=params, additional_properties=additional_properties)
+        params = make_params(ColorInlineParams, locals())
+        node = Node(kind="color", params=params, additional_properties=additional_properties)
         self._add_child(node)
         return self
 
-    def line(
-        self,
-        *,
-        position1: tuple[float, float, float],
-        position2: tuple[float, float, float],
-        radius: float,
-        color: ColorT,
-        label: str | None = None,
-        tooltip: str | None = None,
-        additional_properties: AdditionalProperties = None,
-    ) -> GenericVisuals:
+    def transparency(
+            self, *, transparency: float = 0.8, additional_properties: AdditionalProperties = None
+    ) -> GeometricPrimitiveOptions:
         """
-        Draw a line.
-        :param position1: start of line
-        :param position2: end of line
-        :param radius: width of line segment
-        :param color: color of line, either SVG color name or RGB hex code
-        :param label: optional text label
-        :param tooltip: optional tooltip to show upon hover
+        Customize the transparency/opacity of this representation.
+        :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent
         :param additional_properties: optional, custom data to attach to this node
-        :return:
+        :return: this builder
         """
-        params = make_params(LineParams, locals())
-        node = Node(kind="line", params=params, additional_properties=additional_properties)
+        params = make_params(TransparencyInlineParams, locals())
+        node = Node(kind="transparency", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return self
+
+    def label(self, *, text: str, additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+        """
+        Add a text label to a geometric primitive.
+        :param text: label to add in 3D
+        :param additional_properties: optional, custom data to attach to this node
+        :return: this builder
+        """
+        params = make_params(LabelInlineParams, locals())
+        node = Node(kind="label", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return self
+
+    def tooltip(self, *, text: str, additional_properties: AdditionalProperties = None) -> GeometricPrimitiveOptions:
+        """
+        Add a tooltip that shows additional information of a geometric primitive when hovering over it.
+        :param text: text to show upon hover
+        :param additional_properties: optional, custom data to attach to this node
+        :return: this builder
+        """
+        params = make_params(TooltipInlineParams, locals())
+        node = Node(kind="tooltip", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return self
+
+    def focus(
+            self,
+            *,
+            direction: Vec3[float] | None = None,
+            up: Vec3[float] | None = None,
+            additional_properties: AdditionalProperties = None,
+    ) -> GeometricPrimitiveOptions:
+        """
+        Focus on this geometric primitive.
+        :param direction: the direction from which to look at this primitive
+        :param up: where is up relative to the view direction
+        :param additional_properties: optional, custom data to attach to this node
+        :return: this builder
+        """
+        params = make_params(FocusInlineParams, locals())
+        node = Node(kind="focus", params=params, additional_properties=additional_properties)
         self._add_child(node)
         return self

@@ -266,6 +266,18 @@ async def additional_properties_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/geometric-primitives")
+async def geometric_primitives_example() -> MVSResponse:
+    """
+    Any scene can be enriched with "geometric primitives" such as spheres, planes, etc. You can also define scenes using exclusively these nodes.
+    """
+    builder = create_builder()
+    primitives = builder.geometric_primitive()
+    primitives.plane(center=(0, 1, 0), normal=(0, 1, 0)).label(text="Outer membrane").color(color="red")
+    primitives.plane(center=(0, -1, 0), normal=(0, -1, 0)).label(text="Inner membrane").color(color="blue")
+    return PlainTextResponse(builder.get_state())
+
+
 ##############################################################################
 # meta endpoints
 

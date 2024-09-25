@@ -5,7 +5,7 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Literal, Mapping, Optional, Union
+from typing import Any, Literal, Mapping, Optional, Tuple, TypeVar, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -15,6 +15,7 @@ KindT = Literal[
     "apply_selection",
     "camera",
     "canvas",
+    "circle",
     "color",
     "color_from_source",
     "color_from_uri",
@@ -23,14 +24,17 @@ KindT = Literal[
     "component_from_uri",
     "download",
     "focus",
-    "generic_visuals",
+    "geometric_primitive",
     "label",
     "label_from_source",
     "label_from_uri",
     "line",
     "parse",
+    "plane",
+    "polygon",
     "representation",
     "sphere",
+    "star",
     "structure",
     "tooltip",
     "tooltip_from_source",
@@ -174,6 +178,11 @@ class ParseParams(BaseModel):
 StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 
+ScalarT = TypeVar("ScalarT", int, float)
+Vec3 = Tuple[ScalarT, ScalarT, ScalarT]
+Mat9 = Tuple[ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT]
+
+
 class StructureParams(BaseModel):
     """
     Structure node, describing which type (assembly 1, deposited coordinates, etc.) of the parsed data to create.
@@ -188,8 +197,8 @@ class StructureParams(BaseModel):
     )
     block_header: Optional[str] = Field(description="Reference a specific mmCIF or SDF data block by its block header")
     radius: Optional[float] = Field(description="Radius around model coordinates when loading symmetry mates")
-    ijk_min: Optional[tuple[int, int, int]] = Field(description="Bottom-left Miller indices")
-    ijk_max: Optional[tuple[int, int, int]] = Field(description="Top-right Miller indices")
+    ijk_min: Optional[Vec3[int]] = Field(description="Bottom-left Miller indices")
+    ijk_max: Optional[Vec3[int]] = Field(description="Top-right Miller indices")
 
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]
@@ -557,12 +566,8 @@ class FocusInlineParams(BaseModel):
     Define the camera focus based on function arguments.
     """
 
-    direction: Optional[tuple[float, float, float]] = Field(
-        description="Direction of the view (vector position -> target)"
-    )
-    up: Optional[tuple[float, float, float]] = Field(
-        description="Controls the rotation around the vector between target and position"
-    )
+    direction: Optional[Vec3[float]] = Field(description="Direction of the view (vector position -> target)")
+    up: Optional[Vec3[float]] = Field(description="Controls the rotation around the vector between target and position")
 
 
 class ApplySelectionInlineParams(BaseModel):
@@ -583,10 +588,10 @@ class TransformParams(BaseModel):
     Define a transformation.
     """
 
-    rotation: Optional[tuple[float, ...]] = Field(
+    rotation: Optional[Mat9[float]] = Field(
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
-    translation: Optional[tuple[float, float, float]] = Field(description="3d vector describing the translation")
+    translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
 
 
 class CameraParams(BaseModel):
@@ -594,9 +599,9 @@ class CameraParams(BaseModel):
     Controls the global camera position.
     """
 
-    target: tuple[float, float, float] = Field(description="What to look at")
-    position: tuple[float, float, float] = Field(description="The position of the camera")
-    up: tuple[float, float, float] = Field(
+    target: Vec3[float] = Field(description="What to look at")
+    position: Vec3[float] = Field(description="The position of the camera")
+    up: Vec3[float] = Field(
         description="Controls the rotation around the vector between target and position", required=True
     )
 
@@ -609,29 +614,37 @@ class CanvasParams(BaseModel):
     background_color: ColorT = Field(description="Background color using SVG color names or RGB hex code")
 
 
-class SphereParams(BaseModel):
+class GeometricPrimitiveParams(BaseModel):
     """
-    Experimental: Defines a sphere primitive.
-    """
-
-    position: tuple[float, float, float] = Field(description="Position of the primitive")
-    radius: float = Field(description="Radius of the sphere")
-    color: ColorT = Field(description="Color of the sphere")
-    label: Optional[str] = Field(description="Optional text label")
-    tooltip: Optional[str] = Field(description="Optional tooltip label, shown upon hover")
-
-
-class LineParams(BaseModel):
-    """
-    Experimental: Defines a line primitive.
+    Identifies a geometric primitive and provides shared functionality to e.g. customize its color.
     """
 
-    position1: tuple[float, float, float] = Field(description="Start position of the primitive")
-    position2: tuple[float, float, float] = Field(description="End position of the primitive")
-    radius: float = Field(description="Radius of the line")
-    color: ColorT = Field(description="Color of the line")
-    label: Optional[str] = Field(description="Optional text label")
-    tooltip: Optional[str] = Field(description="Optional tooltip label, shown upon hover")
+
+class GeometricPrimitive2DParams(BaseModel):
+    center: Vec3[float] = Field(description="Center coordinates of this item.")
+    normal: Vec3[float] = Field(description="Orientation of this item.")
+
+
+class PolygonParams(GeometricPrimitive2DParams):
+    side_count: int = Field(description="Number of corners.", ge=3)
+    radius: float = Field(description="Distance of corners from the center.", gt=0.0)
+    # TODO shift, orientation_around_normal?
+
+
+class CircleParams(GeometricPrimitive2DParams):
+    radius: float = Field(description="Radius of circle.", gt=0.0)
+    # TODO segments, theta_start, theta_length?
+
+
+class PlaneParams(GeometricPrimitive2DParams):
+    pass
+
+
+class StarParams(GeometricPrimitive2DParams):
+    inner_radius: float = Field(description="Radius of the inner rim.")
+    outer_radius: float = Field(description="Radius of the outer rim.", gt=0.0)
+    point_count: int = Field(description="Number of outer corners.", ge=2)
+    # TODO thickness, orientation_around_normal?
 
 
 def validate_state_tree(json: str) -> None:
