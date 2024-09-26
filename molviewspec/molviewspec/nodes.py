@@ -15,7 +15,7 @@ KindT = Literal[
     "apply_selection",
     "camera",
     "canvas",
-    "circle",
+    "circle",  # TODO should be prefix/namespace geom prims?
     "color",
     "color_from_source",
     "color_from_uri",
@@ -24,17 +24,17 @@ KindT = Literal[
     "component_from_uri",
     "download",
     "focus",
-    "geometric_primitive",
+    "primitives",
     "label",
     "label_from_source",
     "label_from_uri",
-    "line",
+    "mesh",
+    "mesh_from_source",
+    "mesh_from_uri",
+    "options",
     "parse",
     "plane",
-    "polygon",
     "representation",
-    "sphere",
-    "star",
     "structure",
     "tooltip",
     "tooltip_from_source",
@@ -614,37 +614,48 @@ class CanvasParams(BaseModel):
     background_color: ColorT = Field(description="Background color using SVG color names or RGB hex code")
 
 
-class GeometricPrimitiveParams(BaseModel):
+# TODO anything but Vec3[float] are placeholders and need to be impled
+PositionT = Union[Vec3[float], str, ComponentExpression, list[ComponentExpression]]
+"""
+Positions of primitives can be defined by 3D vector, by providing a unique reference of a component, or by providing 
+appropriate selection expressions.
+"""
+
+
+class MeshInlineParams(BaseModel):
     """
-    Identifies a geometric primitive and provides shared functionality to e.g. customize its color.
+    Low-level, fully customizable mesh representation of a shape.
+    """
+
+    vertices: list[Vec3[float]]
+    indices: list[Vec3[int]]
+    colors: Optional[list[ColorT]]
+
+
+class MeshFromUriParams(_DataFromUriParams):
+    """
+    Mesh based on another resource. Currently, only JSON is supported.
     """
 
 
-class GeometricPrimitive2DParams(BaseModel):
-    center: Vec3[float] = Field(description="Center coordinates of this item.")
-    normal: Vec3[float] = Field(description="Orientation of this item.")
+class MeshFromSourceParams(_DataFromSourceParams):
+    """
+    Mesh based on a category in the source file. Currently, only JSON is supported.
+    """
 
 
-class PolygonParams(GeometricPrimitive2DParams):
-    side_count: int = Field(description="Number of corners.", ge=3)
-    radius: float = Field(description="Distance of corners from the center.", gt=0.0)
-    # TODO shift, orientation_around_normal?
-
-
-class CircleParams(GeometricPrimitive2DParams):
+class CircleParams(BaseModel):
+    center: PositionT = Field(description="Center of circle.")
     radius: float = Field(description="Radius of circle.", gt=0.0)
-    # TODO segments, theta_start, theta_length?
+    segments: Optional[int] = Field(description="Number of segments to draw, level of detail.")
+    theta_start: Optional[float] = Field(description="Start point position (relevant when this is an arc).")
+    theta_length: Optional[float] = Field(description="Values < PI*2 will result in an arc.")
+    rotation: Optional[Mat3[float]] = Field(description="Optional rotation of this item.")
 
 
-class PlaneParams(GeometricPrimitive2DParams):
-    pass
-
-
-class StarParams(GeometricPrimitive2DParams):
-    inner_radius: float = Field(description="Radius of the inner rim.")
-    outer_radius: float = Field(description="Radius of the outer rim.", gt=0.0)
-    point_count: int = Field(description="Number of outer corners.", ge=2)
-    # TODO thickness, orientation_around_normal?
+class PlaneParams(BaseModel):
+    point: PositionT = Field(description="Point on plane.")
+    normal: Vec3[float] = Field(description="Normal vector of plane.")
 
 
 def validate_state_tree(json: str) -> None:
