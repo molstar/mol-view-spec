@@ -180,7 +180,7 @@ StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 ScalarT = TypeVar("ScalarT", int, float)
 Vec3 = Tuple[ScalarT, ScalarT, ScalarT]
-Mat9 = Tuple[ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT]
+Mat3 = Tuple[ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT]
 
 
 class StructureParams(BaseModel):
@@ -588,7 +588,7 @@ class TransformParams(BaseModel):
     Define a transformation.
     """
 
-    rotation: Optional[Mat9[float]] = Field(
+    rotation: Optional[Mat3[float]] = Field(
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
     translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")

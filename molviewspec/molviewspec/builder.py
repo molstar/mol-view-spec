@@ -32,7 +32,7 @@ from molviewspec.nodes import (
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
-    Mat9,
+    Mat3,
     Metadata,
     Node,
     ParseFormatT,
@@ -516,7 +516,7 @@ class Structure(_Base):
     def transform(
         self,
         *,
-        rotation: Mat9[float] | None = None,
+        rotation: Mat3[float] | None = None,
         translation: Vec3[float] | None = None,
         additional_properties: AdditionalProperties = None,
     ) -> Structure:
