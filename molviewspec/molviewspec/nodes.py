@@ -15,7 +15,7 @@ KindT = Literal[
     "apply_selection",
     "camera",
     "canvas",
-    "circle",  # TODO should be prefix/namespace geom prims?
+    "circle",  # TODO should we prefix/namespace geom prims?
     "color",
     "color_from_source",
     "color_from_uri",
@@ -24,7 +24,6 @@ KindT = Literal[
     "component_from_uri",
     "download",
     "focus",
-    "primitives",
     "label",
     "label_from_source",
     "label_from_uri",
@@ -34,6 +33,7 @@ KindT = Literal[
     "options",
     "parse",
     "plane",
+    "primitives",
     "representation",
     "structure",
     "tooltip",

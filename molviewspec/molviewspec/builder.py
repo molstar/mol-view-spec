@@ -11,11 +11,12 @@ from typing import Sequence
 
 from pydantic import BaseModel, PrivateAttr
 
-from molviewspec.nodes import (  # CircleParams,; MeshParams,; PlaneParams,; PolygonParams,; StarParams,
+from molviewspec.nodes import (
     AdditionalProperties,
     ApplySelectionInlineParams,
     CameraParams,
     CanvasParams,
+    CircleParams,
     ColorFromSourceParams,
     ColorFromUriParams,
     ColorInlineParams,
@@ -37,6 +38,7 @@ from molviewspec.nodes import (  # CircleParams,; MeshParams,; PlaneParams,; Pol
     Node,
     ParseFormatT,
     ParseParams,
+    PlaneParams,
     PositionT,
     RepresentationParams,
     RepresentationTypeT,
@@ -49,7 +51,7 @@ from molviewspec.nodes import (  # CircleParams,; MeshParams,; PlaneParams,; Pol
     TooltipInlineParams,
     TransformParams,
     TransparencyInlineParams,
-    Vec3, CircleParams, PlaneParams,
+    Vec3,
 )
 from molviewspec.utils import get_major_version_tag, make_params
 
@@ -983,110 +985,6 @@ class Primitives(_Base):
         node = Node(kind="options", additional_properties=additional_properties)
         self._add_child(node)
         return PrimitiveOptions(node=node, root=self._root)
-
-
-# class GeometricPrimitive(_Base):
-#     def mesh(self, *, vertices: list[Vec3[float]], colors: list[ColorT] = None, indices: list[Vec3[int]], additional_properties: AdditionalProperties = None):
-#         """
-#         Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
-#         :param vertices: collection of vertices
-#         :param colors: color value of each triangle
-#         :param indices: collection of indices
-#         :return: the corresponding geometric primitive builder, allowing further customization
-#         """
-#         params = make_params(MeshParams, locals())
-#         node = Node(kind="mesh", params=params, additional_properties=additional_properties)
-#         self._add_child(node)
-#         return GeometricPrimitiveOptions(node=node, root=self._root)
-#
-#     def polygon(
-#         self,
-#         *,
-#         center: Vec3[float],
-#         vector: Vec3[float],
-#         side_count: int,
-#         radius: float,
-#         additional_properties: AdditionalProperties = None,
-#     ) -> GeometricPrimitiveOptions:
-#         """
-#         Add a polygon.
-#         :param center: Center coordinates of this item
-#         :param vector: Orientation of this item
-#         :param side_count: Number of corners
-#         :param radius: Distance of corners from the center
-#         :param additional_properties: optional, custom data to attach to this node
-#         :return: the corresponding geometric primitive builder, allowing further customization
-#         """
-#         params = make_params(PolygonParams, locals())
-#         node = Node(kind="polygon", params=params, additional_properties=additional_properties)
-#         self._add_child(node)
-#         # TODO better to provide options here to should primitives be "chainable"?
-#         return GeometricPrimitiveOptions(node=node, root=self._root)
-#
-#     def circle(
-#         self,
-#         *,
-#         center: Vec3[float],
-#         vector: Vec3[float],
-#         radius: float,
-#         theta_start: float = 0,
-#         theta_length: float = math.pi * 2,
-#         additional_properties: AdditionalProperties = None,
-#     ) -> GeometricPrimitiveOptions:
-#         """
-#         Add a circle.
-#         :param center: Center coordinates of this item
-#         :param vector: Orientation of this item
-#         :param radius: Radius of circle
-#         :param theta_start: Start point position (relevant when this is an arc)
-#         :param theta_length: Values < PI*2 will result in an arc
-#         :param additional_properties: optional, custom data to attach to this node
-#         :return: the corresponding geometric primitive builder, allowing further customization
-#         """
-#         params = make_params(CircleParams, locals())
-#         node = Node(kind="circle", params=params, additional_properties=additional_properties)
-#         self._add_child(node)
-#         return GeometricPrimitiveOptions(node=node, root=self._root)
-#
-#     def plane(
-#         self, *, center: Vec3[float], vector: Vec3[float], additional_properties: AdditionalProperties = None
-#     ) -> GeometricPrimitiveOptions:
-#         """
-#         Add a polygon.
-#         :param center: Center coordinates of this item
-#         :param vector: Orientation of this item
-#         :param additional_properties: optional, custom data to attach to this node
-#         :return: the corresponding geometric primitive builder, allowing further customization
-#         """
-#         params = make_params(PlaneParams, locals())
-#         node = Node(kind="plane", params=params, additional_properties=additional_properties)
-#         self._add_child(node)
-#         return GeometricPrimitiveOptions(node=node, root=self._root)
-#
-#     def star(
-#         self,
-#         *,
-#         center: Vec3[float],
-#         vector: Vec3[float],
-#         inner_radius: float,
-#         outer_radius: float,
-#         point_count: int,
-#         additional_properties: AdditionalProperties = None,
-#     ) -> GeometricPrimitiveOptions:
-#         """
-#         Add a polygon.
-#         :param center: Center coordinates of this item
-#         :param vector: Orientation of this item
-#         :param inner_radius: Radius of the inner rim
-#         :param outer_radius Radius of the outer rim
-#         :param point_count: Number of outer corners
-#         :param additional_properties: optional, custom data to attach to this node
-#         :return: the corresponding geometric primitive builder, allowing further customization
-#         """
-#         params = make_params(StarParams, locals())
-#         node = Node(kind="star", params=params, additional_properties=additional_properties)
-#         self._add_child(node)
-#         return GeometricPrimitiveOptions(node=node, root=self._root)
 
 
 class PrimitiveOptions(_Base):
