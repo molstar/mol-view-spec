@@ -257,7 +257,7 @@ class ComponentExpression(BaseModel):
     atom_index: Optional[int] = Field(description="0-based atom index in the source file")
 
 # TODO: "slice"
-VolumeRepresentationTypeT = Literal["isosurface", "direct_volume"]
+VolumeRepresentationTypeT = Literal["isosurface", "direct_volume", "slice"]
 RepresentationTypeT = Literal["ball_and_stick", "cartoon"]
 ColorNamesT = Literal[
     "aliceblue",
@@ -416,8 +416,8 @@ class VolumeRepresentationParams(BaseModel):
     """
     Representation node, describing how to represent a volume.
     """
-    # TODO: add direct volume, slice
-    type: VolumeRepresentationTypeT = Field(description="Representation type, i.e. isosurface")
+    # TODO: add slice
+    type: VolumeRepresentationTypeT = Field(description="Representation type, i.e. isosurface or direct_volume")
 
 class RepresentationParams(BaseModel):
     """
