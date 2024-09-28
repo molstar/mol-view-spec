@@ -792,7 +792,7 @@ class VolumeRepresentation(_Base):
         node = Node(kind="color_from_source", params=params, additional_properties=additional_properties)
         self._add_child(node)
         return self
-
+    
     def color_from_uri(
         self,
         *,
@@ -822,25 +822,26 @@ class VolumeRepresentation(_Base):
     #     self._add_child(node)
     #     return self
 
-    # def color(
-    #     self,
-    #     *,
-    #     color: ColorT,
-    #     selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
-    #     additional_properties: AdditionalProperties = None,
-    # ) -> Representation:
-    #     """
-    #     Customize the color of this representation.
-    #     :param color: color using SVG color names or RGB hex code
-    #     :param selector: optional selector, defaults to applying the color to the whole representation
-    #     :param additional_properties: optional, custom data to attach to this node
-    #     :return: this builder
-    #     """
-    #     params = make_params(ColorInlineParams, locals())
-    #     node = Node(kind="color", params=params, additional_properties=additional_properties)
-    #     self._add_child(node)
-    #     return self
+    def color(
+        self,
+        *,
+        color: ColorT,
+        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
+        additional_properties: AdditionalProperties = None,
+    ) -> Representation:
+        """
+        Customize the color of this representation.
+        :param color: color using SVG color names or RGB hex code
+        :param selector: optional selector, defaults to applying the color to the whole representation
+        :param additional_properties: optional, custom data to attach to this node
+        :return: this builder
+        """
+        params = make_params(ColorInlineParams, locals())
+        node = Node(kind="color", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return self
 
+    # TODO
     def transparency(
         self, *, transparency: float = 0.8, additional_properties: AdditionalProperties = None
     ) -> Representation:
