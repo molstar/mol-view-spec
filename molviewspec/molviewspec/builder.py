@@ -36,6 +36,9 @@ from molviewspec.nodes import (
     Node,
     ParseFormatT,
     ParseParams,
+    RawVolumeOptionsT,
+    RawVolumeParams,
+    RawVolumeSourceT,
     RepresentationParams,
     RepresentationTypeT,
     SchemaFormatT,
@@ -48,6 +51,8 @@ from molviewspec.nodes import (
     TooltipInlineParams,
     TransformParams,
     TransparencyInlineParams,
+    VolumeRepresentationParams,
+    VolumeRepresentationTypeT,
 )
 from molviewspec.utils import get_major_version_tag, make_params
 
@@ -224,6 +229,20 @@ class Parse(_Base):
     """
     Builder step with operations needed after parsing structure data.
     """
+    def raw_volume(
+        self,
+        *,
+        source: RawVolumeSourceT,
+        options: RawVolumeOptionsT | None = None,
+        additional_properties: AdditionalProperties = None,
+    ) -> RawVolume:
+        """
+        Create a raw volume
+        """
+        params = make_params(RawVolumeParams, locals(), type="raw_volume")
+        node = Node(kind="raw_volume", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return RawVolume(node=node, root=self._root)
 
     def model_structure(
         self,
@@ -315,7 +334,26 @@ class Parse(_Base):
         node = Node(kind="structure", params=params, additional_properties=additional_properties)
         self._add_child(node)
         return Structure(node=node, root=self._root)
+    
 
+
+class RawVolume(_Base):
+    """
+    Builder step with operations needed after defining the raw volume to work with.
+    """
+    def volume_representation(
+        self, *, type: VolumeRepresentationTypeT = "isosurface", additional_properties: AdditionalProperties = None
+    ) -> VolumeRepresentation:
+        """
+        Add a representation for this component.
+        :param type: the type of representation, defaults to 'isosurface'
+        :param additional_properties: optional, custom data to attach to this node
+        :return: a builder that handles operations at representation level
+        """
+        params = make_params(VolumeRepresentationParams, locals())
+        node = Node(kind="volume_representation", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return VolumeRepresentation(node=node, root=self._root)
 
 class Structure(_Base):
     """
@@ -709,6 +747,99 @@ class Representation(_Base):
         node = Node(kind="color", params=params, additional_properties=additional_properties)
         self._add_child(node)
         return self
+
+    def transparency(
+        self, *, transparency: float = 0.8, additional_properties: AdditionalProperties = None
+    ) -> Representation:
+        """
+        Customize the transparency/opacity of this representation.
+        :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent
+        :param additional_properties: optional, custom data to attach to this node
+        :return: this builder
+        """
+        params = make_params(TransparencyInlineParams, locals())
+        node = Node(kind="transparency", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return self
+
+
+class VolumeRepresentation(_Base):
+    """
+    Builder step with operations relating to particular representations.
+    """
+
+    def color_from_source(
+        self,
+        *,
+        schema: SchemaT,
+        category_name: str,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        additional_properties: AdditionalProperties = None,
+    ) -> VolumeRepresentation:
+        """
+        Use a custom category from the source file to define colors of this representation.
+        :param schema: granularity/type of the selection
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param additional_properties: optional, custom data to attach to this node
+        :return: this builder
+        """
+        params = make_params(ColorFromSourceParams, locals())
+        node = Node(kind="color_from_source", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return self
+
+    def color_from_uri(
+        self,
+        *,
+        schema: SchemaT,
+        uri: str,
+        format: str,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        block_header: str | None = None,
+        block_index: int | None = None,
+        additional_properties: AdditionalProperties = None,
+    ) -> Representation:
+        """
+        Use another resource to define colors of this representation.
+        :param schema: granularity/type of the selection
+        :param uri: resource location
+        :param format: format ('cif', 'bcif', 'json') of the content
+        :param category_name: only applies when format is 'cif' or 'bcif'
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+        :param block_header: only applies when format is 'cif' or 'bcif'
+        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param additional_properties: optional, custom data to attach to this node
+        :return: this builder
+        """
+    #     params = make_params(ColorFromUriParams, locals())
+    #     node = Node(kind="color_from_uri", params=params, additional_properties=additional_properties)
+    #     self._add_child(node)
+    #     return self
+
+    # def color(
+    #     self,
+    #     *,
+    #     color: ColorT,
+    #     selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
+    #     additional_properties: AdditionalProperties = None,
+    # ) -> Representation:
+    #     """
+    #     Customize the color of this representation.
+    #     :param color: color using SVG color names or RGB hex code
+    #     :param selector: optional selector, defaults to applying the color to the whole representation
+    #     :param additional_properties: optional, custom data to attach to this node
+    #     :return: this builder
+    #     """
+    #     params = make_params(ColorInlineParams, locals())
+    #     node = Node(kind="color", params=params, additional_properties=additional_properties)
+    #     self._add_child(node)
+    #     return self
 
     def transparency(
         self, *, transparency: float = 0.8, additional_properties: AdditionalProperties = None

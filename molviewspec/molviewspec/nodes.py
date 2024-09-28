@@ -5,7 +5,7 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Literal, Mapping, Optional, Union
+from typing import Any, Literal, Mapping, Optional, TypedDict, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -29,6 +29,7 @@ KindT = Literal[
     "label_from_uri",
     "line",
     "parse",
+    "raw_volume",
     "representation",
     "sphere",
     "structure",
@@ -37,6 +38,7 @@ KindT = Literal[
     "tooltip_from_uri",
     "transform",
     "transparency",
+    "volume_representation"
 ]
 
 
@@ -160,9 +162,30 @@ class DownloadParams(BaseModel):
     url: str = Field(description="URL from which to pull structure data.")
 
 
-ParseFormatT = Literal["mmcif", "bcif", "pdb"]
+ParseFormatT = Literal["mmcif", "bcif", "pdb", "map"]
+# RawVolumeSourceT = Literal["map", "omezarr", "ometiff_image", "tiff_stack"]
+RawVolumeSourceT = Literal["map"]
 
+ChannelIdsMapping = dict[str, str]
+    
 
+class RawVolumeOptionsT(TypedDict):
+    """
+    Specifies the desired voxel size. Overwrites the automatically determined voxel size (e.g., the one based on the map header or its analogue for other formats).
+    Specifies the mapping of sequential channel IDs to user-defined ones.    
+    """
+    voxel_size: float | None
+    channel_ids_mapping: ChannelIdsMapping | None
+
+    
+class RawVolumeParams(BaseModel):
+    """
+    Create a volume from a parsed data resource based on the provided parameters
+    """
+
+    source: RawVolumeSourceT = Field(description="The type of the raw input file with volumetric data.")
+    options: RawVolumeOptionsT = Field(description="Specifies the voxel size and mapping of sequential channel IDs to user-defined channel IDs.")
+    
 class ParseParams(BaseModel):
     """
     Parse node, describing how to parse downloaded data.
@@ -233,8 +256,9 @@ class ComponentExpression(BaseModel):
     atom_id: Optional[int] = Field(description="Unique atom identifier (`_atom_site.id`)")
     atom_index: Optional[int] = Field(description="0-based atom index in the source file")
 
-
-RepresentationTypeT = Literal["ball_and_stick", "cartoon", "surface"]
+# TODO: "direct_volume", "slice"
+VolumeRepresentationTypeT = Literal["isosurface"]
+RepresentationTypeT = Literal["ball_and_stick", "cartoon"]
 ColorNamesT = Literal[
     "aliceblue",
     "antiquewhite",
@@ -386,6 +410,14 @@ ColorNamesT = Literal[
 ]
 ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
 
+
+# TODO: Segmentation too?
+class VolumeRepresentationParams(BaseModel):
+    """
+    Representation node, describing how to represent a volume.
+    """
+    # TODO: add direct volume, slice
+    type: VolumeRepresentationTypeT = Field(description="Representation type, i.e. isosurface")
 
 class RepresentationParams(BaseModel):
     """
