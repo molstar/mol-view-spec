@@ -256,8 +256,8 @@ class ComponentExpression(BaseModel):
     atom_id: Optional[int] = Field(description="Unique atom identifier (`_atom_site.id`)")
     atom_index: Optional[int] = Field(description="0-based atom index in the source file")
 
-# TODO: "direct_volume", "slice"
-VolumeRepresentationTypeT = Literal["isosurface"]
+# TODO: "slice"
+VolumeRepresentationTypeT = Literal["isosurface", "direct_volume"]
 RepresentationTypeT = Literal["ball_and_stick", "cartoon"]
 ColorNamesT = Literal[
     "aliceblue",
