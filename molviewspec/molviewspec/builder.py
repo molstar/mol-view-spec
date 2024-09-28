@@ -768,55 +768,30 @@ class VolumeRepresentation(_Base):
     Builder step with operations relating to particular representations.
     """
 
-    def color_from_source(
-        self,
-        *,
-        schema: SchemaT,
-        category_name: str,
-        field_name: str | None = None,
-        block_header: str | None = None,
-        block_index: int | None = None,
-        additional_properties: AdditionalProperties = None,
-    ) -> VolumeRepresentation:
-        """
-        Use a custom category from the source file to define colors of this representation.
-        :param schema: granularity/type of the selection
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
-        :param additional_properties: optional, custom data to attach to this node
-        :return: this builder
-        """
-        params = make_params(ColorFromSourceParams, locals())
-        node = Node(kind="color_from_source", params=params, additional_properties=additional_properties)
-        self._add_child(node)
-        return self
-    
-    def color_from_uri(
-        self,
-        *,
-        schema: SchemaT,
-        uri: str,
-        format: str,
-        category_name: str | None = None,
-        field_name: str | None = None,
-        block_header: str | None = None,
-        block_index: int | None = None,
-        additional_properties: AdditionalProperties = None,
-    ) -> Representation:
-        """
-        Use another resource to define colors of this representation.
-        :param schema: granularity/type of the selection
-        :param uri: resource location
-        :param format: format ('cif', 'bcif', 'json') of the content
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
-        :param additional_properties: optional, custom data to attach to this node
-        :return: this builder
-        """
+    # def color_from_uri(
+    #     self,
+    #     *,
+    #     schema: SchemaT,
+    #     uri: str,
+    #     format: str,
+    #     category_name: str | None = None,
+    #     field_name: str | None = None,
+    #     block_header: str | None = None,
+    #     block_index: int | None = None,
+    #     additional_properties: AdditionalProperties = None,
+    # ) -> Representation:
+    #     """
+    #     Use another resource to define colors of this representation.
+    #     :param schema: granularity/type of the selection
+    #     :param uri: resource location
+    #     :param format: format ('cif', 'bcif', 'json') of the content
+    #     :param category_name: only applies when format is 'cif' or 'bcif'
+    #     :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
+    #     :param block_header: only applies when format is 'cif' or 'bcif'
+    #     :param block_index: only applies when format is 'cif' or 'bcif'
+    #     :param additional_properties: optional, custom data to attach to this node
+    #     :return: this builder
+    #     """
     #     params = make_params(ColorFromUriParams, locals())
     #     node = Node(kind="color_from_uri", params=params, additional_properties=additional_properties)
     #     self._add_child(node)
