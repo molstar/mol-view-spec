@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import math
 import os
-from typing import Sequence
+from typing import Sequence, Self
 
 from pydantic import BaseModel, PrivateAttr
 
@@ -81,6 +81,18 @@ class _Base(BaseModel):
         if self._node.children is None:
             self._node.children = []
         self._node.children.append(node)
+
+    def additional_properties(self, **kwargs) -> Self:
+        """
+        Adds provided key-value pairs as additional properties to this node.
+        key=None to remove a property.
+        """
+        properties = {
+            **(self._node.additional_properties or {}),
+            **{k: v for k, v in kwargs.items() if v is not None},
+        }
+        self._node = self._node.copy(update={"additional_properties": properties or None})
+        return self
 
 
 class Root(_Base):
