@@ -12,7 +12,6 @@ from pydantic import BaseModel, Field
 
 KindT = Literal[
     "root",
-    "apply_selection",
     "camera",
     "canvas",
     "circle",  # TODO should we prefix/namespace geom prims?
@@ -44,10 +43,6 @@ KindT = Literal[
 ]
 
 
-AdditionalProperties = Optional[Mapping[str, Any]]
-additional_properties_name = "additional_properties"  # make potential refactors a bit easier -- check also refs below
-
-
 class Node(BaseModel):
     """
     Base impl of all state tree nodes.
@@ -55,7 +50,7 @@ class Node(BaseModel):
 
     kind: KindT = Field(description="The type of this node.")
     params: Optional[Mapping[str, Any]] = Field(description="Optional params that are needed for this node.")
-    additional_properties: AdditionalProperties = Field(
+    additional_properties: Optional[Mapping[str, Any]] = Field(
         description="Optional free-style dict with custom, non-schema props."
     )
     children: Optional[list[Node]] = Field(description="Optional collection of nested child nodes.")
@@ -568,19 +563,6 @@ class FocusInlineParams(BaseModel):
 
     direction: Optional[Vec3[float]] = Field(description="Direction of the view (vector position -> target)")
     up: Optional[Vec3[float]] = Field(description="Controls the rotation around the vector between target and position")
-
-
-class ApplySelectionInlineParams(BaseModel):
-    """
-    Params to customize how surroundings of a Component are presented.
-    """
-
-    surroundings_radius: Optional[float] = Field(
-        description="Distance threshold in Angstrom, everything below this cutoff will be included as surroundings"
-    )
-    show_non_covalent_interactions: Optional[bool] = Field(
-        description="Show non-covalent interactions between this component and its surroundings?"
-    )
 
 
 class TransformParams(BaseModel):

@@ -1,7 +1,7 @@
 import { ExamplesUI } from "./examples";
 
-const DocsLink = 'https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9';
-const MolstarExtensionDocsLink = 'https://github.com/molstar/molstar/blob/master/docs/extensions/mvs/README.md';
+const PythonCollabLink = 'https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9';
+const MkDocsLink = 'https://molstar.org/mol-view-spec-docs/';
 
 export function App() {
     return <div className='container' style={{ marginBottom: 20 }}>
@@ -51,8 +51,8 @@ export function App() {
             </div>
 
             <div className='six columns'>
-                <a className='button' href={DocsLink} style={{ fontSize: '2rem', width: '100%' }}
-                    target='_blank' rel='noreferrer'>Python Package Documentation</a>
+                <a className='button' href={MkDocsLink} style={{ fontSize: '2rem', width: '100%' }}
+                    target='_blank' rel='noreferrer'>Documentation</a>
             </div>
         </div>
 
@@ -63,8 +63,8 @@ export function App() {
             </div>
 
             <div className='six columns'>
-                <a className='button' href={MolstarExtensionDocsLink} style={{ fontSize: '2rem', width: '100%' }}
-                    target='_blank' rel='noreferrer'>Mol* Extension Documentation</a>
+                <a className='button' href={PythonCollabLink} style={{ fontSize: '2rem', width: '100%' }}
+                    target='_blank' rel='noreferrer'>Python Collab Notebook</a>
             </div>
         </div>
 
