@@ -738,7 +738,7 @@ class Primitives(_Base):
         self,
         *,
         vertices: list[Vec3[float]],
-        indices: list[Vec3[float]],
+        indices: list[Vec3[int]],
         colors: list[ColorT] | None = None,
         # TODO should everything support `rotation`, just for convenience & consistency?
         additional_properties: AdditionalProperties = None,
@@ -746,8 +746,8 @@ class Primitives(_Base):
         """
         Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
         :param vertices: collection of vertices
-        :param colors: color value of each triangle
         :param indices: collection of indices
+        :param colors: color value of each triangle
         :param additional_properties: optional, custom data to attach to this node
         :return: this builder
         """
