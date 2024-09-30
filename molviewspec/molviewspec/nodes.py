@@ -12,7 +12,6 @@ from pydantic import BaseModel, Field
 
 KindT = Literal[
     "root",
-    "apply_selection",
     "camera",
     "canvas",
     "color",
@@ -558,19 +557,6 @@ class FocusInlineParams(BaseModel):
     )
     up: Optional[tuple[float, float, float]] = Field(
         description="Controls the rotation around the vector between target and position"
-    )
-
-
-class ApplySelectionInlineParams(BaseModel):
-    """
-    Params to customize how surroundings of a Component are presented.
-    """
-
-    surroundings_radius: Optional[float] = Field(
-        description="Distance threshold in Angstrom, everything below this cutoff will be included as surroundings"
-    )
-    show_non_covalent_interactions: Optional[bool] = Field(
-        description="Show non-covalent interactions between this component and its surroundings?"
     )
 
 

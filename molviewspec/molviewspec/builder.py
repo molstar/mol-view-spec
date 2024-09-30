@@ -12,7 +12,6 @@ from typing import Self, Sequence
 from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
-    ApplySelectionInlineParams,
     CameraParams,
     CanvasParams,
     ColorFromSourceParams,
@@ -586,24 +585,6 @@ class Component(_Base):
         """
         params = make_params(FocusInlineParams, locals())
         node = Node(kind="focus", params=params)
-        self._add_child(node)
-        return self
-
-    # TODO: make representation customizable
-    def apply_selection(
-        self,
-        *,
-        surroundings_radius: float = 5.0,
-        show_non_covalent_interactions: bool = True,
-    ) -> Component:
-        """
-        Show the surroundings of this component. Typically, you'll want to chain this with `#focus()`.
-        :param surroundings_radius: distance threshold in Angstrom, everything below this cutoff will be included
-        :param show_non_covalent_interactions: show non-covalent interactions between this component and its surroundings?
-        :return: this builder
-        """
-        params = make_params(ApplySelectionInlineParams, locals())
-        node = Node(kind="apply_selection", params=params)
         self._add_child(node)
         return self
 

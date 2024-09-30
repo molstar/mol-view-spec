@@ -54,8 +54,12 @@ async def label_example(id: str = "1lap") -> MVSResponse:
     whole = structure.component()
     (whole.representation().color(color="red", selector=ComponentExpression(label_asym_id="A", label_seq_id=120)))
 
-    # label the residues with custom text & focus it & show surrounding non-covalent interactions
-    (structure.component(selector=residue).label(text="ALA 120 A: My Label").focus().apply_selection())
+    # label the residues with custom text & focus it (i.e., position camera)
+    comp = structure.component(selector=residue).label(text="ALA 120 A: My Label").focus()
+    # leverage vendor-specific properties to request non-covalent interactions in Mol*
+    comp.additional_properties(
+        molstar_show_non_covalent_interactions=True, molstar_non_covalent_interactions_radius_ang=5.0
+    )
 
     # structure.label_from_source(schema="residue", category_name="my_custom_cif_category")
 
