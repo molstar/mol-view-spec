@@ -704,6 +704,7 @@ class Primitives(_Base):
 
     # TODO mesh_from_uri, mesh_from_source
 
+    # TODO need ellipsis support
     def circle(
         self,
         *,
@@ -734,6 +735,7 @@ class Primitives(_Base):
         *,
         start: PositionT,
         end: PositionT,
+        thickness: float = 1.0,
     ) -> Primitives:
         # TODO doc & impl
         return self
