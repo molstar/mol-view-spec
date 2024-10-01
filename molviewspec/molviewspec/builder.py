@@ -90,7 +90,7 @@ class _Base(BaseModel):
         Adds provided key-value pairs as additional properties to this node.
         key=None to remove a property.
         """
-        properties = self._node.additional_properties or {}
+        properties = dict(self._node.additional_properties or {})
 
         for k, v in kwargs.items():
             if v is None:
@@ -951,9 +951,7 @@ class PrimitiveOptions(_Base):
         self._add_child(node)
         return self
 
-    def transparency(
-        self, *, transparency: float = 0.8
-    ) -> PrimitiveOptions:
+    def transparency(self, *, transparency: float = 0.8) -> PrimitiveOptions:
         """
         Customize the transparency/opacity of this representation.
         :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent

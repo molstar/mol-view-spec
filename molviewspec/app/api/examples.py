@@ -285,23 +285,23 @@ async def primitives_example() -> MVSResponse:
     builder = create_builder()
     # primitives are defined in "groups", you can add any number of primitives before invoking `options()` and setting
     # shared properties such as color or transparency
-    builder.primitives().plane(point=(0.0, 1.0, 0.0), normal=(0.0, 1.0, 0.0)).options().label(text="Outer membrane").color(
-        color="red"
-    )
-    builder.primitives().plane(point=(0.0, -1.0, 0.0), normal=(0.0, -1.0, 0.0)).options().label(text="Inner membrane").color(
-        color="blue"
-    )
+    builder.primitives().plane(point=(0.0, 1.0, 0.0), normal=(0.0, 1.0, 0.0)).options().label(
+        text="Outer membrane"
+    ).color(color="red")
+    builder.primitives().plane(point=(0.0, -1.0, 0.0), normal=(0.0, -1.0, 0.0)).options().label(
+        text="Inner membrane"
+    ).color(color="blue")
     return PlainTextResponse(builder.get_state())
 
+
 @router.get("/primitives-cube")
-async def primitives_example() -> MVSResponse:
+async def primitives_cube_example() -> MVSResponse:
     """
     Let's draw a cube and 3 lines.
     """
     builder = create_builder()
     builder.primitives().mesh(
-        vertices=
-        [
+        vertices=[
             (0.0, 0.0, 0.0),
             (1.0, 0.0, 0.0),
             (1.0, 1.0, 0.0),
@@ -311,30 +311,40 @@ async def primitives_example() -> MVSResponse:
             (1.0, 1.0, 1.0),
             (0.0, 1.0, 1.0),
         ],
-        indices=
-        [
+        indices=[
             # bottom
-            (0, 1, 2), (0, 2, 3),
+            (0, 1, 2),
+            (0, 2, 3),
             # top
-            (4, 5, 6), (4, 6, 7),
+            (4, 5, 6),
+            (4, 6, 7),
             # front
-            (0, 1, 5), (0, 5, 4),
+            (0, 1, 5),
+            (0, 5, 4),
             # back
-            (2, 3, 7), (2, 7, 6),
+            (2, 3, 7),
+            (2, 7, 6),
             # left
-            (0, 3, 7), (0, 7, 4),
+            (0, 3, 7),
+            (0, 7, 4),
             # right
-            (1, 2, 6), (1, 6, 5),
+            (1, 2, 6),
+            (1, 6, 5),
         ],
-        colors=
-        [
-            "#FF0000", "#FF0000",  # bottom: red
-            "#00FF00", "#00FF00",  # top: green
-            "#0000FF", "#0000FF",  # front: blue
-            "#FFFF00", "#FFFF00",  # back: yellow
-            "#FF00FF", "#FF00FF",  # left: magenta
-            "#00FFFF", "#00FFFF",  # right: cyan
-        ]
+        colors=[
+            "#FF0000",
+            "#FF0000",  # bottom: red
+            "#00FF00",
+            "#00FF00",  # top: green
+            "#0000FF",
+            "#0000FF",  # front: blue
+            "#FFFF00",
+            "#FFFF00",  # back: yellow
+            "#FF00FF",
+            "#FF00FF",  # left: magenta
+            "#00FFFF",
+            "#00FFFF",  # right: cyan
+        ],
     )
     # let's throw in some lines that intersect each face in the middle
     (
