@@ -26,6 +26,7 @@ KindT = Literal[
     "label",
     "label_from_source",
     "label_from_uri",
+    "line",
     "mesh",
     "mesh_from_source",
     "mesh_from_uri",
@@ -633,6 +634,15 @@ class CircleParams(BaseModel):
     theta_start: Optional[float] = Field(description="Start point position (relevant when this is an arc).")
     theta_length: Optional[float] = Field(description="Values < PI*2 will result in an arc.")
     rotation: Optional[Mat3[float]] = Field(description="Optional rotation of this item.")
+
+
+class LineParams(BaseModel):
+    start: PositionT = Field(description="Start of this line.")
+    end: PositionT = Field(description="End of this line.")
+    thickness: Optional[float] = Field(description="Thickness of this line.")
+    dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
+    dash_length: Optional[float] = Field(description="Length of each dash.")
+    gap_length: Optional[float] = Field(description="Length of optional gaps between dashes. Set to 0 for solid line.")
 
 
 class PlaneParams(BaseModel):

@@ -30,6 +30,7 @@ from molviewspec.nodes import (
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
+    LineParams,
     Mat3,
     MeshInlineParams,
     Metadata,
@@ -735,9 +736,24 @@ class Primitives(_Base):
         *,
         start: PositionT,
         end: PositionT,
-        thickness: float = 1.0,
+        thickness: float | None = 1.0,
+        dash_start: float | None = None,
+        dash_length: float | None = None,
+        gap_length: float | None = None,
     ) -> Primitives:
-        # TODO doc & impl
+        """
+        Defines a line, connecting a start and an end point.
+        :param start: origin coordinates
+        :param end: destination coordinates
+        :param thickness: thickness of this line
+        :param dash_start: offset along this line until the 1st dash is drawn
+        :param dash_length: length of each dash
+        :param gap_length: length of each gap that will follow each completed dash
+        :return: this builder
+        """
+        params = make_params(LineParams, locals())
+        node = Node(kind="line", params=params)
+        self._add_child(node)
         return self
 
     def plane(

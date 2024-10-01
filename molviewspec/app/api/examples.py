@@ -293,6 +293,63 @@ async def primitives_example() -> MVSResponse:
     )
     return PlainTextResponse(builder.get_state())
 
+@router.get("/primitives-cube")
+async def primitives_example() -> MVSResponse:
+    """
+    Let's draw a cube and 3 lines.
+    """
+    builder = create_builder()
+    builder.primitives().mesh(
+        vertices=
+        [
+            (0.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0),
+            (1.0, 1.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (0.0, 0.0, 1.0),
+            (1.0, 0.0, 1.0),
+            (1.0, 1.0, 1.0),
+            (0.0, 1.0, 1.0),
+        ],
+        indices=
+        [
+            # bottom
+            (0, 1, 2), (0, 2, 3),
+            # top
+            (4, 5, 6), (4, 6, 7),
+            # front
+            (0, 1, 5), (0, 5, 4),
+            # back
+            (2, 3, 7), (2, 7, 6),
+            # left
+            (0, 3, 7), (0, 7, 4),
+            # right
+            (1, 2, 6), (1, 6, 5),
+        ],
+        colors=
+        [
+            "#FF0000", "#FF0000",  # bottom: red
+            "#00FF00", "#00FF00",  # top: green
+            "#0000FF", "#0000FF",  # front: blue
+            "#FFFF00", "#FFFF00",  # back: yellow
+            "#FF00FF", "#FF00FF",  # left: magenta
+            "#00FFFF", "#00FFFF",  # right: cyan
+        ]
+    )
+    # let's throw in some lines that intersect each face in the middle
+    (
+        builder.primitives()
+        # chain primitives to create groups
+        .line(start=(-0.5, 0.5, 0.5), end=(1.5, 0.5, 0.5), thickness=0.1)
+        .line(start=(0.5, -0.5, 0.5), end=(0.5, 1.5, 0.5), thickness=0.1)
+        .line(start=(0.5, 0.5, -0.5), end=(0.5, 0.5, 1.5), thickness=0.1)
+        # use .options() to assign group-wide properties
+        .options()
+        .color(color="black")
+        .transparency(transparency=0.8)
+    )
+    return PlainTextResponse(builder.get_state())
+
 
 ##############################################################################
 # meta endpoints
