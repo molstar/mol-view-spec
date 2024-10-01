@@ -245,6 +245,122 @@ def _multistate_template(key: str, url: str, repr: RepresentationTypeT) -> Snaps
     metadata = SnapshotMetadata(key=key)
     return Snapshot(kind="single", root=template.get_node(), metadata=metadata)
 
+camera1 = {
+        'target': (49.825582, -1.340038, 26.471059),
+        'position': (-4.449025, 31.275798, 17.857061),
+        'up': (-0.177081405072997, -0.0349061499228514, 0.9835770110545166)}
+camera2 = {
+        'target': (26.130746420193915, 4.620393357559111, 42.794555467590406),
+        'position': (-66.53446639,  60.30671798,  28.08753128),
+        'up': (-0.177081405072997, -0.0349061499228514, 0.9835770110545166)}
+camera_ligand = {
+        'target': (46.92617916263649, 8.778192057663661, 26.526291795071554),
+        'position': (33.33715295823857, 16.944394902436812, 24.3695586372132),
+        'up': (-0.177081405072997, -0.03490614992285142, 0.9835770110545164)}
+camera_ligand2 = {
+    'target': (46.92617916263649, 8.778192057663661, 26.526291795071554),
+    'position': (36.05968917375933, -0.6721174788261575, 33.498453940787826),
+    'up': (0.5701116198257888, -0.050566846964212424, 0.8200095944119795)}
+camera_far = {
+    'target': (49.825582, -1.340038, 26.471059),
+    'position': (-191.11654336839834, 143.45196107439443, -11.769199212079403),
+    'up': (-0.17708140507299697, -0.03490614992285138, 0.9835770110545166)}
+
+@router.get("/multiple-states-aln")
+async def multiple_states_aln() -> MVSResponse:
+    snapshots = [
+        foo('A', description='### We have these two proteins...', align=False, duration=3000, transition_duration=1000, camera=camera2),
+        foo('B', description='### What if we superpose them?', duration=3000, transition_duration=1500, camera=camera1),
+        foo('C', description='### Look, a ligand!', duration=500, transition_duration=3000, camera=camera_ligand),
+        foo('D', description='### ... a nice one...', duration=1000, transition_duration=1000, camera=camera_ligand2),
+        foo('E', description='', duration=2000, camera=camera1),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        foo('H', description='', duration=500, transition_duration=10_000, camera=camera1),
+        foo('I', description='### Thanks for watching', duration=None, transition_duration=1000, camera=camera_far),
+    ]
+    metadata = Metadata(description="test", version=get_major_version_tag())
+    return PlainTextResponse(
+        States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
+    )
+
+def foo(key: str, *, description: str|None = None, align: bool = True, duration: int|None, transition_duration: int|None = None, color1: str = '#dddddd', color2: str = '#4fc64f', camera = camera1, show: list[str]|None = None) -> Snapshot:
+    builder = create_builder()
+
+    structure1 = (
+        builder
+        .download(url='https://files.wwpdb.org/download/2e2n.cif')
+        .parse(format='mmcif')
+        .model_structure()
+    )
+    if show is None or 'protein1' in show:
+        (structure1
+            .component(selector=ComponentExpression(label_asym_id='A'))
+            .representation(type='cartoon')
+            .color(color=color1)
+        )
+
+    structure2 = (
+        builder
+        .download(url='https://files.wwpdb.org/download/2e2o.cif')
+        .parse(format='mmcif')
+        .model_structure()
+    )
+    if align:
+        structure2 = structure2.transform(
+            rotation=[
+                0.291445, 0.949818, 0.113601,
+                -0.479952, 0.042465, 0.876266,
+                0.827469, -0.309906, 0.468243,
+            ],
+            translation=[2.237313, 17.994696, -4.031342])
+        
+    if show is None or 'protein2' in show:
+        (structure2
+            .component(selector=ComponentExpression(label_asym_id='A'))
+            .representation(type='cartoon')
+            .color(color=color2)
+        )
+    if show is None or 'ligand2' in show:
+        (structure2
+            .component(selector=ComponentExpression(label_asym_id='B'))
+            .representation(type='ball_and_stick')
+            .color(color=color2)
+            .color(color='red', selector=ComponentExpression(type_symbol='O'))
+        )
+
+    builder.camera(**camera)
+
+    metadata = SnapshotMetadata(key=key, title=f'State {key}', 
+                                # description=f'### Description {key}\n\n **Lorem ipsum** dolor sit amet, consectetur *adipiscing* elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                                description=description,
+                                lingerDurationMs=duration, transitionDurationMs=transition_duration,
+                                )
+    return Snapshot(kind="single", root=builder.get_node(), metadata=metadata)
 
 ##############################################################################
 # meta endpoints
