@@ -1316,7 +1316,9 @@ CAMERA_FOR_Q5VSL9 = {
     "up": (-0.576, 0.512, -0.636),
 }
 ENTITY_COLORS_1HDA = {"1": "#1A9E76", "2": "#D85F02", "3": "#A6D853"}
-BASE_COLOR = "#CCCCCC"  # should be #787878 but that's too dark because of missing transparency
+ENTITIES_1HDA = {"polymer": ["1", "2"], "ligand": ["3"]}
+BASE_COLOR = "#787878"
+BASE_TRANSPARENCY = 0.7
 
 
 @router.get("/portfolio/entry")
@@ -1354,12 +1356,14 @@ async def portfolio_entity(entity_id: str = "1", assembly_id: str = "1") -> MVSR
     structure_url = _url_for_mmcif(ID)
     struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=assembly_id)
     highlight = ENTITY_COLORS_1HDA.get(entity_id, "black")
-    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).color(
-        selector=ComponentExpression(label_entity_id=entity_id), color=highlight
-    )
-    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR).color(
-        selector=ComponentExpression(label_entity_id=entity_id), color=highlight
-    )
+    for type, entities in ENTITIES_1HDA.items():
+        for ent in entities:
+            (struct
+            .component(selector=ComponentExpression(label_entity_id=ent))
+            .representation(type="ball_and_stick" if type=="ligand" else "cartoon")
+            .color(color = highlight if ent==entity_id else BASE_COLOR)
+            .transparency(transparency = 0 if ent==entity_id else BASE_TRANSPARENCY)
+            )
     builder.camera(**CAMERA_FOR_1HDA)
     return PlainTextResponse(builder.get_state())
 
@@ -1384,6 +1388,14 @@ async def portfolio_domain() -> MVSResponse:
         field_name="component",
         field_values="polymer",
     )
+    domain = struct.component_from_uri(
+        uri=annotation_url,
+        format="cif",
+        category_name=f"sifts_{DOMAIN}",
+        schema="all_atomic",
+        field_name="component",
+        field_values="domain",
+    )
     ligand = struct.component_from_uri(
         uri=annotation_url,
         format="cif",
@@ -1392,10 +1404,11 @@ async def portfolio_domain() -> MVSResponse:
         field_name="component",
         field_values="ligand",
     )
-    polymer.representation(type="cartoon").color(color=BASE_COLOR).color_from_uri(
+    polymer.representation(type="cartoon").color(color=BASE_COLOR).transparency(transparency=BASE_TRANSPARENCY)
+    domain.representation(type="cartoon").color_from_uri(
         uri=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic"
     )
-    ligand.representation(type="ball_and_stick").color(color=BASE_COLOR)
+    ligand.representation(type="ball_and_stick").color(color=BASE_COLOR).transparency(transparency=BASE_TRANSPARENCY)
     struct.tooltip_from_uri(uri=annotation_url, format="cif", category_name=f"sifts_{DOMAIN}", schema="all_atomic")
     builder.camera(**CAMERA_FOR_1HDA_A)
     return PlainTextResponse(builder.get_state())
@@ -1421,9 +1434,7 @@ async def portfolio_ligand() -> MVSResponse:
         field_name="component",
         field_values="wideenv",
     )
-    wideenv.representation(type="cartoon").color(color=BASE_COLOR).color_from_uri(
-        uri=annotation_url, format="cif", schema="all_atomic", category_name="color_by_symbol"
-    )
+    wideenv.representation(type="cartoon").color(color=BASE_COLOR).transparency(transparency=BASE_TRANSPARENCY)
     env = struct.component_from_uri(
         uri=annotation_url,
         format="cif",
@@ -1494,8 +1505,8 @@ async def portfolio_modres() -> MVSResponse:
     builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=ASSEMBLY)
-    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR)
-    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR)
+    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).transparency(transparency=BASE_TRANSPARENCY)
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR).transparency(transparency=BASE_TRANSPARENCY)
     struct.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=54)).tooltip(
         text="Modified residue SUI: (3-amino-2,5-dioxo-1-pyrrolidinyl)acetic acid"
     ).representation(type="ball_and_stick").color(color="#ED645A")
