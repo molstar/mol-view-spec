@@ -14,6 +14,7 @@ from pydantic import BaseModel, PrivateAttr
 from molviewspec.nodes import (
     CameraParams,
     CanvasParams,
+    CircleParams,
     ColorFromSourceParams,
     ColorFromUriParams,
     ColorInlineParams,
@@ -30,15 +31,18 @@ from molviewspec.nodes import (
     LabelFromUriParams,
     LabelInlineParams,
     LineParams,
+    Mat3,
+    MeshInlineParams,
     Metadata,
     Node,
     ParseFormatT,
     ParseParams,
+    PlaneParams,
+    PositionT,
     RepresentationParams,
     RepresentationTypeT,
     SchemaFormatT,
     SchemaT,
-    SphereParams,
     State,
     StructureParams,
     TooltipFromSourceParams,
@@ -46,6 +50,7 @@ from molviewspec.nodes import (
     TooltipInlineParams,
     TransformParams,
     TransparencyInlineParams,
+    Vec3,
 )
 from molviewspec.utils import get_major_version_tag, make_params
 
@@ -85,7 +90,7 @@ class _Base(BaseModel):
         Adds provided key-value pairs as additional properties to this node.
         key=None to remove a property.
         """
-        properties = self._node.additional_properties or {}
+        properties = dict(self._node.additional_properties or {})
 
         for k, v in kwargs.items():
             if v is None:
@@ -163,9 +168,9 @@ class Root(_Base):
     def camera(
         self,
         *,
-        target: tuple[float, float, float],
-        position: tuple[float, float, float],
-        up: tuple[float, float, float] | None = (0, 1, 0),
+        target: Vec3[float],
+        position: Vec3[float],
+        up: Vec3[float] | None = (0, 1, 0),
     ):
         """
         Manually position the camera.
@@ -201,14 +206,15 @@ class Root(_Base):
         self._add_child(node)
         return Download(node=node, root=self._root)
 
-    def generic_visuals(self) -> GenericVisuals:
+    def primitives(self) -> Primitives:
         """
-        Experimental: Allows the definition of generic visuals such as spheres and lines.
-        :return: a builder for generic visuals
+        Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
+        shared options (color, transparency etc.).
+        :return: a builder for geometric primitives
         """
-        node = Node(kind="generic_visuals")
+        node = Node(kind="primitives")
         self._add_child(node)
-        return GenericVisuals(node=node, root=self._root)
+        return Primitives(node=node, root=self._root)
 
 
 class Download(_Base):
@@ -276,8 +282,8 @@ class Parse(_Base):
     def symmetry_structure(
         self,
         *,
-        ijk_min: tuple[int, int, int] | None = (-1, -1, -1),
-        ijk_max: tuple[int, int, int] | None = (1, 1, 1),
+        ijk_min: Vec3[int] | None = (-1, -1, -1),
+        ijk_max: Vec3[int] | None = (1, 1, 1),
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
@@ -498,8 +504,8 @@ class Structure(_Base):
     def transform(
         self,
         *,
-        rotation: Sequence[float] | None = None,
-        translation: Sequence[float] | None = None,
+        rotation: Mat3[float] | None = None,
+        translation: Vec3[float] | None = None,
     ) -> Structure:
         """
         Transform a structure by applying a rotation matrix and/or translation vector.
@@ -508,13 +514,11 @@ class Structure(_Base):
         :return: this builder
         """
         if rotation is not None:
-            rotation = tuple(rotation)
             if len(rotation) != 9:
                 raise ValueError(f"Parameter `rotation` must have length 9")
             if not self._is_rotation_matrix(rotation):
                 raise ValueError(f"Parameter `rotation` must be a rotation matrix")
         if translation is not None:
-            translation = tuple(translation)
             if len(translation) != 3:
                 raise ValueError(f"Parameter `translation` must have length 3")
 
@@ -574,8 +578,8 @@ class Component(_Base):
     def focus(
         self,
         *,
-        direction: tuple[float, float, float] | None = None,
-        up: tuple[float, float, float] | None = None,
+        direction: Vec3[float] | None = None,
+        up: Vec3[float] | None = None,
     ) -> Component:
         """
         Focus on this structure or component.
@@ -673,55 +677,326 @@ class Representation(_Base):
         return self
 
 
-class GenericVisuals(_Base):
+class Primitives(_Base):
     """
-    Experimental builder for custom, primitive visuals.
+    A collection of primitives (such as spheres, lines, ...) that will be grouped together and can be customized using
+    options.
     """
 
-    def sphere(
+    def mesh(
         self,
         *,
-        position: tuple[float, float, float],
+        vertices: list[Vec3[float]],
+        indices: list[Vec3[int]],
+        colors: list[ColorT] | None = None,
+        # TODO should everything support `rotation`, just for convenience & consistency?
+    ) -> Primitives:
+        """
+        Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
+        :param vertices: collection of vertices
+        :param indices: collection of indices
+        :param colors: color value of each triangle
+        :return: this builder
+        """
+        params = make_params(MeshInlineParams, locals())
+        node = Node(kind="mesh", params=params)
+        self._add_child(node)
+        return self
+
+    # TODO mesh_from_uri, mesh_from_source
+
+    # TODO need ellipsis support
+    def circle(
+        self,
+        *,
+        center: PositionT,
         radius: float,
-        color: ColorT,
-        label: str | None = None,
-        tooltip: str | None = None,
-    ) -> GenericVisuals:
+        segments: int | None = None,
+        theta_start: float = 0,
+        theta_length: float = math.pi * 2,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
         """
-        Draw a sphere.
-        :param position: position of the sphere
-        :param radius: size of the sphere
-        :param color: color of the sphere, either SVG color name or RGB hex code
-        :param label: optional text label
-        :param tooltip: optional tooltip to show upon hover
-        :return:
+        Add a circle.
+        :param center: Center coordinates of this item
+        :param radius: Radius of circle
+        :param segments: Number of segments used to approximate a circle.
+        :param theta_start: Start point position (relevant when this is an arc)
+        :param theta_length: Values < PI*2 will result in an arc
+        :param rotation: Optional: Control orientation of this item
+        :return: the corresponding geometric primitive builder, allowing further customization
         """
-        params = make_params(SphereParams, locals())
-        node = Node(kind="sphere", params=params)
+        params = make_params(CircleParams, locals())
+        node = Node(kind="circle", params=params)
         self._add_child(node)
         return self
 
     def line(
         self,
         *,
-        position1: tuple[float, float, float],
-        position2: tuple[float, float, float],
-        radius: float,
-        color: ColorT,
-        label: str | None = None,
-        tooltip: str | None = None,
-    ) -> GenericVisuals:
+        start: PositionT,
+        end: PositionT,
+        thickness: float | None = 1.0,
+        dash_start: float | None = None,
+        dash_length: float | None = None,
+        gap_length: float | None = None,
+    ) -> Primitives:
         """
-        Draw a line.
-        :param position1: start of line
-        :param position2: end of line
-        :param radius: width of line segment
-        :param color: color of line, either SVG color name or RGB hex code
-        :param label: optional text label
-        :param tooltip: optional tooltip to show upon hover
-        :return:
+        Defines a line, connecting a start and an end point.
+        :param start: origin coordinates
+        :param end: destination coordinates
+        :param thickness: thickness of this line
+        :param dash_start: offset along this line until the 1st dash is drawn
+        :param dash_length: length of each dash
+        :param gap_length: length of each gap that will follow each completed dash
+        :return: this builder
         """
         params = make_params(LineParams, locals())
         node = Node(kind="line", params=params)
+        self._add_child(node)
+        return self
+
+    def plane(
+        self,
+        *,
+        point: PositionT,
+        normal: PositionT,
+    ) -> Primitives:
+        """
+        Add a plane.
+        :param point: Coordinates on plane.
+        :param normal: Normal vector of plane.
+        :return: the corresponding geometric primitive builder, allowing further customization
+        """
+        params = make_params(PlaneParams, locals())
+        node = Node(kind="plane", params=params)
+        self._add_child(node)
+        return self
+
+    def polygon(
+        self,
+        *,
+        vertices: list[PositionT],
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def star(
+        self,
+        *,
+        center: PositionT,
+        inner_radius: float,
+        outer_radius: float,
+        point_count: int,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def box(
+        self,
+        *,
+        center: PositionT,
+        width: float,
+        height: float,
+        depth: float,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def cylinder(
+        self,
+        *,
+        center: PositionT,
+        radius_top: float,
+        radius_bottom: float,
+        height: float,
+        theta_start: float = 0,
+        theta_length: float = math.pi * 2,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def polyhedron(
+        self,
+        *,
+        vertices: list[Vec3[float]],
+        indices: list[Vec3[float]],
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def tetrahedron(
+        self,
+        *,
+        center: PositionT,
+        radius: float,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def octahedron(
+        self,
+        *,
+        center: PositionT,
+        radius: float,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def dodecahedron(
+        self,
+        *,
+        center: PositionT,
+        radius: float,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def icosahedron(
+        self,
+        *,
+        center: PositionT,
+        radius: float,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def prism(
+        self,
+        *,
+        position: PositionT,
+        base_point_count: int = 3,
+        height: float,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def pyramid(
+        self,
+        *,
+        points: list[Vec3[float]],
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def sphere(
+        self,
+        *,
+        center: PositionT,
+        radius: float,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def torus(
+        self,
+        *,
+        center: PositionT,
+        outer_radius: float,
+        tube_radius: float,
+        theta_start: float = 0,
+        theta_length: float = math.pi * 2,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def wedge(
+        self,
+        *,
+        center: PositionT,
+        width: float,
+        height: float,
+        depth: float,
+        rotation: Mat3[float] | None = None,
+    ) -> Primitives:
+        # TODO doc & impl
+        return self
+
+    def options(self) -> PrimitiveOptions:
+        """
+        Finish adding items to this primitive group and move on to setting its options.
+        :return: the corresponding options builder, allowing further customization
+        """
+        node = Node(kind="options")
+        self._add_child(node)
+        return PrimitiveOptions(node=node, root=self._root)
+
+
+class PrimitiveOptions(_Base):
+    """
+    Shared customizations that are applicable to all geometric primitives.
+    """
+
+    def color(
+        self,
+        *,
+        color: ColorT,
+    ) -> PrimitiveOptions:
+        """
+        Customize the color of this representation.
+        :param color: color using SVG color names or RGB hex code
+        :return: this builder
+        """
+        params = make_params(ColorInlineParams, locals())
+        node = Node(kind="color", params=params)
+        self._add_child(node)
+        return self
+
+    def transparency(self, *, transparency: float = 0.8) -> PrimitiveOptions:
+        """
+        Customize the transparency/opacity of this representation.
+        :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent
+        :return: this builder
+        """
+        params = make_params(TransparencyInlineParams, locals())
+        node = Node(kind="transparency", params=params)
+        self._add_child(node)
+        return self
+
+    def label(self, *, text: str) -> PrimitiveOptions:
+        """
+        Add a text label to a geometric primitive.
+        :param text: label to add in 3D
+        :return: this builder
+        """
+        params = make_params(LabelInlineParams, locals())
+        node = Node(kind="label", params=params)
+        self._add_child(node)
+        return self
+
+    def tooltip(self, *, text: str) -> PrimitiveOptions:
+        """
+        Add a tooltip that shows additional information of a geometric primitive when hovering over it.
+        :param text: text to show upon hover
+        :return: this builder
+        """
+        params = make_params(TooltipInlineParams, locals())
+        node = Node(kind="tooltip", params=params)
+        self._add_child(node)
+        return self
+
+    def focus(
+        self,
+        *,
+        direction: Vec3[float] | None = None,
+        up: Vec3[float] | None = None,
+    ) -> PrimitiveOptions:
+        """
+        Focus on this geometric primitive.
+        :param direction: the direction from which to look at this primitive
+        :param up: where is up relative to the view direction
+        :return: this builder
+        """
+        params = make_params(FocusInlineParams, locals())
+        node = Node(kind="focus", params=params)
         self._add_child(node)
         return self

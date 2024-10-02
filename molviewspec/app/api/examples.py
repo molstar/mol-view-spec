@@ -156,7 +156,7 @@ async def transform_example() -> MVSResponse:
         .parse(format="mmcif")
         .model_structure()
         .transform(
-            rotation=[
+            rotation=(
                 -0.7202161,
                 -0.33009904,
                 -0.61018308,
@@ -166,8 +166,8 @@ async def transform_example() -> MVSResponse:
                 0.59146191,
                 -0.75184312,
                 -0.29138417,
-            ],
-            translation=[-12.54, 46.79, 94.50],
+            ),
+            translation=(-12.54, 46.79, 94.50),
         )
         .component()
         .representation()
@@ -273,6 +273,90 @@ async def additional_properties_example() -> MVSResponse:
         # you can nest properties as needed
         .additional_properties(options={"provide_vendor_specific_props": True, "aim": "Customize representations."})
         .color(color="blue")
+    )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/primitives")
+async def primitives_example() -> MVSResponse:
+    """
+    Any scene can be enriched with "geometric primitives" such as spheres, planes, etc. You can also define scenes using exclusively these nodes.
+    """
+    builder = create_builder()
+    # primitives are defined in "groups", you can add any number of primitives before invoking `options()` and setting
+    # shared properties such as color or transparency
+    builder.primitives().plane(point=(0.0, 1.0, 0.0), normal=(0.0, 1.0, 0.0)).options().label(
+        text="Outer membrane"
+    ).color(color="red")
+    builder.primitives().plane(point=(0.0, -1.0, 0.0), normal=(0.0, -1.0, 0.0)).options().label(
+        text="Inner membrane"
+    ).color(color="blue")
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/primitives-cube")
+async def primitives_cube_example() -> MVSResponse:
+    """
+    Let's draw a cube and 3 lines.
+    """
+    builder = create_builder()
+    builder.primitives().mesh(
+        vertices=[
+            (0.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0),
+            (1.0, 1.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (0.0, 0.0, 1.0),
+            (1.0, 0.0, 1.0),
+            (1.0, 1.0, 1.0),
+            (0.0, 1.0, 1.0),
+        ],
+        indices=[
+            # bottom
+            (0, 1, 2),
+            (0, 2, 3),
+            # top
+            (4, 5, 6),
+            (4, 6, 7),
+            # front
+            (0, 1, 5),
+            (0, 5, 4),
+            # back
+            (2, 3, 7),
+            (2, 7, 6),
+            # left
+            (0, 3, 7),
+            (0, 7, 4),
+            # right
+            (1, 2, 6),
+            (1, 6, 5),
+        ],
+        colors=[
+            "#FF0000",
+            "#FF0000",  # bottom: red
+            "#00FF00",
+            "#00FF00",  # top: green
+            "#0000FF",
+            "#0000FF",  # front: blue
+            "#FFFF00",
+            "#FFFF00",  # back: yellow
+            "#FF00FF",
+            "#FF00FF",  # left: magenta
+            "#00FFFF",
+            "#00FFFF",  # right: cyan
+        ],
+    )
+    # let's throw in some lines that intersect each face in the middle
+    (
+        builder.primitives()
+        # chain primitives to create groups
+        .line(start=(-0.5, 0.5, 0.5), end=(1.5, 0.5, 0.5), thickness=0.1)
+        .line(start=(0.5, -0.5, 0.5), end=(0.5, 1.5, 0.5), thickness=0.1)
+        .line(start=(0.5, 0.5, -0.5), end=(0.5, 0.5, 1.5), thickness=0.1)
+        # use .options() to assign group-wide properties
+        .options()
+        .color(color="black")
+        .transparency(transparency=0.8)
     )
     return PlainTextResponse(builder.get_state())
 
@@ -1567,7 +1651,7 @@ async def portfolio_pdbekb_segment_superpose(
     )
     (
         struct2.transform(
-            rotation=[
+            rotation=(
                 0.60487772,
                 0.37558753,
                 0.70218010,
@@ -1577,12 +1661,12 @@ async def portfolio_pdbekb_segment_superpose(
                 -0.07896334,
                 0.90572706,
                 -0.41644101,
-            ],
-            translation=[
+            ),
+            translation=(
                 -66.71238433,
                 -12.06107678,
                 -46.34873616,
-            ],
+            ),
         )
         .component(selector=ComponentExpression(label_asym_id=chain2))
         .tooltip(text=f"{id2}, chain {chain2}")
@@ -1607,7 +1691,7 @@ async def portfolio_pdbekb_ligand_superpose(chains: str = "1tqn:A,2nnj:A") -> MV
         struct = builder.download(url=structure_url1).parse(format="mmcif").model_structure()
         if i > 0:  # this is just an example, transform will have to be different for each structure, of course
             struct.transform(
-                rotation=[
+                rotation=(
                     0.60487772,
                     0.37558753,
                     0.70218010,
@@ -1617,12 +1701,12 @@ async def portfolio_pdbekb_ligand_superpose(chains: str = "1tqn:A,2nnj:A") -> MV
                     -0.07896334,
                     0.90572706,
                     -0.41644101,
-                ],
-                translation=[
+                ),
+                translation=(
                     -66.71238433,
                     -12.06107678,
                     -46.34873616,
-                ],
+                ),
             )
         if i == 0:
             struct.component(selector=ComponentExpression(label_asym_id=chain)).representation(type="cartoon").color(

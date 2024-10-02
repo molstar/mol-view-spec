@@ -5,7 +5,7 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Literal, Mapping, Optional, Union
+from typing import Any, Literal, Mapping, Optional, Tuple, TypeVar, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -14,6 +14,7 @@ KindT = Literal[
     "root",
     "camera",
     "canvas",
+    "circle",  # TODO should we prefix/namespace geom prims?
     "color",
     "color_from_source",
     "color_from_uri",
@@ -22,14 +23,18 @@ KindT = Literal[
     "component_from_uri",
     "download",
     "focus",
-    "generic_visuals",
     "label",
     "label_from_source",
     "label_from_uri",
     "line",
+    "mesh",
+    "mesh_from_source",
+    "mesh_from_uri",
+    "options",
     "parse",
+    "plane",
+    "primitives",
     "representation",
-    "sphere",
     "structure",
     "tooltip",
     "tooltip_from_source",
@@ -169,6 +174,11 @@ class ParseParams(BaseModel):
 StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 
+ScalarT = TypeVar("ScalarT", int, float)
+Vec3 = Tuple[ScalarT, ScalarT, ScalarT]
+Mat3 = Tuple[ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT]
+
+
 class StructureParams(BaseModel):
     """
     Structure node, describing which type (assembly 1, deposited coordinates, etc.) of the parsed data to create.
@@ -183,8 +193,8 @@ class StructureParams(BaseModel):
     )
     block_header: Optional[str] = Field(description="Reference a specific mmCIF or SDF data block by its block header")
     radius: Optional[float] = Field(description="Radius around model coordinates when loading symmetry mates")
-    ijk_min: Optional[tuple[int, int, int]] = Field(description="Bottom-left Miller indices")
-    ijk_max: Optional[tuple[int, int, int]] = Field(description="Top-right Miller indices")
+    ijk_min: Optional[Vec3[int]] = Field(description="Bottom-left Miller indices")
+    ijk_max: Optional[Vec3[int]] = Field(description="Top-right Miller indices")
 
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]
@@ -552,12 +562,8 @@ class FocusInlineParams(BaseModel):
     Define the camera focus based on function arguments.
     """
 
-    direction: Optional[tuple[float, float, float]] = Field(
-        description="Direction of the view (vector position -> target)"
-    )
-    up: Optional[tuple[float, float, float]] = Field(
-        description="Controls the rotation around the vector between target and position"
-    )
+    direction: Optional[Vec3[float]] = Field(description="Direction of the view (vector position -> target)")
+    up: Optional[Vec3[float]] = Field(description="Controls the rotation around the vector between target and position")
 
 
 class TransformParams(BaseModel):
@@ -565,10 +571,10 @@ class TransformParams(BaseModel):
     Define a transformation.
     """
 
-    rotation: Optional[tuple[float, ...]] = Field(
+    rotation: Optional[Mat3[float]] = Field(
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
-    translation: Optional[tuple[float, float, float]] = Field(description="3d vector describing the translation")
+    translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
 
 
 class CameraParams(BaseModel):
@@ -576,9 +582,9 @@ class CameraParams(BaseModel):
     Controls the global camera position.
     """
 
-    target: tuple[float, float, float] = Field(description="What to look at")
-    position: tuple[float, float, float] = Field(description="The position of the camera")
-    up: tuple[float, float, float] = Field(
+    target: Vec3[float] = Field(description="What to look at")
+    position: Vec3[float] = Field(description="The position of the camera")
+    up: Vec3[float] = Field(
         description="Controls the rotation around the vector between target and position", required=True
     )
 
@@ -591,29 +597,57 @@ class CanvasParams(BaseModel):
     background_color: ColorT = Field(description="Background color using SVG color names or RGB hex code")
 
 
-class SphereParams(BaseModel):
+# TODO anything but Vec3[float] are placeholders and need to be impled
+PositionT = Union[Vec3[float], str, ComponentExpression, list[ComponentExpression]]
+"""
+Positions of primitives can be defined by 3D vector, by providing a unique reference of a component, or by providing 
+appropriate selection expressions.
+"""
+
+
+class MeshInlineParams(BaseModel):
     """
-    Experimental: Defines a sphere primitive.
+    Low-level, fully customizable mesh representation of a shape.
     """
 
-    position: tuple[float, float, float] = Field(description="Position of the primitive")
-    radius: float = Field(description="Radius of the sphere")
-    color: ColorT = Field(description="Color of the sphere")
-    label: Optional[str] = Field(description="Optional text label")
-    tooltip: Optional[str] = Field(description="Optional tooltip label, shown upon hover")
+    vertices: list[Vec3[float]]
+    indices: list[Vec3[int]]
+    colors: Optional[list[ColorT]]
+
+
+class MeshFromUriParams(_DataFromUriParams):
+    """
+    Mesh based on another resource. Currently, only JSON is supported.
+    """
+
+
+class MeshFromSourceParams(_DataFromSourceParams):
+    """
+    Mesh based on a category in the source file. Currently, only JSON is supported.
+    """
+
+
+class CircleParams(BaseModel):
+    center: PositionT = Field(description="Center of circle.")
+    radius: float = Field(description="Radius of circle.", gt=0.0)
+    segments: Optional[int] = Field(description="Number of segments to draw, level of detail.")
+    theta_start: Optional[float] = Field(description="Start point position (relevant when this is an arc).")
+    theta_length: Optional[float] = Field(description="Values < PI*2 will result in an arc.")
+    rotation: Optional[Mat3[float]] = Field(description="Optional rotation of this item.")
 
 
 class LineParams(BaseModel):
-    """
-    Experimental: Defines a line primitive.
-    """
+    start: PositionT = Field(description="Start of this line.")
+    end: PositionT = Field(description="End of this line.")
+    thickness: Optional[float] = Field(description="Thickness of this line.")
+    dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
+    dash_length: Optional[float] = Field(description="Length of each dash.")
+    gap_length: Optional[float] = Field(description="Length of optional gaps between dashes. Set to 0 for solid line.")
 
-    position1: tuple[float, float, float] = Field(description="Start position of the primitive")
-    position2: tuple[float, float, float] = Field(description="End position of the primitive")
-    radius: float = Field(description="Radius of the line")
-    color: ColorT = Field(description="Color of the line")
-    label: Optional[str] = Field(description="Optional text label")
-    tooltip: Optional[str] = Field(description="Optional tooltip label, shown upon hover")
+
+class PlaneParams(BaseModel):
+    point: PositionT = Field(description="Point on plane.")
+    normal: Vec3[float] = Field(description="Normal vector of plane.")
 
 
 def validate_state_tree(json: str) -> None:
