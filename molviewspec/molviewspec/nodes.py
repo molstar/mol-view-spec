@@ -162,7 +162,7 @@ class DownloadParams(BaseModel):
     url: str = Field(description="URL from which to pull structure data.")
 
 
-ParseFormatT = Literal["mmcif", "bcif", "pdb", "map"]
+ParseFormatT = Literal["mmcif", "bcif", "pdb", "map", "vs-density"]
 # RawVolumeSourceT = Literal["map", "omezarr", "ometiff_image", "tiff_stack"]
 RawVolumeSourceT = Literal["map"]
 
