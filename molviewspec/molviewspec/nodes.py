@@ -5,7 +5,7 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Literal, Mapping, Optional, Union
+from typing import Any, Literal, Mapping, Optional, TypedDict, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -28,6 +28,7 @@ KindT = Literal[
     "label_from_uri",
     "line",
     "parse",
+    "raw_volume",
     "representation",
     "sphere",
     "structure",
@@ -36,6 +37,8 @@ KindT = Literal[
     "tooltip_from_uri",
     "transform",
     "transparency",
+    "volume_representation",
+    "vs_volume"
 ]
 
 
@@ -155,9 +158,46 @@ class DownloadParams(BaseModel):
     url: str = Field(description="URL from which to pull structure data.")
 
 
-ParseFormatT = Literal["mmcif", "bcif", "pdb"]
+ParseFormatT = Literal["mmcif", "bcif", "pdb", "map", "vs-density"]
+# RawVolumeSourceT = Literal["map", "omezarr", "ometiff_image", "tiff_stack"]
+RawVolumeSourceT = Literal["map"]
 
+ChannelIdsMapping = dict[str, str]
+    
 
+class RawVolumeOptionsT(TypedDict):
+    """
+    Specifies the desired voxel size. Overwrites the automatically determined voxel size (e.g., the one based on the map header or its analogue for other formats).
+    Specifies the mapping of sequential channel IDs to user-defined ones.    
+    """
+    voxel_size: float | None
+    channel_ids_mapping: ChannelIdsMapping | None
+
+class VSVolumeOptionsT(TypedDict):
+    """
+    Specifies the max points of the volume to be loaded.
+    Specifies the time frame index the data for which will be loaded. If not provided, the data for all of the available time frame indices will be loaded.
+    Specifies the channel ID the data for which will be loaded. If not provided, the data for all of the available channel IDs will be loaded.
+    """
+    max_points: int | None
+    time: int | None
+    channel_id: str | None
+    
+class RawVolumeParams(BaseModel):
+    """
+    Create a volume from a parsed data resource based on the provided parameters.
+    """
+
+    source: RawVolumeSourceT = Field(description="The type of the raw input file with volumetric data.")
+    options: RawVolumeOptionsT | None = Field(description="Specifies the voxel size and mapping of sequential channel IDs to user-defined channel IDs.")
+
+class VSVolumeParams(BaseModel):
+    """
+    Create a volume from a parsed data resource based on the provided parameters.
+    """
+
+    options: VSVolumeOptionsT | None = Field(description="Optionally specifies the max points, time frame index, and channel ID")
+    
 class ParseParams(BaseModel):
     """
     Parse node, describing how to parse downloaded data.
@@ -228,8 +268,9 @@ class ComponentExpression(BaseModel):
     atom_id: Optional[int] = Field(description="Unique atom identifier (`_atom_site.id`)")
     atom_index: Optional[int] = Field(description="0-based atom index in the source file")
 
-
-RepresentationTypeT = Literal["ball_and_stick", "cartoon", "surface"]
+# TODO: "slice"
+VolumeRepresentationTypeT = Literal["isosurface", "direct_volume", "slice"]
+RepresentationTypeT = Literal["ball_and_stick", "cartoon"]
 ColorNamesT = Literal[
     "aliceblue",
     "antiquewhite",
@@ -381,6 +422,14 @@ ColorNamesT = Literal[
 ]
 ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
 
+
+# TODO: Segmentation too?
+class VolumeRepresentationParams(BaseModel):
+    """
+    Representation node, describing how to represent a volume.
+    """
+    # TODO: add slice
+    type: VolumeRepresentationTypeT = Field(description="Representation type, i.e. isosurface or direct_volume")
 
 class RepresentationParams(BaseModel):
     """

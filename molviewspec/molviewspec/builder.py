@@ -11,6 +11,8 @@ from typing import Self, Sequence
 
 from pydantic import BaseModel, PrivateAttr
 
+# TODO: fix imports prior to PR
+# from .nodes import (
 from molviewspec.nodes import (
     CameraParams,
     CanvasParams,
@@ -34,6 +36,9 @@ from molviewspec.nodes import (
     Node,
     ParseFormatT,
     ParseParams,
+    RawVolumeOptionsT,
+    RawVolumeParams,
+    RawVolumeSourceT,
     RepresentationParams,
     RepresentationTypeT,
     SchemaFormatT,
@@ -46,6 +51,10 @@ from molviewspec.nodes import (
     TooltipInlineParams,
     TransformParams,
     TransparencyInlineParams,
+    VSVolumeOptionsT,
+    VSVolumeParams,
+    VolumeRepresentationParams,
+    VolumeRepresentationTypeT,
 )
 from molviewspec.utils import get_major_version_tag, make_params
 
@@ -232,6 +241,37 @@ class Parse(_Base):
     """
     Builder step with operations needed after parsing structure data.
     """
+    def raw_volume(
+        self,
+        *,
+        source: RawVolumeSourceT,
+        options: RawVolumeOptionsT | None = None,
+        additional_properties: AdditionalProperties = None,
+    ) -> Volume:
+        """
+        Create a raw volume
+        """
+        params = make_params(RawVolumeParams, locals(), type="raw_volume")
+        node = Node(kind="raw_volume", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return Volume(node=node, root=self._root)
+    
+    # TODO: consider merging with raw_volume into a single "volume" node
+    # followed by adding another source (possibly with prior renaming
+    # of the "source" param to e.g. "type" or something like this).
+    def vs_volume(
+        self,
+        *,
+        options: VSVolumeOptionsT | None = None,
+        additional_properties: AdditionalProperties = None,
+    ) -> Volume:
+        """
+        Create a volume based on Volume Server (VS) data
+        """
+        params = make_params(VSVolumeParams, locals(), type="vs_volume")
+        node = Node(kind="vs_volume", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return Volume(node=node, root=self._root)
 
     def model_structure(
         self,
@@ -315,7 +355,24 @@ class Parse(_Base):
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
-
+    
+class Volume(_Base):
+    """
+    Builder step with operations needed after defining the volume to work with.
+    """
+    def volume_representation(
+        self, *, type: VolumeRepresentationTypeT = "isosurface", additional_properties: AdditionalProperties = None
+    ) -> VolumeRepresentation:
+        """
+        Add a representation for this component.
+        :param type: the type of representation, defaults to 'isosurface'
+        :param additional_properties: optional, custom data to attach to this node
+        :return: a builder that handles operations at representation level
+        """
+        params = make_params(VolumeRepresentationParams, locals())
+        node = Node(kind="volume_representation", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return VolumeRepresentation(node=node, root=self._root)
 
 class Structure(_Base):
     """
@@ -665,6 +722,46 @@ class Representation(_Base):
         """
         Customize the transparency/opacity of this representation.
         :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent
+        :return: this builder
+        """
+        raise NotImplementedError("'transparency' method is not implemented yet")
+        # params = make_params(TransparencyInlineParams, locals())
+        # node = Node(kind="transparency", params=params, additional_properties=additional_properties)
+        # self._add_child(node)
+        # return self
+
+
+class VolumeRepresentation(_Base):
+    """
+    Builder step with operations relating to particular representations.
+    """
+    def color(
+        self,
+        *,
+        color: ColorT,
+        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
+        additional_properties: AdditionalProperties = None,
+    ) -> Representation:
+        """
+        Customize the color of this representation.
+        :param color: color using SVG color names or RGB hex code
+        :param selector: optional selector, defaults to applying the color to the whole representation
+        :param additional_properties: optional, custom data to attach to this node
+        :return: this builder
+        """
+        params = make_params(ColorInlineParams, locals())
+        node = Node(kind="color", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return self
+
+    # TODO: make it work
+    def transparency(
+        self, *, transparency: float = 0.8, additional_properties: AdditionalProperties = None
+    ) -> Representation:
+        """
+        Customize the transparency/opacity of this representation.
+        :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent
+        :param additional_properties: optional, custom data to attach to this node
         :return: this builder
         """
         params = make_params(TransparencyInlineParams, locals())
