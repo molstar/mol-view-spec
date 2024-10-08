@@ -38,7 +38,8 @@ KindT = Literal[
     "tooltip_from_uri",
     "transform",
     "transparency",
-    "volume_representation"
+    "volume_representation",
+    "vs_volume"
 ]
 
 
@@ -177,14 +178,30 @@ class RawVolumeOptionsT(TypedDict):
     voxel_size: float | None
     channel_ids_mapping: ChannelIdsMapping | None
 
+class VSVolumeOptionsT(TypedDict):
+    """
+    Specifies the max points of the volume to be loaded.
+    Specifies the time frame index the data for which will be loaded. If not provided, the data for all of the available time frame indices will be loaded.
+    Specifies the channel ID the data for which will be loaded. If not provided, the data for all of the available channel IDs will be loaded.
+    """
+    max_points: int | None
+    time: int | None
+    channel_id: str | None
     
 class RawVolumeParams(BaseModel):
     """
-    Create a volume from a parsed data resource based on the provided parameters
+    Create a volume from a parsed data resource based on the provided parameters.
     """
 
     source: RawVolumeSourceT = Field(description="The type of the raw input file with volumetric data.")
-    options: RawVolumeOptionsT = Field(description="Specifies the voxel size and mapping of sequential channel IDs to user-defined channel IDs.")
+    options: RawVolumeOptionsT | None = Field(description="Specifies the voxel size and mapping of sequential channel IDs to user-defined channel IDs.")
+
+class VSVolumeParams(BaseModel):
+    """
+    Create a volume from a parsed data resource based on the provided parameters.
+    """
+
+    options: VSVolumeOptionsT | None = Field(description="Optionally specifies the max points, time frame index, and channel ID")
     
 class ParseParams(BaseModel):
     """

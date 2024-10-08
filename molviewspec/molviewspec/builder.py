@@ -11,6 +11,8 @@ from typing import Sequence
 
 from pydantic import BaseModel, PrivateAttr
 
+# TODO: fix imports prior to PR
+# from .nodes import (
 from molviewspec.nodes import (
     AdditionalProperties,
     ApplySelectionInlineParams,
@@ -51,6 +53,8 @@ from molviewspec.nodes import (
     TooltipInlineParams,
     TransformParams,
     TransparencyInlineParams,
+    VSVolumeOptionsT,
+    VSVolumeParams,
     VolumeRepresentationParams,
     VolumeRepresentationTypeT,
 )
@@ -235,14 +239,31 @@ class Parse(_Base):
         source: RawVolumeSourceT,
         options: RawVolumeOptionsT | None = None,
         additional_properties: AdditionalProperties = None,
-    ) -> RawVolume:
+    ) -> Volume:
         """
         Create a raw volume
         """
         params = make_params(RawVolumeParams, locals(), type="raw_volume")
         node = Node(kind="raw_volume", params=params, additional_properties=additional_properties)
         self._add_child(node)
-        return RawVolume(node=node, root=self._root)
+        return Volume(node=node, root=self._root)
+    
+    # TODO: consider merging with raw_volume into a single "volume" node
+    # followed by adding another source (possibly with prior renaming
+    # of the "source" param to e.g. "type" or something like this).
+    def vs_volume(
+        self,
+        *,
+        options: VSVolumeOptionsT | None = None,
+        additional_properties: AdditionalProperties = None,
+    ) -> Volume:
+        """
+        Create a volume based on Volume Server (VS) data
+        """
+        params = make_params(VSVolumeParams, locals(), type="vs_volume")
+        node = Node(kind="vs_volume", params=params, additional_properties=additional_properties)
+        self._add_child(node)
+        return Volume(node=node, root=self._root)
 
     def model_structure(
         self,
@@ -335,11 +356,9 @@ class Parse(_Base):
         self._add_child(node)
         return Structure(node=node, root=self._root)
     
-
-
-class RawVolume(_Base):
+class Volume(_Base):
     """
-    Builder step with operations needed after defining the raw volume to work with.
+    Builder step with operations needed after defining the volume to work with.
     """
     def volume_representation(
         self, *, type: VolumeRepresentationTypeT = "isosurface", additional_properties: AdditionalProperties = None
@@ -757,10 +776,11 @@ class Representation(_Base):
         :param additional_properties: optional, custom data to attach to this node
         :return: this builder
         """
-        params = make_params(TransparencyInlineParams, locals())
-        node = Node(kind="transparency", params=params, additional_properties=additional_properties)
-        self._add_child(node)
-        return self
+        raise NotImplementedError("'transparency' method is not implemented yet")
+        # params = make_params(TransparencyInlineParams, locals())
+        # node = Node(kind="transparency", params=params, additional_properties=additional_properties)
+        # self._add_child(node)
+        # return self
 
 
 class VolumeRepresentation(_Base):
@@ -786,6 +806,7 @@ class VolumeRepresentation(_Base):
         self._add_child(node)
         return self
 
+    # TODO: make it work
     def transparency(
         self, *, transparency: float = 0.8, additional_properties: AdditionalProperties = None
     ) -> Representation:
