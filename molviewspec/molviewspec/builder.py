@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import math
 import os
-from typing import Self, Sequence
+from typing import Sequence
 
 from pydantic import BaseModel, PrivateAttr
 
@@ -23,6 +23,7 @@ from molviewspec.nodes import (
     ComponentFromUriParams,
     ComponentInlineParams,
     ComponentSelectorT,
+    CustomT,
     DescriptionFormatT,
     DownloadParams,
     FocusInlineParams,
@@ -79,23 +80,6 @@ class _Base(BaseModel):
         if self._node.children is None:
             self._node.children = []
         self._node.children.append(node)
-
-    def additional_properties(self, **kwargs) -> Self:
-        """
-        Adds provided key-value pairs as additional properties to this node.
-        key=None to remove a property.
-        """
-        properties = self._node.additional_properties or {}
-
-        for k, v in kwargs.items():
-            if v is None:
-                # remove props with value of None
-                properties.pop(k, None)
-            else:
-                properties[k] = v
-
-        self._node.additional_properties = properties or None
-        return self
 
 
 class Root(_Base):
@@ -326,10 +310,12 @@ class Structure(_Base):
         self,
         *,
         selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
+        custom: CustomT = None,
     ) -> Component:
         """
         Define a new component/selection for the given structure.
         :param selector: a predefined component selector or one or more component selection expressions
+        :param custom: optional, custom data to attach to this node
         :return: a builder that handles operations at component level
         """
         params = make_params(ComponentInlineParams, locals())
@@ -538,10 +524,11 @@ class Component(_Base):
     Builder step with operations relevant for a particular component.
     """
 
-    def representation(self, *, type: RepresentationTypeT = "cartoon") -> Representation:
+    def representation(self, *, type: RepresentationTypeT = "cartoon", custom: CustomT = None) -> Representation:
         """
         Add a representation for this component.
         :param type: the type of representation, defaults to 'cartoon'
+        :param custom: optional, custom data to attach to this node
         :return: a builder that handles operations at representation level
         """
         params = make_params(RepresentationParams, locals())
@@ -649,11 +636,13 @@ class Representation(_Base):
         *,
         color: ColorT,
         selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
+        custom: CustomT = None,
     ) -> Representation:
         """
         Customize the color of this representation.
         :param color: color using SVG color names or RGB hex code
         :param selector: optional selector, defaults to applying the color to the whole representation
+        :param custom: optional, custom data to attach to this node
         :return: this builder
         """
         params = make_params(ColorInlineParams, locals())
