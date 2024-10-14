@@ -35,6 +35,7 @@ from molviewspec.nodes import (
     Node,
     ParseFormatT,
     ParseParams,
+    RefT,
     RepresentationParams,
     RepresentationTypeT,
     SchemaFormatT,
@@ -174,10 +175,11 @@ class Root(_Base):
         self._add_child(node)
         return self
 
-    def download(self, *, url: str) -> Download:
+    def download(self, *, url: str, ref: RefT = None) -> Download:
         """
         Add a new structure to the builder by downloading structure data from a URL.
         :param url: source of structure data
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations on the downloaded resource
         """
         params = make_params(DownloadParams, locals())
@@ -200,10 +202,11 @@ class Download(_Base):
     Builder step with operations needed after downloading structure data.
     """
 
-    def parse(self, *, format: ParseFormatT) -> Parse:
+    def parse(self, *, format: ParseFormatT, ref: RefT = None) -> Parse:
         """
         Parse the content by specifying the file format.
         :param format: specify the format of your structure data
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations on the parsed content
         """
         params = make_params(ParseParams, locals())
@@ -223,6 +226,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Create a structure for the deposited coordinates.
@@ -243,6 +247,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Create an assembly structure.
@@ -265,6 +270,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Create symmetry structure for a given range of Miller indices.
@@ -287,6 +293,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Create structure of symmetry mates.
@@ -311,11 +318,13 @@ class Structure(_Base):
         *,
         selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
         custom: CustomT = None,
+        ref: RefT = None,
     ) -> Component:
         """
         Define a new component/selection for the given structure.
         :param selector: a predefined component selector or one or more component selection expressions
         :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at component level
         """
         params = make_params(ComponentInlineParams, locals())
@@ -334,6 +343,8 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
         field_values: str | list[str] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Component:
         """
         Define a new component/selection for the given structure by fetching additional data from a resource.
@@ -345,6 +356,8 @@ class Structure(_Base):
         :param block_index: only applies when format is 'cif' or 'bcif'
         :param schema: granularity/type of the selection
         :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at component level
         """
         if isinstance(field_values, str):
@@ -363,6 +376,8 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
         field_values: str | list[str] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Component:
         """
         Define a new component/selection for the given structure by using categories from the source file.
@@ -372,6 +387,8 @@ class Structure(_Base):
         :param block_index: only applies when format is 'cif' or 'bcif'
         :param schema: granularity/type of the selection
         :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at component level
         """
         if isinstance(field_values, str):
@@ -486,11 +503,15 @@ class Structure(_Base):
         *,
         rotation: Sequence[float] | None = None,
         translation: Sequence[float] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Transform a structure by applying a rotation matrix and/or translation vector.
         :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left
         :param translation: 3d vector describing the translation
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         if rotation is not None:
@@ -524,11 +545,14 @@ class Component(_Base):
     Builder step with operations relevant for a particular component.
     """
 
-    def representation(self, *, type: RepresentationTypeT = "cartoon", custom: CustomT = None) -> Representation:
+    def representation(
+        self, *, type: RepresentationTypeT = "cartoon", custom: CustomT = None, ref: RefT = None
+    ) -> Representation:
         """
         Add a representation for this component.
         :param type: the type of representation, defaults to 'cartoon'
         :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at representation level
         """
         params = make_params(RepresentationParams, locals())

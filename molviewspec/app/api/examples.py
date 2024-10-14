@@ -56,7 +56,10 @@ async def label_example(id: str = "1lap") -> MVSResponse:
 
     # label the residues with custom text & focus it (i.e., position camera)
     # leverage vendor-specific properties to request non-covalent interactions in Mol*
-    structure.component(selector=residue, custom={ "molstar_show_non_covalent_interactions": True, "molstar_non_covalent_interactions_radius_ang": 5.0 }).label(text="ALA 120 A: My Label").focus()
+    structure.component(
+        selector=residue,
+        custom={"molstar_show_non_covalent_interactions": True, "molstar_non_covalent_interactions_radius_ang": 5.0},
+    ).label(text="ALA 120 A: My Label").focus()
 
     # structure.label_from_source(schema="residue", category_name="my_custom_cif_category")
 
@@ -261,10 +264,27 @@ async def additional_properties_example() -> MVSResponse:
         .parse(format="mmcif")
         .model_structure()
         .component()
-        .representation(type='cartoon', custom={'a': 'hello'})
-        .color(selector='protein', color='#0000ff', custom={'b': 'ciao'})
-        .color(selector='ligand', color='#ff0000')
-        .color(color='#555555', custom={'c': 'salut'})
+        .representation(type="cartoon", custom={"a": "hello"})
+        .color(selector="protein", color="#0000ff", custom={"b": "ciao"})
+        .color(selector="ligand", color="#ff0000")
+        .color(color="#555555", custom={"c": "salut"})
+    )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/refs")
+async def refs_example() -> MVSResponse:
+    """
+    MolViewSpec allows assigning string references to nodes that allow referencing them
+    from various parts of the tree later, for example when building primitive shapes.
+    """
+    builder = create_builder()
+    (
+        builder.download(url=_url_for_mmcif("4hhb"))
+        .parse(format="mmcif")
+        .model_structure(ref="structure")
+        .component()
+        .representation(type="cartoon")
     )
     return PlainTextResponse(builder.get_state())
 
@@ -1266,11 +1286,11 @@ async def portfolio_entity(entity_id: str = "1", assembly_id: str = "1") -> MVSR
     highlight = ENTITY_COLORS_1HDA.get(entity_id, "black")
     for type, entities in ENTITIES_1HDA.items():
         for ent in entities:
-            (struct
-            .component(selector=ComponentExpression(label_entity_id=ent))
-            .representation(type="ball_and_stick" if type=="ligand" else "cartoon")
-            .color(color = highlight if ent==entity_id else BASE_COLOR)
-            .transparency(transparency = 0 if ent==entity_id else BASE_TRANSPARENCY)
+            (
+                struct.component(selector=ComponentExpression(label_entity_id=ent))
+                .representation(type="ball_and_stick" if type == "ligand" else "cartoon")
+                .color(color=highlight if ent == entity_id else BASE_COLOR)
+                .transparency(transparency=0 if ent == entity_id else BASE_TRANSPARENCY)
             )
     builder.camera(**CAMERA_FOR_1HDA)
     return PlainTextResponse(builder.get_state())
@@ -1413,8 +1433,12 @@ async def portfolio_modres() -> MVSResponse:
     builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=ASSEMBLY)
-    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).transparency(transparency=BASE_TRANSPARENCY)
-    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR).transparency(transparency=BASE_TRANSPARENCY)
+    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).transparency(
+        transparency=BASE_TRANSPARENCY
+    )
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR).transparency(
+        transparency=BASE_TRANSPARENCY
+    )
     struct.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=54)).tooltip(
         text="Modified residue SUI: (3-amino-2,5-dioxo-1-pyrrolidinyl)acetic acid"
     ).representation(type="ball_and_stick").color(color="#ED645A")

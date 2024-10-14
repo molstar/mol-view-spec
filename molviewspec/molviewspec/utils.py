@@ -14,9 +14,12 @@ def make_params(params_type: Type[TParams], values=None, /, **more_values: objec
 
     # propagate custom properties
     if values:
-        custom_values = values.get('custom')
+        custom_values = values.get("custom")
         if custom_values is not None:
-            result['custom'] = custom_values
+            result["custom"] = custom_values
+        ref = values.get("ref")
+        if ref is not None:
+            result["ref"] = ref
 
     for field in params_type.__fields__.values():
         # must use alias here to properly resolve goodies like `schema_`
