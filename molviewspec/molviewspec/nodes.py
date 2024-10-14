@@ -30,10 +30,10 @@ KindT = Literal[
     "mesh",
     "mesh_from_source",
     "mesh_from_uri",
-    "options",
     "parse",
     "plane",
     "primitives",
+    "primitives_options",
     "representation",
     "structure",
     "tooltip",
@@ -241,7 +241,7 @@ class ComponentExpression(BaseModel):
 
 class PrimitiveComponentExpression(ComponentExpression):
     # TODO: Use RefT when corresponding PR is merged
-    structure_ref: str | None = Field(None, description="Refence to a structure node to apply this expresion to")
+    structure_ref: str | None = Field(None, description="Refence to a structure node to apply this expresion to. If undefined, get the structure implicitly from the tree.")
 
 
 RepresentationTypeT = Literal["ball_and_stick", "cartoon", "surface"]
@@ -603,7 +603,7 @@ class CanvasParams(BaseModel):
 
 
 # TODO anything but Vec3[float] are placeholders and need to be impled
-PositionT = Union[Vec3[float], str, PrimitiveComponentExpression, list[PrimitiveComponentExpression]]
+PositionT = Union[Vec3[float], PrimitiveComponentExpression, list[PrimitiveComponentExpression]]
 """
 Positions of primitives can be defined by 3D vector, by providing a unique reference of a component, or by providing 
 appropriate selection expressions.
@@ -617,7 +617,11 @@ class MeshInlineParams(BaseModel):
 
     vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
     indices: list[int] = Field(description="3N length array of indices into vertices that form triangles (t1_1, t1_2, t1_3, ...)")
-    colors: Optional[list[ColorT]]
+    triangle_groups: Optional[list[int]] = Field(description="Assign a number to each triangle to group them.")
+    group_colors: Optional[Mapping[int, ColorT]] = Field(description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over triangle_colors.")
+    group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
+    triangle_colors: Optional[list[ColorT]] = Field(description="Assign a color to each triangle.")
+
 
 
 class MeshFromUriParams(_DataFromUriParams):
@@ -648,6 +652,8 @@ class LineParams(BaseModel):
     dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
     dash_length: Optional[float] = Field(description="Length of each dash.")
     gap_length: Optional[float] = Field(description="Length of optional gaps between dashes. Set to 0 for solid line.")
+    color: Optional[ColorT] = Field(description="Color of the line. If not specified, the primitives grouo color is used.")
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the line.")
 
 
 class PlaneParams(BaseModel):

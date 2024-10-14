@@ -526,6 +526,17 @@ class Structure(_Base):
         node = Node(kind="transform", params=params)
         self._add_child(node)
         return self
+    
+    def primitives(self) -> Primitives:
+        """
+        Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
+        shared options (color, transparency etc.).
+        These primitives can implicitly reference locations in the parent structure.
+        :return: a builder for geometric primitives
+        """
+        node = Node(kind="primitives")
+        self._add_child(node)
+        return Primitives(node=node, root=self._root)
 
     @staticmethod
     def _is_rotation_matrix(t: Sequence[float], eps: float = 0.005):
@@ -688,14 +699,20 @@ class Primitives(_Base):
         *,
         vertices: list[Vec3[float]],
         indices: list[Vec3[int]],
-        colors: list[ColorT] | None = None,
+        triangle_colors: list[ColorT] | None = None,
+        triangle_groups: list[int] | None = None,
+        group_colors: dict[int, ColorT] | None = None,
+        group_tooltips: dict[int, str] | None = None,
         # TODO should everything support `rotation`, just for convenience & consistency?
     ) -> Primitives:
         """
         Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
         :param vertices: collection of vertices
         :param indices: collection of indices
-        :param colors: color value of each triangle
+        :param triangle_colors: color value of each triangle
+        :param triangle_groups: group number for each triangle
+        :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
+        :param group_tooltips: mapping of group number to optional hover tooltip
         :return: this builder
         """
         params = make_params(MeshInlineParams, locals())
@@ -740,6 +757,8 @@ class Primitives(_Base):
         dash_start: float | None = None,
         dash_length: float | None = None,
         gap_length: float | None = None,
+        color: ColorT | None = None,
+        tooltip: str | None = None,
     ) -> Primitives:
         """
         Defines a line, connecting a start and an end point.
@@ -749,6 +768,8 @@ class Primitives(_Base):
         :param dash_start: offset along this line until the 1st dash is drawn
         :param dash_length: length of each dash
         :param gap_length: length of each gap that will follow each completed dash
+        :param color: color of the line
+        :param tooltip: tooltip to show when hovering the line
         :return: this builder
         """
         params = make_params(LineParams, locals())
@@ -926,7 +947,7 @@ class Primitives(_Base):
         Finish adding items to this primitive group and move on to setting its options.
         :return: the corresponding options builder, allowing further customization
         """
-        node = Node(kind="options")
+        node = Node(kind="primitives_options")
         self._add_child(node)
         return PrimitiveOptions(node=node, root=self._root)
 
