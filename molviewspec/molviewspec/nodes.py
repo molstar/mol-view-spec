@@ -615,8 +615,8 @@ class MeshInlineParams(BaseModel):
     Low-level, fully customizable mesh representation of a shape.
     """
 
-    vertices: list[Vec3[float]]
-    indices: list[Vec3[int]]
+    vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
+    indices: list[int] = Field(description="3N length array of indices into vertices that form triangles (t1_1, t1_2, t1_3, ...)")
     colors: Optional[list[ColorT]]
 
 
