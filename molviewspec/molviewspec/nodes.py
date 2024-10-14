@@ -239,6 +239,11 @@ class ComponentExpression(BaseModel):
     atom_index: Optional[int] = Field(description="0-based atom index in the source file")
 
 
+class PrimitiveComponentExpression(ComponentExpression):
+    # TODO: Use RefT when corresponding PR is merged
+    structure_ref: str | None = Field(None, description="Refence to a structure node to apply this expresion to")
+
+
 RepresentationTypeT = Literal["ball_and_stick", "cartoon", "surface"]
 ColorNamesT = Literal[
     "aliceblue",
@@ -598,7 +603,7 @@ class CanvasParams(BaseModel):
 
 
 # TODO anything but Vec3[float] are placeholders and need to be impled
-PositionT = Union[Vec3[float], str, ComponentExpression, list[ComponentExpression]]
+PositionT = Union[Vec3[float], str, PrimitiveComponentExpression, list[PrimitiveComponentExpression]]
 """
 Positions of primitives can be defined by 3D vector, by providing a unique reference of a component, or by providing 
 appropriate selection expressions.
