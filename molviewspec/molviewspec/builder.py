@@ -144,7 +144,6 @@ class _PrimitivesMixin:
         :param references: optional list of nodes the referenced by the dat
         :return: current builder node
         """
-        # TODO: support focusing
         params = make_params(PrimitivesFromUriParams, locals())
         node = Node(kind="primitives_from_uri", params=params)
         self._add_child(node)
