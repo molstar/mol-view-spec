@@ -417,7 +417,7 @@ async def primitives_cube_example() -> MVSResponse:
     structure = builder.download(url=_url_for_mmcif("1tqn")).parse(format="mmcif").model_structure()
     (structure.component(selector="polymer").representation().color(color="blue"))
     (
-        structure.component(selector=[ComponentExpression(auth_seq_id=251), ComponentExpression(auth_seq_id=508)])
+        structure.component(selector=[ComponentExpression(auth_seq_id=258), ComponentExpression(auth_seq_id=508)])
         .representation(type="ball_and_stick")
         .color(color="green")
     )
