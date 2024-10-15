@@ -549,13 +549,13 @@ async def validation_data(id: str) -> Response:
 @router.get("/data/basic-primitives")
 async def basic_primitives_data() -> Response:
     """
-    Download the content of `molecule.cif`.
+    Create example primitive data.
     """
     builder = create_builder().primitives(default_tooltip="Triangle")
     (
         builder.line(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A"),
-        builder.line(start=(0, 0, 0), end=(0.5, (1 + 0.5**2) ** 0.5, 0), color="green", tooltip="B"),
-        builder.line(start=(1, 0, 0), end=(0.5, (1 + 0.5**2) ** 0.5, 0), color="blue"),
+        builder.line(start=(0, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="green", tooltip="B"),
+        builder.line(start=(1, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="blue"),
     )
     return JSONResponse(builder.as_data().dict())
 
