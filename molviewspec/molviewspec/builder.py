@@ -109,7 +109,7 @@ class _Base(BaseModel):
 
 class _PrimitivesMixin:
     def primitives(
-        self,
+        self: _Base,
         *,
         default_color: ColorT | None = None,
         default_label_color: ColorT | None = None,
@@ -131,12 +131,12 @@ class _PrimitivesMixin:
         return Primitives(node=node, root=self._root)
 
     def primitives_from_uri(
-        self,
+        self: _Base,
         *,
         uri: str,
         format: Literal["json"] = "json",
         references: list[str] | None = None,
-    ) -> Self:
+    ) -> PrimitivesFromUri:
         """
         Allows the definition of a (group of) geometric primitives provided dynamically.
         :param uri: location of the resource
@@ -149,6 +149,25 @@ class _PrimitivesMixin:
         node = Node(kind="primitives_from_uri", params=params)
         self._add_child(node)
         return Primitives(node=node, root=self._root)
+
+
+class _FocusMixin:
+    def focus(
+        self: _Base,
+        *,
+        direction: Vec3[float] | None = None,
+        up: Vec3[float] | None = None,
+    ) -> Self:
+        """
+        Focus on this structure or component.
+        :param direction: the direction from which to look at this component
+        :param up: where is up relative to the view direction
+        :return: this builder
+        """
+        params = make_params(FocusInlineParams, locals())
+        node = Node(kind="focus", params=params)
+        self._add_child(node)
+        return self
 
 
 class Root(_Base, _PrimitivesMixin):
@@ -575,7 +594,7 @@ class Structure(_Base, _PrimitivesMixin):
         return math.isclose(det3x3, 1, abs_tol=eps)
 
 
-class Component(_Base):
+class Component(_Base, _FocusMixin):
     """
     Builder step with operations relevant for a particular component.
     """
@@ -610,23 +629,6 @@ class Component(_Base):
         """
         params = make_params(TooltipInlineParams, locals())
         node = Node(kind="tooltip", params=params)
-        self._add_child(node)
-        return self
-
-    def focus(
-        self,
-        *,
-        direction: Vec3[float] | None = None,
-        up: Vec3[float] | None = None,
-    ) -> Component:
-        """
-        Focus on this structure or component.
-        :param direction: the direction from which to look at this component
-        :param up: where is up relative to the view direction
-        :return: this builder
-        """
-        params = make_params(FocusInlineParams, locals())
-        node = Node(kind="focus", params=params)
         self._add_child(node)
         return self
 
@@ -715,7 +717,13 @@ class Representation(_Base):
         return self
 
 
-class Primitives(_Base):
+class PrimitivesFromUri(_Base, _FocusMixin):
+    """
+    A collection of primitives (such as spheres, lines, ...) that will be loaded from provided resource.
+    """
+
+
+class Primitives(_Base, _FocusMixin):
     """
     A collection of primitives (such as spheres, lines, ...) that will be grouped together and can be customized using
     options.
@@ -757,8 +765,6 @@ class Primitives(_Base):
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
-
-    # TODO mesh_from_uri, mesh_from_source
 
     # TODO need ellipsis support
     def circle(
@@ -1015,21 +1021,4 @@ class Primitives(_Base):
         rotation: Mat3[float] | None = None,
     ) -> Primitives:
         # TODO doc & impl
-        return self
-
-    def focus(
-        self,
-        *,
-        direction: Vec3[float] | None = None,
-        up: Vec3[float] | None = None,
-    ) -> Primitives:
-        """
-        Focus on this geometric primitive.
-        :param direction: the direction from which to look at this primitive
-        :param up: where is up relative to the view direction
-        :return: this builder
-        """
-        params = make_params(FocusInlineParams, locals())
-        node = Node(kind="focus", params=params)
-        self._add_child(node)
         return self
