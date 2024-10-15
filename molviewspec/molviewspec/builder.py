@@ -41,6 +41,7 @@ from molviewspec.nodes import (
     ParseParams,
     PlaneParams,
     PositionT,
+    PrimitivesFromUriParams,
     PrimitivesParams,
     RepresentationParams,
     RepresentationTypeT,
@@ -126,6 +127,26 @@ class _PrimitivesMixin:
         """
         params = make_params(PrimitivesParams, locals())
         node = Node(kind="primitives", params=params)
+        self._add_child(node)
+        return Primitives(node=node, root=self._root)
+
+    def primitives_from_uri(
+        self,
+        *,
+        uri: str,
+        format: Literal["json"] = "json",
+        references: list[str] | None = None,
+    ) -> Self:
+        """
+        Allows the definition of a (group of) geometric primitives provided dynamically.
+        :param uri: location of the resource
+        :param format: format of the data
+        :param references: optional list of nodes the referenced by the dat
+        :return: current builder node
+        """
+        # TODO: support focusing
+        params = make_params(PrimitivesFromUriParams, locals())
+        node = Node(kind="primitives_from_uri", params=params)
         self._add_child(node)
         return Primitives(node=node, root=self._root)
 
@@ -543,7 +564,7 @@ class Structure(_Base, _PrimitivesMixin):
         node = Node(kind="transform", params=params)
         self._add_child(node)
         return self
-    
+
     @staticmethod
     def _is_rotation_matrix(t: Sequence[float], eps: float = 0.005):
         a00, a01, a02, a10, a11, a12, a20, a21, a22 = t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
@@ -732,7 +753,7 @@ class Primitives(_Base):
         :param tooltip: tooltip, assigned group_tooltips take precedence
         :return: this builder
         """
-        params = make_params(MeshParams, { "kind": "mesh", **locals() })
+        params = make_params(MeshParams, {"kind": "mesh", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
@@ -760,7 +781,7 @@ class Primitives(_Base):
         :param rotation: Optional: Control orientation of this item
         :return: the corresponding geometric primitive builder, allowing further customization
         """
-        params = make_params(CircleParams, { "kind": "circle", **locals() })
+        params = make_params(CircleParams, {"kind": "circle", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
@@ -789,11 +810,10 @@ class Primitives(_Base):
         :param tooltip: tooltip to show when hovering the line
         :return: this builder
         """
-        params = make_params(LineParams, { "kind": "line", **locals() })
+        params = make_params(LineParams, {"kind": "line", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
-    
 
     def distance(
         self,
@@ -827,7 +847,7 @@ class Primitives(_Base):
         :param label_color: color of the label
         :return: this builder
         """
-        params = make_params(DistanceMeasurementParams, { "kind": "distance_measurement", **locals() })
+        params = make_params(DistanceMeasurementParams, {"kind": "distance_measurement", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
@@ -844,7 +864,7 @@ class Primitives(_Base):
         :param normal: Normal vector of plane.
         :return: the corresponding geometric primitive builder, allowing further customization
         """
-        params = make_params(PlaneParams, { "kind": "plane", **locals() })
+        params = make_params(PlaneParams, {"kind": "plane", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self

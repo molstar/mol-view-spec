@@ -1,8 +1,9 @@
-
-
 from typing import Optional
+
 from pydantic import BaseModel, Field
-from molviewspec.nodes import PrimitiveKindT, PrimitiveParamsT, ColorT, PrimitivesParams
+
+from molviewspec.nodes import PrimitiveParamsT, PrimitivesParams
+
 
 class PrimitivesData(BaseModel):
     primitives: list[PrimitiveParamsT] = Field(description="A list of primitives to render")

@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 
 from app.config import settings
 from molviewspec.builder import Representation, create_builder
-from molviewspec.nodes import ComponentExpression, Metadata, RepresentationTypeT, Snapshot, SnapshotMetadata, States, LineParams
+from molviewspec.nodes import ComponentExpression, Metadata, RepresentationTypeT, Snapshot, SnapshotMetadata, States
 from molviewspec.utils import get_major_version_tag
 
 MVSResponse: TypeAlias = Response
@@ -302,38 +302,84 @@ async def primitives_cube_example() -> MVSResponse:
     builder = create_builder()
     builder.primitives().mesh(
         vertices=[
-            0.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            1.0, 1.0, 0.0,
-            0.0, 1.0, 0.0,
-            0.0, 0.0, 1.0,
-            1.0, 0.0, 1.0,
-            1.0, 1.0, 1.0,
-            0.0, 1.0, 1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.0,
+            1.0,
+            1.0,
         ],
         indices=[
             # bottom
-            0, 2, 1,
-            0, 3, 2,
+            0,
+            2,
+            1,
+            0,
+            3,
+            2,
             # top
-            4, 5, 6,
-            4, 6, 7,
+            4,
+            5,
+            6,
+            4,
+            6,
+            7,
             # front
-            0, 1, 5,
-            0, 5, 4,
+            0,
+            1,
+            5,
+            0,
+            5,
+            4,
             # back
-            2, 3, 7,
-            2, 7, 6,
+            2,
+            3,
+            7,
+            2,
+            7,
+            6,
             # left
-            0, 7, 3,
-            0, 4, 7,
+            0,
+            7,
+            3,
+            0,
+            4,
+            7,
             # right
-            1, 2, 6,
-            1, 6, 5,
+            1,
+            2,
+            6,
+            1,
+            6,
+            5,
         ],
         triangle_groups=[0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
         group_colors={0: "red", 1: "green", 2: "blue", 3: "yellow", 4: "magenta", 5: "cyan"},
-        group_tooltips={0: "### Side\nbottom", 1: "### Side\ntop", 2: "### Side\nfront", 3: "### Side\nback", 4: "### Side\nleft"}, # , 5: "### Side\nright"},
+        group_tooltips={
+            0: "### Side\nbottom",
+            1: "### Side\ntop",
+            2: "### Side\nfront",
+            3: "### Side\nback",
+            4: "### Side\nleft",
+        },  # , 5: "### Side\nright"},
         tooltip="Cube",
         # Optionally, instead of groups, triangle colors can be specified directly
         # triangle_colors=[
@@ -368,27 +414,15 @@ async def primitives_cube_example() -> MVSResponse:
     Let's draw a cube and 3 lines.
     """
     builder = create_builder()
-    structure = (
-        builder.download(url=_url_for_mmcif("1tqn"))
-        .parse(format="mmcif")
-        .model_structure()
-    )
+    structure = builder.download(url=_url_for_mmcif("1tqn")).parse(format="mmcif").model_structure()
+    (structure.component(selector="polymer").representation().color(color="blue"))
     (
-        structure.component(selector="polymer")
-        .representation()
-        .color(color="blue")
-    )
-    (
-        structure.component(selector=[
-            ComponentExpression(auth_seq_id=251),
-            ComponentExpression(auth_seq_id=508)
-        ])
+        structure.component(selector=[ComponentExpression(auth_seq_id=251), ComponentExpression(auth_seq_id=508)])
         .representation(type="ball_and_stick")
         .color(color="green")
     )
     (
-        structure.primitives()
-        .distance(
+        structure.primitives().distance(
             start=ComponentExpression(auth_seq_id=258),
             end=ComponentExpression(auth_seq_id=508),
             color="red",
@@ -398,6 +432,17 @@ async def primitives_cube_example() -> MVSResponse:
             label_color="red",
         )
     )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/primitives-from-uri")
+async def primitives_cube_example() -> MVSResponse:
+    """
+    Draws primitived provided by a JSON asset
+    """
+    builder = create_builder()
+    builder.primitives_from_uri(uri="http://localhost:9000/api/v1/examples/data/basic-primitives")
+
     return PlainTextResponse(builder.get_state())
 
 
@@ -506,15 +551,14 @@ async def basic_primitives_data() -> Response:
     """
     Download the content of `molecule.cif`.
     """
-    builder = create_builder().primitives(
-        default_tooltip="Triangle"
-    )
+    builder = create_builder().primitives(default_tooltip="Triangle")
     (
-        builder.line(start=(0, 0, 0), end=(1, 0, 0), color="red"),
-        builder.line(start=(0, 0, 0), end=(0.5, (1 + 0.5**2)**0.5, 0), color="green"),
-        builder.line(start=(1, 0, 0), end=(0.5, (1 + 0.5**2)**0.5, 0), color="blue"),
+        builder.line(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A"),
+        builder.line(start=(0, 0, 0), end=(0.5, (1 + 0.5**2) ** 0.5, 0), color="green", tooltip="B"),
+        builder.line(start=(1, 0, 0), end=(0.5, (1 + 0.5**2) ** 0.5, 0), color="blue"),
     )
     return JSONResponse(builder.as_data().dict())
+
 
 ##############################################################################
 # Examples for frontend testing
@@ -1413,11 +1457,11 @@ async def portfolio_entity(entity_id: str = "1", assembly_id: str = "1") -> MVSR
     highlight = ENTITY_COLORS_1HDA.get(entity_id, "black")
     for type, entities in ENTITIES_1HDA.items():
         for ent in entities:
-            (struct
-            .component(selector=ComponentExpression(label_entity_id=ent))
-            .representation(type="ball_and_stick" if type=="ligand" else "cartoon")
-            .color(color = highlight if ent==entity_id else BASE_COLOR)
-            .transparency(transparency = 0 if ent==entity_id else BASE_TRANSPARENCY)
+            (
+                struct.component(selector=ComponentExpression(label_entity_id=ent))
+                .representation(type="ball_and_stick" if type == "ligand" else "cartoon")
+                .color(color=highlight if ent == entity_id else BASE_COLOR)
+                .transparency(transparency=0 if ent == entity_id else BASE_TRANSPARENCY)
             )
     builder.camera(**CAMERA_FOR_1HDA)
     return PlainTextResponse(builder.get_state())
@@ -1560,8 +1604,12 @@ async def portfolio_modres() -> MVSResponse:
     builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     struct = builder.download(url=structure_url).parse(format="mmcif").assembly_structure(assembly_id=ASSEMBLY)
-    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).transparency(transparency=BASE_TRANSPARENCY)
-    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR).transparency(transparency=BASE_TRANSPARENCY)
+    struct.component(selector="polymer").representation(type="cartoon").color(color=BASE_COLOR).transparency(
+        transparency=BASE_TRANSPARENCY
+    )
+    struct.component(selector="ligand").representation(type="ball_and_stick").color(color=BASE_COLOR).transparency(
+        transparency=BASE_TRANSPARENCY
+    )
     struct.component(selector=ComponentExpression(label_asym_id="A", label_seq_id=54)).tooltip(
         text="Modified residue SUI: (3-amino-2,5-dioxo-1-pyrrolidinyl)acetic acid"
     ).representation(type="ball_and_stick").color(color="#ED645A")
