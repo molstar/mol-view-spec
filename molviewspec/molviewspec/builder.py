@@ -11,6 +11,7 @@ from typing import Literal, Self, Sequence
 
 from pydantic import BaseModel, PrivateAttr
 
+from molviewspec.data import PrimitivesData
 from molviewspec.nodes import (
     CameraParams,
     CanvasParams,
@@ -33,13 +34,14 @@ from molviewspec.nodes import (
     LabelInlineParams,
     LineParams,
     Mat3,
-    MeshInlineParams,
+    MeshParams,
     Metadata,
     Node,
     ParseFormatT,
     ParseParams,
     PlaneParams,
     PositionT,
+    PrimitivesParams,
     RepresentationParams,
     RepresentationTypeT,
     SchemaFormatT,
@@ -104,7 +106,31 @@ class _Base(BaseModel):
         return self
 
 
-class Root(_Base):
+class _PrimitivesMixin:
+    def primitives(
+        self,
+        *,
+        default_color: ColorT | None = None,
+        default_label_color: ColorT | None = None,
+        default_tooltip: str | None = None,
+        transparency: float | None = None,
+    ) -> Primitives:
+        """
+        Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
+        shared options (color, transparency etc.).
+        :param default_color: default color
+        :param default_label_color: default label color
+        :param default_tooltip: default tooltip
+        :param transparency: group transparency
+        :return: a builder for geometric primitives
+        """
+        params = make_params(PrimitivesParams, locals())
+        node = Node(kind="primitives", params=params)
+        self._add_child(node)
+        return Primitives(node=node, root=self._root)
+
+
+class Root(_Base, _PrimitivesMixin):
     """
     The builder for MolViewSpec state descriptions. Provides fine-grained options as well as global properties such as
     canvas color or camera position and functionality to eventually export this scene.
@@ -206,16 +232,6 @@ class Root(_Base):
         node = Node(kind="download", params=params)
         self._add_child(node)
         return Download(node=node, root=self._root)
-
-    def primitives(self) -> Primitives:
-        """
-        Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
-        shared options (color, transparency etc.).
-        :return: a builder for geometric primitives
-        """
-        node = Node(kind="primitives")
-        self._add_child(node)
-        return Primitives(node=node, root=self._root)
 
 
 class Download(_Base):
@@ -324,7 +340,7 @@ class Parse(_Base):
         return Structure(node=node, root=self._root)
 
 
-class Structure(_Base):
+class Structure(_Base, _PrimitivesMixin):
     """
     Builder step with operations needed after defining the structure to work with.
     """
@@ -528,17 +544,6 @@ class Structure(_Base):
         self._add_child(node)
         return self
     
-    def primitives(self) -> Primitives:
-        """
-        Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
-        shared options (color, transparency etc.).
-        These primitives can implicitly reference locations in the parent structure.
-        :return: a builder for geometric primitives
-        """
-        node = Node(kind="primitives")
-        self._add_child(node)
-        return Primitives(node=node, root=self._root)
-
     @staticmethod
     def _is_rotation_matrix(t: Sequence[float], eps: float = 0.005):
         a00, a01, a02, a10, a11, a12, a20, a21, a22 = t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
@@ -695,6 +700,15 @@ class Primitives(_Base):
     options.
     """
 
+    def as_data(self) -> PrimitivesData:
+        """
+        Convert the current primitives builder to data which can be serialized independently.
+        """
+        return PrimitivesData(
+            primitives=[child.params for child in self._node.children if child.kind == "primitive"],
+            options=self._node.params,
+        )
+
     def mesh(
         self,
         *,
@@ -704,6 +718,7 @@ class Primitives(_Base):
         triangle_groups: list[int] | None = None,
         group_colors: dict[int, ColorT] | None = None,
         group_tooltips: dict[int, str] | None = None,
+        tooltip: str | None = None,
         # TODO should everything support `rotation`, just for convenience & consistency?
     ) -> Primitives:
         """
@@ -714,10 +729,11 @@ class Primitives(_Base):
         :param triangle_groups: group number for each triangle
         :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
         :param group_tooltips: mapping of group number to optional hover tooltip
+        :param tooltip: tooltip, assigned group_tooltips take precedence
         :return: this builder
         """
-        params = make_params(MeshInlineParams, locals())
-        node = Node(kind="primitive_mesh", params=params)
+        params = make_params(MeshParams, { "kind": "mesh", **locals() })
+        node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
 
@@ -744,8 +760,8 @@ class Primitives(_Base):
         :param rotation: Optional: Control orientation of this item
         :return: the corresponding geometric primitive builder, allowing further customization
         """
-        params = make_params(CircleParams, locals())
-        node = Node(kind="primitive_circle", params=params)
+        params = make_params(CircleParams, { "kind": "circle", **locals() })
+        node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
 
@@ -773,8 +789,8 @@ class Primitives(_Base):
         :param tooltip: tooltip to show when hovering the line
         :return: this builder
         """
-        params = make_params(LineParams, locals())
-        node = Node(kind="primitive_line", params=params)
+        params = make_params(LineParams, { "kind": "line", **locals() })
+        node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
     
@@ -791,7 +807,8 @@ class Primitives(_Base):
         color: ColorT | None = None,
         label_template: str | None = "{{distance}}",
         label_size: float | Literal["auto"] | None = "auto",
-        label_auto_size_scale: float | None = 0.2,
+        label_auto_size_scale: float | None = 0.1,
+        label_auto_size_min: float | None = 0.2,
         label_color: ColorT | None = None,
     ) -> Primitives:
         """
@@ -806,11 +823,12 @@ class Primitives(_Base):
         :param label_template: template used to construct the label, use {{distance}} as placeholder for the distance value
         :param label_size: size of the label, auto scales the size by the distance
         :param label_auto_size_scale: scaling factor when label_size is auto
+        :param label_auto_size_min: minimum size when label_size is auto
         :param label_color: color of the label
         :return: this builder
         """
-        params = make_params(DistanceMeasurementParams, locals())
-        node = Node(kind="primitive_distance_measurement", params=params)
+        params = make_params(DistanceMeasurementParams, { "kind": "distance_measurement", **locals() })
+        node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
 
@@ -826,8 +844,8 @@ class Primitives(_Base):
         :param normal: Normal vector of plane.
         :return: the corresponding geometric primitive builder, allowing further customization
         """
-        params = make_params(PlaneParams, locals())
-        node = Node(kind="primitive_plane", params=params)
+        params = make_params(PlaneParams, { "kind": "plane", **locals() })
+        node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
 
@@ -979,75 +997,12 @@ class Primitives(_Base):
         # TODO doc & impl
         return self
 
-    def options(self) -> PrimitiveOptions:
-        """
-        Finish adding items to this primitive group and move on to setting its options.
-        :return: the corresponding options builder, allowing further customization
-        """
-        node = Node(kind="primitives_options")
-        self._add_child(node)
-        return PrimitiveOptions(node=node, root=self._root)
-
-
-class PrimitiveOptions(_Base):
-    """
-    Shared customizations that are applicable to all geometric primitives.
-    """
-
-    def color(
-        self,
-        *,
-        color: ColorT,
-    ) -> PrimitiveOptions:
-        """
-        Customize the color of this representation.
-        :param color: color using SVG color names or RGB hex code
-        :return: this builder
-        """
-        params = make_params(ColorInlineParams, locals())
-        node = Node(kind="color", params=params)
-        self._add_child(node)
-        return self
-
-    def transparency(self, *, transparency: float = 0.8) -> PrimitiveOptions:
-        """
-        Customize the transparency/opacity of this representation.
-        :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent
-        :return: this builder
-        """
-        params = make_params(TransparencyInlineParams, locals())
-        node = Node(kind="transparency", params=params)
-        self._add_child(node)
-        return self
-
-    def label(self, *, text: str) -> PrimitiveOptions:
-        """
-        Add a text label to a geometric primitive.
-        :param text: label to add in 3D
-        :return: this builder
-        """
-        params = make_params(LabelInlineParams, locals())
-        node = Node(kind="label", params=params)
-        self._add_child(node)
-        return self
-
-    def tooltip(self, *, text: str) -> PrimitiveOptions:
-        """
-        Add a tooltip that shows additional information of a geometric primitive when hovering over it.
-        :param text: text to show upon hover
-        :return: this builder
-        """
-        params = make_params(TooltipInlineParams, locals())
-        node = Node(kind="tooltip", params=params)
-        self._add_child(node)
-        return self
-
     def focus(
         self,
         *,
         direction: Vec3[float] | None = None,
         up: Vec3[float] | None = None,
-    ) -> PrimitiveOptions:
+    ) -> Primitives:
         """
         Focus on this geometric primitive.
         :param direction: the direction from which to look at this primitive

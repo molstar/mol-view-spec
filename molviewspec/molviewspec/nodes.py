@@ -29,12 +29,7 @@ KindT = Literal[
     "mesh_from_uri",
     "parse",
     "primitives",
-    "primitives_options",
-    "primitive_circle",
-    "primitive_line",
-    "primitive_mesh",
-    "primitive_distance_measurement",
-    "primitive_plane",
+    "primitive",
     "representation",
     "structure",
     "tooltip",
@@ -44,6 +39,13 @@ KindT = Literal[
     "transparency",
 ]
 
+PrimitiveKindT = Literal[
+    "primitive_circle",
+    "primitive_line",
+    "primitive_mesh",
+    "primitive_distance_measurement",
+    "primitive_plane",
+]
 
 class Node(BaseModel):
     """
@@ -604,41 +606,37 @@ class CanvasParams(BaseModel):
     background_color: ColorT = Field(description="Background color using SVG color names or RGB hex code")
 
 
-# TODO anything but Vec3[float] are placeholders and need to be impled
 PositionT = Union[Vec3[float], PrimitiveComponentExpression, list[PrimitiveComponentExpression]]
 """
 Positions of primitives can be defined by 3D vector, by providing a unique reference of a component, or by providing 
 appropriate selection expressions.
 """
 
+class PrimitivesParams(BaseModel):
+    default_color: Optional[ColorT] = Field(description="Default color for primitives in this group")
+    default_label_color: Optional[ColorT] = Field(description="Default label color for primitives in this group")
+    default_tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
+    transparency: Optional[float] = Field(description="Transparency of primitives in this group")
 
-class MeshInlineParams(BaseModel):
+
+class MeshParams(BaseModel):
     """
     Low-level, fully customizable mesh representation of a shape.
     """
 
+    kind: Literal["mesh"] = "mesh"
     vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
     indices: list[int] = Field(description="3N length array of indices into vertices that form triangles (t1_1, t1_2, t1_3, ...)")
     triangle_groups: Optional[list[int]] = Field(description="Assign a number to each triangle to group them.")
     group_colors: Optional[Mapping[int, ColorT]] = Field(description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over triangle_colors.")
     group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
     triangle_colors: Optional[list[ColorT]] = Field(description="Assign a color to each triangle.")
+    tooltip: Optional[str] = Field(description="Tooltip shown when hovering over the mesh. Assigned group_tooltips take precedence.")
 
-
-
-class MeshFromUriParams(_DataFromUriParams):
-    """
-    Mesh based on another resource. Currently, only JSON is supported.
-    """
-
-
-class MeshFromSourceParams(_DataFromSourceParams):
-    """
-    Mesh based on a category in the source file. Currently, only JSON is supported.
-    """
 
 
 class CircleParams(BaseModel):
+    kind: Literal["circle"] = "circle"
     center: PositionT = Field(description="Center of circle.")
     radius: float = Field(description="Radius of circle.", gt=0.0)
     segments: Optional[int] = Field(description="Number of segments to draw, level of detail.")
@@ -658,20 +656,26 @@ class _LineParamsBase(BaseModel):
 
 
 class LineParams(_LineParamsBase):
+    kind: Literal["line"] = "line"
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the line.")
 
 
 class DistanceMeasurementParams(_LineParamsBase):    
+    kind: Literal["distance_measurement"] = "distance_measurement"
     label_template: Optional[str] = Field(description="Template used to construct the label. Use {{distance}} as placeholder for the distance.")
     label_size: Optional[float | Literal["auto"]] = Field(description="Size of the label. Auto scales it by the distance.")
     label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size")
+    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size")
     label_color: Optional[ColorT] = Field(description="Color of the label.")
 
 
 class PlaneParams(BaseModel):
+    kind: Literal["plane"] = "plane"
     point: PositionT = Field(description="Point on plane.")
     normal: Vec3[float] = Field(description="Normal vector of plane.")
 
+
+PrimitiveParamsT = MeshParams | CircleParams | LineParams | DistanceMeasurementParams | PlaneParams
 
 def validate_state_tree(json: str) -> None:
     """

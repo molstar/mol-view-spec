@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 
 from app.config import settings
 from molviewspec.builder import Representation, create_builder
-from molviewspec.nodes import ComponentExpression, Metadata, RepresentationTypeT, Snapshot, SnapshotMetadata, States
+from molviewspec.nodes import ComponentExpression, Metadata, RepresentationTypeT, Snapshot, SnapshotMetadata, States, LineParams
 from molviewspec.utils import get_major_version_tag
 
 MVSResponse: TypeAlias = Response
@@ -277,21 +277,21 @@ async def additional_properties_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
-@router.get("/primitives")
-async def primitives_example() -> MVSResponse:
-    """
-    Any scene can be enriched with "geometric primitives" such as spheres, planes, etc. You can also define scenes using exclusively these nodes.
-    """
-    builder = create_builder()
-    # primitives are defined in "groups", you can add any number of primitives before invoking `options()` and setting
-    # shared properties such as color or transparency
-    builder.primitives().plane(point=(0.0, 1.0, 0.0), normal=(0.0, 1.0, 0.0)).options().label(
-        text="Outer membrane"
-    ).color(color="red")
-    builder.primitives().plane(point=(0.0, -1.0, 0.0), normal=(0.0, -1.0, 0.0)).options().label(
-        text="Inner membrane"
-    ).color(color="blue")
-    return PlainTextResponse(builder.get_state())
+# @router.get("/primitives")
+# async def primitives_example() -> MVSResponse:
+#     """
+#     Any scene can be enriched with "geometric primitives" such as spheres, planes, etc. You can also define scenes using exclusively these nodes.
+#     """
+#     builder = create_builder()
+#     # primitives are defined in "groups", you can add any number of primitives before invoking `options()` and setting
+#     # shared properties such as color or transparency
+#     builder.primitives().plane(point=(0.0, 1.0, 0.0), normal=(0.0, 1.0, 0.0)).options().label(
+#         text="Outer membrane"
+#     ).color(color="red")
+#     builder.primitives().plane(point=(0.0, -1.0, 0.0), normal=(0.0, -1.0, 0.0)).options().label(
+#         text="Inner membrane"
+#     ).color(color="blue")
+#     return PlainTextResponse(builder.get_state())
 
 
 @router.get("/primitives-cube")
@@ -333,7 +333,8 @@ async def primitives_cube_example() -> MVSResponse:
         ],
         triangle_groups=[0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
         group_colors={0: "red", 1: "green", 2: "blue", 3: "yellow", 4: "magenta", 5: "cyan"},
-        group_tooltips={0: "### Side\nbottom", 1: "### Side\ntop", 2: "### Side\nfront", 3: "### Side\nback", 4: "### Side\nleft", 5: "### Side\nright"},
+        group_tooltips={0: "### Side\nbottom", 1: "### Side\ntop", 2: "### Side\nfront", 3: "### Side\nback", 4: "### Side\nleft"}, # , 5: "### Side\nright"},
+        tooltip="Cube",
         # Optionally, instead of groups, triangle colors can be specified directly
         # triangle_colors=[
         #     "#FF0000",
@@ -352,16 +353,11 @@ async def primitives_cube_example() -> MVSResponse:
     )
     # let's throw in some lines that intersect each face in the middle
     (
-        builder.primitives()
-        # chain primitives to create groups
+        builder.primitives(default_color="blue", default_tooltip="Generic Axis")
+        # chain primitives to create desired visuals
         .line(start=(-0.5, 0.5, 0.5), end=(1.5, 0.5, 0.5), thickness=0.05, color="red", tooltip="### Axis\nX")
         .line(start=(0.5, -0.5, 0.5), end=(0.5, 1.5, 0.5), thickness=0.05, color="green", tooltip="### Axis\nY")
         .line(start=(0.5, 0.5, -0.5), end=(0.5, 0.5, 1.5), thickness=0.05)
-        # use .options() to assign group-wide properties
-        .options()
-        .color(color="blue")
-        .tooltip(text="Generic Axis")
-        # .transparency(transparency=0.8)
     )
     return PlainTextResponse(builder.get_state())
 
@@ -393,7 +389,7 @@ async def primitives_cube_example() -> MVSResponse:
     (
         structure.primitives()
         .distance(
-            start=ComponentExpression(auth_seq_id=251),
+            start=ComponentExpression(auth_seq_id=258),
             end=ComponentExpression(auth_seq_id=508),
             color="red",
             thickness=0.1,
@@ -504,6 +500,21 @@ async def validation_data(id: str) -> Response:
 
     return JSONResponse(transformed_data)
 
+
+@router.get("/data/basic-primitives")
+async def basic_primitives_data() -> Response:
+    """
+    Download the content of `molecule.cif`.
+    """
+    builder = create_builder().primitives(
+        default_tooltip="Triangle"
+    )
+    (
+        builder.line(start=(0, 0, 0), end=(1, 0, 0), color="red"),
+        builder.line(start=(0, 0, 0), end=(0.5, (1 + 0.5**2)**0.5, 0), color="green"),
+        builder.line(start=(1, 0, 0), end=(0.5, (1 + 0.5**2)**0.5, 0), color="blue"),
+    )
+    return JSONResponse(builder.as_data().dict())
 
 ##############################################################################
 # Examples for frontend testing
