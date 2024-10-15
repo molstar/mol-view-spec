@@ -366,6 +366,45 @@ async def primitives_cube_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/primitives-structure")
+async def primitives_cube_example() -> MVSResponse:
+    """
+    Let's draw a cube and 3 lines.
+    """
+    builder = create_builder()
+    structure = (
+        builder.download(url=_url_for_mmcif("1tqn"))
+        .parse(format="mmcif")
+        .model_structure()
+    )
+    (
+        structure.component(selector="polymer")
+        .representation()
+        .color(color="blue")
+    )
+    (
+        structure.component(selector=[
+            ComponentExpression(auth_seq_id=251),
+            ComponentExpression(auth_seq_id=508)
+        ])
+        .representation(type="ball_and_stick")
+        .color(color="green")
+    )
+    (
+        structure.primitives()
+        .distance(
+            start=ComponentExpression(auth_seq_id=251),
+            end=ComponentExpression(auth_seq_id=508),
+            color="red",
+            thickness=0.1,
+            dash_length=0.1,
+            label_template="Distance: {{distance}}",
+            label_color="red",
+        )
+    )
+    return PlainTextResponse(builder.get_state())
+
+
 ##############################################################################
 # meta endpoints
 

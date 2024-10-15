@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import math
 import os
-from typing import Self, Sequence
+from typing import Literal, Self, Sequence
 
 from pydantic import BaseModel, PrivateAttr
 
@@ -25,6 +25,7 @@ from molviewspec.nodes import (
     ComponentInlineParams,
     ComponentSelectorT,
     DescriptionFormatT,
+    DistanceMeasurementParams,
     DownloadParams,
     FocusInlineParams,
     LabelFromSourceParams,
@@ -716,7 +717,7 @@ class Primitives(_Base):
         :return: this builder
         """
         params = make_params(MeshInlineParams, locals())
-        node = Node(kind="mesh", params=params)
+        node = Node(kind="primitive_mesh", params=params)
         self._add_child(node)
         return self
 
@@ -744,7 +745,7 @@ class Primitives(_Base):
         :return: the corresponding geometric primitive builder, allowing further customization
         """
         params = make_params(CircleParams, locals())
-        node = Node(kind="circle", params=params)
+        node = Node(kind="primitive_circle", params=params)
         self._add_child(node)
         return self
 
@@ -753,7 +754,7 @@ class Primitives(_Base):
         *,
         start: PositionT,
         end: PositionT,
-        thickness: float | None = 1.0,
+        thickness: float | None = 0.05,
         dash_start: float | None = None,
         dash_length: float | None = None,
         gap_length: float | None = None,
@@ -773,7 +774,43 @@ class Primitives(_Base):
         :return: this builder
         """
         params = make_params(LineParams, locals())
-        node = Node(kind="line", params=params)
+        node = Node(kind="primitive_line", params=params)
+        self._add_child(node)
+        return self
+    
+
+    def distance(
+        self,
+        *,
+        start: PositionT,
+        end: PositionT,
+        thickness: float | None = 0.01,
+        dash_start: float | None = 0.0,
+        dash_length: float | None = 0.05,
+        gap_length: float | None = 0.05,
+        color: ColorT | None = None,
+        label_template: str | None = "{{distance}}",
+        label_size: float | Literal["auto"] | None = "auto",
+        label_auto_size_scale: float | None = 0.2,
+        label_color: ColorT | None = None,
+    ) -> Primitives:
+        """
+        Defines a line, connecting a start and an end point.
+        :param start: origin coordinates
+        :param end: destination coordinates
+        :param thickness: thickness of this line
+        :param dash_start: offset along this line until the 1st dash is drawn
+        :param dash_length: length of each dash
+        :param gap_length: length of each gap that will follow each completed dash
+        :param color: color of the line
+        :param label_template: template used to construct the label, use {{distance}} as placeholder for the distance value
+        :param label_size: size of the label, auto scales the size by the distance
+        :param label_auto_size_scale: scaling factor when label_size is auto
+        :param label_color: color of the label
+        :return: this builder
+        """
+        params = make_params(DistanceMeasurementParams, locals())
+        node = Node(kind="primitive_distance_measurement", params=params)
         self._add_child(node)
         return self
 
@@ -790,7 +827,7 @@ class Primitives(_Base):
         :return: the corresponding geometric primitive builder, allowing further customization
         """
         params = make_params(PlaneParams, locals())
-        node = Node(kind="plane", params=params)
+        node = Node(kind="primitive_plane", params=params)
         self._add_child(node)
         return self
 

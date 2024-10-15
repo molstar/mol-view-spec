@@ -14,7 +14,6 @@ KindT = Literal[
     "root",
     "camera",
     "canvas",
-    "circle",  # TODO should we prefix/namespace geom prims?
     "color",
     "color_from_source",
     "color_from_uri",
@@ -26,14 +25,16 @@ KindT = Literal[
     "label",
     "label_from_source",
     "label_from_uri",
-    "line",
-    "mesh",
     "mesh_from_source",
     "mesh_from_uri",
     "parse",
-    "plane",
     "primitives",
     "primitives_options",
+    "primitive_circle",
+    "primitive_line",
+    "primitive_mesh",
+    "primitive_distance_measurement",
+    "primitive_plane",
     "representation",
     "structure",
     "tooltip",
@@ -241,7 +242,8 @@ class ComponentExpression(BaseModel):
 
 class PrimitiveComponentExpression(ComponentExpression):
     # TODO: Use RefT when corresponding PR is merged
-    structure_ref: str | None = Field(None, description="Refence to a structure node to apply this expresion to. If undefined, get the structure implicitly from the tree.")
+    structure_ref: str | None = Field(None, description="Reference to a structure node to apply this expresion to. If undefined, get the structure implicitly from the tree.")
+    
 
 
 RepresentationTypeT = Literal["ball_and_stick", "cartoon", "surface"]
@@ -645,7 +647,7 @@ class CircleParams(BaseModel):
     rotation: Optional[Mat3[float]] = Field(description="Optional rotation of this item.")
 
 
-class LineParams(BaseModel):
+class _LineParamsBase(BaseModel):
     start: PositionT = Field(description="Start of this line.")
     end: PositionT = Field(description="End of this line.")
     thickness: Optional[float] = Field(description="Thickness of this line.")
@@ -653,7 +655,17 @@ class LineParams(BaseModel):
     dash_length: Optional[float] = Field(description="Length of each dash.")
     gap_length: Optional[float] = Field(description="Length of optional gaps between dashes. Set to 0 for solid line.")
     color: Optional[ColorT] = Field(description="Color of the line. If not specified, the primitives grouo color is used.")
+
+
+class LineParams(_LineParamsBase):
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the line.")
+
+
+class DistanceMeasurementParams(_LineParamsBase):    
+    label_template: Optional[str] = Field(description="Template used to construct the label. Use {{distance}} as placeholder for the distance.")
+    label_size: Optional[float | Literal["auto"]] = Field(description="Size of the label. Auto scales it by the distance.")
+    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size")
+    label_color: Optional[ColorT] = Field(description="Color of the label.")
 
 
 class PlaneParams(BaseModel):
