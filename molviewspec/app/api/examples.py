@@ -55,11 +55,11 @@ async def label_example(id: str = "1lap") -> MVSResponse:
     (whole.representation().color(color="red", selector=ComponentExpression(label_asym_id="A", label_seq_id=120)))
 
     # label the residues with custom text & focus it (i.e., position camera)
-    comp = structure.component(selector=residue).label(text="ALA 120 A: My Label").focus()
     # leverage vendor-specific properties to request non-covalent interactions in Mol*
-    comp.additional_properties(
-        molstar_show_non_covalent_interactions=True, molstar_non_covalent_interactions_radius_ang=5.0
-    )
+    structure.component(
+        selector=residue,
+        custom={"molstar_show_non_covalent_interactions": True, "molstar_non_covalent_interactions_radius_ang": 5.0},
+    ).label(text="ALA 120 A: My Label").focus()
 
     # structure.label_from_source(schema="residue", category_name="my_custom_cif_category")
 
@@ -260,19 +260,31 @@ async def additional_properties_example() -> MVSResponse:
     """
     builder = create_builder()
     (
-        builder.download(url=_url_for_mmcif("1cbs"))
+        builder.download(url=_url_for_mmcif("4hhb"))
         .parse(format="mmcif")
-        # each node provides this method, which allows storing custom data
-        .additional_properties(test="You can put whatever is needed here.", will_be_dropped=True)
-        .additional_properties(chainable="Totally!")
-        # properties can be removed by setting them to None
-        .additional_properties(will_be_dropped=None)
         .model_structure()
         .component()
-        .representation()
-        # you can nest properties as needed
-        .additional_properties(options={"provide_vendor_specific_props": True, "aim": "Customize representations."})
-        .color(color="blue")
+        .representation(type="cartoon", custom={"a": "hello"})
+        .color(selector="protein", color="#0000ff", custom={"b": "ciao"})
+        .color(selector="ligand", color="#ff0000")
+        .color(color="#555555", custom={"c": "salut"})
+    )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/refs")
+async def refs_example() -> MVSResponse:
+    """
+    MolViewSpec allows assigning string references to nodes that allow referencing them
+    from various parts of the tree later, for example when building primitive shapes.
+    """
+    builder = create_builder()
+    (
+        builder.download(url=_url_for_mmcif("4hhb"))
+        .parse(format="mmcif")
+        .model_structure(ref="structure")
+        .component()
+        .representation(type="cartoon")
     )
     return PlainTextResponse(builder.get_state())
 
