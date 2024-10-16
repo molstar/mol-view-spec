@@ -400,11 +400,11 @@ async def primitives_cube_example() -> MVSResponse:
     # let's throw in some lines that intersect each face in the middle
     (
         builder.primitives(
-            default_color="blue",
-            default_label_color="blue",
-            default_tooltip="Generic Axis",
-            default_transparency=0.5,
-            default_label_transparency=0.6,
+            color="blue",
+            label_color="blue",
+            tooltip="Generic Axis",
+            transparency=0.5,
+            label_transparency=0.6,
         )
         # chain primitives to create desired visuals
         .line(start=(-0.5, 0.5, 0.5), end=(1.5, 0.5, 0.5), thickness=0.05, color="red", tooltip="### Axis\nX")
@@ -562,7 +562,7 @@ async def basic_primitives_data() -> Response:
     """
     Create example primitive data.
     """
-    builder = create_builder().primitives(default_tooltip="Triangle")
+    builder = create_builder().primitives(tooltip="Triangle")
     (
         builder.line(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A"),
         builder.line(start=(0, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="green", tooltip="B"),

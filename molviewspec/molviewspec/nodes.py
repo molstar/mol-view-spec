@@ -618,11 +618,11 @@ appropriate selection expressions.
 
 
 class PrimitivesParams(BaseModel):
-    default_color: Optional[ColorT] = Field(description="Default color for primitives in this group")
-    default_label_color: Optional[ColorT] = Field(description="Default label color for primitives in this group")
-    default_tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
-    default_transparency: Optional[float] = Field(description="Transparency of primitive geometry in this group")
-    default_label_transparency: Optional[float] = Field(description="Transparency of primitive labels in this group")
+    color: Optional[ColorT] = Field(description="Default color for primitives in this group")
+    label_color: Optional[ColorT] = Field(description="Default label color for primitives in this group")
+    tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
+    transparency: Optional[float] = Field(description="Transparency of primitive geometry in this group")
+    label_transparency: Optional[float] = Field(description="Transparency of primitive labels in this group")
 
 
 class MeshParams(BaseModel):
