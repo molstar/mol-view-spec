@@ -12,7 +12,15 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 
 from app.config import settings
 from molviewspec.builder import Representation, create_builder
-from molviewspec.nodes import ComponentExpression, Metadata, RepresentationTypeT, Snapshot, SnapshotMetadata, States
+from molviewspec.nodes import (
+    ComponentExpression,
+    Metadata,
+    PrimitiveComponentExpression,
+    RepresentationTypeT,
+    Snapshot,
+    SnapshotMetadata,
+    States,
+)
 from molviewspec.utils import get_major_version_tag
 
 MVSResponse: TypeAlias = Response
@@ -458,6 +466,41 @@ async def primitives_cube_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/primitives-multi-structure")
+async def primitives_cube_example() -> MVSResponse:
+    """
+    Let's draw a cube and 3 lines.
+    """
+    builder = create_builder()
+    _1tqn = builder.download(url=_url_for_mmcif("1tqn")).parse(format="mmcif").model_structure(ref="X")
+    _1tqn.component(selector="polymer").representation().color(color="blue")
+    (
+        _1tqn.component(selector=ComponentExpression(auth_seq_id=508))
+        .representation(type="ball_and_stick")
+        .color(color="green")
+    )
+
+    _1cbs = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure(ref="Y")
+    _1cbs.component(selector="polymer").representation().color(color="blue")
+    (
+        _1cbs.component(selector=ComponentExpression(auth_seq_id=200))
+        .representation(type="ball_and_stick")
+        .color(color="green")
+    )
+    (
+        builder.primitives().distance(
+            start=PrimitiveComponentExpression(structure_ref="X", auth_seq_id=508),
+            end=PrimitiveComponentExpression(structure_ref="Y", auth_seq_id=200),
+            color="red",
+            thickness=1,
+            dash_length=1,
+            label_template="Ligand Distance: {{distance}}",
+            label_color="red",
+        )
+    )
+    return PlainTextResponse(builder.get_state())
+
+
 @router.get("/primitives-from-uri")
 async def primitives_cube_example() -> MVSResponse:
     """
@@ -583,8 +626,7 @@ async def basic_primitives_data() -> Response:
         ],
     )
     (
-        builder
-        .line(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A")
+        builder.line(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A")
         .line(start=(0, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="green", tooltip="B")
         .line(start=(1, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="blue")
     )

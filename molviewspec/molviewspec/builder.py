@@ -93,6 +93,7 @@ class _Base(BaseModel):
             self._node.children = []
         self._node.children.append(node)
 
+
 class _PrimitivesMixin:
     def primitives(
         self: _Base,

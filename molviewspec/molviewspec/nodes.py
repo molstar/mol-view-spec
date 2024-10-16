@@ -276,8 +276,7 @@ class ComponentExpression(BaseModel):
 
 
 class PrimitiveComponentExpression(ComponentExpression):
-    # TODO: Use RefT when corresponding PR is merged
-    structure_ref: str | None = Field(
+    structure_ref: RefT | None = Field(
         None,
         description="Reference to a structure node to apply this expresion to. If undefined, get the structure implicitly from the tree.",
     )
