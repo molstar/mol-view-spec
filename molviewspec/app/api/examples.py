@@ -469,7 +469,7 @@ async def primitives_cube_example() -> MVSResponse:
 @router.get("/primitives-multi-structure")
 async def primitives_cube_example() -> MVSResponse:
     """
-    Let's draw a cube and 3 lines.
+    Two structures and distance measurement between them
     """
     builder = create_builder()
     _1tqn = builder.download(url=_url_for_mmcif("1tqn")).parse(format="mmcif").model_structure(ref="X")
