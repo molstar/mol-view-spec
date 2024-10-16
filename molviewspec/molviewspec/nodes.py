@@ -39,6 +39,10 @@ KindT = Literal[
 ]
 
 
+CustomT = Optional[Mapping[str, Any]]
+RefT = Optional[str]
+
+
 class Node(BaseModel):
     """
     Base impl of all state tree nodes.
@@ -46,10 +50,19 @@ class Node(BaseModel):
 
     kind: KindT = Field(description="The type of this node.")
     params: Optional[Mapping[str, Any]] = Field(description="Optional params that are needed for this node.")
-    additional_properties: Optional[Mapping[str, Any]] = Field(
-        description="Optional free-style dict with custom, non-schema props."
-    )
     children: Optional[list[Node]] = Field(description="Optional collection of nested child nodes.")
+    custom: CustomT = Field(description="Custom data to store attached to this node.")
+    ref: RefT = Field(description="Optional reference that can be used to access this node.")
+
+    def __init__(self, **data):
+        # extract `custom` value from `params`
+        params = data.get("params", {})
+        if "custom" in params:
+            data["custom"] = params.pop("custom")
+        if "ref" in params:
+            data["ref"] = params.pop("ref")
+
+        super().__init__(**data)
 
 
 class FormatMetadata(BaseModel):
