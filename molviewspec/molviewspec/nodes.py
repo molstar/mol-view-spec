@@ -621,7 +621,8 @@ class PrimitivesParams(BaseModel):
     default_color: Optional[ColorT] = Field(description="Default color for primitives in this group")
     default_label_color: Optional[ColorT] = Field(description="Default label color for primitives in this group")
     default_tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
-    transparency: Optional[float] = Field(description="Transparency of primitives in this group")
+    transparency: Optional[float] = Field(description="Transparency of primitive geometry in this group")
+    label_transparency: Optional[float] = Field(description="Transparency of primitive labels in this group")
 
 
 class MeshParams(BaseModel):
@@ -680,9 +681,18 @@ class DistanceMeasurementParams(_LineParamsBase):
     label_size: Optional[float | Literal["auto"]] = Field(
         description="Size of the label. Auto scales it by the distance."
     )
-    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size")
-    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size")
+    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size.")
+    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size.")
     label_color: Optional[ColorT] = Field(description="Color of the label.")
+
+
+class PrimitiveLabelParams(_LineParamsBase):
+    kind: Literal["label"] = "label"
+    position: PositionT = Field(description="Position of this label.")
+    text: str = Field(default="The label.")
+    label_size: Optional[float] = Field(description="Size of the label.")
+    label_color: Optional[ColorT] = Field(description="Color of the label.")
+    label_offset: Optional[float] = Field(description="Camera-facing offset to prevent overlap with geometry.")
 
 
 class PlaneParams(BaseModel):

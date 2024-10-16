@@ -41,6 +41,7 @@ from molviewspec.nodes import (
     ParseParams,
     PlaneParams,
     PositionT,
+    PrimitiveLabelParams,
     PrimitivesFromUriParams,
     PrimitivesParams,
     RepresentationParams,
@@ -115,6 +116,7 @@ class _PrimitivesMixin:
         default_label_color: ColorT | None = None,
         default_tooltip: str | None = None,
         transparency: float | None = None,
+        label_transparency: float | None = None,
     ) -> Primitives:
         """
         Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
@@ -122,7 +124,8 @@ class _PrimitivesMixin:
         :param default_color: default color
         :param default_label_color: default label color
         :param default_tooltip: default tooltip
-        :param transparency: group transparency
+        :param transparency: group mesh transparency
+        :param label_transparency: group label transparency
         :return: a builder for geometric primitives
         """
         params = make_params(PrimitivesParams, locals())
@@ -853,6 +856,29 @@ class Primitives(_Base, _FocusMixin):
         :return: this builder
         """
         params = make_params(DistanceMeasurementParams, {"kind": "distance_measurement", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+    
+    def label(
+        self,
+        *,
+        position: PositionT,
+        text: str,
+        label_size: float | None = 1,
+        label_color: ColorT | None = None,
+        label_offset: float | None = 1.0,
+    ) -> Primitives:
+        """
+        Defines a label
+        :param position: position coordinates
+        :param text: label value
+        :param label_size: size of the label, auto scales the size by the distance
+        :param label_color: color of the label
+        :param label_offset: camera-facing offset to prevent overlap with geometry
+        :return: this builder
+        """
+        params = make_params(PrimitiveLabelParams, {"kind": "label", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
