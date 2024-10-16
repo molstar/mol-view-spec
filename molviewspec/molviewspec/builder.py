@@ -115,8 +115,8 @@ class _PrimitivesMixin:
         default_color: ColorT | None = None,
         default_label_color: ColorT | None = None,
         default_tooltip: str | None = None,
-        transparency: float | None = None,
-        label_transparency: float | None = None,
+        default_transparency: float | None = None,
+        default_label_transparency: float | None = None,
     ) -> Primitives:
         """
         Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
@@ -124,8 +124,8 @@ class _PrimitivesMixin:
         :param default_color: default color
         :param default_label_color: default label color
         :param default_tooltip: default tooltip
-        :param transparency: group mesh transparency
-        :param label_transparency: group label transparency
+        :param default_transparency: group mesh transparency
+        :param default_label_transparency: group label transparency
         :return: a builder for geometric primitives
         """
         params = make_params(PrimitivesParams, locals())
@@ -859,7 +859,7 @@ class Primitives(_Base, _FocusMixin):
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
-    
+
     def label(
         self,
         *,

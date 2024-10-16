@@ -399,7 +399,13 @@ async def primitives_cube_example() -> MVSResponse:
     )
     # let's throw in some lines that intersect each face in the middle
     (
-        builder.primitives(default_color="blue", default_label_color="blue", default_tooltip="Generic Axis", transparency=0.5)
+        builder.primitives(
+            default_color="blue",
+            default_label_color="blue",
+            default_tooltip="Generic Axis",
+            default_transparency=0.5,
+            default_label_transparency=0.6,
+        )
         # chain primitives to create desired visuals
         .line(start=(-0.5, 0.5, 0.5), end=(1.5, 0.5, 0.5), thickness=0.05, color="red", tooltip="### Axis\nX")
         .label(position=(-0.5, 0.5, 0.5), text="X", label_size=0.33, label_color="red")
@@ -425,7 +431,8 @@ async def primitives_cube_example() -> MVSResponse:
         .color(color="green")
     )
     (
-        structure.primitives().distance(
+        structure.primitives()
+        .distance(
             start=ComponentExpression(auth_seq_id=258),
             end=ComponentExpression(auth_seq_id=508),
             color="red",
@@ -433,7 +440,8 @@ async def primitives_cube_example() -> MVSResponse:
             dash_length=0.1,
             label_template="Distance: {{distance}}",
             label_color="red",
-        ).focus()
+        )
+        .focus()
     )
     return PlainTextResponse(builder.get_state())
 
