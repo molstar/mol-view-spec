@@ -297,23 +297,6 @@ async def refs_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
-# @router.get("/primitives")
-# async def primitives_example() -> MVSResponse:
-#     """
-#     Any scene can be enriched with "geometric primitives" such as spheres, planes, etc. You can also define scenes using exclusively these nodes.
-#     """
-#     builder = create_builder()
-#     # primitives are defined in "groups", you can add any number of primitives before invoking `options()` and setting
-#     # shared properties such as color or transparency
-#     builder.primitives().plane(point=(0.0, 1.0, 0.0), normal=(0.0, 1.0, 0.0)).options().label(
-#         text="Outer membrane"
-#     ).color(color="red")
-#     builder.primitives().plane(point=(0.0, -1.0, 0.0), normal=(0.0, -1.0, 0.0)).options().label(
-#         text="Inner membrane"
-#     ).color(color="blue")
-#     return PlainTextResponse(builder.get_state())
-
-
 @router.get("/primitives-cube")
 async def primitives_cube_example() -> MVSResponse:
     """
