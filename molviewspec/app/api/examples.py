@@ -562,11 +562,19 @@ async def basic_primitives_data() -> Response:
     """
     Create example primitive data.
     """
-    builder = create_builder().primitives(tooltip="Triangle")
+    builder = create_builder().primitives(
+        tooltip="Triangle",
+        instances=[
+            # Translate Z by -0.5 and 0.5
+            (1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -0.5, 1),
+            (1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0.5, 1),
+        ],
+    )
     (
-        builder.line(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A"),
-        builder.line(start=(0, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="green", tooltip="B"),
-        builder.line(start=(1, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="blue"),
+        builder
+        .line(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A")
+        .line(start=(0, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="green", tooltip="B")
+        .line(start=(1, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="blue")
     )
     return JSONResponse(builder.as_data().dict())
 

@@ -34,6 +34,7 @@ from molviewspec.nodes import (
     LabelInlineParams,
     LineParams,
     Mat3,
+    Mat4,
     MeshParams,
     Metadata,
     Node,
@@ -117,6 +118,7 @@ class _PrimitivesMixin:
         tooltip: str | None = None,
         transparency: float | None = None,
         label_transparency: float | None = None,
+        instances: list[Mat4] | None = None,
     ) -> Primitives:
         """
         Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
@@ -126,6 +128,7 @@ class _PrimitivesMixin:
         :param tooltip: default tooltip
         :param transparency: default primitive transparency
         :param label_transparency: default label transparency
+        :param instances: instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices
         :return: a builder for geometric primitives
         """
         params = make_params(PrimitivesParams, locals())

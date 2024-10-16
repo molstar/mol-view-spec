@@ -179,9 +179,27 @@ class ParseParams(BaseModel):
 StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 
-ScalarT = TypeVar("ScalarT", int, float)
+ScalarT = TypeVar("ScalarT", float, int)
 Vec3 = Tuple[ScalarT, ScalarT, ScalarT]
 Mat3 = Tuple[ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT]
+Mat4 = Tuple[
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+]
 
 
 class StructureParams(BaseModel):
@@ -623,6 +641,9 @@ class PrimitivesParams(BaseModel):
     tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
     transparency: Optional[float] = Field(description="Transparency of primitive geometry in this group")
     label_transparency: Optional[float] = Field(description="Transparency of primitive labels in this group")
+    instances: Optional[list[Mat4]] = Field(
+        description="Instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices"
+    )
 
 
 class MeshParams(BaseModel):
