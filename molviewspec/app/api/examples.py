@@ -613,7 +613,7 @@ async def basic_primitives_data() -> Response:
         .line(start=(0, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="green", tooltip="B")
         .line(start=(1, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="blue")
     )
-    return JSONResponse(builder.as_data().dict())
+    return JSONResponse(builder.as_data_node())
 
 
 ##############################################################################

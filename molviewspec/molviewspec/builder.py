@@ -11,7 +11,6 @@ from typing import Literal, Self, Sequence
 
 from pydantic import BaseModel, PrivateAttr
 
-from molviewspec.data import PrimitivesData
 from molviewspec.nodes import (
     CameraParams,
     CanvasParams,
@@ -125,7 +124,7 @@ class _PrimitivesMixin:
         self: _Base,
         *,
         uri: str,
-        format: Literal["json"] = "json",
+        format: Literal["mvs-node-json"] = "mvs-node-json",
         references: list[str] | None = None,
     ) -> PrimitivesFromUri:
         """
@@ -747,14 +746,18 @@ class Primitives(_Base, _FocusMixin):
     options.
     """
 
-    def as_data(self) -> PrimitivesData:
+    def as_data_node(self) -> dict:
         """
-        Convert the current primitives builder to data which can be serialized independently.
+        Convert the current primitives builder to data which can be serialized and served independently.
+        Only primitive kind children are kept.
         """
-        return PrimitivesData(
-            primitives=[child.params for child in self._node.children if child.kind == "primitive"],
-            options=self._node.params,
-        )
+        return Node(
+            kind="primitives",
+            params=self._node.params,
+            children=[child for child in self._node.children if child.kind == "primitive"],
+            custom=self._node.custom,
+            ref=self._node.ref
+        ).dict()
 
     def mesh(
         self,
@@ -766,6 +769,8 @@ class Primitives(_Base, _FocusMixin):
         group_colors: dict[int, ColorT] | None = None,
         group_tooltips: dict[int, str] | None = None,
         tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
         # TODO should everything support `rotation`, just for convenience & consistency?
     ) -> Primitives:
         """
@@ -777,6 +782,8 @@ class Primitives(_Base, _FocusMixin):
         :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
         :param group_tooltips: mapping of group number to optional hover tooltip
         :param tooltip: tooltip, assigned group_tooltips take precedence
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(MeshParams, {"kind": "mesh", **locals()})
@@ -821,6 +828,8 @@ class Primitives(_Base, _FocusMixin):
         gap_length: float | None = None,
         color: ColorT | None = None,
         tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Primitives:
         """
         Defines a line, connecting a start and an end point.
@@ -832,6 +841,8 @@ class Primitives(_Base, _FocusMixin):
         :param gap_length: length of each gap that will follow each completed dash
         :param color: color of the line
         :param tooltip: tooltip to show when hovering the line
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(LineParams, {"kind": "line", **locals()})
@@ -854,6 +865,8 @@ class Primitives(_Base, _FocusMixin):
         label_auto_size_scale: float | None = 0.1,
         label_auto_size_min: float | None = 0.2,
         label_color: ColorT | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Primitives:
         """
         Defines a line, connecting a start and an end point.
@@ -869,6 +882,8 @@ class Primitives(_Base, _FocusMixin):
         :param label_auto_size_scale: scaling factor when label_size is auto
         :param label_auto_size_min: minimum size when label_size is auto
         :param label_color: color of the label
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(DistanceMeasurementParams, {"kind": "distance_measurement", **locals()})
@@ -884,6 +899,8 @@ class Primitives(_Base, _FocusMixin):
         label_size: float | None = 1,
         label_color: ColorT | None = None,
         label_offset: float | None = 1.0,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Primitives:
         """
         Defines a label
@@ -892,6 +909,8 @@ class Primitives(_Base, _FocusMixin):
         :param label_size: size of the label, auto scales the size by the distance
         :param label_color: color of the label
         :param label_offset: camera-facing offset to prevent overlap with geometry
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(PrimitiveLabelParams, {"kind": "label", **locals()})

@@ -739,7 +739,7 @@ PrimitiveParamsT = MeshParams | CircleParams | LineParams | DistanceMeasurementP
 
 class PrimitivesFromUriParams(BaseModel):
     uri: str = Field(description="Location of the resource")
-    format: Literal["json"] = Field(description="Format of the data")
+    format: Literal["mvs-node-json"] = Field(description="Format of the data")
     references: Optional[list[str]] = Field(description="List of nodes the data are referencing")
 
 
