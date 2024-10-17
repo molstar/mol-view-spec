@@ -474,7 +474,7 @@ async def primitives_cube_example() -> MVSResponse:
         builder.primitives().distance(
             start=PrimitiveComponentExpression(structure_ref="X", auth_seq_id=508),
             end=PrimitiveComponentExpression(structure_ref="Y", auth_seq_id=200),
-            color="red",
+            color="purple",
             thickness=1,
             dash_length=1,
             label_template="Ligand Distance: {{distance}}",
