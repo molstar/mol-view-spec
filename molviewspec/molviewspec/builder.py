@@ -41,8 +41,8 @@ from molviewspec.nodes import (
     ParseFormatT,
     ParseParams,
     PlaneParams,
-    PositionT,
     PrimitiveLabelParams,
+    PrimitivePositionT,
     PrimitivesFromUriParams,
     PrimitivesParams,
     RefT,
@@ -102,7 +102,7 @@ class _PrimitivesMixin:
         tooltip: str | None = None,
         transparency: float | None = None,
         label_transparency: float | None = None,
-        instances: list[Mat4] | None = None,
+        instances: list[Mat4[float]] | None = None,
     ) -> Primitives:
         """
         Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
@@ -137,7 +137,7 @@ class _PrimitivesMixin:
         params = make_params(PrimitivesFromUriParams, locals())
         node = Node(kind="primitives_from_uri", params=params)
         self._add_child(node)
-        return Primitives(node=node, root=self._root)
+        return PrimitivesFromUri(node=node, root=self._root)
 
 
 class _FocusMixin:
@@ -756,14 +756,14 @@ class Primitives(_Base, _FocusMixin):
             params=self._node.params,
             children=[child for child in self._node.children if child.kind == "primitive"],
             custom=self._node.custom,
-            ref=self._node.ref
+            ref=self._node.ref,
         ).dict()
 
     def mesh(
         self,
         *,
-        vertices: list[Vec3[float]],
-        indices: list[Vec3[int]],
+        vertices: list[float],
+        indices: list[int],
         triangle_colors: list[ColorT] | None = None,
         triangle_groups: list[int] | None = None,
         group_colors: dict[int, ColorT] | None = None,
@@ -795,7 +795,7 @@ class Primitives(_Base, _FocusMixin):
     def circle(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         radius: float,
         segments: int | None = None,
         theta_start: float = 0,
@@ -820,8 +820,8 @@ class Primitives(_Base, _FocusMixin):
     def line(
         self,
         *,
-        start: PositionT,
-        end: PositionT,
+        start: PrimitivePositionT,
+        end: PrimitivePositionT,
         thickness: float | None = 0.05,
         dash_start: float | None = None,
         dash_length: float | None = None,
@@ -853,8 +853,8 @@ class Primitives(_Base, _FocusMixin):
     def distance(
         self,
         *,
-        start: PositionT,
-        end: PositionT,
+        start: PrimitivePositionT,
+        end: PrimitivePositionT,
         thickness: float | None = 0.01,
         dash_start: float | None = 0.0,
         dash_length: float | None = 0.05,
@@ -894,7 +894,7 @@ class Primitives(_Base, _FocusMixin):
     def label(
         self,
         *,
-        position: PositionT,
+        position: PrimitivePositionT,
         text: str,
         label_size: float | None = 1,
         label_color: ColorT | None = None,
@@ -921,8 +921,8 @@ class Primitives(_Base, _FocusMixin):
     def plane(
         self,
         *,
-        point: PositionT,
-        normal: PositionT,
+        point: PrimitivePositionT,
+        normal: PrimitivePositionT,
     ) -> Primitives:
         """
         Add a plane.
@@ -938,7 +938,7 @@ class Primitives(_Base, _FocusMixin):
     def polygon(
         self,
         *,
-        vertices: list[PositionT],
+        vertices: list[PrimitivePositionT],
     ) -> Primitives:
         # TODO doc & impl
         return self
@@ -946,7 +946,7 @@ class Primitives(_Base, _FocusMixin):
     def star(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         inner_radius: float,
         outer_radius: float,
         point_count: int,
@@ -958,7 +958,7 @@ class Primitives(_Base, _FocusMixin):
     def box(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         width: float,
         height: float,
         depth: float,
@@ -970,7 +970,7 @@ class Primitives(_Base, _FocusMixin):
     def cylinder(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         radius_top: float,
         radius_bottom: float,
         height: float,
@@ -993,7 +993,7 @@ class Primitives(_Base, _FocusMixin):
     def tetrahedron(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         radius: float,
         rotation: Mat3[float] | None = None,
     ) -> Primitives:
@@ -1003,7 +1003,7 @@ class Primitives(_Base, _FocusMixin):
     def octahedron(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         radius: float,
         rotation: Mat3[float] | None = None,
     ) -> Primitives:
@@ -1013,7 +1013,7 @@ class Primitives(_Base, _FocusMixin):
     def dodecahedron(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         radius: float,
         rotation: Mat3[float] | None = None,
     ) -> Primitives:
@@ -1023,7 +1023,7 @@ class Primitives(_Base, _FocusMixin):
     def icosahedron(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         radius: float,
         rotation: Mat3[float] | None = None,
     ) -> Primitives:
@@ -1033,7 +1033,7 @@ class Primitives(_Base, _FocusMixin):
     def prism(
         self,
         *,
-        position: PositionT,
+        position: PrimitivePositionT,
         base_point_count: int = 3,
         height: float,
         rotation: Mat3[float] | None = None,
@@ -1052,7 +1052,7 @@ class Primitives(_Base, _FocusMixin):
     def sphere(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         radius: float,
     ) -> Primitives:
         # TODO doc & impl
@@ -1061,7 +1061,7 @@ class Primitives(_Base, _FocusMixin):
     def torus(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         outer_radius: float,
         tube_radius: float,
         theta_start: float = 0,
@@ -1074,7 +1074,7 @@ class Primitives(_Base, _FocusMixin):
     def wedge(
         self,
         *,
-        center: PositionT,
+        center: PrimitivePositionT,
         width: float,
         height: float,
         depth: float,

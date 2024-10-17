@@ -192,7 +192,7 @@ class ParseParams(BaseModel):
 StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 
-ScalarT = TypeVar("ScalarT", float, int)
+ScalarT = TypeVar("ScalarT", int, float)
 Vec3 = Tuple[ScalarT, ScalarT, ScalarT]
 Mat3 = Tuple[ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT]
 Mat4 = Tuple[
@@ -273,13 +273,6 @@ class ComponentExpression(BaseModel):
     )
     atom_id: Optional[int] = Field(description="Unique atom identifier (`_atom_site.id`)")
     atom_index: Optional[int] = Field(description="0-based atom index in the source file")
-
-
-class PrimitiveComponentExpression(ComponentExpression):
-    structure_ref: RefT | None = Field(
-        None,
-        description="Reference to a structure node to apply this expresion to. If undefined, get the structure implicitly from the tree.",
-    )
 
 
 RepresentationTypeT = Literal["ball_and_stick", "cartoon", "surface"]
@@ -640,10 +633,22 @@ class CanvasParams(BaseModel):
     background_color: ColorT = Field(description="Background color using SVG color names or RGB hex code")
 
 
-PositionT = Union[Vec3[float], PrimitiveComponentExpression, list[PrimitiveComponentExpression]]
+class PrimitiveComponentExpressions(BaseModel):
+    structure_ref: Optional[RefT] = Field(
+        description="Reference to a structure node to apply this expresion to. If undefined, get the structure implicitly from the tree."
+    )
+    expression_schema: Optional[SchemaT] = Field(
+        description="Schema the expressions follow, used for optimization of structure query resolution."
+    )
+    expressions: list[ComponentExpression] = Field(description="Expression refencing elements froms the structure_ref.")
+
+
+# TODO: Consider supporting a list of PrimitiveComponentExpressions too to enable things like
+#       boundings boxes around docked ligands that contains surrounding residues
+PrimitivePositionT = Union[Vec3[float], ComponentExpression, PrimitiveComponentExpressions]
 """
-Positions of primitives can be defined by 3D vector, by providing a unique reference of a component, or by providing 
-appropriate selection expressions.
+Positions of primitives can be defined by 3D vector, by providing a selection expressions, or by providing 
+a list of expressions within a specific structure.
 """
 
 
@@ -653,7 +658,7 @@ class PrimitivesParams(BaseModel):
     tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
     transparency: Optional[float] = Field(description="Transparency of primitive geometry in this group")
     label_transparency: Optional[float] = Field(description="Transparency of primitive labels in this group")
-    instances: Optional[list[Mat4]] = Field(
+    instances: Optional[list[Mat4[float]]] = Field(
         description="Instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices"
     )
 
@@ -681,7 +686,7 @@ class MeshParams(BaseModel):
 
 class CircleParams(BaseModel):
     kind: Literal["circle"] = "circle"
-    center: PositionT = Field(description="Center of circle.")
+    center: PrimitivePositionT = Field(description="Center of circle.")
     radius: float = Field(description="Radius of circle.", gt=0.0)
     segments: Optional[int] = Field(description="Number of segments to draw, level of detail.")
     theta_start: Optional[float] = Field(description="Start point position (relevant when this is an arc).")
@@ -690,8 +695,8 @@ class CircleParams(BaseModel):
 
 
 class _LineParamsBase(BaseModel):
-    start: PositionT = Field(description="Start of this line.")
-    end: PositionT = Field(description="End of this line.")
+    start: PrimitivePositionT = Field(description="Start of this line.")
+    end: PrimitivePositionT = Field(description="End of this line.")
     thickness: Optional[float] = Field(description="Thickness of this line.")
     dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
     dash_length: Optional[float] = Field(description="Length of each dash.")
@@ -721,7 +726,7 @@ class DistanceMeasurementParams(_LineParamsBase):
 
 class PrimitiveLabelParams(_LineParamsBase):
     kind: Literal["label"] = "label"
-    position: PositionT = Field(description="Position of this label.")
+    position: PrimitivePositionT = Field(description="Position of this label.")
     text: str = Field(default="The label.")
     label_size: Optional[float] = Field(description="Size of the label.")
     label_color: Optional[ColorT] = Field(description="Color of the label.")
@@ -730,7 +735,7 @@ class PrimitiveLabelParams(_LineParamsBase):
 
 class PlaneParams(BaseModel):
     kind: Literal["plane"] = "plane"
-    point: PositionT = Field(description="Point on plane.")
+    point: PrimitivePositionT = Field(description="Point on plane.")
     normal: Vec3[float] = Field(description="Normal vector of plane.")
 
 

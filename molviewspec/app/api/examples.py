@@ -15,7 +15,7 @@ from molviewspec.builder import Representation, create_builder
 from molviewspec.nodes import (
     ComponentExpression,
     Metadata,
-    PrimitiveComponentExpression,
+    PrimitiveComponentExpressions,
     RepresentationTypeT,
     Snapshot,
     SnapshotMetadata,
@@ -421,7 +421,7 @@ async def primitives_cube_example() -> MVSResponse:
 
 
 @router.get("/primitives-structure")
-async def primitives_cube_example() -> MVSResponse:
+async def primitives_structure_example() -> MVSResponse:
     """
     Let's draw a cube and 3 lines.
     """
@@ -450,7 +450,7 @@ async def primitives_cube_example() -> MVSResponse:
 
 
 @router.get("/primitives-multi-structure")
-async def primitives_cube_example() -> MVSResponse:
+async def primitives_multi_structure_example() -> MVSResponse:
     """
     Two structures and distance measurement between them
     """
@@ -472,8 +472,8 @@ async def primitives_cube_example() -> MVSResponse:
     )
     (
         builder.primitives().distance(
-            start=PrimitiveComponentExpression(structure_ref="X", auth_seq_id=508),
-            end=PrimitiveComponentExpression(structure_ref="Y", auth_seq_id=200),
+            start=PrimitiveComponentExpressions(structure_ref="X", expressions=[ComponentExpression(auth_seq_id=508)]),
+            end=PrimitiveComponentExpressions(structure_ref="Y", expressions=[ComponentExpression(auth_seq_id=200)]),
             color="purple",
             thickness=1,
             dash_length=1,
@@ -481,17 +481,6 @@ async def primitives_cube_example() -> MVSResponse:
             label_color="red",
         )
     )
-    return PlainTextResponse(builder.get_state())
-
-
-@router.get("/primitives-from-uri")
-async def primitives_cube_example() -> MVSResponse:
-    """
-    Draws primitived provided by a JSON asset
-    """
-    builder = create_builder()
-    builder.primitives_from_uri(uri="http://localhost:9000/api/v1/examples/data/basic-primitives")
-
     return PlainTextResponse(builder.get_state())
 
 
@@ -1434,6 +1423,17 @@ async def testing_labels_from_source_example() -> MVSResponse:
     structure.label_from_source(
         schema="all_atomic", category_name="mvs_test_chain_label_annotation", field_name="tooltip"
     )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/testing/primitives-from-uri")
+async def primitives_from_uri_example() -> MVSResponse:
+    """
+    Draws primitived provided by a JSON asset
+    """
+    builder = create_builder()
+    builder.primitives_from_uri(uri="http://localhost:9000/api/v1/examples/data/basic-primitives")
+
     return PlainTextResponse(builder.get_state())
 
 
