@@ -674,10 +674,37 @@ class MeshParams(BaseModel):
     tooltip: Optional[str] = Field(
         description="Tooltip shown when hovering over the mesh. Assigned group_tooltips take precedence."
     )
+    color: Optional[ColorT] = Field(description="Default color of the triangles.")
     show_triangles: Optional[bool] = Field(description="Determine whether to render triangles of the mesh")
     show_wireframe: Optional[bool] = Field(description="Determine whether to render wireframe of the mesh")
     wireframe_radius: Optional[float] = Field(description="Wireframe line radius")
     wireframe_color: Optional[ColorT] = Field(description="Wireframe color, uses triangle/group colors when not set")
+
+
+class LinesParams(BaseModel):
+    """
+    Low-level, fully customizable lines representation of a shape.
+    """
+
+    kind: Literal["lines"] = "lines"
+    vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
+    indices: list[int] = Field(
+        description="2N length array of indices into vertices that form lines (l1_1, ll1_2, ...)"
+    )
+    line_groups: Optional[list[int]] = Field(description="Assign a number to each triangle to group them.")
+    group_colors: Optional[Mapping[int, ColorT]] = Field(
+        description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over line_colors."
+    )
+    group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
+    group_radius: Optional[Mapping[int, float]] = Field(
+        description="Assign an optional radius to each group. Take precenence over line_radius."
+    )
+    line_colors: Optional[list[ColorT]] = Field(description="Assign a color to each line.")
+    tooltip: Optional[str] = Field(
+        description="Tooltip shown when hovering over the lines. Assigned group_tooltips take precedence."
+    )
+    line_radius: Optional[float] = Field(description="Line radius")
+    color: Optional[ColorT] = Field(description="Default color of the lines.")
 
 
 class CircleParams(BaseModel):
@@ -699,7 +726,7 @@ class _LineParamsBase(BaseModel):
     # dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
     # gap_length: Optional[float] = Field(description="Length of optional gaps between dashes. Set to 0 for solid line.")
     color: Optional[ColorT] = Field(
-        description="Color of the line. If not specified, the primitives grouo color is used."
+        description="Color of the line. If not specified, the primitives group color is used."
     )
 
 

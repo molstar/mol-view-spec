@@ -297,7 +297,7 @@ async def refs_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
-@router.get("/primitives-cube")
+@router.get("/primitives/cube")
 async def primitives_cube_example() -> MVSResponse:
     """
     Let's draw a cube and 3 lines.
@@ -423,7 +423,26 @@ async def primitives_cube_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
-@router.get("/primitives-structure")
+@router.get("/primitives/lines")
+async def primitives_lines_example() -> MVSResponse:
+    """
+    Draws a square
+    """
+    builder = create_builder()
+    primitives = builder.primitives()
+    (
+        primitives.lines(
+            vertices=[0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0],
+            indices=[0, 1, 1, 2, 2, 3, 3, 0],
+            line_colors=["red", "green", "blue", "black"],
+            line_radius=1.5,
+            tooltip="Square",
+        )
+    )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/primitives/structure")
 async def primitives_structure_example() -> MVSResponse:
     """
     Let's draw a cube and 3 lines.
@@ -452,7 +471,7 @@ async def primitives_structure_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
-@router.get("/primitives-multi-structure")
+@router.get("/primitives/multi-structure")
 async def primitives_multi_structure_example() -> MVSResponse:
     """
     Two structures and distance measurement between them
@@ -1429,7 +1448,7 @@ async def testing_labels_from_source_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
-@router.get("/testing/primitives-from-uri")
+@router.get("/testing/primitives/from-uri")
 async def primitives_from_uri_example() -> MVSResponse:
     """
     Draws primitived provided by a JSON asset

@@ -33,6 +33,7 @@ from molviewspec.nodes import (
     LabelFromUriParams,
     LabelInlineParams,
     LineParams,
+    LinesParams,
     Mat3,
     Mat4,
     MeshParams,
@@ -769,6 +770,7 @@ class Primitives(_Base, _FocusMixin):
         group_colors: dict[int, ColorT] | None = None,
         group_tooltips: dict[int, str] | None = None,
         tooltip: str | None = None,
+        color: ColorT | None = None,
         show_triangles: bool | None = True,
         show_wireframe: bool | None = False,
         wireframe_radius: float | None = 1.0,
@@ -785,6 +787,7 @@ class Primitives(_Base, _FocusMixin):
         :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
         :param group_tooltips: mapping of group number to optional hover tooltip
         :param tooltip: tooltip, assigned group_tooltips take precedence
+        :param color: default color of triangle faces
         :param show_triangles: determine whether to render triangles of the mesh
         :param show_wireframe: determine whether to render wireframe of the mesh
         :param wireframe_radius: wireframe line radius
@@ -794,6 +797,43 @@ class Primitives(_Base, _FocusMixin):
         :return: this builder
         """
         params = make_params(MeshParams, {"kind": "mesh", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def lines(
+        self,
+        *,
+        vertices: list[float],
+        indices: list[int],
+        line_colors: list[ColorT] | None = None,
+        line_groups: list[int] | None = None,
+        group_colors: dict[int, ColorT] | None = None,
+        group_tooltips: dict[int, str] | None = None,
+        group_radius: dict[int, float] | None = None,
+        tooltip: str | None = None,
+        color: ColorT | None = None,
+        line_radius: float | None = 1.0,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
+        :param vertices: 3N collection of vertices
+        :param indices: 2N collection of indices
+        :param line_colors: color value of each line
+        :param line_groups: group number for each line
+        :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
+        :param group_tooltips: mapping of group number to optional hover tooltip
+        :param group_radius: mapping of group number to optional line radius
+        :param tooltip: tooltip, assigned group_tooltips take precedence
+        :param color: default color of tre lines
+        :param line_radius: line radius
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(LinesParams, {"kind": "lines", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
