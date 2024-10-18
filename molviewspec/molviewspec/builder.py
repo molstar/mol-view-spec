@@ -754,7 +754,7 @@ class Primitives(_Base, _FocusMixin):
         return Node(
             kind="primitives",
             params=self._node.params,
-            children=[child for child in self._node.children if child.kind == "primitive"],
+            children=[child for child in self._node.children or [] if child.kind == "primitive"],
             custom=self._node.custom,
             ref=self._node.ref,
         ).dict()

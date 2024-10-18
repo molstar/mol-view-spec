@@ -40,14 +40,6 @@ KindT = Literal[
     "transparency",
 ]
 
-PrimitiveKindT = Literal[
-    "primitive_circle",
-    "primitive_line",
-    "primitive_mesh",
-    "primitive_distance_measurement",
-    "primitive_plane",
-]
-
 
 CustomT = Optional[Mapping[str, Any]]
 RefT = Optional[str]
