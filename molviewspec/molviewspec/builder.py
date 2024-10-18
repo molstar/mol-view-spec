@@ -769,9 +769,12 @@ class Primitives(_Base, _FocusMixin):
         group_colors: dict[int, ColorT] | None = None,
         group_tooltips: dict[int, str] | None = None,
         tooltip: str | None = None,
+        show_triangles: bool | None = True,
+        show_wireframe: bool | None = False,
+        wireframe_radius: float | None = 1.0,
+        wireframe_color: ColorT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
-        # TODO should everything support `rotation`, just for convenience & consistency?
     ) -> Primitives:
         """
         Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
@@ -782,6 +785,10 @@ class Primitives(_Base, _FocusMixin):
         :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
         :param group_tooltips: mapping of group number to optional hover tooltip
         :param tooltip: tooltip, assigned group_tooltips take precedence
+        :param show_triangles: determine whether to render triangles of the mesh
+        :param show_wireframe: determine whether to render wireframe of the mesh
+        :param wireframe_radius: wireframe line radius
+        :param wireframe_color: wireframe color, uses triangle/group colors when not set
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder

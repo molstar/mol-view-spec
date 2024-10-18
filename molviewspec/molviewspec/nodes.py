@@ -674,6 +674,10 @@ class MeshParams(BaseModel):
     tooltip: Optional[str] = Field(
         description="Tooltip shown when hovering over the mesh. Assigned group_tooltips take precedence."
     )
+    show_triangles: Optional[bool] = Field(description="Determine whether to render triangles of the mesh")
+    show_wireframe: Optional[bool] = Field(description="Determine whether to render wireframe of the mesh")
+    wireframe_radius: Optional[float] = Field(description="Wireframe line radius")
+    wireframe_color: Optional[ColorT] = Field(description="Wireframe color, uses triangle/group colors when not set")
 
 
 class CircleParams(BaseModel):
@@ -690,9 +694,10 @@ class _LineParamsBase(BaseModel):
     start: PrimitivePositionT = Field(description="Start of this line.")
     end: PrimitivePositionT = Field(description="End of this line.")
     thickness: Optional[float] = Field(description="Thickness of this line.")
-    dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
     dash_length: Optional[float] = Field(description="Length of each dash.")
-    gap_length: Optional[float] = Field(description="Length of optional gaps between dashes. Set to 0 for solid line.")
+    # NOTE: this is currently not supported by Mol*, but can add it later if needed.
+    # dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
+    # gap_length: Optional[float] = Field(description="Length of optional gaps between dashes. Set to 0 for solid line.")
     color: Optional[ColorT] = Field(
         description="Color of the line. If not specified, the primitives grouo color is used."
     )

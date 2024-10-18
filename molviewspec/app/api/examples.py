@@ -384,6 +384,9 @@ async def primitives_cube_example() -> MVSResponse:
             4: "### Side\nleft",
         },  # , 5: "### Side\nright"},
         tooltip="Cube",
+        show_wireframe=True,
+        wireframe_radius=2,
+        wireframe_color="black",
         # Optionally, instead of groups, triangle colors can be specified directly
         # triangle_colors=[
         #     "#FF0000",
