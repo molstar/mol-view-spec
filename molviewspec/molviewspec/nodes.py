@@ -5,7 +5,7 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Literal, Mapping, Optional, Union
+from typing import Any, Literal, Mapping, Optional, Tuple, TypeVar, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -22,14 +22,16 @@ KindT = Literal[
     "component_from_uri",
     "download",
     "focus",
-    "generic_visuals",
     "label",
     "label_from_source",
     "label_from_uri",
-    "line",
+    "mesh_from_source",
+    "mesh_from_uri",
     "parse",
+    "primitives",
+    "primitives_from_uri",
+    "primitive",
     "representation",
-    "sphere",
     "structure",
     "tooltip",
     "tooltip_from_source",
@@ -182,6 +184,29 @@ class ParseParams(BaseModel):
 StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 
+ScalarT = TypeVar("ScalarT", int, float)
+Vec3 = Tuple[ScalarT, ScalarT, ScalarT]
+Mat3 = Tuple[ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT]
+Mat4 = Tuple[
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+    ScalarT,
+]
+
+
 class StructureParams(BaseModel):
     """
     Structure node, describing which type (assembly 1, deposited coordinates, etc.) of the parsed data to create.
@@ -196,8 +221,8 @@ class StructureParams(BaseModel):
     )
     block_header: Optional[str] = Field(description="Reference a specific mmCIF or SDF data block by its block header")
     radius: Optional[float] = Field(description="Radius around model coordinates when loading symmetry mates")
-    ijk_min: Optional[tuple[int, int, int]] = Field(description="Bottom-left Miller indices")
-    ijk_max: Optional[tuple[int, int, int]] = Field(description="Top-right Miller indices")
+    ijk_min: Optional[Vec3[int]] = Field(description="Bottom-left Miller indices")
+    ijk_max: Optional[Vec3[int]] = Field(description="Top-right Miller indices")
 
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]
@@ -565,12 +590,8 @@ class FocusInlineParams(BaseModel):
     Define the camera focus based on function arguments.
     """
 
-    direction: Optional[tuple[float, float, float]] = Field(
-        description="Direction of the view (vector position -> target)"
-    )
-    up: Optional[tuple[float, float, float]] = Field(
-        description="Controls the rotation around the vector between target and position"
-    )
+    direction: Optional[Vec3[float]] = Field(description="Direction of the view (vector position -> target)")
+    up: Optional[Vec3[float]] = Field(description="Controls the rotation around the vector between target and position")
 
 
 class TransformParams(BaseModel):
@@ -578,10 +599,10 @@ class TransformParams(BaseModel):
     Define a transformation.
     """
 
-    rotation: Optional[tuple[float, ...]] = Field(
+    rotation: Optional[Mat3[float]] = Field(
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
-    translation: Optional[tuple[float, float, float]] = Field(description="3d vector describing the translation")
+    translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
 
 
 class CameraParams(BaseModel):
@@ -589,9 +610,9 @@ class CameraParams(BaseModel):
     Controls the global camera position.
     """
 
-    target: tuple[float, float, float] = Field(description="What to look at")
-    position: tuple[float, float, float] = Field(description="The position of the camera")
-    up: tuple[float, float, float] = Field(
+    target: Vec3[float] = Field(description="What to look at")
+    position: Vec3[float] = Field(description="The position of the camera")
+    up: Vec3[float] = Field(
         description="Controls the rotation around the vector between target and position", required=True
     )
 
@@ -604,29 +625,141 @@ class CanvasParams(BaseModel):
     background_color: ColorT = Field(description="Background color using SVG color names or RGB hex code")
 
 
-class SphereParams(BaseModel):
-    """
-    Experimental: Defines a sphere primitive.
-    """
-
-    position: tuple[float, float, float] = Field(description="Position of the primitive")
-    radius: float = Field(description="Radius of the sphere")
-    color: ColorT = Field(description="Color of the sphere")
-    label: Optional[str] = Field(description="Optional text label")
-    tooltip: Optional[str] = Field(description="Optional tooltip label, shown upon hover")
+class PrimitiveComponentExpressions(BaseModel):
+    structure_ref: Optional[RefT] = Field(
+        description="Reference to a structure node to apply this expresion to. If undefined, get the structure implicitly from the tree."
+    )
+    expression_schema: Optional[SchemaT] = Field(
+        description="Schema the expressions follow, used for optimization of structure query resolution."
+    )
+    expressions: list[ComponentExpression] = Field(description="Expression refencing elements froms the structure_ref.")
 
 
-class LineParams(BaseModel):
+# TODO: Consider supporting a list of PrimitiveComponentExpressions too to enable things like
+#       boundings boxes around docked ligands that contains surrounding residues
+PrimitivePositionT = Union[Vec3[float], ComponentExpression, PrimitiveComponentExpressions]
+"""
+Positions of primitives can be defined by 3D vector, by providing a selection expressions, or by providing 
+a list of expressions within a specific structure.
+"""
+
+
+class PrimitivesParams(BaseModel):
+    color: Optional[ColorT] = Field(description="Default color for primitives in this group")
+    label_color: Optional[ColorT] = Field(description="Default label color for primitives in this group")
+    tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
+    transparency: Optional[float] = Field(description="Transparency of primitive geometry in this group")
+    label_transparency: Optional[float] = Field(description="Transparency of primitive labels in this group")
+    instances: Optional[list[Mat4[float]]] = Field(
+        description="Instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices"
+    )
+
+
+class MeshParams(BaseModel):
     """
-    Experimental: Defines a line primitive.
+    Low-level, fully customizable mesh representation of a shape.
     """
 
-    position1: tuple[float, float, float] = Field(description="Start position of the primitive")
-    position2: tuple[float, float, float] = Field(description="End position of the primitive")
-    radius: float = Field(description="Radius of the line")
-    color: ColorT = Field(description="Color of the line")
-    label: Optional[str] = Field(description="Optional text label")
-    tooltip: Optional[str] = Field(description="Optional tooltip label, shown upon hover")
+    kind: Literal["mesh"] = "mesh"
+    vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
+    indices: list[int] = Field(
+        description="3N length array of indices into vertices that form triangles (t1_1, t1_2, t1_3, ...)"
+    )
+    triangle_groups: Optional[list[int]] = Field(description="Assign a number to each triangle to group them.")
+    group_colors: Optional[Mapping[int, ColorT]] = Field(
+        description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over triangle_colors."
+    )
+    group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
+    triangle_colors: Optional[list[ColorT]] = Field(description="Assign a color to each triangle.")
+    tooltip: Optional[str] = Field(
+        description="Tooltip shown when hovering over the mesh. Assigned group_tooltips take precedence."
+    )
+    color: Optional[ColorT] = Field(description="Default color of the triangles.")
+    show_triangles: Optional[bool] = Field(description="Determine whether to render triangles of the mesh")
+    show_wireframe: Optional[bool] = Field(description="Determine whether to render wireframe of the mesh")
+    wireframe_radius: Optional[float] = Field(description="Wireframe line radius")
+    wireframe_color: Optional[ColorT] = Field(description="Wireframe color, uses triangle/group colors when not set")
+
+
+class LinesParams(BaseModel):
+    """
+    Low-level, fully customizable lines representation of a shape.
+    """
+
+    kind: Literal["lines"] = "lines"
+    vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
+    indices: list[int] = Field(
+        description="2N length array of indices into vertices that form lines (l1_1, ll1_2, ...)"
+    )
+    line_groups: Optional[list[int]] = Field(description="Assign a number to each triangle to group them.")
+    group_colors: Optional[Mapping[int, ColorT]] = Field(
+        description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over line_colors."
+    )
+    group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
+    group_radius: Optional[Mapping[int, float]] = Field(
+        description="Assign an optional radius to each group. Take precenence over line_radius."
+    )
+    line_colors: Optional[list[ColorT]] = Field(description="Assign a color to each line.")
+    tooltip: Optional[str] = Field(
+        description="Tooltip shown when hovering over the lines. Assigned group_tooltips take precedence."
+    )
+    line_radius: Optional[float] = Field(description="Line radius")
+    color: Optional[ColorT] = Field(description="Default color of the lines.")
+
+
+class _LineParamsBase(BaseModel):
+    start: PrimitivePositionT = Field(description="Start of this line.")
+    end: PrimitivePositionT = Field(description="End of this line.")
+    thickness: Optional[float] = Field(description="Thickness of this line.")
+    dash_length: Optional[float] = Field(description="Length of each dash.")
+    # NOTE: this is currently not supported by Mol*, but can add it later if needed.
+    # dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
+    # gap_length: Optional[float] = Field(description="Length of optional gaps between dashes. Set to 0 for solid line.")
+    color: Optional[ColorT] = Field(
+        description="Color of the line. If not specified, the primitives group color is used."
+    )
+
+
+class LineParams(_LineParamsBase):
+    kind: Literal["line"] = "line"
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the line.")
+
+
+class DistanceMeasurementParams(_LineParamsBase):
+    kind: Literal["distance_measurement"] = "distance_measurement"
+    label_template: Optional[str] = Field(
+        description="Template used to construct the label. Use {{distance}} as placeholder for the distance."
+    )
+    label_size: Optional[float | Literal["auto"]] = Field(
+        description="Size of the label. Auto scales it by the distance."
+    )
+    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size.")
+    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size.")
+    label_color: Optional[ColorT] = Field(description="Color of the label.")
+
+
+class PrimitiveLabelParams(_LineParamsBase):
+    kind: Literal["label"] = "label"
+    position: PrimitivePositionT = Field(description="Position of this label.")
+    text: str = Field(default="The label.")
+    label_size: Optional[float] = Field(description="Size of the label.")
+    label_color: Optional[ColorT] = Field(description="Color of the label.")
+    label_offset: Optional[float] = Field(description="Camera-facing offset to prevent overlap with geometry.")
+
+
+class PlaneParams(BaseModel):
+    kind: Literal["plane"] = "plane"
+    point: PrimitivePositionT = Field(description="Point on plane.")
+    normal: Vec3[float] = Field(description="Normal vector of plane.")
+
+
+PrimitiveParamsT = MeshParams | LinesParams | LineParams | DistanceMeasurementParams | PlaneParams
+
+
+class PrimitivesFromUriParams(BaseModel):
+    uri: str = Field(description="Location of the resource")
+    format: Literal["mvs-node-json"] = Field(description="Format of the data")
+    references: Optional[list[str]] = Field(description="List of nodes the data are referencing")
 
 
 def validate_state_tree(json: str) -> None:

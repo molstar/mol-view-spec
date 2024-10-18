@@ -12,7 +12,15 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 
 from app.config import settings
 from molviewspec.builder import Representation, create_builder
-from molviewspec.nodes import ComponentExpression, Metadata, RepresentationTypeT, Snapshot, SnapshotMetadata, States
+from molviewspec.nodes import (
+    ComponentExpression,
+    Metadata,
+    PrimitiveComponentExpressions,
+    RepresentationTypeT,
+    Snapshot,
+    SnapshotMetadata,
+    States,
+)
 from molviewspec.utils import get_major_version_tag
 
 MVSResponse: TypeAlias = Response
@@ -156,7 +164,7 @@ async def transform_example() -> MVSResponse:
         .parse(format="mmcif")
         .model_structure()
         .transform(
-            rotation=[
+            rotation=(
                 -0.7202161,
                 -0.33009904,
                 -0.61018308,
@@ -166,8 +174,8 @@ async def transform_example() -> MVSResponse:
                 0.59146191,
                 -0.75184312,
                 -0.29138417,
-            ],
-            translation=[-12.54, 46.79, 94.50],
+            ),
+            translation=(-12.54, 46.79, 94.50),
         )
         .component()
         .representation()
@@ -289,6 +297,215 @@ async def refs_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/primitives/cube")
+async def primitives_cube_example() -> MVSResponse:
+    """
+    Let's draw a cube and 3 lines.
+    """
+    builder = create_builder()
+    builder.primitives().mesh(
+        vertices=[
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.0,
+            1.0,
+            1.0,
+        ],
+        indices=[
+            # bottom
+            0,
+            2,
+            1,
+            0,
+            3,
+            2,
+            # top
+            4,
+            5,
+            6,
+            4,
+            6,
+            7,
+            # front
+            0,
+            1,
+            5,
+            0,
+            5,
+            4,
+            # back
+            2,
+            3,
+            7,
+            2,
+            7,
+            6,
+            # left
+            0,
+            7,
+            3,
+            0,
+            4,
+            7,
+            # right
+            1,
+            2,
+            6,
+            1,
+            6,
+            5,
+        ],
+        triangle_groups=[0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
+        group_colors={0: "red", 1: "green", 2: "blue", 3: "yellow", 4: "magenta", 5: "cyan"},
+        group_tooltips={
+            0: "### Side\nbottom",
+            1: "### Side\ntop",
+            2: "### Side\nfront",
+            3: "### Side\nback",
+            4: "### Side\nleft",
+        },  # , 5: "### Side\nright"},
+        tooltip="Cube",
+        show_wireframe=True,
+        wireframe_radius=2,
+        wireframe_color="black",
+        # Optionally, instead of groups, triangle colors can be specified directly
+        # triangle_colors=[
+        #     "#FF0000",
+        #     "#FF0000",  # bottom: red
+        #     "#00FF00",
+        #     "#00FF00",  # top: green
+        #     "#0000FF",
+        #     "#0000FF",  # front: blue
+        #     "#FFFF00",
+        #     "#FFFF00",  # back: yellow
+        #     "#FF00FF",
+        #     "#FF00FF",  # left: magenta
+        #     "#00FFFF",
+        #     "#00FFFF",  # right: cyan
+        # ],
+    )
+    # let's throw in some lines that intersect each face in the middle
+    (
+        builder.primitives(
+            color="blue",
+            label_color="blue",
+            tooltip="Generic Axis",
+            transparency=0.5,
+            label_transparency=0.6,
+        )
+        # chain primitives to create desired visuals
+        .line(start=(-0.5, 0.5, 0.5), end=(1.5, 0.5, 0.5), thickness=0.05, color="red", tooltip="### Axis\nX")
+        .label(position=(-0.5, 0.5, 0.5), text="X", label_size=0.33, label_color="red")
+        .line(start=(0.5, -0.5, 0.5), end=(0.5, 1.5, 0.5), thickness=0.05, color="green", tooltip="### Axis\nY")
+        .label(position=(0.5, -0.5, 0.5), text="Y", label_size=0.33, label_color="green")
+        .line(start=(0.5, 0.5, -0.5), end=(0.5, 0.5, 1.5), thickness=0.05)
+        .label(position=(0.5, 0.5, -0.5), text="Z", label_size=0.33)
+    )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/primitives/lines")
+async def primitives_lines_example() -> MVSResponse:
+    """
+    Draws a square
+    """
+    builder = create_builder()
+    primitives = builder.primitives()
+    (
+        primitives.lines(
+            vertices=[0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0],
+            indices=[0, 1, 1, 2, 2, 3, 3, 0],
+            line_colors=["red", "green", "blue", "black"],
+            line_radius=1.5,
+            tooltip="Square",
+        )
+    )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/primitives/structure")
+async def primitives_structure_example() -> MVSResponse:
+    """
+    Let's draw a cube and 3 lines.
+    """
+    builder = create_builder()
+    structure = builder.download(url=_url_for_mmcif("1tqn")).parse(format="mmcif").model_structure()
+    (structure.component(selector="polymer").representation().color(color="blue"))
+    (
+        structure.component(selector=[ComponentExpression(auth_seq_id=258), ComponentExpression(auth_seq_id=508)])
+        .representation(type="ball_and_stick")
+        .color(color="green")
+    )
+    (
+        structure.primitives()
+        .distance(
+            start=ComponentExpression(auth_seq_id=258),
+            end=ComponentExpression(auth_seq_id=508),
+            color="red",
+            thickness=0.1,
+            dash_length=0.1,
+            label_template="Distance: {{distance}}",
+            label_color="red",
+        )
+        .focus()
+    )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/primitives/multi-structure")
+async def primitives_multi_structure_example() -> MVSResponse:
+    """
+    Two structures and distance measurement between them
+    """
+    builder = create_builder()
+    _1tqn = builder.download(url=_url_for_mmcif("1tqn")).parse(format="mmcif").model_structure(ref="X")
+    _1tqn.component(selector="polymer").representation().color(color="blue")
+    (
+        _1tqn.component(selector=ComponentExpression(auth_seq_id=508))
+        .representation(type="ball_and_stick")
+        .color(color="green")
+    )
+
+    _1cbs = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure(ref="Y")
+    _1cbs.component(selector="polymer").representation().color(color="blue")
+    (
+        _1cbs.component(selector=ComponentExpression(auth_seq_id=200))
+        .representation(type="ball_and_stick")
+        .color(color="green")
+    )
+    (
+        builder.primitives().distance(
+            start=PrimitiveComponentExpressions(structure_ref="X", expressions=[ComponentExpression(auth_seq_id=508)]),
+            end=PrimitiveComponentExpressions(structure_ref="Y", expressions=[ComponentExpression(auth_seq_id=200)]),
+            color="purple",
+            thickness=1,
+            dash_length=1,
+            label_template="Ligand Distance: {{distance}}",
+            label_color="red",
+        )
+    )
+    return PlainTextResponse(builder.get_state())
+
+
 ##############################################################################
 # meta endpoints
 
@@ -387,6 +604,27 @@ async def validation_data(id: str) -> Response:
                 transformed_data.append(transformed_residue)
 
     return JSONResponse(transformed_data)
+
+
+@router.get("/data/basic-primitives")
+async def basic_primitives_data() -> Response:
+    """
+    Create example primitive data.
+    """
+    builder = create_builder().primitives(
+        tooltip="Triangle",
+        instances=[
+            # Translate Z by -0.5 and 0.5
+            (1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -0.5, 1),
+            (1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0.5, 1),
+        ],
+    )
+    (
+        builder.line(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A")
+        .line(start=(0, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="green", tooltip="B")
+        .line(start=(1, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="blue")
+    )
+    return JSONResponse(builder.as_data_node())
 
 
 ##############################################################################
@@ -1210,6 +1448,17 @@ async def testing_labels_from_source_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/testing/primitives/from-uri")
+async def primitives_from_uri_example() -> MVSResponse:
+    """
+    Draws primitived provided by a JSON asset
+    """
+    builder = create_builder()
+    builder.primitives_from_uri(uri="http://localhost:9000/api/v1/examples/data/basic-primitives")
+
+    return PlainTextResponse(builder.get_state())
+
+
 ##############################################################################
 # MVS specification of existing visualizations
 
@@ -1583,7 +1832,7 @@ async def portfolio_pdbekb_segment_superpose(
     )
     (
         struct2.transform(
-            rotation=[
+            rotation=(
                 0.60487772,
                 0.37558753,
                 0.70218010,
@@ -1593,12 +1842,12 @@ async def portfolio_pdbekb_segment_superpose(
                 -0.07896334,
                 0.90572706,
                 -0.41644101,
-            ],
-            translation=[
+            ),
+            translation=(
                 -66.71238433,
                 -12.06107678,
                 -46.34873616,
-            ],
+            ),
         )
         .component(selector=ComponentExpression(label_asym_id=chain2))
         .tooltip(text=f"{id2}, chain {chain2}")
@@ -1623,7 +1872,7 @@ async def portfolio_pdbekb_ligand_superpose(chains: str = "1tqn:A,2nnj:A") -> MV
         struct = builder.download(url=structure_url1).parse(format="mmcif").model_structure()
         if i > 0:  # this is just an example, transform will have to be different for each structure, of course
             struct.transform(
-                rotation=[
+                rotation=(
                     0.60487772,
                     0.37558753,
                     0.70218010,
@@ -1633,12 +1882,12 @@ async def portfolio_pdbekb_ligand_superpose(chains: str = "1tqn:A,2nnj:A") -> MV
                     -0.07896334,
                     0.90572706,
                     -0.41644101,
-                ],
-                translation=[
+                ),
+                translation=(
                     -66.71238433,
                     -12.06107678,
                     -46.34873616,
-                ],
+                ),
             )
         if i == 0:
             struct.component(selector=ComponentExpression(label_asym_id=chain)).representation(type="cartoon").color(
