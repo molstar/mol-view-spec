@@ -14,7 +14,6 @@ from pydantic import BaseModel, PrivateAttr
 from molviewspec.nodes import (
     CameraParams,
     CanvasParams,
-    CircleParams,
     ColorFromSourceParams,
     ColorFromUriParams,
     ColorInlineParams,
@@ -34,14 +33,12 @@ from molviewspec.nodes import (
     LabelInlineParams,
     LineParams,
     LinesParams,
-    Mat3,
     Mat4,
     MeshParams,
     Metadata,
     Node,
     ParseFormatT,
     ParseParams,
-    PlaneParams,
     PrimitiveLabelParams,
     PrimitivePositionT,
     PrimitivesFromUriParams,
@@ -838,32 +835,6 @@ class Primitives(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
-    # TODO need ellipsis support
-    def circle(
-        self,
-        *,
-        center: PrimitivePositionT,
-        radius: float,
-        segments: int | None = None,
-        theta_start: float = 0,
-        theta_length: float = math.pi * 2,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        """
-        Add a circle.
-        :param center: Center coordinates of this item
-        :param radius: Radius of circle
-        :param segments: Number of segments used to approximate a circle.
-        :param theta_start: Start point position (relevant when this is an arc)
-        :param theta_length: Values < PI*2 will result in an arc
-        :param rotation: Optional: Control orientation of this item
-        :return: the corresponding geometric primitive builder, allowing further customization
-        """
-        params = make_params(CircleParams, {"kind": "circle", **locals()})
-        node = Node(kind="primitive", params=params)
-        self._add_child(node)
-        return self
-
     def line(
         self,
         *,
@@ -963,169 +934,4 @@ class Primitives(_Base, _FocusMixin):
         params = make_params(PrimitiveLabelParams, {"kind": "label", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
-        return self
-
-    def plane(
-        self,
-        *,
-        point: PrimitivePositionT,
-        normal: PrimitivePositionT,
-    ) -> Primitives:
-        """
-        Add a plane.
-        :param point: Coordinates on plane.
-        :param normal: Normal vector of plane.
-        :return: the corresponding geometric primitive builder, allowing further customization
-        """
-        params = make_params(PlaneParams, {"kind": "plane", **locals()})
-        node = Node(kind="primitive", params=params)
-        self._add_child(node)
-        return self
-
-    def polygon(
-        self,
-        *,
-        vertices: list[PrimitivePositionT],
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def star(
-        self,
-        *,
-        center: PrimitivePositionT,
-        inner_radius: float,
-        outer_radius: float,
-        point_count: int,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def box(
-        self,
-        *,
-        center: PrimitivePositionT,
-        width: float,
-        height: float,
-        depth: float,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def cylinder(
-        self,
-        *,
-        center: PrimitivePositionT,
-        radius_top: float,
-        radius_bottom: float,
-        height: float,
-        theta_start: float = 0,
-        theta_length: float = math.pi * 2,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def polyhedron(
-        self,
-        *,
-        vertices: list[Vec3[float]],
-        indices: list[Vec3[float]],
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def tetrahedron(
-        self,
-        *,
-        center: PrimitivePositionT,
-        radius: float,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def octahedron(
-        self,
-        *,
-        center: PrimitivePositionT,
-        radius: float,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def dodecahedron(
-        self,
-        *,
-        center: PrimitivePositionT,
-        radius: float,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def icosahedron(
-        self,
-        *,
-        center: PrimitivePositionT,
-        radius: float,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def prism(
-        self,
-        *,
-        position: PrimitivePositionT,
-        base_point_count: int = 3,
-        height: float,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def pyramid(
-        self,
-        *,
-        points: list[Vec3[float]],
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def sphere(
-        self,
-        *,
-        center: PrimitivePositionT,
-        radius: float,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def torus(
-        self,
-        *,
-        center: PrimitivePositionT,
-        outer_radius: float,
-        tube_radius: float,
-        theta_start: float = 0,
-        theta_length: float = math.pi * 2,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
-        return self
-
-    def wedge(
-        self,
-        *,
-        center: PrimitivePositionT,
-        width: float,
-        height: float,
-        depth: float,
-        rotation: Mat3[float] | None = None,
-    ) -> Primitives:
-        # TODO doc & impl
         return self

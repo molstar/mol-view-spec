@@ -707,16 +707,6 @@ class LinesParams(BaseModel):
     color: Optional[ColorT] = Field(description="Default color of the lines.")
 
 
-class CircleParams(BaseModel):
-    kind: Literal["circle"] = "circle"
-    center: PrimitivePositionT = Field(description="Center of circle.")
-    radius: float = Field(description="Radius of circle.", gt=0.0)
-    segments: Optional[int] = Field(description="Number of segments to draw, level of detail.")
-    theta_start: Optional[float] = Field(description="Start point position (relevant when this is an arc).")
-    theta_length: Optional[float] = Field(description="Values < PI*2 will result in an arc.")
-    rotation: Optional[Mat3[float]] = Field(description="Optional rotation of this item.")
-
-
 class _LineParamsBase(BaseModel):
     start: PrimitivePositionT = Field(description="Start of this line.")
     end: PrimitivePositionT = Field(description="End of this line.")
@@ -763,7 +753,7 @@ class PlaneParams(BaseModel):
     normal: Vec3[float] = Field(description="Normal vector of plane.")
 
 
-PrimitiveParamsT = MeshParams | CircleParams | LineParams | DistanceMeasurementParams | PlaneParams
+PrimitiveParamsT = MeshParams | LinesParams | LineParams | DistanceMeasurementParams | PlaneParams
 
 
 class PrimitivesFromUriParams(BaseModel):
