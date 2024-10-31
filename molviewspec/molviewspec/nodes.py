@@ -44,6 +44,17 @@ KindT = Literal[
 CustomT = Optional[Mapping[str, Any]]
 RefT = Optional[str]
 
+# TODO: to be used for angle, dihedral
+class LabelCommonProps(BaseModel):
+    label_template: Optional[str] = Field(
+        description="Template used to construct the label. Use {{distance}} as placeholder for the distance."
+    )
+    label_size: Optional[float | Literal["auto"]] = Field(
+        description="Size of the label. Auto scales it by the distance."
+    )
+    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size.")
+    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size.")
+    label_color: Optional[ColorT] = Field(description="Color of the label.")
 
 class Node(BaseModel):
     """
@@ -725,18 +736,8 @@ class LineParams(_LineParamsBase):
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the line.")
 
 
-class DistanceMeasurementParams(_LineParamsBase):
+class DistanceMeasurementParams(_LineParamsBase, LabelCommonProps):
     kind: Literal["distance_measurement"] = "distance_measurement"
-    label_template: Optional[str] = Field(
-        description="Template used to construct the label. Use {{distance}} as placeholder for the distance."
-    )
-    label_size: Optional[float | Literal["auto"]] = Field(
-        description="Size of the label. Auto scales it by the distance."
-    )
-    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size.")
-    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size.")
-    label_color: Optional[ColorT] = Field(description="Color of the label.")
-
 
 class PrimitiveLabelParams(_LineParamsBase):
     kind: Literal["label"] = "label"
@@ -748,6 +749,7 @@ class PrimitiveLabelParams(_LineParamsBase):
 
 
 class PlaneParams(BaseModel):
+    # TODO: bounding_box?
     kind: Literal["plane"] = "plane"
     point: PrimitivePositionT = Field(description="Point on plane.")
     normal: Vec3[float] = Field(description="Normal vector of plane.")
@@ -769,3 +771,68 @@ def validate_state_tree(json: str) -> None:
     :raises ValidationError if JSON is malformed or state tree type definitions are violated
     """
     State.parse_raw(json)
+
+# TODO: to be discussed
+# class TooltipAndColorProps(BaseModel):
+#     tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
+#     color: Optional[ColorT] = Field(
+#         description="Color of the line. If not specified, the primitives group color is used."
+#     )
+
+# TODO: fields instead of plain types
+class CircleParams(BaseModel):
+    center: Vec3 = Field(description="The center of the circle.")
+    # TODO: elaborate names and semantics depending on
+    # how Mol* implements circles
+    # (should be dir_major and dir_minor perhaps as these two here are just Vec3)
+    major_axis: PrimitivePositionT = Field(description="Major axis of this circle.")
+    minor_axis: PrimitivePositionT = Field(description="Minor axis of this circle.")
+
+# TODO: add collection of descriptions for the fields with the same name
+class Polygon(BaseModel):
+    vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
+    
+class Star(BaseModel):
+    center: Vec3 = Field(description="The center of the star.")
+    inner_radius: float = Field(description="The inner radius of the star")
+    outer_radius: float = Field(description="The outer radius of the star")
+    # TODO: is this correct meaning?
+    point_count: int = Field(description="The number of points the star contains")
+    # TODO: inherit from TransformParams instead?
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    
+class Box(TransformParams):
+    center: Vec3 = Field(description="The center of the box")
+    # TODO: is this correct meaning?
+    extent: Vec3 = Field(description="The height and width of the box")
+    # TODO: include in TransformParams instead?
+    scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling")
+    as_edges: Optional[bool] = Field(description="Determine whether to render the box as edges")
+    # TODO: meaning of this? Thickness of edges?
+    edge_radius: Optional[float] = Field(description="The thickness of edges.")
+
+class Cylinder(BaseModel):
+    center: Vec3 = Field(description="The center of the box")
+    radius_top: float = Field(description="The radius of the top of the cylinder top. Radius equal to zero will yield a cone.")
+    radius_bottom: float = Field(description="The radius of the bottom of the cylinder. Radius equal to zero will yield a reversed cone.")
+    height: float = Field(description="The height of the cone.")
+    # TODO: meaning of the following two? Check Sebastian's answers in some of the PRs.
+    theta_start: float = Field(description="TODO")
+    theta_length: float = Field(description="TODO")
+    # TODO: type for rotation as field
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    bottom_cap: bool = Field(description="Determine whether to cap the top of the cylinder.")
+    top_cap: bool = Field(description="Determine whether to cap the bottom of the cylinder.")
+    
+# class Arrow(BaseModel):
+#     # TODO: better name, "from" is a reserved keyword 
+#     line_from: Vec3 = Field(description="The center of the box")
+#     line_to: 
+#     cylinder_radius:
+#     arrow_radius:
+#     arrow_height:
+#     arrow_from, arrow_to,
