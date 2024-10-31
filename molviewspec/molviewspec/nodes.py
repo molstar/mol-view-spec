@@ -870,11 +870,39 @@ class Sphere(BaseModel):
     radius: float | PrimitivePositionT = Field(description="The radius of the sphere.")
     
     # TODO:
-# class Torus(BaseModel): center, outer_radius, tube_radius, theta_start, theta_length, rotation 
-# Wedge: center, width, height, depth, rotation
-# Ellipsoid: direction_major, direction_minor, direction_normal, center, radius_scale
+class Torus(BaseModel):
+    center: Vec3 = Field(description="The center of the torus.")
+    outer_radius: float = Field(description="The outer radius of the torus")
+    tube_radius: float = Field(description="The tube radius.")
+    # TODO:
+    theta_start: float = Field(description="TODO")
+    # TODO:
+    theta_length: float = Field(description="TODO")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+
+class Wedge(BaseModel):
+    center: Vec3 = Field(description="The center of the wedge.")
+    width: float = Field(description="The width of the wedge.")
+    height: float = Field(description="The height of the wedge.")
+    depth: float = Field(description="The depth of the wedge.")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    
+class Ellipsoid(BaseModel):
+    # TODO: adjust based on frontend implementation
+    direction_major: Vec3[float] = Field(description="Major direction of the ellipsoid.")
+    direction_minor: Vec3[float] = Field(description="Minor direction of the ellipsoid.")
+    direction_normal: Vec3[float] = Field(description="Normal direction of the ellipsoid.")
+    center: Vec3 = Field(description="The center of the ellipsoid.")
+    # TODO: is the meaning correct
+    radius_scale: Optional[Vec3[float]] = Field(description="3d vector describing the radius scaling.")
 
 # TODO:
-# Distance: a: PositionT, b, label props (template, color, …), line props
+class Distance(PrimitiveLabelParams):
+    a: PrimitivePositionT = Field(description="The first point.")
+    b: PrimitivePositionT = Field(description="The second point.")
 # Angle:a, b, c, label props (template, color, …), line props, angle visual props
 # Dihedral: a, b, c, d, label props (template, color, …), line props, angle visual props
