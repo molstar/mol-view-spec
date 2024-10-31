@@ -615,7 +615,6 @@ class TransformParams(BaseModel):
     )
     translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
 
-
 class CameraParams(BaseModel):
     """
     Controls the global camera position.
@@ -808,8 +807,8 @@ class Box(TransformParams):
     # TODO: is this correct meaning?
     extent: Vec3 = Field(description="The height and width of the box")
     # TODO: include in TransformParams instead?
-    scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling")
-    as_edges: Optional[bool] = Field(description="Determine whether to render the box as edges")
+    scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling.")
+    as_edges: Optional[bool] = Field(description="Determine whether to render the box as edges.")
     # TODO: meaning of this? Thickness of edges?
     edge_radius: Optional[float] = Field(description="The thickness of edges.")
 
@@ -828,11 +827,54 @@ class Cylinder(BaseModel):
     bottom_cap: bool = Field(description="Determine whether to cap the top of the cylinder.")
     top_cap: bool = Field(description="Determine whether to cap the bottom of the cylinder.")
     
-# class Arrow(BaseModel):
-#     # TODO: better name, "from" is a reserved keyword 
-#     line_from: Vec3 = Field(description="The center of the box")
-#     line_to: 
-#     cylinder_radius:
-#     arrow_radius:
-#     arrow_height:
-#     arrow_from, arrow_to,
+
+# NOTE: arrow should be derived from line perhaps?
+# This allows us to make use of inheritance 
+class Arrow(_LineParamsBase):
+    # TODO: clarify meaning of the following to and modify depending
+    # on frontend implementation
+    arrow_radius: float = Field(description="The radius (extent) of the arrow.")
+    arrow_height: float = Field(description="The height of the arrow.")
+    arrow_from: Vec3 = Field(description="Start of the arrow.")
+    arrow_to: Vec3 = Field(description="End of the arrow.")
+    
+SolidKindTypeT = Literal["tetra", "octa", "dodeca", "icosahedron"]
+
+class PlatonicSolid(BaseModel):
+    solid_kind: SolidKindTypeT
+    center: float = Field(description="The center of the platonic solid.")
+    radius: float = Field(description="The radius of the platonic solid.")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    
+class Prism(BaseModel):
+    position: PrimitivePositionT = Field(description="Position of this prism.")
+    # TODO: meaning?
+    base_point_count: int = Field(description="Count of base points")
+    height: float = Field(description="The height of the prism.")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    
+class Pyramid(BaseModel):
+    vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
+    translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
+    scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+
+class Sphere(BaseModel):
+    center: Vec3 = Field(description="The center of the circle.")
+    radius: float | PrimitivePositionT = Field(description="The radius of the sphere.")
+    
+    # TODO:
+# class Torus(BaseModel): center, outer_radius, tube_radius, theta_start, theta_length, rotation 
+# Wedge: center, width, height, depth, rotation
+# Ellipsoid: direction_major, direction_minor, direction_normal, center, radius_scale
+
+# TODO:
+# Distance: a: PositionT, b, label props (template, color, …), line props
+# Angle:a, b, c, label props (template, color, …), line props, angle visual props
+# Dihedral: a, b, c, d, label props (template, color, …), line props, angle visual props
