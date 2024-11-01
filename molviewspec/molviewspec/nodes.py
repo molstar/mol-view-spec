@@ -802,7 +802,7 @@ class Star(BaseModel):
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
     
-class Box(TransformParams):
+class BoxParams(TransformParams):
     center: Vec3 = Field(description="The center of the box")
     # TODO: is this correct meaning?
     extent: Vec3 = Field(description="The height and width of the box")
@@ -812,7 +812,7 @@ class Box(TransformParams):
     # TODO: meaning of this? Thickness of edges?
     edge_radius: Optional[float] = Field(description="The thickness of edges.")
 
-class Cylinder(BaseModel):
+class CylinderParams(BaseModel):
     center: Vec3 = Field(description="The center of the box")
     radius_top: float = Field(description="The radius of the top of the cylinder top. Radius equal to zero will yield a cone.")
     radius_bottom: float = Field(description="The radius of the bottom of the cylinder. Radius equal to zero will yield a reversed cone.")
@@ -830,7 +830,7 @@ class Cylinder(BaseModel):
 
 # NOTE: arrow should be derived from line perhaps?
 # This allows us to make use of inheritance 
-class Arrow(_LineParamsBase):
+class ArrowParams(_LineParamsBase):
     # TODO: clarify meaning of the following to and modify depending
     # on frontend implementation
     arrow_radius: float = Field(description="The radius (extent) of the arrow.")
@@ -840,7 +840,7 @@ class Arrow(_LineParamsBase):
     
 SolidKindTypeT = Literal["tetra", "octa", "dodeca", "icosahedron"]
 
-class PlatonicSolid(BaseModel):
+class PlatonicSolidParams(BaseModel):
     solid_kind: SolidKindTypeT
     center: float = Field(description="The center of the platonic solid.")
     radius: float = Field(description="The radius of the platonic solid.")
@@ -848,7 +848,7 @@ class PlatonicSolid(BaseModel):
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
     
-class Prism(BaseModel):
+class PrismParams(BaseModel):
     position: PrimitivePositionT = Field(description="Position of this prism.")
     # TODO: meaning?
     base_point_count: int = Field(description="Count of base points")
@@ -857,7 +857,7 @@ class Prism(BaseModel):
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
     
-class Pyramid(BaseModel):
+class PyramidParams(BaseModel):
     vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
     translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
     scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling")
@@ -865,12 +865,12 @@ class Pyramid(BaseModel):
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
 
-class Sphere(BaseModel):
+class SphereParams(BaseModel):
     center: Vec3 = Field(description="The center of the circle.")
     radius: float | PrimitivePositionT = Field(description="The radius of the sphere.")
     
     # TODO:
-class Torus(BaseModel):
+class TorusParams(BaseModel):
     center: Vec3 = Field(description="The center of the torus.")
     outer_radius: float = Field(description="The outer radius of the torus")
     tube_radius: float = Field(description="The tube radius.")
@@ -882,7 +882,7 @@ class Torus(BaseModel):
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
 
-class Wedge(BaseModel):
+class WedgeParams(BaseModel):
     center: Vec3 = Field(description="The center of the wedge.")
     width: float = Field(description="The width of the wedge.")
     height: float = Field(description="The height of the wedge.")
@@ -891,7 +891,7 @@ class Wedge(BaseModel):
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
     
-class Ellipsoid(BaseModel):
+class EllipsoidParams(BaseModel):
     # TODO: adjust based on frontend implementation
     direction_major: Vec3[float] = Field(description="Major direction of the ellipsoid.")
     direction_minor: Vec3[float] = Field(description="Minor direction of the ellipsoid.")
@@ -901,8 +901,18 @@ class Ellipsoid(BaseModel):
     radius_scale: Optional[Vec3[float]] = Field(description="3d vector describing the radius scaling.")
 
 # TODO:
-class Distance(PrimitiveLabelParams):
+class DistanceParams(LabelCommonProps):
     a: PrimitivePositionT = Field(description="The first point.")
     b: PrimitivePositionT = Field(description="The second point.")
-# Angle:a, b, c, label props (template, color, …), line props, angle visual props
-# Dihedral: a, b, c, d, label props (template, color, …), line props, angle visual props
+
+class AngleParams(LabelCommonProps):
+    a: PrimitivePositionT = Field(description="The first point.")
+    b: PrimitivePositionT = Field(description="The second point.")
+    c: PrimitivePositionT = Field(description="The third point.")
+        
+class DihedralParams(LabelCommonProps, _LineParamsBase): 
+    a: PrimitivePositionT = Field(description="The first point.")
+    b: PrimitivePositionT = Field(description="The second point.")
+    c: PrimitivePositionT = Field(description="The third point.")
+    d: PrimitivePositionT = Field(description="The fourth point.")
+    # TODO: angle visual props - what does it mean?
