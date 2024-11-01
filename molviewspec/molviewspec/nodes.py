@@ -771,15 +771,9 @@ def validate_state_tree(json: str) -> None:
     """
     State.parse_raw(json)
 
-# TODO: to be discussed
-# class TooltipAndColorProps(BaseModel):
-#     tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
-#     color: Optional[ColorT] = Field(
-#         description="Color of the line. If not specified, the primitives group color is used."
-#     )
-
 # TODO: fields instead of plain types
 class CircleParams(BaseModel):
+    kind: Literal["circle"] = "circle"
     center: Vec3 = Field(description="The center of the circle.")
     # TODO: elaborate names and semantics depending on
     # how Mol* implements circles
@@ -789,9 +783,11 @@ class CircleParams(BaseModel):
 
 # TODO: add collection of descriptions for the fields with the same name
 class Polygon(BaseModel):
+    kind: Literal["polygon"] = "polygon"
     vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
     
 class Star(BaseModel):
+    kind: Literal["star"] = "star"
     center: Vec3 = Field(description="The center of the star.")
     inner_radius: float = Field(description="The inner radius of the star")
     outer_radius: float = Field(description="The outer radius of the star")
@@ -803,6 +799,7 @@ class Star(BaseModel):
     )
     
 class BoxParams(TransformParams):
+    kind: Literal["box"] = "box"
     center: Vec3 = Field(description="The center of the box")
     # TODO: is this correct meaning?
     extent: Vec3 = Field(description="The height and width of the box")
@@ -813,6 +810,7 @@ class BoxParams(TransformParams):
     edge_radius: Optional[float] = Field(description="The thickness of edges.")
 
 class CylinderParams(BaseModel):
+    kind: Literal["cylinder"] = "cylinder"
     center: Vec3 = Field(description="The center of the box")
     radius_top: float = Field(description="The radius of the top of the cylinder top. Radius equal to zero will yield a cone.")
     radius_bottom: float = Field(description="The radius of the bottom of the cylinder. Radius equal to zero will yield a reversed cone.")
@@ -833,6 +831,7 @@ class CylinderParams(BaseModel):
 class ArrowParams(_LineParamsBase):
     # TODO: clarify meaning of the following to and modify depending
     # on frontend implementation
+    kind: Literal["arrow"] = "arrow"
     arrow_radius: float = Field(description="The radius (extent) of the arrow.")
     arrow_height: float = Field(description="The height of the arrow.")
     arrow_from: Vec3 = Field(description="Start of the arrow.")
@@ -841,6 +840,7 @@ class ArrowParams(_LineParamsBase):
 SolidKindTypeT = Literal["tetra", "octa", "dodeca", "icosahedron"]
 
 class PlatonicSolidParams(BaseModel):
+    kind: Literal["platonic_solid"] = "platonic_solid"
     solid_kind: SolidKindTypeT
     center: float = Field(description="The center of the platonic solid.")
     radius: float = Field(description="The radius of the platonic solid.")
@@ -849,6 +849,7 @@ class PlatonicSolidParams(BaseModel):
     )
     
 class PrismParams(BaseModel):
+    kind: Literal["prism"] = "prism"
     position: PrimitivePositionT = Field(description="Position of this prism.")
     # TODO: meaning?
     base_point_count: int = Field(description="Count of base points")
@@ -858,6 +859,7 @@ class PrismParams(BaseModel):
     )
     
 class PyramidParams(BaseModel):
+    kind: Literal["pyramid"] = "pyramid"
     vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
     translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
     scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling")
@@ -866,11 +868,13 @@ class PyramidParams(BaseModel):
     )
 
 class SphereParams(BaseModel):
+    kind: Literal["sphere"] = "sphere"
     center: Vec3 = Field(description="The center of the circle.")
     radius: float | PrimitivePositionT = Field(description="The radius of the sphere.")
     
     # TODO:
 class TorusParams(BaseModel):
+    kind: Literal["torus"] = "torus"
     center: Vec3 = Field(description="The center of the torus.")
     outer_radius: float = Field(description="The outer radius of the torus")
     tube_radius: float = Field(description="The tube radius.")
@@ -883,6 +887,7 @@ class TorusParams(BaseModel):
     )
 
 class WedgeParams(BaseModel):
+    kind: Literal["wedge"] = "wedge"
     center: Vec3 = Field(description="The center of the wedge.")
     width: float = Field(description="The width of the wedge.")
     height: float = Field(description="The height of the wedge.")
@@ -893,6 +898,7 @@ class WedgeParams(BaseModel):
     
 class EllipsoidParams(BaseModel):
     # TODO: adjust based on frontend implementation
+    kind: Literal["ellipsoid"] = "ellipsoid"
     direction_major: Vec3[float] = Field(description="Major direction of the ellipsoid.")
     direction_minor: Vec3[float] = Field(description="Minor direction of the ellipsoid.")
     direction_normal: Vec3[float] = Field(description="Normal direction of the ellipsoid.")
@@ -902,15 +908,18 @@ class EllipsoidParams(BaseModel):
 
 # TODO:
 class DistanceParams(LabelCommonProps):
+    kind: Literal["disatance"] = "disatance"
     a: PrimitivePositionT = Field(description="The first point.")
     b: PrimitivePositionT = Field(description="The second point.")
 
 class AngleParams(LabelCommonProps):
+    kind: Literal["angle"] = "angle"
     a: PrimitivePositionT = Field(description="The first point.")
     b: PrimitivePositionT = Field(description="The second point.")
     c: PrimitivePositionT = Field(description="The third point.")
         
 class DihedralParams(LabelCommonProps, _LineParamsBase): 
+    kind: Literal["dihedral"] = "dihedral"
     a: PrimitivePositionT = Field(description="The first point.")
     b: PrimitivePositionT = Field(description="The second point.")
     c: PrimitivePositionT = Field(description="The third point.")
