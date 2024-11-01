@@ -800,9 +800,8 @@ class Star(BaseModel):
     
 class BoxParams(TransformParams):
     kind: Literal["box"] = "box"
-    center: Vec3 = Field(description="The center of the box")
-    # TODO: is this correct meaning?
-    extent: Vec3 = Field(description="The height and width of the box")
+    center: Vec3 = Field(description="The center of the box.")
+    extent: Vec3 = Field(description="The width, the height, and the depth of the box.")
     # TODO: include in TransformParams instead?
     scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling.")
     as_edges: Optional[bool] = Field(description="Determine whether to render the box as edges.")
