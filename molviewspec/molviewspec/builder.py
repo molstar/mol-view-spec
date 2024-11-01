@@ -12,6 +12,7 @@ from typing import Literal, Self, Sequence
 from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
+    BoxParams,
     CameraParams,
     CanvasParams,
     ColorFromSourceParams,
@@ -566,6 +567,7 @@ class Structure(_Base, _PrimitivesMixin):
     def transform(
         self,
         *,
+        # TODO: given as Optional[Mat3[float]] in nodes.py
         rotation: Sequence[float] | None = None,
         translation: Sequence[float] | None = None,
         custom: CustomT = None,
@@ -932,6 +934,36 @@ class Primitives(_Base, _FocusMixin):
         :return: this builder
         """
         params = make_params(PrimitiveLabelParams, {"kind": "label", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def box(self,
+        *,
+        center: Vec3,
+        extent: Vec3,
+        # TODO: adjust default? 
+        scaling: Vec3[float] | None = 1.0,
+        as_edges: bool | None = False,
+        edge_radius: float | None = None,
+        rotation: Sequence[float] | None = None,
+        translation: Vec3[float] | None = None,    
+        custom: CustomT = None,
+        ref: RefT = None,
+        ) -> Primitives:
+        # TODO annotation
+        # """
+        # Defines a box
+        # :param center: center of the box
+        # :param extent: height and width of the box
+        # :param scaling: scaling
+        # :param as_edges: 3d vector describing the scaling.
+        # :param label_offset: camera-facing offset to prevent overlap with geometry
+        # :param custom: optional, custom data to attach to this node
+        # :param ref: optional, reference that can be used to access this node
+        # :return: this builder
+        # """
+        params = make_params(BoxParams, {"kind": "box", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
