@@ -12,6 +12,7 @@ from typing import Literal, Self, Sequence
 from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
+# from molviewspec.molviewspec.nodes import (
     BoxParams,
     CameraParams,
     CanvasParams,
@@ -25,6 +26,7 @@ from molviewspec.nodes import (
     ComponentInlineParams,
     ComponentSelectorT,
     CustomT,
+    CylinderParams,
     DescriptionFormatT,
     DistanceMeasurementParams,
     DownloadParams,
@@ -942,8 +944,9 @@ class Primitives(_Base, _FocusMixin):
         *,
         center: Vec3,
         extent: Vec3,
+        color: ColorT | None = None,
         # TODO: adjust default? 
-        scaling: Vec3[float] | None = 1.0,
+        scaling: Vec3[float] | None = [1.0, 1.0, 1.0],
         as_edges: bool | None = False,
         edge_radius: float | None = None,
         rotation: Sequence[float] | None = None,
@@ -997,3 +1000,34 @@ class Primitives(_Base, _FocusMixin):
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
+
+    def cylinder(self,
+        *,
+        radius_top: float,
+        radius_bottom: float,
+        height: float,
+        # TODO: theta start/length once clarified
+        bottom_cap: bool,
+        top_cap: bool,
+        color: ColorT | None = None,
+        rotation: Sequence[float] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+        ) -> Primitives:
+        # TODO annotation
+        # """
+        # Defines a box
+        # :param center: center of the box
+        # :param extent: height and width of the box
+        # :param scaling: scaling
+        # :param as_edges: 3d vector describing the scaling.
+        # :param label_offset: camera-facing offset to prevent overlap with geometry
+        # :param custom: optional, custom data to attach to this node
+        # :param ref: optional, reference that can be used to access this node
+        # :return: this builder
+        # """
+        params = make_params(CylinderParams, {"kind": "cylinder", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+    

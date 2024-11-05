@@ -701,7 +701,7 @@ class LinesParams(BaseModel):
     indices: list[int] = Field(
         description="2N length array of indices into vertices that form lines (l1_1, ll1_2, ...)"
     )
-    line_groups: Optional[list[int]] = Field(description="Assign a number to each triangle to group them.")
+    line_groups: Optional[list[int]] = Field(description="Assign a number to each line to group them.")
     group_colors: Optional[Mapping[int, ColorT]] = Field(
         description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over line_colors."
     )
@@ -800,6 +800,9 @@ class Star(BaseModel):
     
 class BoxParams(TransformParams):
     kind: Literal["box"] = "box"
+    # TODO: implement
+    box_groups: Optional[list[int]] = Field(description="Assign a number to each box to group them.")
+    color: Optional[ColorT] = Field(description="Default color for the box.")
     center: Vec3 = Field(description="The center of the box.")
     extent: Vec3 = Field(description="The width, the height, and the depth of the box.")
     # TODO: include in TransformParams instead?
@@ -810,7 +813,7 @@ class BoxParams(TransformParams):
 
 class CylinderParams(BaseModel):
     kind: Literal["cylinder"] = "cylinder"
-    center: Vec3 = Field(description="The center of the box")
+    color: Optional[ColorT] = Field(description="Default color for the box.")
     radius_top: float = Field(description="The radius of the top of the cylinder top. Radius equal to zero will yield a cone.")
     radius_bottom: float = Field(description="The radius of the bottom of the cylinder. Radius equal to zero will yield a reversed cone.")
     height: float = Field(description="The height of the cone.")
