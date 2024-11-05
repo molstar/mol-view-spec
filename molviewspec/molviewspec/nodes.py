@@ -836,8 +836,8 @@ class ArrowParams(_LineParamsBase):
     kind: Literal["arrow"] = "arrow"
     arrow_radius: float = Field(description="The radius (extent) of the arrow.")
     arrow_height: float = Field(description="The height of the arrow.")
-    arrow_from: Vec3 = Field(description="Start of the arrow.")
-    arrow_to: Vec3 = Field(description="End of the arrow.")
+    arrow_from: PrimitivePositionT = Field(description="Start of the arrow.")
+    arrow_to: PrimitivePositionT = Field(description="End of the arrow.")
     
 SolidKindTypeT = Literal["tetra", "octa", "dodeca", "icosahedron"]
 
