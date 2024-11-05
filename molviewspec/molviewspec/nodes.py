@@ -774,7 +774,7 @@ def validate_state_tree(json: str) -> None:
 # TODO: fields instead of plain types
 class CircleParams(BaseModel):
     kind: Literal["circle"] = "circle"
-    center: Vec3 = Field(description="The center of the circle.")
+    center: PrimitivePositionT = Field(description="The center of the circle.")
     # TODO: elaborate names and semantics depending on
     # how Mol* implements circles
     # (should be dir_major and dir_minor perhaps as these two here are just Vec3)
@@ -788,7 +788,7 @@ class Polygon(BaseModel):
     
 class Star(BaseModel):
     kind: Literal["star"] = "star"
-    center: Vec3 = Field(description="The center of the star.")
+    center: PrimitivePositionT = Field(description="The center of the star.")
     inner_radius: float = Field(description="The inner radius of the star")
     outer_radius: float = Field(description="The outer radius of the star")
     # TODO: is this correct meaning?
@@ -803,7 +803,7 @@ class BoxParams(TransformParams):
     # TODO: implement
     box_groups: Optional[list[int]] = Field(description="Assign a number to each box to group them.")
     color: Optional[ColorT] = Field(description="Default color for the box.")
-    center: Vec3 = Field(description="The center of the box.")
+    center: PrimitivePositionT = Field(description="The center of the box.")
     extent: Vec3 = Field(description="The width, the height, and the depth of the box.")
     # TODO: include in TransformParams instead?
     scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling.")
@@ -871,13 +871,13 @@ class PyramidParams(BaseModel):
 
 class SphereParams(BaseModel):
     kind: Literal["sphere"] = "sphere"
-    center: Vec3 = Field(description="The center of the circle.")
+    center: PrimitivePositionT = Field(description="The center of the circle.")
     radius: float | PrimitivePositionT = Field(description="The radius of the sphere.")
     
     # TODO:
 class TorusParams(BaseModel):
     kind: Literal["torus"] = "torus"
-    center: Vec3 = Field(description="The center of the torus.")
+    center: PrimitivePositionT = Field(description="The center of the torus.")
     outer_radius: float = Field(description="The outer radius of the torus")
     tube_radius: float = Field(description="The tube radius.")
     # TODO:
@@ -890,7 +890,7 @@ class TorusParams(BaseModel):
 
 class WedgeParams(BaseModel):
     kind: Literal["wedge"] = "wedge"
-    center: Vec3 = Field(description="The center of the wedge.")
+    center: PrimitivePositionT = Field(description="The center of the wedge.")
     width: float = Field(description="The width of the wedge.")
     height: float = Field(description="The height of the wedge.")
     depth: float = Field(description="The depth of the wedge.")
@@ -904,7 +904,7 @@ class EllipsoidParams(BaseModel):
     direction_major: Vec3[float] = Field(description="Major direction of the ellipsoid.")
     direction_minor: Vec3[float] = Field(description="Minor direction of the ellipsoid.")
     direction_normal: Vec3[float] = Field(description="Normal direction of the ellipsoid.")
-    center: Vec3 = Field(description="The center of the ellipsoid.")
+    center: PrimitivePositionT = Field(description="The center of the ellipsoid.")
     # TODO: is the meaning correct
     radius_scale: Optional[Vec3[float]] = Field(description="3d vector describing the radius scaling.")
 
