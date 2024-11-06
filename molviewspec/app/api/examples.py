@@ -9,6 +9,7 @@ from typing import Literal, TypeAlias, Union
 import requests
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
+from python_graphql_client import GraphqlClient
 
 from app.config import settings
 from molviewspec.builder import Representation, create_builder
@@ -604,6 +605,47 @@ async def validation_data(id: str) -> Response:
                 transformed_data.append(transformed_residue)
 
     return JSONResponse(transformed_data)
+
+@router.get("/data/{entry_id}/{assembly_id}/assembly-symmetry")
+async def assembly_symmetry_data(entry_id: str, assembly_id: str) -> Response:
+    """
+    Fetches assembly symmetry from the RCSB.org Data API. Converts data for an assembly to MVS primitive instructions.
+    :param entry_id: entry to process
+    :param assembly_id: assembly to process
+    :return: MVS response of all primitive instructions
+    """
+    query = '''
+    query AssemblySymmetry($assembly_id: String!, $entry_id: String!) {
+        assembly(assembly_id: $assembly_id, entry_id: $entry_id) {
+            rcsb_struct_symmetry {
+                clusters {
+                    avg_rmsd
+                    members {
+                        asym_id
+                        pdbx_struct_oper_list_ids
+                    }
+                }
+                kind
+                oligomeric_state
+                rotation_axes {
+                    order
+                    start
+                    end
+                }
+                stoichiometry
+                symbol
+                type
+            }
+        }
+    }
+    '''
+    variables = {'entry_id': entry_id, 'assembly_id': assembly_id}
+    client = GraphqlClient(endpoint="https://data.rcsb.org/graphql")
+
+    result = client.execute(query=query, variables=variables)
+    primitives = result['data']
+
+    return JSONResponse(primitives)
 
 
 @router.get("/data/basic-primitives")

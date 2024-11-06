@@ -16,3 +16,6 @@ dependencies:
   - isort
   - black
   - mypy==1.1.1
+
+  - pip:
+    - python-graphql-client
