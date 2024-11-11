@@ -820,9 +820,10 @@ class BoxParams(TransformMixin):
 class CylinderParams(BaseModel):
     kind: Literal["cylinder"] = "cylinder"
     color: Optional[ColorT] = Field(description="Default color for the box.")
+    bottom: PrimitivePositionT = Field(description="Position of the bottom.")
+    up: PrimitivePositionT = Field(description="Position of the top.")
     radius_top: float = Field(description="The radius of the top of the cylinder top. Radius equal to zero will yield a cone.")
     radius_bottom: float = Field(description="The radius of the bottom of the cylinder. Radius equal to zero will yield a reversed cone.")
-    height: float = Field(description="The height of the cone.")
     # TODO: meaning of the following two? Check Sebastian's answers in some of the PRs.
     theta_start: float = Field(description="TODO")
     theta_length: float = Field(description="TODO")
