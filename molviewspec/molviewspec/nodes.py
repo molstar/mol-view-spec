@@ -653,7 +653,6 @@ Positions of primitives can be defined by 3D vector, by providing a selection ex
 a list of expressions within a specific structure.
 """
 
-
 class PrimitivesParams(BaseModel):
     color: Optional[ColorT] = Field(description="Default color for primitives in this group")
     label_color: Optional[ColorT] = Field(description="Default label color for primitives in this group")
@@ -797,8 +796,14 @@ class Star(BaseModel):
     rotation: Optional[Mat3[float]] = Field(
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
-    
-class BoxParams(TransformParams):
+
+class TransformMixin:
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
+
+class BoxParams(TransformMixin):
     kind: Literal["box"] = "box"
     # TODO: implement
     box_groups: Optional[list[int]] = Field(description="Assign a number to each box to group them.")
@@ -810,6 +815,7 @@ class BoxParams(TransformParams):
     as_edges: Optional[bool] = Field(description="Determine whether to render the box as edges.")
     # TODO: meaning of this? Thickness of edges?
     edge_radius: Optional[float] = Field(description="The thickness of edges.")
+    alignment: Literal["axes", "principal-axes"] = "axes"
 
 class CylinderParams(BaseModel):
     kind: Literal["cylinder"] = "cylinder"
