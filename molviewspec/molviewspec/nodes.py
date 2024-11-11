@@ -797,26 +797,31 @@ class Star(BaseModel):
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
 
-class TransformMixin:
+class TransformMixin(BaseModel):
     rotation: Optional[Mat3[float]] = Field(
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
     translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
 
-class BoxParams(TransformMixin):
-    kind: Literal["box"] = "box"
-    # TODO: implement
-    box_groups: Optional[list[int]] = Field(description="Assign a number to each box to group them.")
-    color: Optional[ColorT] = Field(description="Default color for the box.")
+class RectangularPrismMixin(BaseModel):
     center: PrimitivePositionT = Field(description="The center of the box.")
     extent: Vec3 = Field(description="The width, the height, and the depth of the box.")
     # TODO: include in TransformParams instead?
     scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling.")
-    as_edges: Optional[bool] = Field(description="Determine whether to render the box as edges.")
     # TODO: meaning of this? Thickness of edges?
     edge_radius: Optional[float] = Field(description="The thickness of edges.")
     alignment: Literal["axes", "principal-axes"] = "axes"
-
+    groups: Optional[list[int]] = Field(description="Assign a number to each box to group them.")
+    color: Optional[ColorT] = Field(description="Default color for the box.")
+    
+class BoxParams(TransformMixin, RectangularPrismMixin):
+    kind: Literal["box"] = "box"
+    # TODO: implement
+    
+class CageParams(TransformMixin, RectangularPrismMixin):
+    kind: Literal["cage"] = "cage"
+    type: Literal["as_lines", "as_geometry"] = "as_lines"
+    
 class CylinderParams(BaseModel):
     kind: Literal["cylinder"] = "cylinder"
     color: Optional[ColorT] = Field(description="Default color for the box.")
