@@ -816,7 +816,6 @@ class RectangularPrismMixin(BaseModel):
     
 class BoxParams(TransformMixin, RectangularPrismMixin):
     kind: Literal["box"] = "box"
-    # TODO: implement
     
 class CageParams(TransformMixin, RectangularPrismMixin):
     kind: Literal["cage"] = "cage"

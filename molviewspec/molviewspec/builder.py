@@ -942,12 +942,11 @@ class Primitives(_Base, _FocusMixin):
 
     def box(self,
         *,
-        center: Vec3,
+        center: PrimitivePositionT,
         extent: Vec3,
         color: ColorT | None = None,
         # TODO: adjust default? 
         scaling: Vec3[float] | None = [1.0, 1.0, 1.0],
-        as_edges: bool | None = False,
         edge_radius: float | None = None,
         rotation: Sequence[float] | None = None,
         translation: Vec3[float] | None = None,    
@@ -973,7 +972,7 @@ class Primitives(_Base, _FocusMixin):
     
     def cage(self,
         *,
-        center: Vec3,
+        center: PrimitivePositionT,
         extent: Vec3,
         # TODO: adjust default? 
         scaling: Vec3[float] | None = 1.0,
