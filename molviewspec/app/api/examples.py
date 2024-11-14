@@ -265,6 +265,13 @@ camera_far = {
     'target': (49.825582, -1.340038, 26.471059),
     'position': (-191.11654336839834, 143.45196107439443, -11.769199212079403),
     'up': (-0.17708140507299697, -0.03490614992285138, 0.9835770110545166)}
+orient1 = {
+    'direction': (0.84931414, -0.51038768,  0.13479582),
+    'up': (-0.177081405072997, -0.0349061499228514, 0.9835770110545166)}
+orient2 = {
+    'direction': (0.67915562,  0.59064435, -0.43576013),
+    'up': (0.5701116198257888, -0.050566846964212424, 0.8200095944119795)}
+
 
 @router.get("/multiple-states-aln")
 async def multiple_states_aln() -> MVSResponse:
@@ -308,7 +315,50 @@ async def multiple_states_aln() -> MVSResponse:
         States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
     )
 
-def foo(key: str, *, description: str|None = None, align: bool = True, duration: int|None, transition_duration: int|None = None, color1: str = '#dddddd', color2: str = '#4fc64f', camera = camera1, show: list[str]|None = None) -> Snapshot:
+@router.get("/multiple-states-aln-focus")
+async def multiple_states_aln_focus() -> MVSResponse:
+    snapshots = [
+        foo('A', description='### We have these two proteins...', align=False, duration=3000, transition_duration=1000, camera=camera2),
+        foo('B', description='### What if we superpose them?', duration=3000, transition_duration=1500, focus='protein', orient=orient1),
+        foo('C', description='### Look, a ligand!', duration=500, transition_duration=3000, focus='ligand', orient=orient1),
+        foo('D', description='### ... a nice one...', duration=1000, transition_duration=1000, focus='ligand', orient=orient2),
+        foo('E', description='', duration=2000, focus='protein', orient=orient1),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        foo('H', description='', duration=500, transition_duration=10_000, focus='protein', orient=orient1),
+        foo('I', description='### Thanks for watching', duration=None, transition_duration=1000, camera=camera_far),
+    ]
+    metadata = Metadata(description="test", version=get_major_version_tag())
+    return PlainTextResponse(
+        States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
+    )
+
+def foo(key: str, *, description: str|None = None, align: bool = True, duration: int|None, transition_duration: int|None = None, color1: str = '#dddddd', color2: str = '#4fc64f', 
+        camera = None, focus: Literal['protein', 'ligand', None] = None, orient = orient1, show: list[str]|None = None) -> Snapshot:
     builder = create_builder()
 
     structure1 = (
@@ -318,11 +368,10 @@ def foo(key: str, *, description: str|None = None, align: bool = True, duration:
         .model_structure()
     )
     if show is None or 'protein1' in show:
-        (structure1
-            .component(selector=ComponentExpression(label_asym_id='A'))
-            .representation(type='cartoon')
-            .color(color=color1)
-        )
+        protein1 = structure1.component(selector=ComponentExpression(label_asym_id='A'))
+        protein1.representation(type='cartoon').color(color=color1)
+        if focus == 'protein':
+            protein1.focus(**orient)
 
     structure2 = (
         builder
@@ -340,20 +389,18 @@ def foo(key: str, *, description: str|None = None, align: bool = True, duration:
             translation=[2.237313, 17.994696, -4.031342])
         
     if show is None or 'protein2' in show:
-        (structure2
-            .component(selector=ComponentExpression(label_asym_id='A'))
-            .representation(type='cartoon')
-            .color(color=color2)
-        )
+        protein2 = structure2.component(selector=ComponentExpression(label_asym_id='A'))
+        protein2.representation(type='cartoon').color(color=color2)
+        if focus == 'protein':
+            protein2.focus(**orient)
     if show is None or 'ligand2' in show:
-        (structure2
-            .component(selector=ComponentExpression(label_asym_id='B'))
-            .representation(type='ball_and_stick')
-            .color(color=color2)
-            .color(color='red', selector=ComponentExpression(type_symbol='O'))
-        )
+        ligand2 = structure2.component(selector=ComponentExpression(label_asym_id='B'))
+        ligand2.representation(type='ball_and_stick').color(color=color2).color(color='red', selector=ComponentExpression(type_symbol='O'))
+        if focus == 'ligand':
+            ligand2.focus(**orient)
 
-    builder.camera(**camera)
+    if camera is not None:
+        builder.camera(**camera)
 
     metadata = SnapshotMetadata(key=key, title=f'State {key}', 
                                 # description=f'### Description {key}\n\n **Lorem ipsum** dolor sit amet, consectetur *adipiscing* elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
