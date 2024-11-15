@@ -14,6 +14,7 @@ from pydantic import BaseModel, PrivateAttr
 from molviewspec.nodes import (
 # from molviewspec.molviewspec.nodes import (
     BoxParams,
+    CageParams,
     CameraParams,
     CanvasParams,
     ColorFromSourceParams,
@@ -60,7 +61,7 @@ from molviewspec.nodes import (
     TransparencyInlineParams,
     Vec3,
 )
-from molviewspec.utils import get_major_version_tag, make_params
+from molviewspec.molviewspec.utils import get_major_version_tag, make_params
 
 
 def create_builder() -> Root:
@@ -945,15 +946,14 @@ class Primitives(_Base, _FocusMixin):
         center: PrimitivePositionT,
         extent: Vec3,
         color: ColorT | None = None,
-        # TODO: adjust default? 
         scaling: Vec3[float] | None = [1.0, 1.0, 1.0],
-        edge_radius: float | None = None,
-        rotation: Sequence[float] | None = None,
+        rotation_axis: Vec3[float] | None = None,
+        rotation_radians: float | None = None,
         translation: Vec3[float] | None = None,    
         custom: CustomT = None,
         ref: RefT = None,
         ) -> Primitives:
-        # TODO annotation
+        # TODO: annotation
         # """
         # Defines a box
         # :param center: center of the box
@@ -974,12 +974,13 @@ class Primitives(_Base, _FocusMixin):
         *,
         center: PrimitivePositionT,
         extent: Vec3,
-        # TODO: adjust default? 
-        scaling: Vec3[float] | None = 1.0,
-        as_edges: bool | None = False,
+        color: ColorT | None = None,
+        scaling: Vec3[float] | None = [1.0, 1.0, 1.0],
         edge_radius: float | None = None,
-        rotation: Sequence[float] | None = None,
-        translation: Vec3[float] | None = None,    
+        rotation_axis: Vec3[float] | None = None,
+        rotation_radians: float | None = None,
+        translation: Vec3[float] | None = None,  
+        type: Literal["as_lines", "as_geometry"] = "as_lines", 
         custom: CustomT = None,
         ref: RefT = None,
         ) -> Primitives:
@@ -995,7 +996,7 @@ class Primitives(_Base, _FocusMixin):
         # :param ref: optional, reference that can be used to access this node
         # :return: this builder
         # """
-        params = make_params(BoxParams, {"kind": "box", **locals()})
+        params = make_params(CageParams, {"kind": "cage", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self

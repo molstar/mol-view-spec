@@ -815,8 +815,6 @@ class RectangularPrismMixin(BaseModel):
     extent: Vec3 = Field(description="The width, the height, and the depth of the box.")
     # TODO: include in TransformParams instead?
     scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling.")
-    # TODO: meaning of this? Thickness of edges?
-    edge_radius: Optional[float] = Field(description="The thickness of edges.")
     alignment: Literal["axes", "principal-axes"] = "axes"
     groups: Optional[list[int]] = Field(description="Assign a number to each box to group them.")
     color: Optional[ColorT] = Field(description="Default color for the box.")
