@@ -793,13 +793,20 @@ class Star(BaseModel):
     # TODO: is this correct meaning?
     point_count: int = Field(description="The number of points the star contains")
     # TODO: inherit from TransformParams instead?
-    rotation: Optional[Mat3[float]] = Field(
-        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
-    )
+    # rotation: Optional[Mat3[float]] = Field(
+    #     description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    # )
 
 class TransformMixin(BaseModel):
-    rotation: Optional[Mat3[float]] = Field(
-        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    # rotation: Optional[Mat3[float]] = Field(
+    #     description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    # )
+    rotation_axis: Optional[Vec3] = Field(
+        # TODO: better description
+        description="Rotation axis"
+    )
+    rotation_radians: Optional[int] = Field(
+        description="Rotation angle in radians"
     )
     translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
 
