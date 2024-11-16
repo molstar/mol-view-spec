@@ -1003,14 +1003,15 @@ class Primitives(_Base, _FocusMixin):
 
     def cylinder(self,
         *,
+        bottom: Vec3[float],
+        up: Vec3[float],
         radius_top: float,
         radius_bottom: float,
-        height: float,
-        # TODO: theta start/length once clarified
         bottom_cap: bool,
         top_cap: bool,
         color: ColorT | None = None,
-        rotation: Sequence[float] | None = None,
+        rotation_axis: Vec3[float] | None = None,
+        rotation_radians: float | None = None,
         custom: CustomT = None,
         ref: RefT = None,
         ) -> Primitives:
