@@ -824,7 +824,7 @@ class BoxParams(TransformMixin, RectangularPrismMixin):
     
 class CageParams(TransformMixin, RectangularPrismMixin):
     kind: Literal["cage"] = "cage"
-    type: Literal["as_lines", "as_geometry"] = "as_lines"
+    render_style: Literal["lines", "geometry"] = "lines"
     
 class CylinderParams(BaseModel):
     kind: Literal["cylinder"] = "cylinder"
