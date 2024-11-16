@@ -1001,7 +1001,7 @@ class Primitives(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
-    def cylinder(self,
+    def cone(self,
         *,
         bottom: Vec3[float],
         up: Vec3[float],

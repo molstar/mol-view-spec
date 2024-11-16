@@ -833,9 +833,9 @@ class CylinderParams(BaseModel):
     up: PrimitivePositionT = Field(description="Position of the top.")
     radius_top: float = Field(description="The radius of the top of the cylinder top. Radius equal to zero will yield a cone.")
     radius_bottom: float = Field(description="The radius of the bottom of the cylinder. Radius equal to zero will yield a reversed cone.")
-    # TODO: meaning of the following two? Check Sebastian's answers in some of the PRs.
-    theta_start: float = Field(description="TODO")
-    theta_length: float = Field(description="TODO")
+    # TODO: Implement start end of the arc (theta start end)
+    # theta_start: float = Field(description="TODO")
+    # theta_length: float = Field(description="TODO")
     # TODO: type for rotation as field
     rotation: Optional[Mat3[float]] = Field(
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
@@ -843,6 +843,11 @@ class CylinderParams(BaseModel):
     bottom_cap: bool = Field(description="Determine whether to cap the top of the cylinder.")
     top_cap: bool = Field(description="Determine whether to cap the bottom of the cylinder.")
     
+    
+# TODO: instead of theta - tube?
+# addTube in mol*, params accordingly   
+
+
 
 # NOTE: arrow should be derived from line perhaps?
 # This allows us to make use of inheritance 
