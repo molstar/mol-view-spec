@@ -17,6 +17,7 @@ from molviewspec.nodes import (
     CageParams,
     CameraParams,
     CanvasParams,
+    CircleParams,
     ColorFromSourceParams,
     ColorFromUriParams,
     ColorInlineParams,
@@ -1001,6 +1002,42 @@ class Primitives(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
+    # def ellipsoid(
+    #     self,
+    #     *,
+    #     direction_major: Vec3[float],
+    #     direction_minor: Vec3[float],
+    #     direction_normal: Vec3[float] = Field(description="Normal direction of the ellipsoid.")
+    #     center: PrimitivePositionT = Field(description="The center of the ellipsoid.")
+    #     # TODO: is the meaning correct
+    #     radius_scale: Optional[Vec3[float]] = Field(description="3d vector describing the radius scaling.")
+
+        
+    # )
+    
+    def circle(self,
+        *,
+        center: PrimitivePositionT,
+        major_axis: PrimitivePositionT,
+        minor_axis: PrimitivePositionT
+        ):
+        # TODO annotation
+        # """
+        # Defines a box
+        # :param center: center of the box
+        # :param extent: height and width of the box
+        # :param scaling: scaling
+        # :param as_edges: 3d vector describing the scaling.
+        # :param label_offset: camera-facing offset to prevent overlap with geometry
+        # :param custom: optional, custom data to attach to this node
+        # :param ref: optional, reference that can be used to access this node
+        # :return: this builder
+        # """
+        params = make_params(CircleParams, {"kind": "circle", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+    
     def cone(self,
         *,
         bottom: Vec3[float],
