@@ -42,10 +42,10 @@ structure.primitives().cone(
     bottom_cap=True,
     top_cap=False,
     color="magenta",
-    bottom=[1, 1, 1],
-    up=[2,5,10]
-    # bottom=ComponentExpression(auth_seq_id=508),
-    # up=ComponentExpression(auth_seq_id=507) 
+    # bottom=[1, 1, 1],
+    # up=[2,5,10]
+    bottom=ComponentExpression(auth_seq_id=508),
+    up=ComponentExpression(auth_seq_id=399) 
 )  
 
 builder.primitives().box(
