@@ -12,8 +12,12 @@ from typing import Literal, Self, Sequence
 from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
+# from molviewspec.molviewspec.nodes import (
+    BoxParams,
+    CageParams,
     CameraParams,
     CanvasParams,
+    EllipsisParams,
     ColorFromSourceParams,
     ColorFromUriParams,
     ColorInlineParams,
@@ -24,9 +28,11 @@ from molviewspec.nodes import (
     ComponentInlineParams,
     ComponentSelectorT,
     CustomT,
+    CylinderParams,
     DescriptionFormatT,
     DistanceMeasurementParams,
     DownloadParams,
+    EllipsoidParams,
     FocusInlineParams,
     LabelFromSourceParams,
     LabelFromUriParams,
@@ -57,7 +63,7 @@ from molviewspec.nodes import (
     TransparencyInlineParams,
     Vec3,
 )
-from molviewspec.utils import get_major_version_tag, make_params
+from molviewspec.molviewspec.utils import get_major_version_tag, make_params
 
 
 def create_builder() -> Root:
@@ -566,6 +572,7 @@ class Structure(_Base, _PrimitivesMixin):
     def transform(
         self,
         *,
+        # TODO: given as Optional[Mat3[float]] in nodes.py
         rotation: Sequence[float] | None = None,
         translation: Sequence[float] | None = None,
         custom: CustomT = None,
@@ -935,3 +942,147 @@ class Primitives(_Base, _FocusMixin):
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
+
+    def box(self,
+        *,
+        center: PrimitivePositionT,
+        extent: Vec3,
+        color: ColorT | None = None,
+        scaling: Vec3[float] | None = [1.0, 1.0, 1.0],
+        rotation_axis: Vec3[float] | None = None,
+        rotation_radians: float | None = None,
+        translation: Vec3[float] | None = None,    
+        custom: CustomT = None,
+        ref: RefT = None,
+        ) -> Primitives:
+        # TODO: annotation
+        # """
+        # Defines a box
+        # :param center: center of the box
+        # :param extent: height and width of the box
+        # :param scaling: scaling
+        # :param as_edges: 3d vector describing the scaling.
+        # :param label_offset: camera-facing offset to prevent overlap with geometry
+        # :param custom: optional, custom data to attach to this node
+        # :param ref: optional, reference that can be used to access this node
+        # :return: this builder
+        # """
+        params = make_params(BoxParams, {"kind": "box", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+    
+    def cage(self,
+        *,
+        center: PrimitivePositionT,
+        extent: Vec3,
+        color: ColorT | None = None,
+        scaling: Vec3[float] | None = [1.0, 1.0, 1.0],
+        edge_radius: float | None = None,
+        rotation_axis: Vec3[float] | None = None,
+        rotation_radians: float | None = None,
+        translation: Vec3[float] | None = None,  
+        type: Literal["as_lines", "as_geometry"] = "as_lines", 
+        custom: CustomT = None,
+        ref: RefT = None,
+        ) -> Primitives:
+        # TODO annotation
+        # """
+        # Defines a box
+        # :param center: center of the box
+        # :param extent: height and width of the box
+        # :param scaling: scaling
+        # :param as_edges: 3d vector describing the scaling.
+        # :param label_offset: camera-facing offset to prevent overlap with geometry
+        # :param custom: optional, custom data to attach to this node
+        # :param ref: optional, reference that can be used to access this node
+        # :return: this builder
+        # """
+        params = make_params(CageParams, {"kind": "cage", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    # TODO: sphere
+    def ellipsoid(
+        self,
+        *,
+        color: ColorT | None = None,
+        direction_major: Vec3[float],
+        direction_minor: Vec3[float],
+        center: PrimitivePositionT,
+        radius_scale: Vec3[float] | None = None
+        ):
+        # TODO annotation
+        # """
+        # Defines a box
+        # :param center: center of the box
+        # :param extent: height and width of the box
+        # :param scaling: scaling
+        # :param as_edges: 3d vector describing the scaling.
+        # :param label_offset: camera-facing offset to prevent overlap with geometry
+        # :param custom: optional, custom data to attach to this node
+        # :param ref: optional, reference that can be used to access this node
+        # :return: this builder
+        # """
+        params = make_params(EllipsoidParams, {"kind": "ellipsoid", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+    
+    def ellipsis(self,
+        *,
+        center: PrimitivePositionT,
+        color: ColorT | None = None,
+        major_axis: PrimitivePositionT,
+        minor_axis: PrimitivePositionT
+        ):
+        # TODO annotation
+        # """
+        # Defines a box
+        # :param center: center of the box
+        # :param extent: height and width of the box
+        # :param scaling: scaling
+        # :param as_edges: 3d vector describing the scaling.
+        # :param label_offset: camera-facing offset to prevent overlap with geometry
+        # :param custom: optional, custom data to attach to this node
+        # :param ref: optional, reference that can be used to access this node
+        # :return: this builder
+        # """
+        params = make_params(EllipsisParams, {"kind": "circle", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+    
+    # TODO: cone
+    def cylinder(self,
+        *,
+        bottom: Vec3[float],
+        up: Vec3[float],
+        radius_top: float,
+        radius_bottom: float,
+        bottom_cap: bool,
+        top_cap: bool,
+        color: ColorT | None = None,
+        rotation_axis: Vec3[float] | None = None,
+        rotation_radians: float | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+        ) -> Primitives:
+        # TODO annotation
+        # """
+        # Defines a box
+        # :param center: center of the box
+        # :param extent: height and width of the box
+        # :param scaling: scaling
+        # :param as_edges: 3d vector describing the scaling.
+        # :param label_offset: camera-facing offset to prevent overlap with geometry
+        # :param custom: optional, custom data to attach to this node
+        # :param ref: optional, reference that can be used to access this node
+        # :return: this builder
+        # """
+        params = make_params(CylinderParams, {"kind": "cylinder", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+    
