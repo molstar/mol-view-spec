@@ -773,6 +773,7 @@ def validate_state_tree(json: str) -> None:
 # TODO: fields instead of plain types
 class EllipsisParams(BaseModel):
     kind: Literal["circle"] = "circle"
+    color: Optional[ColorT] = Field(description="Default color for the circle.")
     center: PrimitivePositionT = Field(description="The center of the circle.")
     # TODO: elaborate names and semantics depending on
     # how Mol* implements circles
@@ -921,6 +922,7 @@ class WedgeParams(BaseModel):
     
 class EllipsoidParams(BaseModel):
     kind: Literal["ellipsoid"] = "ellipsoid"
+    color: Optional[ColorT] = Field(description="Default color for the box.")
     direction_major: Vec3[float] = Field(description="Major direction of the ellipsoid.")
     direction_minor: Vec3[float] = Field(description="Minor direction of the ellipsoid.")
     # direction_normal: Vec3[float] = Field(description="Normal direction of the ellipsoid.")
