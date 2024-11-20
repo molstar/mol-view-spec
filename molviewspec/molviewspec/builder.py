@@ -17,7 +17,7 @@ from molviewspec.nodes import (
     CageParams,
     CameraParams,
     CanvasParams,
-    CircleParams,
+    EllipsisParams,
     ColorFromSourceParams,
     ColorFromUriParams,
     ColorInlineParams,
@@ -32,6 +32,7 @@ from molviewspec.nodes import (
     DescriptionFormatT,
     DistanceMeasurementParams,
     DownloadParams,
+    EllipsoidParams,
     FocusInlineParams,
     LabelFromSourceParams,
     LabelFromUriParams,
@@ -1002,22 +1003,37 @@ class Primitives(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
-    # def ellipsoid(
-    #     self,
-    #     *,
-    #     direction_major: Vec3[float],
-    #     direction_minor: Vec3[float],
-    #     direction_normal: Vec3[float] = Field(description="Normal direction of the ellipsoid.")
-    #     center: PrimitivePositionT = Field(description="The center of the ellipsoid.")
-    #     # TODO: is the meaning correct
-    #     radius_scale: Optional[Vec3[float]] = Field(description="3d vector describing the radius scaling.")
-
-        
-    # )
+    # TODO: sphere
+    def ellipsoid(
+        self,
+        *,
+        color: ColorT | None = None,
+        direction_major: Vec3[float],
+        direction_minor: Vec3[float],
+        center: PrimitivePositionT,
+        radius_scale: Vec3[float] | None = None
+        ):
+        # TODO annotation
+        # """
+        # Defines a box
+        # :param center: center of the box
+        # :param extent: height and width of the box
+        # :param scaling: scaling
+        # :param as_edges: 3d vector describing the scaling.
+        # :param label_offset: camera-facing offset to prevent overlap with geometry
+        # :param custom: optional, custom data to attach to this node
+        # :param ref: optional, reference that can be used to access this node
+        # :return: this builder
+        # """
+        params = make_params(EllipsoidParams, {"kind": "ellipsoid", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
     
-    def circle(self,
+    def ellipsis(self,
         *,
         center: PrimitivePositionT,
+        color: ColorT | None = None,
         major_axis: PrimitivePositionT,
         minor_axis: PrimitivePositionT
         ):
@@ -1033,12 +1049,13 @@ class Primitives(_Base, _FocusMixin):
         # :param ref: optional, reference that can be used to access this node
         # :return: this builder
         # """
-        params = make_params(CircleParams, {"kind": "circle", **locals()})
+        params = make_params(EllipsisParams, {"kind": "circle", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
     
-    def cone(self,
+    # TODO: cone
+    def cylinder(self,
         *,
         bottom: Vec3[float],
         up: Vec3[float],

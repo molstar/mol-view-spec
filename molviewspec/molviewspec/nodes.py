@@ -771,7 +771,7 @@ def validate_state_tree(json: str) -> None:
     State.parse_raw(json)
 
 # TODO: fields instead of plain types
-class CircleParams(BaseModel):
+class EllipsisParams(BaseModel):
     kind: Literal["circle"] = "circle"
     center: PrimitivePositionT = Field(description="The center of the circle.")
     # TODO: elaborate names and semantics depending on
@@ -920,13 +920,11 @@ class WedgeParams(BaseModel):
     )
     
 class EllipsoidParams(BaseModel):
-    # TODO: adjust based on frontend implementation
     kind: Literal["ellipsoid"] = "ellipsoid"
     direction_major: Vec3[float] = Field(description="Major direction of the ellipsoid.")
     direction_minor: Vec3[float] = Field(description="Minor direction of the ellipsoid.")
-    direction_normal: Vec3[float] = Field(description="Normal direction of the ellipsoid.")
+    # direction_normal: Vec3[float] = Field(description="Normal direction of the ellipsoid.")
     center: PrimitivePositionT = Field(description="The center of the ellipsoid.")
-    # TODO: is the meaning correct
     radius_scale: Optional[Vec3[float]] = Field(description="3d vector describing the radius scaling.")
 
 # TODO:
