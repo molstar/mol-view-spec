@@ -7,12 +7,11 @@ from __future__ import annotations
 
 import math
 import os
-from typing import Sequence
+from typing import Literal, Self, Sequence
 
 from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
-    ApplySelectionInlineParams,
     CameraParams,
     CanvasParams,
     ColorFromSourceParams,
@@ -24,22 +23,31 @@ from molviewspec.nodes import (
     ComponentFromUriParams,
     ComponentInlineParams,
     ComponentSelectorT,
+    CustomT,
     DescriptionFormatT,
+    DistanceMeasurementParams,
     DownloadParams,
     FocusInlineParams,
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
     LineParams,
+    LinesParams,
+    Mat4,
+    MeshParams,
     Metadata,
     Node,
     ParseFormatT,
     ParseParams,
+    PrimitiveLabelParams,
+    PrimitivePositionT,
+    PrimitivesFromUriParams,
+    PrimitivesParams,
+    RefT,
     RepresentationParams,
     RepresentationTypeT,
     SchemaFormatT,
     SchemaT,
-    SphereParams,
     State,
     StructureParams,
     TooltipFromSourceParams,
@@ -47,6 +55,7 @@ from molviewspec.nodes import (
     TooltipInlineParams,
     TransformParams,
     TransparencyInlineParams,
+    Vec3,
 )
 from molviewspec.utils import get_major_version_tag, make_params
 
@@ -82,7 +91,73 @@ class _Base(BaseModel):
         self._node.children.append(node)
 
 
-class Root(_Base):
+class _PrimitivesMixin:
+    def primitives(
+        self: _Base,
+        *,
+        color: ColorT | None = None,
+        label_color: ColorT | None = None,
+        tooltip: str | None = None,
+        transparency: float | None = None,
+        label_transparency: float | None = None,
+        instances: list[Mat4[float]] | None = None,
+    ) -> Primitives:
+        """
+        Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
+        shared options (color, transparency etc.).
+        :param color: default color
+        :param label_color: default label color
+        :param tooltip: default tooltip
+        :param transparency: default primitive transparency
+        :param label_transparency: default label transparency
+        :param instances: instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices
+        :return: a builder for geometric primitives
+        """
+        params = make_params(PrimitivesParams, locals())
+        node = Node(kind="primitives", params=params)
+        self._add_child(node)
+        return Primitives(node=node, root=self._root)
+
+    def primitives_from_uri(
+        self: _Base,
+        *,
+        uri: str,
+        format: Literal["mvs-node-json"] = "mvs-node-json",
+        references: list[str] | None = None,
+    ) -> PrimitivesFromUri:
+        """
+        Allows the definition of a (group of) geometric primitives provided dynamically.
+        :param uri: location of the resource
+        :param format: format of the data
+        :param references: optional list of nodes the referenced by the dat
+        :return: current builder node
+        """
+        params = make_params(PrimitivesFromUriParams, locals())
+        node = Node(kind="primitives_from_uri", params=params)
+        self._add_child(node)
+        return PrimitivesFromUri(node=node, root=self._root)
+
+
+class _FocusMixin:
+    def focus(
+        self: _Base,
+        *,
+        direction: Vec3[float] | None = None,
+        up: Vec3[float] | None = None,
+    ) -> Self:
+        """
+        Focus on this structure or component.
+        :param direction: the direction from which to look at this component
+        :param up: where is up relative to the view direction
+        :return: this builder
+        """
+        params = make_params(FocusInlineParams, locals())
+        node = Node(kind="focus", params=params)
+        self._add_child(node)
+        return self
+
+
+class Root(_Base, _PrimitivesMixin):
     """
     The builder for MolViewSpec state descriptions. Provides fine-grained options as well as global properties such as
     canvas color or camera position and functionality to eventually export this scene.
@@ -147,9 +222,9 @@ class Root(_Base):
     def camera(
         self,
         *,
-        target: tuple[float, float, float],
-        position: tuple[float, float, float],
-        up: tuple[float, float, float] | None = (0, 1, 0),
+        target: Vec3[float],
+        position: Vec3[float],
+        up: Vec3[float] | None = (0, 1, 0),
     ):
         """
         Manually position the camera.
@@ -174,10 +249,11 @@ class Root(_Base):
         self._add_child(node)
         return self
 
-    def download(self, *, url: str) -> Download:
+    def download(self, *, url: str, ref: RefT = None) -> Download:
         """
         Add a new structure to the builder by downloading structure data from a URL.
         :param url: source of structure data
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations on the downloaded resource
         """
         params = make_params(DownloadParams, locals())
@@ -185,25 +261,17 @@ class Root(_Base):
         self._add_child(node)
         return Download(node=node, root=self._root)
 
-    def generic_visuals(self) -> GenericVisuals:
-        """
-        Experimental: Allows the definition of generic visuals such as spheres and lines.
-        :return: a builder for generic visuals
-        """
-        node = Node(kind="generic_visuals")
-        self._add_child(node)
-        return GenericVisuals(node=node, root=self._root)
-
 
 class Download(_Base):
     """
     Builder step with operations needed after downloading structure data.
     """
 
-    def parse(self, *, format: ParseFormatT) -> Parse:
+    def parse(self, *, format: ParseFormatT, ref: RefT = None) -> Parse:
         """
         Parse the content by specifying the file format.
         :param format: specify the format of your structure data
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations on the parsed content
         """
         params = make_params(ParseParams, locals())
@@ -223,6 +291,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Create a structure for the deposited coordinates.
@@ -243,6 +312,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Create an assembly structure.
@@ -260,16 +330,18 @@ class Parse(_Base):
     def symmetry_structure(
         self,
         *,
-        ijk_min: tuple[int, int, int] | None = (-1, -1, -1),
-        ijk_max: tuple[int, int, int] | None = (1, 1, 1),
+        ijk_min: Vec3[int] | None = (-1, -1, -1),
+        ijk_max: Vec3[int] | None = (1, 1, 1),
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Create symmetry structure for a given range of Miller indices.
         :param ijk_min: Bottom-left Miller indices
         :param ijk_max: Top-right Miller indices
+        :param model_index: 0-based model index in case multiple NMR frames are present
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
         :param block_header: Reference a specific mmCIF or SDF data block by its block header
         :return: a builder that handles operations at structure level
@@ -286,6 +358,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Create structure of symmetry mates.
@@ -300,17 +373,23 @@ class Parse(_Base):
         return Structure(node=node, root=self._root)
 
 
-class Structure(_Base):
+class Structure(_Base, _PrimitivesMixin):
     """
     Builder step with operations needed after defining the structure to work with.
     """
 
     def component(
-        self, *, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
+        self,
+        *,
+        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Component:
         """
         Define a new component/selection for the given structure.
         :param selector: a predefined component selector or one or more component selection expressions
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at component level
         """
         params = make_params(ComponentInlineParams, locals())
@@ -329,6 +408,8 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
         field_values: str | list[str] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Component:
         """
         Define a new component/selection for the given structure by fetching additional data from a resource.
@@ -340,6 +421,8 @@ class Structure(_Base):
         :param block_index: only applies when format is 'cif' or 'bcif'
         :param schema: granularity/type of the selection
         :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at component level
         """
         if isinstance(field_values, str):
@@ -358,6 +441,8 @@ class Structure(_Base):
         block_index: int | None = None,
         schema: SchemaT,
         field_values: str | list[str] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Component:
         """
         Define a new component/selection for the given structure by using categories from the source file.
@@ -367,6 +452,8 @@ class Structure(_Base):
         :param block_index: only applies when format is 'cif' or 'bcif'
         :param schema: granularity/type of the selection
         :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at component level
         """
         if isinstance(field_values, str):
@@ -481,21 +568,23 @@ class Structure(_Base):
         *,
         rotation: Sequence[float] | None = None,
         translation: Sequence[float] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Transform a structure by applying a rotation matrix and/or translation vector.
         :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left
         :param translation: 3d vector describing the translation
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         if rotation is not None:
-            rotation = tuple(rotation)
             if len(rotation) != 9:
                 raise ValueError(f"Parameter `rotation` must have length 9")
             if not self._is_rotation_matrix(rotation):
                 raise ValueError(f"Parameter `rotation` must be a rotation matrix")
         if translation is not None:
-            translation = tuple(translation)
             if len(translation) != 3:
                 raise ValueError(f"Parameter `translation` must have length 3")
 
@@ -514,15 +603,19 @@ class Structure(_Base):
         return math.isclose(det3x3, 1, abs_tol=eps)
 
 
-class Component(_Base):
+class Component(_Base, _FocusMixin):
     """
     Builder step with operations relevant for a particular component.
     """
 
-    def representation(self, *, type: RepresentationTypeT = "cartoon") -> Representation:
+    def representation(
+        self, *, type: RepresentationTypeT = "cartoon", custom: CustomT = None, ref: RefT = None
+    ) -> Representation:
         """
         Add a representation for this component.
         :param type: the type of representation, defaults to 'cartoon'
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at representation level
         """
         params = make_params(RepresentationParams, locals())
@@ -549,35 +642,6 @@ class Component(_Base):
         """
         params = make_params(TooltipInlineParams, locals())
         node = Node(kind="tooltip", params=params)
-        self._add_child(node)
-        return self
-
-    def focus(
-        self, *, direction: tuple[float, float, float] | None = None, up: tuple[float, float, float] | None = None
-    ) -> Component:
-        """
-        Focus on this structure or component.
-        :param direction: the direction from which to look at this component
-        :param up: where is up relative to the view direction
-        :return: this builder
-        """
-        params = make_params(FocusInlineParams, locals())
-        node = Node(kind="focus", params=params)
-        self._add_child(node)
-        return self
-
-    # TODO: make representation customizable
-    def apply_selection(
-        self, *, surroundings_radius: float = 5.0, show_non_covalent_interactions: bool = True
-    ) -> Component:
-        """
-        Show the surroundings of this component. Typically, you'll want to chain this with `#focus()`.
-        :param surroundings_radius: distance threshold in Angstrom, everything below this cutoff will be included
-        :param show_non_covalent_interactions: show non-covalent interactions between this component and its surroundings?
-        :return: this builder
-        """
-        params = make_params(ApplySelectionInlineParams, locals())
-        node = Node(kind="apply_selection", params=params)
         self._add_child(node)
         return self
 
@@ -638,12 +702,17 @@ class Representation(_Base):
         return self
 
     def color(
-        self, *, color: ColorT, selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all"
+        self,
+        *,
+        color: ColorT,
+        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
+        custom: CustomT = None,
     ) -> Representation:
         """
         Customize the color of this representation.
         :param color: color using SVG color names or RGB hex code
         :param selector: optional selector, defaults to applying the color to the whole representation
+        :param custom: optional, custom data to attach to this node
         :return: this builder
         """
         params = make_params(ColorInlineParams, locals())
@@ -663,55 +732,206 @@ class Representation(_Base):
         return self
 
 
-class GenericVisuals(_Base):
+class PrimitivesFromUri(_Base, _FocusMixin):
     """
-    Experimental builder for custom, primitive visuals.
+    A collection of primitives (such as spheres, lines, ...) that will be loaded from provided resource.
     """
 
-    def sphere(
+
+class Primitives(_Base, _FocusMixin):
+    """
+    A collection of primitives (such as spheres, lines, ...) that will be grouped together and can be customized using
+    options.
+    """
+
+    def as_data_node(self) -> dict:
+        """
+        Convert the current primitives builder to data which can be serialized and served independently.
+        Only primitive kind children are kept.
+        """
+        return Node(
+            kind="primitives",
+            params=self._node.params,
+            children=[child for child in self._node.children or [] if child.kind == "primitive"],
+            custom=self._node.custom,
+            ref=self._node.ref,
+        ).dict()
+
+    def mesh(
         self,
         *,
-        position: tuple[float, float, float],
-        radius: float,
-        color: ColorT,
-        label: str | None = None,
+        vertices: list[float],
+        indices: list[int],
+        triangle_colors: list[ColorT] | None = None,
+        triangle_groups: list[int] | None = None,
+        group_colors: dict[int, ColorT] | None = None,
+        group_tooltips: dict[int, str] | None = None,
         tooltip: str | None = None,
-    ) -> GenericVisuals:
+        color: ColorT | None = None,
+        show_triangles: bool | None = True,
+        show_wireframe: bool | None = False,
+        wireframe_radius: float | None = 1.0,
+        wireframe_color: ColorT | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
         """
-        Draw a sphere.
-        :param position: position of the sphere
-        :param radius: size of the sphere
-        :param color: color of the sphere, either SVG color name or RGB hex code
-        :param label: optional text label
-        :param tooltip: optional tooltip to show upon hover
-        :return:
+        Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
+        :param vertices: collection of vertices
+        :param indices: collection of indices
+        :param triangle_colors: color value of each triangle
+        :param triangle_groups: group number for each triangle
+        :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
+        :param group_tooltips: mapping of group number to optional hover tooltip
+        :param tooltip: tooltip, assigned group_tooltips take precedence
+        :param color: default color of triangle faces
+        :param show_triangles: determine whether to render triangles of the mesh
+        :param show_wireframe: determine whether to render wireframe of the mesh
+        :param wireframe_radius: wireframe line radius
+        :param wireframe_color: wireframe color, uses triangle/group colors when not set
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
         """
-        params = make_params(SphereParams, locals())
-        node = Node(kind="sphere", params=params)
+        params = make_params(MeshParams, {"kind": "mesh", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def lines(
+        self,
+        *,
+        vertices: list[float],
+        indices: list[int],
+        line_colors: list[ColorT] | None = None,
+        line_groups: list[int] | None = None,
+        group_colors: dict[int, ColorT] | None = None,
+        group_tooltips: dict[int, str] | None = None,
+        group_radius: dict[int, float] | None = None,
+        tooltip: str | None = None,
+        color: ColorT | None = None,
+        line_radius: float | None = 1.0,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
+        :param vertices: 3N collection of vertices
+        :param indices: 2N collection of indices
+        :param line_colors: color value of each line
+        :param line_groups: group number for each line
+        :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
+        :param group_tooltips: mapping of group number to optional hover tooltip
+        :param group_radius: mapping of group number to optional line radius
+        :param tooltip: tooltip, assigned group_tooltips take precedence
+        :param color: default color of tre lines
+        :param line_radius: line radius
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(LinesParams, {"kind": "lines", **locals()})
+        node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
 
     def line(
         self,
         *,
-        position1: tuple[float, float, float],
-        position2: tuple[float, float, float],
-        radius: float,
-        color: ColorT,
-        label: str | None = None,
+        start: PrimitivePositionT,
+        end: PrimitivePositionT,
+        thickness: float | None = 0.05,
+        dash_start: float | None = None,
+        dash_length: float | None = None,
+        gap_length: float | None = None,
+        color: ColorT | None = None,
         tooltip: str | None = None,
-    ) -> GenericVisuals:
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
         """
-        Draw a line.
-        :param position1: start of line
-        :param position2: end of line
-        :param radius: width of line segment
-        :param color: color of line, either SVG color name or RGB hex code
-        :param label: optional text label
-        :param tooltip: optional tooltip to show upon hover
-        :return:
+        Defines a line, connecting a start and an end point.
+        :param start: origin coordinates
+        :param end: destination coordinates
+        :param thickness: thickness of this line
+        :param dash_start: offset along this line until the 1st dash is drawn
+        :param dash_length: length of each dash
+        :param gap_length: length of each gap that will follow each completed dash
+        :param color: color of the line
+        :param tooltip: tooltip to show when hovering the line
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
         """
-        params = make_params(LineParams, locals())
-        node = Node(kind="line", params=params)
+        params = make_params(LineParams, {"kind": "line", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def distance(
+        self,
+        *,
+        start: PrimitivePositionT,
+        end: PrimitivePositionT,
+        thickness: float | None = 0.01,
+        dash_start: float | None = 0.0,
+        dash_length: float | None = 0.05,
+        gap_length: float | None = 0.05,
+        color: ColorT | None = None,
+        label_template: str | None = "{{distance}}",
+        label_size: float | Literal["auto"] | None = "auto",
+        label_auto_size_scale: float | None = 0.1,
+        label_auto_size_min: float | None = 0.2,
+        label_color: ColorT | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines a line, connecting a start and an end point.
+        :param start: origin coordinates
+        :param end: destination coordinates
+        :param thickness: thickness of this line
+        :param dash_start: offset along this line until the 1st dash is drawn
+        :param dash_length: length of each dash
+        :param gap_length: length of each gap that will follow each completed dash
+        :param color: color of the line
+        :param label_template: template used to construct the label, use {{distance}} as placeholder for the distance value
+        :param label_size: size of the label, auto scales the size by the distance
+        :param label_auto_size_scale: scaling factor when label_size is auto
+        :param label_auto_size_min: minimum size when label_size is auto
+        :param label_color: color of the label
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(DistanceMeasurementParams, {"kind": "distance_measurement", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def label(
+        self,
+        *,
+        position: PrimitivePositionT,
+        text: str,
+        label_size: float | None = 1,
+        label_color: ColorT | None = None,
+        label_offset: float | None = 1.0,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines a label
+        :param position: position coordinates
+        :param text: label value
+        :param label_size: size of the label, auto scales the size by the distance
+        :param label_color: color of the label
+        :param label_offset: camera-facing offset to prevent overlap with geometry
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(PrimitiveLabelParams, {"kind": "label", **locals()})
+        node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
