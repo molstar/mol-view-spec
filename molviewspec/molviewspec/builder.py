@@ -193,6 +193,7 @@ class Root(_Base, _PrimitivesMixin):
             key=key,
             title=title,
             version=get_major_version_tag(),
+            linger_duration_ms=1000,
         )
         return State(root=self._node, metadata=metadata).json(exclude_none=True, indent=indent)
 

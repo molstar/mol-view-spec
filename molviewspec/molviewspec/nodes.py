@@ -97,14 +97,14 @@ class SnapshotMetadata(BaseModel):
             self.key = generate_uuid()
 
     description: Optional[str] = Field(description="Detailed description of this view.")
-    description_format: Optional[DescriptionFormatT] = Field(description="Format of the description.")
+    description_format: Optional[DescriptionFormatT] = Field(description="Format of the description. Default is 'markdown'.")
     key: Optional[str] = Field(
         default_factory=generate_uuid,
         description="Unique identifier of this state, useful when working with collections of states.",
     )
     title: Optional[str] = Field(description="Name of this view.")
-    linger_duration_ms: Optional[int] = Field(
-        description="How long to linger on one snapshot. Leave empty to not transition automatically."
+    linger_duration_ms: int = Field(
+        description="Timespan for snapshot."
     )
     transition_duration_ms: Optional[int] = Field(
         description="Timespan for the animation to the next snapshot. Leave empty to skip animations."
