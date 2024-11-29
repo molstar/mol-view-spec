@@ -245,6 +245,93 @@ def _multistate_template(key: str, url: str, repr: RepresentationTypeT) -> Snaps
     metadata = SnapshotMetadata(key=key)
     return Snapshot(kind="single", root=template.get_node(), metadata=metadata)
 
+
+@router.get("/multiple-states-alignment")
+async def multiple_states_alignment() -> MVSResponse:
+    """Example of multi-state using `camera` node"""
+    snapshots = [
+        make_snapshot('A', description='### We have these two proteins...', align=False, duration=3000, transition_duration=1000, camera=camera2),
+        make_snapshot('B', description='### What if we superpose them?', duration=3000, transition_duration=1500, camera=camera1),
+        make_snapshot('C', description='### Look, a ligand!', duration=500, transition_duration=3000, camera=camera_ligand1),
+        make_snapshot('D', description='### ... a nice one...', duration=1000, transition_duration=1000, camera=camera_ligand2),
+        make_snapshot('E', description='', duration=2000, camera=camera1),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
+        make_snapshot('H', description='', duration=500, transition_duration=10_000, camera=camera1),
+        make_snapshot('I', description='### Thanks for watching', duration=None, transition_duration=1000, camera=camera_far),
+    ]
+    metadata = Metadata(description="test", version=get_major_version_tag())
+    return PlainTextResponse(
+        States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
+    )
+
+@router.get("/multiple-states-alignment-focus")
+async def multiple_states_alignment_focus() -> MVSResponse:
+    """Example of multi-state using `focus` node"""
+    snapshots = [
+        make_snapshot('A', description='### We have these two proteins...', align=False, duration=3000, transition_duration=1000, camera=camera2),
+        make_snapshot('B', description='### What if we superpose them?', duration=3000, transition_duration=1500, focus='protein', orient=orient1),
+        make_snapshot('C', description='### Look, a ligand!', duration=500, transition_duration=3000, focus='ligand', orient=orient1),
+        make_snapshot('D', description='### ... a nice one...', duration=1000, transition_duration=1000, focus='ligand', orient=orient2),
+        make_snapshot('E', description='', duration=2000, focus='protein', orient=orient1),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
+        make_snapshot('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
+        make_snapshot('H', description='', duration=500, transition_duration=10_000, focus='protein', orient=orient1),
+        make_snapshot('I', description='### Thanks for watching', duration=None, transition_duration=1000, camera=camera_far),
+    ]
+    metadata = Metadata(description="test", version=get_major_version_tag())
+    return PlainTextResponse(
+        States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
+    )
+
 camera1 = {
         'target': (49.825582, -1.340038, 26.471059),
         'position': (-4.449025, 31.275798, 17.857061),
@@ -253,7 +340,7 @@ camera2 = {
         'target': (26.130746420193915, 4.620393357559111, 42.794555467590406),
         'position': (-66.53446639,  60.30671798,  28.08753128),
         'up': (-0.177081405072997, -0.0349061499228514, 0.9835770110545166)}
-camera_ligand = {
+camera_ligand1 = {
         'target': (46.92617916263649, 8.778192057663661, 26.526291795071554),
         'position': (33.33715295823857, 16.944394902436812, 24.3695586372132),
         'up': (-0.177081405072997, -0.03490614992285142, 0.9835770110545164)}
@@ -272,93 +359,8 @@ orient2 = {
     'direction': (0.67915562,  0.59064435, -0.43576013),
     'up': (0.5701116198257888, -0.050566846964212424, 0.8200095944119795)}
 
-
-@router.get("/multiple-states-aln")
-async def multiple_states_aln() -> MVSResponse:
-    snapshots = [
-        foo('A', description='### We have these two proteins...', align=False, duration=3000, transition_duration=1000, camera=camera2),
-        foo('B', description='### What if we superpose them?', duration=3000, transition_duration=1500, camera=camera1),
-        foo('C', description='### Look, a ligand!', duration=500, transition_duration=3000, camera=camera_ligand),
-        foo('D', description='### ... a nice one...', duration=1000, transition_duration=1000, camera=camera_ligand2),
-        foo('E', description='', duration=2000, camera=camera1),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, camera=camera1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, camera=camera1, show=['protein1', 'ligand2']),
-        foo('H', description='', duration=500, transition_duration=10_000, camera=camera1),
-        foo('I', description='### Thanks for watching', duration=None, transition_duration=1000, camera=camera_far),
-    ]
-    metadata = Metadata(description="test", version=get_major_version_tag())
-    return PlainTextResponse(
-        States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
-    )
-
-@router.get("/multiple-states-aln-focus")
-async def multiple_states_aln_focus() -> MVSResponse:
-    snapshots = [
-        foo('A', description='### We have these two proteins...', align=False, duration=3000, transition_duration=1000, camera=camera2),
-        foo('B', description='### What if we superpose them?', duration=3000, transition_duration=1500, focus='protein', orient=orient1),
-        foo('C', description='### Look, a ligand!', duration=500, transition_duration=3000, focus='ligand', orient=orient1),
-        foo('D', description='### ... a nice one...', duration=1000, transition_duration=1000, focus='ligand', orient=orient2),
-        foo('E', description='', duration=2000, focus='protein', orient=orient1),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
-        foo('G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
-        foo('H', description='', duration=500, transition_duration=10_000, focus='protein', orient=orient1),
-        foo('I', description='### Thanks for watching', duration=None, transition_duration=1000, camera=camera_far),
-    ]
-    metadata = Metadata(description="test", version=get_major_version_tag())
-    return PlainTextResponse(
-        States(kind="multiple", metadata=metadata, snapshots=snapshots).json(exclude_none=True, indent=2)
-    )
-
-def foo(key: str, *, description: str|None = None, align: bool = True, duration: int|None, transition_duration: int|None = None, color1: str = '#dddddd', color2: str = '#4fc64f', 
-        camera = None, focus: Literal['protein', 'ligand', None] = None, orient = orient1, show: list[str]|None = None) -> Snapshot:
+def make_snapshot(key: str, *, description: str | None = None, align: bool = True, duration: int | None, transition_duration: int | None = None, color1: str = '#dddddd', color2: str = '#4fc64f', 
+        camera = None, focus: Literal['protein', 'ligand', None] = None, orient = orient1, show: list[str] | None = None) -> Snapshot:
     builder = create_builder()
 
     structure1 = (
@@ -403,7 +405,6 @@ def foo(key: str, *, description: str|None = None, align: bool = True, duration:
         builder.camera(**camera)
 
     metadata = SnapshotMetadata(key=key, title=f'State {key}', 
-                                # description=f'### Description {key}\n\n **Lorem ipsum** dolor sit amet, consectetur *adipiscing* elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
                                 description=description,
                                 lingerDurationMs=duration, transitionDurationMs=transition_duration,
                                 )
