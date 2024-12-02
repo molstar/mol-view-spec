@@ -27,6 +27,7 @@ KindT = Literal[
     "label_from_uri",
     "mesh_from_source",
     "mesh_from_uri",
+    "opacity",
     "parse",
     "primitives",
     "primitives_from_uri",
@@ -37,7 +38,6 @@ KindT = Literal[
     "tooltip_from_source",
     "tooltip_from_uri",
     "transform",
-    "transparency",
 ]
 
 
@@ -541,13 +541,13 @@ class ColorFromSourceParams(_DataFromSourceParams):
     """
 
 
-class TransparencyInlineParams(ComponentInlineParams):
+class OpacityInlineParams(ComponentInlineParams):
     """
-    Change the transparency of a representation based on function arguments.
+    Change the opacity/transparency of a representation based on parameters.
     """
 
-    transparency: float = Field(
-        description="Transparency of a representation. 0.0: fully opaque, 1.0: fully transparent"
+    opacity: float = Field(
+        description="Opacity of a representation. 0.0: fully transparent, 1.0: fully opaque"
     )
 
 
@@ -648,8 +648,8 @@ class PrimitivesParams(BaseModel):
     color: Optional[ColorT] = Field(description="Default color for primitives in this group")
     label_color: Optional[ColorT] = Field(description="Default label color for primitives in this group")
     tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
-    transparency: Optional[float] = Field(description="Transparency of primitive geometry in this group")
-    label_transparency: Optional[float] = Field(description="Transparency of primitive labels in this group")
+    opacity: Optional[float] = Field(description="Opacity of primitive geometry in this group")
+    label_opacity: Optional[float] = Field(description="Opacity of primitive labels in this group")
     instances: Optional[list[Mat4[float]]] = Field(
         description="Instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices"
     )

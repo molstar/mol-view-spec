@@ -55,7 +55,7 @@ from molviewspec.nodes import (
     TooltipFromUriParams,
     TooltipInlineParams,
     TransformParams,
-    TransparencyInlineParams,
+    OpacityInlineParams,
     Vec3,
 )
 from molviewspec.utils import get_major_version_tag, make_params
@@ -114,18 +114,18 @@ class _PrimitivesMixin(_IBase):
         color: ColorT | None = None,
         label_color: ColorT | None = None,
         tooltip: str | None = None,
-        transparency: float | None = None,
-        label_transparency: float | None = None,
+        opacity: float | None = None,
+        label_opacity: float | None = None,
         instances: list[Mat4[float]] | None = None,
     ) -> Primitives:
         """
         Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
-        shared options (color, transparency etc.).
+        shared options (color, opacity etc.).
         :param color: default color
         :param label_color: default label color
         :param tooltip: default tooltip
-        :param transparency: default primitive transparency
-        :param label_transparency: default label transparency
+        :param opacity: default primitive opacity
+        :param label_opacity: default label opacity
         :param instances: instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices
         :return: a builder for geometric primitives
         """
@@ -737,14 +737,14 @@ class Representation(_Base):
         self._add_child(node)
         return self
 
-    def transparency(self, *, transparency: float = 0.8) -> Representation:
+    def opacity(self, *, opacity: float) -> Representation:
         """
-        Customize the transparency/opacity of this representation.
-        :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent
+        Customize the opacity/transparency of this representation.
+        :param opacity: float describing how opaque this representation should be, 0.0: fully transparent, 1.0: fully opaque
         :return: this builder
         """
-        params = make_params(TransparencyInlineParams, locals())
-        node = Node(kind="transparency", params=params)
+        params = make_params(OpacityInlineParams, locals())
+        node = Node(kind="opacity", params=params)
         self._add_child(node)
         return self
 
