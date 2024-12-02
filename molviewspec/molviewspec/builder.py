@@ -179,7 +179,7 @@ class _FocusMixin(_IBase):
         return self
 
 
-class Root(_Base, _PrimitivesMixin):
+class Root(_Base, _PrimitivesMixin, _FocusMixin):
     """
     The builder for MolViewSpec state descriptions. Provides fine-grained options as well as global properties such as
     canvas color or camera position and functionality to eventually export this scene.
