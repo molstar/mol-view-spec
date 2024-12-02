@@ -5,13 +5,15 @@ All notable changes to this project will be documented in this file, following t
 
 - Support for multiple states in one `.msvj` file
 - Configurable transitions/animations between states
-- Configurable transparency of representations
+- Configurable opacity of representations
 - Add support for additional/custom properties on each node ("vendor-specific properties")
   - This allows users to store custom data 
   - Mol* can be instructed to show non-covalent interactions by providing vendor-specific properties
 - Fixes several issues with defined types
 - Support `ref` property on `Node` which enables referencing nodes by this value
 - Initial geometrical primitives support
+- Focus node can be on root
+- Focus node radius, radius_factor, radius_extend parameters
 
 ## [v1.0.0] - 2024-04-10
 - Initial release
