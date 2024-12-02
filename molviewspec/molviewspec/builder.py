@@ -160,11 +160,17 @@ class _FocusMixin(_IBase):
         *,
         direction: Vec3[float] | None = None,
         up: Vec3[float] | None = None,
+        radius: float | None = None,
+        radius_factor: float | None = None,
+        radius_extend: float | None = None,
     ) -> Self:
         """
         Focus on this structure or component.
         :param direction: the direction from which to look at this component
         :param up: where is up relative to the view direction
+        :param radius: radius of the focused sphere (overrides `radius_factor` and `radius_extra`)
+        :param radius_factor: radius of the focused sphere relative to the radius of parent component (default: 1); focused radius = component_radius * radius_factor + radius_extend
+        :param radius_extend: addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0); focused radius = component_radius * radius_factor + radius_extend
         :return: this builder
         """
         params = make_params(FocusInlineParams, locals())

@@ -308,8 +308,8 @@ async def multiple_states_alignment_focus() -> MVSResponse:
     snapshots = [
         make_snapshot(key='A', description='### We have these two proteins...', align=False, duration=3000, transition_duration=1000, camera=camera2),
         make_snapshot(key='B', description='### What if we superpose them?', duration=3000, transition_duration=1500, focus='protein', orient=orient1),
-        make_snapshot(key='C', description='### Look, a ligand!', duration=500, transition_duration=3000, focus='ligand', orient=orient1),
-        make_snapshot(key='D', description='### ... a nice one...', duration=1000, transition_duration=1000, focus='ligand', orient=orient2),
+        make_snapshot(key='C', description='### Look, a ligand!', duration=500, transition_duration=3000, focus='ligand', orient={**orient1, "radius_factor": 1.4}),
+        make_snapshot(key='D', description='### ... a nice one...', duration=1000, transition_duration=1000, focus='ligand', orient={**orient2, "radius_factor": 1.4}),
         make_snapshot(key='E', description='', duration=2000, focus='protein', orient=orient1),
         make_snapshot(key='F', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein2', 'ligand2']),
         make_snapshot(key='G', description='# Party!!!', duration=250, focus='protein', orient=orient1, show=['protein1', 'ligand2']),
