@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import math
 import os
+from abc import ABC, abstractmethod
 from typing import Literal, Self, Sequence
 
 from pydantic import BaseModel, PrivateAttr
@@ -67,8 +68,23 @@ def create_builder() -> Root:
     """
     return Root()
 
+class _IBase(ABC):
+    """
+    Interface for `_Base` for correctly typing mixins.
+    """
+    @property
+    @abstractmethod
+    def _root(self) -> Root: ...
+    
+    @property
+    @abstractmethod
+    def _node(self) -> Node: ...
+    
+    @abstractmethod
+    def _add_child(self, node: Node) -> None: ...
 
-class _Base(BaseModel):
+
+class _Base(BaseModel, _IBase):
     """
     Internal base node from which all other nodes are derived.
     """
@@ -91,9 +107,9 @@ class _Base(BaseModel):
         self._node.children.append(node)
 
 
-class _PrimitivesMixin:
+class _PrimitivesMixin(_IBase):
     def primitives(
-        self: _Base,
+        self,
         *,
         color: ColorT | None = None,
         label_color: ColorT | None = None,
@@ -119,7 +135,7 @@ class _PrimitivesMixin:
         return Primitives(node=node, root=self._root)
 
     def primitives_from_uri(
-        self: _Base,
+        self,
         *,
         uri: str,
         format: Literal["mvs-node-json"] = "mvs-node-json",
@@ -138,9 +154,9 @@ class _PrimitivesMixin:
         return PrimitivesFromUri(node=node, root=self._root)
 
 
-class _FocusMixin:
+class _FocusMixin(_IBase):
     def focus(
-        self: _Base,
+        self,
         *,
         direction: Vec3[float] | None = None,
         up: Vec3[float] | None = None,
