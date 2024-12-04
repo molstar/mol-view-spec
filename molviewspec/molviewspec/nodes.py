@@ -10,6 +10,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
+from molviewspec.utils import get_major_version_tag
+
 KindT = Literal[
     "root",
     "camera",
@@ -67,18 +69,6 @@ class Node(BaseModel):
         super().__init__(**data)
 
 
-class FormatMetadata(BaseModel):
-    """
-    Metadata describing global properties relating to the format specification.
-    """
-
-    timestamp: str = Field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
-        description="Timestamp when this view was exported.",
-    )
-    version: str = Field(description="Version of the spec used to write this tree.")
-
-
 DescriptionFormatT = Literal["markdown", "plaintext"]
 
 
@@ -86,80 +76,100 @@ def generate_uuid():
     return str(uuid4())
 
 
+def get_timestamp() -> str:
+    """Return timestamp with current UTC time"""
+    return datetime.now(timezone.utc).isoformat()
+
+
+class GlobalMetadata(BaseModel):
+    """
+    Top-level metadata for a MVS file (single-state or multi-state).
+    """
+
+    title: Optional[str] = Field(description="Name of this view(s).")
+    description: Optional[str] = Field(description="Detailed description of this view(s).")
+    description_format: Optional[DescriptionFormatT] = Field(
+        description="Format of `description`. Default is 'markdown'."
+    )
+    timestamp: str = Field(
+        description="Timestamp when this file was exported.",
+        default_factory=get_timestamp,
+    )
+    version: str = Field(
+        description="Version of MolViewSpec used to write this file.",
+        default_factory=get_major_version_tag,
+    )
+
+
 class SnapshotMetadata(BaseModel):
     """
-    Metadata describing details of an individual state/snapshot.
+    Metadata for an individual snapshot.
     """
+
+    title: Optional[str] = Field(description="Name of this snapshot.")
+    description: Optional[str] = Field(description="Detailed description of this snapshot.")
+    description_format: Optional[DescriptionFormatT] = Field(
+        description="Format of `description`. Default is 'markdown'."
+    )
+    key: Optional[str] = Field(
+        default_factory=generate_uuid,  # TODO remove this, it's probably superfluous
+        description="Unique identifier of this state, useful when working with collections of states.",
+    )
+    linger_duration_ms: int = Field(description="Timespan for snapshot.")
+    transition_duration_ms: Optional[int] = Field(
+        description="Timespan for the animation to the next snapshot. Leave empty to skip animations."
+    )
 
     def __init__(self, **data):
         super().__init__(**data)
         if self.key is None:
             self.key = generate_uuid()
 
-    description: Optional[str] = Field(description="Detailed description of this view.")
-    description_format: Optional[DescriptionFormatT] = Field(description="Format of the description. Default is 'markdown'.")
-    key: Optional[str] = Field(
-        default_factory=generate_uuid,
-        description="Unique identifier of this state, useful when working with collections of states.",
-    )
-    title: Optional[str] = Field(description="Name of this view.")
-    linger_duration_ms: int = Field(
-        description="Timespan for snapshot."
-    )
-    transition_duration_ms: Optional[int] = Field(
-        description="Timespan for the animation to the next snapshot. Leave empty to skip animations."
-    )
 
-
-class Metadata(FormatMetadata, SnapshotMetadata):
-    """
-    Union of all metadata properties.
-    """
-
-
-"""
-Type of a state description, either 'single' (individual state) or 'multiple' (ordered collection of multiple states).
-"""
 StateTreeT = Literal["single", "multiple"]
+"""Type of a state description, either 'single' (individual state) or 'multiple' (ordered collection of multiple states aka snapshots)."""
+
+
+class State(BaseModel):
+    """
+    Root node of a single state tree with metadata.
+    """
+
+    kind: StateTreeT = Field(
+        default="single",
+        const=True,
+        description="Specifies whether this is an individual state or a collection of states.",
+    )
+    root: Node = Field(description="Root of the node tree.")
+    metadata: GlobalMetadata = Field(description="Associated metadata.")
 
 
 class Snapshot(BaseModel):
     """
-    Root node of an individual state trees. Intended to use when combining multiple snapshots.
+    Root node of an individual state tree (snapshot) within a collection of snapshots (`States`).
     """
 
-    kind: StateTreeT = Field(
-        default="single", description="Specifies whether this is an individual state or a collection of states."
-    )
     root: Node = Field(description="Root of the node tree.")
     metadata: SnapshotMetadata = Field(description="Associated metadata.")
 
 
-class State(Snapshot):
-    """
-    Root node of an individual state trees with metadata.
-    """
-
-    metadata: Metadata = Field(description="Associated metadata.")
-
-
 class States(BaseModel):
     """
-    Root node of state descriptions that encompass multiple distinct state trees.
+    Root node of state descriptions that encompass multiple distinct state trees (snapshots).
     """
 
     kind: StateTreeT = Field(
-        default="multiple", description="Specifies whether this is an individual state or a collection of states."
+        default="multiple",
+        const=True,
+        description="Specifies whether this is an individual state or a collection of states.",
     )
-    metadata: Metadata = Field(description="Associated metadata.")
+    metadata: GlobalMetadata = Field(description="Associated metadata.")
     snapshots: list[Snapshot] = Field(description="Ordered collection of individual states.")
     # TODO add ordered collection that describes transition/interpolation wrt previous state
 
 
-"""
-Flavors of MolViewSpec states.
-"""
 MVSData = Union[State, States]
+"""Flavors of MolViewSpec states."""
 
 
 class DownloadParams(BaseModel):
@@ -546,9 +556,7 @@ class OpacityInlineParams(ComponentInlineParams):
     Change the opacity/transparency of a representation based on parameters.
     """
 
-    opacity: float = Field(
-        description="Opacity of a representation. 0.0: fully transparent, 1.0: fully opaque"
-    )
+    opacity: float = Field(description="Opacity of a representation. 0.0: fully transparent, 1.0: fully opaque")
 
 
 class LabelInlineParams(BaseModel):
@@ -592,9 +600,15 @@ class FocusInlineParams(BaseModel):
 
     direction: Optional[Vec3[float]] = Field(description="Direction of the view (vector position -> target)")
     up: Optional[Vec3[float]] = Field(description="Controls the rotation around the vector between target and position")
-    radius: Optional[float] = Field(description="Radius of the focused sphere (overrides `radius_factor` and `radius_extra`)")
-    radius_factor: Optional[float] = Field(description="Radius of the focused sphere relative to the radius of parent component (default: 1). Focused radius = component_radius * radius_factor + radius_extend.")
-    radius_extend: Optional[float] = Field(description="Addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0). Focused radius = component_radius * radius_factor + radius_extend.")
+    radius: Optional[float] = Field(
+        description="Radius of the focused sphere (overrides `radius_factor` and `radius_extra`)"
+    )
+    radius_factor: Optional[float] = Field(
+        description="Radius of the focused sphere relative to the radius of parent component (default: 1). Focused radius = component_radius * radius_factor + radius_extend."
+    )
+    radius_extend: Optional[float] = Field(
+        description="Addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0). Focused radius = component_radius * radius_factor + radius_extend."
+    )
 
 
 class TransformParams(BaseModel):

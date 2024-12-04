@@ -29,6 +29,7 @@ from molviewspec.nodes import (
     DistanceMeasurementParams,
     DownloadParams,
     FocusInlineParams,
+    GlobalMetadata,
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
@@ -36,8 +37,8 @@ from molviewspec.nodes import (
     LinesParams,
     Mat4,
     MeshParams,
-    Metadata,
     Node,
+    OpacityInlineParams,
     ParseFormatT,
     ParseParams,
     PrimitiveLabelParams,
@@ -49,16 +50,17 @@ from molviewspec.nodes import (
     RepresentationTypeT,
     SchemaFormatT,
     SchemaT,
+    Snapshot,
+    SnapshotMetadata,
     State,
     StructureParams,
     TooltipFromSourceParams,
     TooltipFromUriParams,
     TooltipInlineParams,
     TransformParams,
-    OpacityInlineParams,
     Vec3,
 )
-from molviewspec.utils import get_major_version_tag, make_params
+from molviewspec.utils import make_params
 
 
 def create_builder() -> Root:
@@ -68,25 +70,30 @@ def create_builder() -> Root:
     """
     return Root()
 
-class _IBase(ABC):
+
+class _BuilderProtocol(ABC):
     """
     Interface for `_Base` for correctly typing mixins.
     """
+
     @property
     @abstractmethod
-    def _root(self) -> Root: ...
-    
+    def _root(self) -> Root:
+        ...
+
     @property
     @abstractmethod
-    def _node(self) -> Node: ...
-    
+    def _node(self) -> Node:
+        ...
+
     @abstractmethod
-    def _add_child(self, node: Node) -> None: ...
+    def _add_child(self, node: Node) -> None:
+        ...
 
 
-class _Base(BaseModel, _IBase):
+class _Base(BaseModel, _BuilderProtocol):
     """
-    Internal base node from which all other nodes are derived.
+    Internal base node from which all other builder nodes are derived.
     """
 
     _root: Root = PrivateAttr()
@@ -107,7 +114,7 @@ class _Base(BaseModel, _IBase):
         self._node.children.append(node)
 
 
-class _PrimitivesMixin(_IBase):
+class _PrimitivesMixin(_BuilderProtocol):
     def primitives(
         self,
         *,
@@ -154,7 +161,7 @@ class _PrimitivesMixin(_IBase):
         return PrimitivesFromUri(node=node, root=self._root)
 
 
-class _FocusMixin(_IBase):
+class _FocusMixin(_BuilderProtocol):
     def focus(
         self,
         *,
@@ -191,31 +198,54 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
     def get_node(self) -> Node:
         return self._node
 
-    def get_state(
+    def get_snapshot(
         self,
         *,
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
         key: str | None = None,
-        indent: int | None = 2,
-    ) -> str:
+        linger_duration_ms: int = 1000,
+        transition_duration_ms: int | None = None,
+    ) -> Snapshot:
         """
-        Emits JSON representation of the current state. Can be enriched with metadata.
+        Return a snapshot of the current state, which can be used to build multi-state views.
         :param title: optional title of the scene
         :param description: optional detailed description of the scene
         :param description_format: format of the description
-        :param key: (unique) identifier of this state, leave empty to assign a UUID
-        :param indent: control format by specifying if and how to indent attributes
-        :return: JSON string that resembles that whole state
+        :return: object holding snapshot state tree and metadata
         """
-        metadata = Metadata(
+        metadata = SnapshotMetadata(
+            title=title,
             description=description,
             description_format=description_format,
             key=key,
+            linger_duration_ms=linger_duration_ms,
+            transition_duration_ms=transition_duration_ms,
+        )
+        return Snapshot(root=self._node, metadata=metadata)  # TODO create deep copy of node
+
+    def get_state(
+        self,
+        *,
+        title: str | None = None,
+        description: str | None = None,
+        description_format: DescriptionFormatT | None = None,
+        indent: int | None = 2,
+    ) -> str:
+        """
+        Return single-state MVSJ representation (JSON) of the current state. Can be enriched with metadata.
+        :param title: optional title of the scene
+        :param description: optional detailed description of the scene
+        :param description_format: format of the description
+        :param indent: control format by specifying if and how to indent attributes
+        :return: JSON string that resembles that whole state
+        """
+        metadata = GlobalMetadata(
             title=title,
-            version=get_major_version_tag(),
-            linger_duration_ms=1000,
+            description=description,
+            description_format=description_format,
+            # `version` and `timestamp` added by the constructor
         )
         return State(root=self._node, metadata=metadata).json(exclude_none=True, indent=indent)
 
@@ -223,10 +253,10 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         self,
         *,
         destination: str | os.PathLike,
-        indent: int | None = 2,
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
+        indent: int | None = 2,
     ) -> None:
         """
         Saves the JSON representation of the current state to a file. Can be enriched with metadata.
