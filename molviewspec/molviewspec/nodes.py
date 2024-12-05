@@ -604,10 +604,10 @@ class FocusInlineParams(BaseModel):
         description="Radius of the focused sphere (overrides `radius_factor` and `radius_extra`)"
     )
     radius_factor: Optional[float] = Field(
-        description="Radius of the focused sphere relative to the radius of parent component (default: 1). Focused radius = component_radius * radius_factor + radius_extend."
+        description="Radius of the focused sphere relative to the radius of parent component (default: 1). Focused radius = component_radius * radius_factor + radius_extent."
     )
-    radius_extend: Optional[float] = Field(
-        description="Addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0). Focused radius = component_radius * radius_factor + radius_extend."
+    radius_extent: Optional[float] = Field(
+        description="Addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0). Focused radius = component_radius * radius_factor + radius_extent."
     )
 
 
