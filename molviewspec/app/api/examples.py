@@ -326,14 +326,15 @@ async def multiple_states_alignment_focus() -> MVSResponse:
             align=False,
             duration=3000,
             transition_duration=1000,
-            camera=camera2,
+            focus="protein",
+            orient=orient1,
         ),
         make_snapshot(
             key="B",
             description="### What if we superpose them?",
             duration=3000,
             transition_duration=1500,
-            focus="protein",
+            focus="root",
             orient=orient1,
         ),
         make_snapshot(
@@ -342,7 +343,7 @@ async def multiple_states_alignment_focus() -> MVSResponse:
             duration=500,
             transition_duration=3000,
             focus="ligand",
-            orient={**orient1, "radius_factor": 1.4},
+            orient=orient1,
         ),
         make_snapshot(
             key="D",
@@ -350,7 +351,7 @@ async def multiple_states_alignment_focus() -> MVSResponse:
             duration=1000,
             transition_duration=1000,
             focus="ligand",
-            orient={**orient2, "radius_factor": 1.4},
+            orient=orient2,
         ),
         make_snapshot(key="E", description="", duration=2000, focus="protein", orient=orient1),
         make_snapshot(
@@ -562,10 +563,19 @@ async def multiple_states_alignment_focus() -> MVSResponse:
             show=["protein1", "ligand2"],
         ),
         make_snapshot(
-            key="H", description="", duration=500, transition_duration=10_000, focus="protein", orient=orient1
+            key="H",
+            description="",
+            duration=500,
+            transition_duration=10_000,
+            focus="protein",
+            orient=orient1,
         ),
         make_snapshot(
-            key="I", description="### Thanks for watching", duration=10_000, transition_duration=1000, camera=camera_far
+            key="I",
+            description="### Thanks for watching",
+            duration=10_000,
+            transition_duration=1000,
+            camera=camera_far,
         ),
     ]
     metadata = GlobalMetadata(description="test")
@@ -617,11 +627,14 @@ def make_snapshot(
     color1: str = "#dddddd",
     color2: str = "#4fc64f",
     camera=None,
-    focus: Literal["protein", "ligand", None] = None,
+    focus: Literal["protein", "ligand", "root", None] = None,
     orient=orient1,
     show: list[str] | None = None,
 ) -> Snapshot:
     builder = create_builder()
+
+    if focus == "root":
+        builder.focus(**orient)
 
     structure1 = (
         builder.download(url="https://files.wwpdb.org/download/2e2n.cif").parse(format="mmcif").model_structure()
@@ -662,7 +675,7 @@ def make_snapshot(
             color="red", selector=ComponentExpression(type_symbol="O")
         )
         if focus == "ligand":
-            ligand2.focus(**orient)
+            ligand2.focus(**orient, radius_factor=1.5, radius_extent=2)
 
     if camera is not None:
         builder.camera(**camera)
