@@ -253,6 +253,17 @@ will run the server on `localhost:9000` with reload mode on.
 - API Docs: `http://localhost:9000/docs`
 - Example: `http://localhost:9000/api/v1/examples/load?id=1tqn`
 
+### Testing API examples
+
+Start the server and run
+
+```
+cd molviewspec
+python test_server.py
+```
+
+Will call all API endpoint that can be called without arguments.
+
 ### Formatting the Project
 
 ```
