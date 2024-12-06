@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file, following t
 - Support `ref` property on `Node` which enables referencing nodes by this value
 - Initial geometrical primitives support
 - Focus node can be on root
-- Focus node radius, radius_factor, radius_extend parameters
+- Focus node radius, radius_factor, radius_extent parameters
 
 ## [v1.0.0] - 2024-04-10
 - Initial release
