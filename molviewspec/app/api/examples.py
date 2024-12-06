@@ -20,7 +20,7 @@ from molviewspec.nodes import (
     RepresentationTypeT,
     Snapshot,
     SnapshotMetadata,
-    States,
+    States, Vec3,
 )
 from molviewspec.utils import get_major_version_tag
 
@@ -607,13 +607,28 @@ async def validation_data(id: str) -> Response:
     return JSONResponse(transformed_data)
 
 @router.get("/data/{entry_id}/{assembly_id}/assembly-symmetry")
-async def assembly_symmetry_data(entry_id: str, assembly_id: str) -> Response:
+async def assembly_symmetry_data(entry_id: str = "4hhb", assembly_id: str = "1", symindex: int = 0) -> Response:
     """
     Fetches assembly symmetry from the RCSB.org Data API. Converts data for an assembly to MVS primitive instructions.
     :param entry_id: entry to process
     :param assembly_id: assembly to process
     :return: MVS response of all primitive instructions
     """
+    try:
+        first = _fetch_symmetry_data_and_get_nth_non_c1(entry_id, assembly_id, symindex)
+    except Exception as e:
+        raise Exception(f"Failed to obtain symmetry data for {entry_id}-{assembly_id} -- {e}") from e
+
+    builder = create_builder()
+    primitives = builder.primitives()
+    props = {'scale': 2.0}
+    _build_cage_shape(first, primitives, props)
+    _build_axes_shape(first, primitives, props)
+
+    return PlainTextResponse(builder.get_state())
+
+
+def _fetch_symmetry_data_and_get_nth_non_c1(entry_id: str, assembly_id: str, symindex: int = 0) -> any:
     query = '''
     query AssemblySymmetry($assembly_id: String!, $entry_id: String!) {
         assembly(assembly_id: $assembly_id, entry_id: $entry_id) {
@@ -640,12 +655,62 @@ async def assembly_symmetry_data(entry_id: str, assembly_id: str) -> Response:
     }
     '''
     variables = {'entry_id': entry_id, 'assembly_id': assembly_id}
-    client = GraphqlClient(endpoint="https://data.rcsb.org/graphql")
+    client = GraphqlClient(endpoint='https://data.rcsb.org/graphql')
 
-    result = client.execute(query=query, variables=variables)
-    primitives = result['data']
+    try:
+        response = client.execute(query=query, variables=variables)
+    except Exception:
+        raise Exception("failed to communicate with API")
 
-    return JSONResponse(primitives)
+    # return nth item with symmetry
+    i = 0
+    for item in response['data']['assembly']['rcsb_struct_symmetry']:
+        if item['symbol'] == 'C1':
+            continue
+        i += 1
+        if i == symindex:
+            return item
+
+    raise Exception(f"no symmetry observed with symindex {symindex}")
+
+
+def _build_cage_shape(first, builder, props) -> None:
+    rotation_axes = first['rotation_axes']
+    _build_cage_mesh(rotation_axes, builder, props)
+
+
+def _build_axes_shape(first, builder, props) -> None:
+    rotation_axes = first['rotation_axes']
+    if rotation_axes is None or len(rotation_axes) == 0:
+        return
+
+    start = tuple(rotation_axes[0]['start'])
+    end = tuple(rotation_axes[0]['end'])
+    radius = math.dist(start, end) / 500 * props['scale']
+    tmp_scale = (radius * 7, radius * 7, radius * 0.4)
+    tmp_center = tuple(0.5 * (s + e) for s, e in zip(start, end))
+
+    for i in range(len(rotation_axes)):
+        start, end, order = rotation_axes[i]['start'], rotation_axes[i]['end'], rotation_axes[i]['order']
+        builder.line(start=start, end=end, thickness=radius)
+
+        mesh = _build_order_primitive(order, builder)
+        if mesh is None:
+            continue
+
+
+
+def _build_order_primitive(order, builder) -> any:
+    # if order < 2:
+    #     builder.mesh()
+    # elif order == 2:
+    #     # TODO need scaling: https://github.com/molstar/molstar/blob/b4238f574ac3b7a20d0f368812a4237a29d56b8c/src/extensions/assembly-symmetry/representation.ts#L104-L107
+    #     builder.prism()
+    # elif order == 3:
+    #     builder.wedge()
+    # else:
+    #     builder.polygon()
+    return None
 
 
 @router.get("/data/basic-primitives")
@@ -1493,7 +1558,7 @@ async def testing_labels_from_source_example() -> MVSResponse:
 @router.get("/testing/primitives/from-uri")
 async def primitives_from_uri_example() -> MVSResponse:
     """
-    Draws primitived provided by a JSON asset
+    Draws primitives provided by a JSON asset
     """
     builder = create_builder()
     builder.primitives_from_uri(uri="http://localhost:9000/api/v1/examples/data/basic-primitives")
