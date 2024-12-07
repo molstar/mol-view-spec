@@ -298,6 +298,42 @@ async def refs_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/membrane-orientation")
+async def membrane_orientation_example() -> MVSResponse:
+    """
+    MolViewSpec supports primitives (i.e. simple geometric shapes likes circles). These can e.g. be used to visualize
+    the location of the phospholipid bilayer of membrane proteins. This assumes that you know these boundaries. Mol*
+    can predict them, and you can obtain these results using its Membrane Server CLI entry point. Start the server
+    using: `node lib/commonjs/servers/membrane-orientation/server.js`. By default, it will listen on port 1340. A
+    simple prediction looks like this: `http://localhost:1340/MembraneServer/predict/3sn6/?assemblyId=1`. Change the
+    entry_id as needed. The server will respond with JSON, describing key values needed to draw both membrane
+    primitives.
+    """
+    server_response = {
+        "planePoint1": [27.6286077232155, 10.3137003539375, 17.3841276600337],
+        "planePoint2": [24.2923627786858, 13.70617189513, -17.3918785297573],
+        "normalVector": [0.0950497135193607, -0.096651610860181, 0.99076940711652],
+        "centroid": [25.9604852509506, 12.0099361245337, -0.00387543486177577],
+        "radius": 29.8063842867283,
+    }
+
+    builder = create_builder()
+    (
+        builder.download(url=_url_for_mmcif("3sn6"))
+        .parse(format="mmcif")
+        .assembly_structure(assembly_id="1")
+        .component()
+        .representation(type="cartoon")
+    )
+    # TODO impl this placeholder, apply "rotation"/normalVector
+    (
+        builder.primitives(tooltip="Membrane Layer")
+        .circle(center=server_response["planePoint1"], radius=server_response["radius"])
+        .circle(center=server_response["planePoint1"], radius=server_response["radius"])
+    )
+    return PlainTextResponse(builder.get_state())
+
+
 @router.get("/primitives/cube")
 async def primitives_cube_example() -> MVSResponse:
     """
