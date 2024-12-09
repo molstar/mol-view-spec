@@ -44,6 +44,17 @@ KindT = Literal[
 CustomT = Optional[Mapping[str, Any]]
 RefT = Optional[str]
 
+# TODO: to be used for angle, dihedral
+class LabelCommonProps(BaseModel):
+    label_template: Optional[str] = Field(
+        description="Template used to construct the label. Use {{distance}} as placeholder for the distance."
+    )
+    label_size: Optional[float | Literal["auto"]] = Field(
+        description="Size of the label. Auto scales it by the distance."
+    )
+    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size.")
+    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size.")
+    label_color: Optional[ColorT] = Field(description="Color of the label.")
 
 class Node(BaseModel):
     """
@@ -604,7 +615,6 @@ class TransformParams(BaseModel):
     )
     translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
 
-
 class CameraParams(BaseModel):
     """
     Controls the global camera position.
@@ -642,7 +652,6 @@ PrimitivePositionT = Union[Vec3[float], ComponentExpression, PrimitiveComponentE
 Positions of primitives can be defined by 3D vector, by providing a selection expressions, or by providing 
 a list of expressions within a specific structure.
 """
-
 
 class PrimitivesParams(BaseModel):
     color: Optional[ColorT] = Field(description="Default color for primitives in this group")
@@ -691,7 +700,7 @@ class LinesParams(BaseModel):
     indices: list[int] = Field(
         description="2N length array of indices into vertices that form lines (l1_1, ll1_2, ...)"
     )
-    line_groups: Optional[list[int]] = Field(description="Assign a number to each triangle to group them.")
+    line_groups: Optional[list[int]] = Field(description="Assign a number to each line to group them.")
     group_colors: Optional[Mapping[int, ColorT]] = Field(
         description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over line_colors."
     )
@@ -725,18 +734,8 @@ class LineParams(_LineParamsBase):
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the line.")
 
 
-class DistanceMeasurementParams(_LineParamsBase):
+class DistanceMeasurementParams(_LineParamsBase, LabelCommonProps):
     kind: Literal["distance_measurement"] = "distance_measurement"
-    label_template: Optional[str] = Field(
-        description="Template used to construct the label. Use {{distance}} as placeholder for the distance."
-    )
-    label_size: Optional[float | Literal["auto"]] = Field(
-        description="Size of the label. Auto scales it by the distance."
-    )
-    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size.")
-    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size.")
-    label_color: Optional[ColorT] = Field(description="Color of the label.")
-
 
 class PrimitiveLabelParams(_LineParamsBase):
     kind: Literal["label"] = "label"
@@ -748,6 +747,7 @@ class PrimitiveLabelParams(_LineParamsBase):
 
 
 class PlaneParams(BaseModel):
+    # TODO: bounding_box?
     kind: Literal["plane"] = "plane"
     point: PrimitivePositionT = Field(description="Point on plane.")
     normal: Vec3[float] = Field(description="Normal vector of plane.")
@@ -769,3 +769,182 @@ def validate_state_tree(json: str) -> None:
     :raises ValidationError if JSON is malformed or state tree type definitions are violated
     """
     State.parse_raw(json)
+
+# TODO: fields instead of plain types
+class EllipsisParams(BaseModel):
+    kind: Literal["circle"] = "circle"
+    color: Optional[ColorT] = Field(description="Default color for the circle.")
+    center: PrimitivePositionT = Field(description="The center of the circle.")
+    # TODO: elaborate names and semantics depending on
+    # how Mol* implements circles
+    # (should be dir_major and dir_minor perhaps as these two here are just Vec3)
+    major_axis: PrimitivePositionT = Field(description="Major axis of this circle.")
+    minor_axis: PrimitivePositionT = Field(description="Minor axis of this circle.")
+
+# TODO: add collection of descriptions for the fields with the same name
+class Polygon(BaseModel):
+    kind: Literal["polygon"] = "polygon"
+    vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
+    
+class Star(BaseModel):
+    kind: Literal["star"] = "star"
+    center: PrimitivePositionT = Field(description="The center of the star.")
+    inner_radius: float = Field(description="The inner radius of the star")
+    outer_radius: float = Field(description="The outer radius of the star")
+    # TODO: is this correct meaning?
+    point_count: int = Field(description="The number of points the star contains")
+    # TODO: inherit from TransformParams instead?
+    # rotation: Optional[Mat3[float]] = Field(
+    #     description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    # )
+
+class TransformMixin(BaseModel):
+    # rotation: Optional[Mat3[float]] = Field(
+    #     description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    # )
+    rotation_axis: Optional[Vec3] = Field(
+        # TODO: better description
+        description="Rotation axis"
+    )
+    rotation_radians: Optional[int] = Field(
+        description="Rotation angle in radians"
+    )
+    translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
+
+class RectangularPrismMixin(BaseModel):
+    center: PrimitivePositionT = Field(description="The center of the box.")
+    extent: Vec3 = Field(description="The width, the height, and the depth of the box.")
+    # TODO: include in TransformParams instead?
+    scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling.")
+    alignment: Literal["axes", "principal-axes"] = "axes"
+    groups: Optional[list[int]] = Field(description="Assign a number to each box to group them.")
+    color: Optional[ColorT] = Field(description="Default color for the box.")
+    
+class BoxParams(TransformMixin, RectangularPrismMixin):
+    kind: Literal["box"] = "box"
+    
+class CageParams(TransformMixin, RectangularPrismMixin):
+    kind: Literal["cage"] = "cage"
+    render_style: Literal["lines", "geometry"] = "lines"
+    
+class CylinderParams(BaseModel):
+    kind: Literal["cylinder"] = "cylinder"
+    color: Optional[ColorT] = Field(description="Default color for the box.")
+    bottom: PrimitivePositionT = Field(description="Position of the bottom.")
+    up: PrimitivePositionT = Field(description="Position of the top.")
+    radius_top: float = Field(description="The radius of the top of the cylinder top. Radius equal to zero will yield a cone.")
+    radius_bottom: float = Field(description="The radius of the bottom of the cylinder. Radius equal to zero will yield a reversed cone.")
+    # TODO: Implement start end of the arc (theta start end)
+    # theta_start: float = Field(description="TODO")
+    # theta_length: float = Field(description="TODO")
+    # TODO: type for rotation as field
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    bottom_cap: bool = Field(description="Determine whether to cap the top of the cylinder.")
+    top_cap: bool = Field(description="Determine whether to cap the bottom of the cylinder.")
+    
+    
+# TODO: instead of theta - tube?
+# addTube in mol*, params accordingly   
+
+
+
+# NOTE: arrow should be derived from line perhaps?
+# This allows us to make use of inheritance 
+class ArrowParams(_LineParamsBase):
+    # TODO: clarify meaning of the following to and modify depending
+    # on frontend implementation
+    kind: Literal["arrow"] = "arrow"
+    arrow_radius: float = Field(description="The radius (extent) of the arrow.")
+    arrow_height: float = Field(description="The height of the arrow.")
+    arrow_from: PrimitivePositionT = Field(description="Start of the arrow.")
+    arrow_to: PrimitivePositionT = Field(description="End of the arrow.")
+    
+SolidKindTypeT = Literal["tetra", "octa", "dodeca", "icosahedron"]
+
+class PlatonicSolidParams(BaseModel):
+    kind: Literal["platonic_solid"] = "platonic_solid"
+    solid_kind: SolidKindTypeT
+    center: float = Field(description="The center of the platonic solid.")
+    radius: float = Field(description="The radius of the platonic solid.")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    
+class PrismParams(BaseModel):
+    kind: Literal["prism"] = "prism"
+    position: PrimitivePositionT = Field(description="Position of this prism.")
+    # TODO: meaning?
+    base_point_count: int = Field(description="Count of base points")
+    height: float = Field(description="The height of the prism.")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    
+class PyramidParams(BaseModel):
+    kind: Literal["pyramid"] = "pyramid"
+    vertices: list[float] = Field(description="3N length array of floats with vertex position (x1, y1, z1, ...)")
+    translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
+    scaling: Optional[Vec3[float]] = Field(description="3d vector describing the scaling")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+
+class SphereParams(BaseModel):
+    kind: Literal["sphere"] = "sphere"
+    center: PrimitivePositionT = Field(description="The center of the circle.")
+    radius: float | PrimitivePositionT = Field(description="The radius of the sphere.")
+    
+    # TODO:
+class TorusParams(BaseModel):
+    kind: Literal["torus"] = "torus"
+    center: PrimitivePositionT = Field(description="The center of the torus.")
+    outer_radius: float = Field(description="The outer radius of the torus")
+    tube_radius: float = Field(description="The tube radius.")
+    # TODO:
+    theta_start: float = Field(description="TODO")
+    # TODO:
+    theta_length: float = Field(description="TODO")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+
+class WedgeParams(BaseModel):
+    kind: Literal["wedge"] = "wedge"
+    center: PrimitivePositionT = Field(description="The center of the wedge.")
+    width: float = Field(description="The width of the wedge.")
+    height: float = Field(description="The height of the wedge.")
+    depth: float = Field(description="The depth of the wedge.")
+    rotation: Optional[Mat3[float]] = Field(
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+    
+class EllipsoidParams(BaseModel):
+    kind: Literal["ellipsoid"] = "ellipsoid"
+    color: Optional[ColorT] = Field(description="Default color for the box.")
+    direction_major: Vec3[float] = Field(description="Major direction of the ellipsoid.")
+    direction_minor: Vec3[float] = Field(description="Minor direction of the ellipsoid.")
+    # direction_normal: Vec3[float] = Field(description="Normal direction of the ellipsoid.")
+    center: PrimitivePositionT = Field(description="The center of the ellipsoid.")
+    radius_scale: Optional[Vec3[float]] = Field(description="3d vector describing the radius scaling.")
+
+# TODO:
+class DistanceParams(LabelCommonProps):
+    kind: Literal["disatance"] = "disatance"
+    a: PrimitivePositionT = Field(description="The first point.")
+    b: PrimitivePositionT = Field(description="The second point.")
+
+class AngleParams(LabelCommonProps):
+    kind: Literal["angle"] = "angle"
+    a: PrimitivePositionT = Field(description="The first point.")
+    b: PrimitivePositionT = Field(description="The second point.")
+    c: PrimitivePositionT = Field(description="The third point.")
+        
+class DihedralParams(LabelCommonProps, _LineParamsBase): 
+    kind: Literal["dihedral"] = "dihedral"
+    a: PrimitivePositionT = Field(description="The first point.")
+    b: PrimitivePositionT = Field(description="The second point.")
+    c: PrimitivePositionT = Field(description="The third point.")
+    d: PrimitivePositionT = Field(description="The fourth point.")
+    # TODO: angle visual props - what does it mean?
