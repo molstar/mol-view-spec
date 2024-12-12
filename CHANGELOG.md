@@ -1,11 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file, following the suggestions of [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+- Focus node 
+  - Can be on root
+  - Focus node radius, radius_factor, radius_extent parameters
+- Breaking: Change `transparency` to `opacity`
+- Multi-state data model tweaks
+
+
 ## [v1.1.0] - 2024-12-09
 
 - Support for multiple states in one `.msvj` file
 - Configurable transitions/animations between states
-- Configurable transparency of representations
+- Configurable opacity of representations
 - Add support for additional/custom properties on each node ("vendor-specific properties")
   - This allows users to store custom data 
   - Mol* can be instructed to show non-covalent interactions by providing vendor-specific properties

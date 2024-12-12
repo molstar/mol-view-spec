@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import math
 import os
+from abc import ABC, abstractmethod
 from typing import Literal, Self, Sequence
 
 from pydantic import BaseModel, PrivateAttr
@@ -28,6 +29,7 @@ from molviewspec.nodes import (
     DistanceMeasurementParams,
     DownloadParams,
     FocusInlineParams,
+    GlobalMetadata,
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
@@ -35,8 +37,8 @@ from molviewspec.nodes import (
     LinesParams,
     Mat4,
     MeshParams,
-    Metadata,
     Node,
+    OpacityInlineParams,
     ParseFormatT,
     ParseParams,
     PrimitiveLabelParams,
@@ -48,16 +50,17 @@ from molviewspec.nodes import (
     RepresentationTypeT,
     SchemaFormatT,
     SchemaT,
+    Snapshot,
+    SnapshotMetadata,
     State,
     StructureParams,
     TooltipFromSourceParams,
     TooltipFromUriParams,
     TooltipInlineParams,
     TransformParams,
-    TransparencyInlineParams,
     Vec3,
 )
-from molviewspec.utils import get_major_version_tag, make_params
+from molviewspec.utils import make_params
 
 
 def create_builder() -> Root:
@@ -68,9 +71,29 @@ def create_builder() -> Root:
     return Root()
 
 
-class _Base(BaseModel):
+class _BuilderProtocol(ABC):
     """
-    Internal base node from which all other nodes are derived.
+    Interface for `_Base` for correctly typing mixins.
+    """
+
+    @property
+    @abstractmethod
+    def _root(self) -> Root:
+        ...
+
+    @property
+    @abstractmethod
+    def _node(self) -> Node:
+        ...
+
+    @abstractmethod
+    def _add_child(self, node: Node) -> None:
+        ...
+
+
+class _Base(BaseModel, _BuilderProtocol):
+    """
+    Internal base node from which all other builder nodes are derived.
     """
 
     _root: Root = PrivateAttr()
@@ -91,25 +114,25 @@ class _Base(BaseModel):
         self._node.children.append(node)
 
 
-class _PrimitivesMixin:
+class _PrimitivesMixin(_BuilderProtocol):
     def primitives(
-        self: _Base,
+        self,
         *,
         color: ColorT | None = None,
         label_color: ColorT | None = None,
         tooltip: str | None = None,
-        transparency: float | None = None,
-        label_transparency: float | None = None,
+        opacity: float | None = None,
+        label_opacity: float | None = None,
         instances: list[Mat4[float]] | None = None,
     ) -> Primitives:
         """
         Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
-        shared options (color, transparency etc.).
+        shared options (color, opacity etc.).
         :param color: default color
         :param label_color: default label color
         :param tooltip: default tooltip
-        :param transparency: default primitive transparency
-        :param label_transparency: default label transparency
+        :param opacity: default primitive opacity
+        :param label_opacity: default label opacity
         :param instances: instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices
         :return: a builder for geometric primitives
         """
@@ -119,7 +142,7 @@ class _PrimitivesMixin:
         return Primitives(node=node, root=self._root)
 
     def primitives_from_uri(
-        self: _Base,
+        self,
         *,
         uri: str,
         format: Literal["mvs-node-json"] = "mvs-node-json",
@@ -138,17 +161,23 @@ class _PrimitivesMixin:
         return PrimitivesFromUri(node=node, root=self._root)
 
 
-class _FocusMixin:
+class _FocusMixin(_BuilderProtocol):
     def focus(
-        self: _Base,
+        self,
         *,
         direction: Vec3[float] | None = None,
         up: Vec3[float] | None = None,
+        radius: float | None = None,
+        radius_factor: float | None = None,
+        radius_extent: float | None = None,
     ) -> Self:
         """
         Focus on this structure or component.
         :param direction: the direction from which to look at this component
         :param up: where is up relative to the view direction
+        :param radius: radius of the focused sphere (overrides `radius_factor` and `radius_extra`)
+        :param radius_factor: radius of the focused sphere relative to the radius of parent component (default: 1); focused radius = component_radius * radius_factor + radius_extent
+        :param radius_extent: addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0); focused radius = component_radius * radius_factor + radius_extent
         :return: this builder
         """
         params = make_params(FocusInlineParams, locals())
@@ -157,7 +186,7 @@ class _FocusMixin:
         return self
 
 
-class Root(_Base, _PrimitivesMixin):
+class Root(_Base, _PrimitivesMixin, _FocusMixin):
     """
     The builder for MolViewSpec state descriptions. Provides fine-grained options as well as global properties such as
     canvas color or camera position and functionality to eventually export this scene.
@@ -169,30 +198,54 @@ class Root(_Base, _PrimitivesMixin):
     def get_node(self) -> Node:
         return self._node
 
-    def get_state(
+    def get_snapshot(
         self,
         *,
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
         key: str | None = None,
-        indent: int | None = 2,
-    ) -> str:
+        linger_duration_ms: int = 1000,
+        transition_duration_ms: int | None = None,
+    ) -> Snapshot:
         """
-        Emits JSON representation of the current state. Can be enriched with metadata.
+        Return a snapshot of the current state, which can be used to build multi-state views.
         :param title: optional title of the scene
         :param description: optional detailed description of the scene
         :param description_format: format of the description
-        :param key: (unique) identifier of this state, leave empty to assign a UUID
-        :param indent: control format by specifying if and how to indent attributes
-        :return: JSON string that resembles that whole state
+        :return: object holding snapshot state tree and metadata
         """
-        metadata = Metadata(
+        metadata = SnapshotMetadata(
+            title=title,
             description=description,
             description_format=description_format,
             key=key,
+            linger_duration_ms=linger_duration_ms,
+            transition_duration_ms=transition_duration_ms,
+        )
+        return Snapshot(root=self._node, metadata=metadata)  # TODO create deep copy of node
+
+    def get_state(
+        self,
+        *,
+        title: str | None = None,
+        description: str | None = None,
+        description_format: DescriptionFormatT | None = None,
+        indent: int | None = 2,
+    ) -> str:
+        """
+        Return single-state MVSJ representation (JSON) of the current state. Can be enriched with metadata.
+        :param title: optional title of the scene
+        :param description: optional detailed description of the scene
+        :param description_format: format of the description
+        :param indent: control format by specifying if and how to indent attributes
+        :return: JSON string that resembles that whole state
+        """
+        metadata = GlobalMetadata(
             title=title,
-            version=get_major_version_tag(),
+            description=description,
+            description_format=description_format,
+            # `version` and `timestamp` added by the constructor
         )
         return State(root=self._node, metadata=metadata).json(exclude_none=True, indent=indent)
 
@@ -200,10 +253,10 @@ class Root(_Base, _PrimitivesMixin):
         self,
         *,
         destination: str | os.PathLike,
-        indent: int | None = 2,
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
+        indent: int | None = 2,
     ) -> None:
         """
         Saves the JSON representation of the current state to a file. Can be enriched with metadata.
@@ -720,14 +773,14 @@ class Representation(_Base):
         self._add_child(node)
         return self
 
-    def transparency(self, *, transparency: float = 0.8) -> Representation:
+    def opacity(self, *, opacity: float) -> Representation:
         """
-        Customize the transparency/opacity of this representation.
-        :param transparency: float describing how transparent this representation should be, 0.0: fully opaque, 1.0: fully transparent
+        Customize the opacity/transparency of this representation.
+        :param opacity: float describing how opaque this representation should be, 0.0: fully transparent, 1.0: fully opaque
         :return: this builder
         """
-        params = make_params(TransparencyInlineParams, locals())
-        node = Node(kind="transparency", params=params)
+        params = make_params(OpacityInlineParams, locals())
+        node = Node(kind="opacity", params=params)
         self._add_child(node)
         return self
 
