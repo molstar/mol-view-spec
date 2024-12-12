@@ -1,7 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file, following the suggestions of [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## Unreleased
+
+- Focus node 
+  - Can be on root
+  - Focus node radius, radius_factor, radius_extent parameters
+- Breaking: Change `transparency` to `opacity`
+- Multi-state data model tweaks
+
+
+## [v1.1.0] - 2024-12-09
 
 - Support for multiple states in one `.msvj` file
 - Configurable transitions/animations between states
@@ -11,9 +20,7 @@ All notable changes to this project will be documented in this file, following t
   - Mol* can be instructed to show non-covalent interactions by providing vendor-specific properties
 - Fixes several issues with defined types
 - Support `ref` property on `Node` which enables referencing nodes by this value
-- Initial geometrical primitives support
-- Focus node can be on root
-- Focus node radius, radius_factor, radius_extent parameters
+- Geometrical primitives support (experimental and under development)
 
 ## [v1.0.0] - 2024-04-10
 - Initial release
