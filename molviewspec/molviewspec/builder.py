@@ -33,7 +33,6 @@ from molviewspec.nodes import (
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
-    LineParams,
     LinesParams,
     Mat4,
     MeshParams,
@@ -58,6 +57,7 @@ from molviewspec.nodes import (
     TooltipFromUriParams,
     TooltipInlineParams,
     TransformParams,
+    TubeParams,
     Vec3,
 )
 from molviewspec.utils import make_params
@@ -78,17 +78,14 @@ class _BuilderProtocol(ABC):
 
     @property
     @abstractmethod
-    def _root(self) -> Root:
-        ...
+    def _root(self) -> Root: ...
 
     @property
     @abstractmethod
-    def _node(self) -> Node:
-        ...
+    def _node(self) -> Node: ...
 
     @abstractmethod
-    def _add_child(self, node: Node) -> None:
-        ...
+    def _add_child(self, node: Node) -> None: ...
 
 
 class _Base(BaseModel, _BuilderProtocol):
@@ -823,7 +820,7 @@ class Primitives(_Base, _FocusMixin):
         color: ColorT | None = None,
         show_triangles: bool | None = True,
         show_wireframe: bool | None = False,
-        wireframe_radius: float | None = 1.0,
+        wireframe_width: float | None = 1.0,
         wireframe_color: ColorT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
@@ -840,7 +837,7 @@ class Primitives(_Base, _FocusMixin):
         :param color: default color of triangle faces
         :param show_triangles: determine whether to render triangles of the mesh
         :param show_wireframe: determine whether to render wireframe of the mesh
-        :param wireframe_radius: wireframe line radius
+        :param wireframe_width: wireframe line width
         :param wireframe_color: wireframe color, uses triangle/group colors when not set
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
@@ -856,14 +853,13 @@ class Primitives(_Base, _FocusMixin):
         *,
         vertices: list[float],
         indices: list[int],
-        line_colors: list[ColorT] | None = None,
         line_groups: list[int] | None = None,
         group_colors: dict[int, ColorT] | None = None,
         group_tooltips: dict[int, str] | None = None,
-        group_radius: dict[int, float] | None = None,
+        group_width: dict[int, float] | None = None,
         tooltip: str | None = None,
         color: ColorT | None = None,
-        line_radius: float | None = 1.0,
+        width: float | None = 1.0,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Primitives:
@@ -871,14 +867,13 @@ class Primitives(_Base, _FocusMixin):
         Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
         :param vertices: 3N collection of vertices
         :param indices: 2N collection of indices
-        :param line_colors: color value of each line
         :param line_groups: group number for each line
         :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
         :param group_tooltips: mapping of group number to optional hover tooltip
-        :param group_radius: mapping of group number to optional line radius
+        :param group_width: mapping of group number to optional line width
         :param tooltip: tooltip, assigned group_tooltips take precedence
         :param color: default color of tre lines
-        :param line_radius: line radius
+        :param width: line width
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -888,35 +883,31 @@ class Primitives(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
-    def line(
+    def tube(
         self,
         *,
         start: PrimitivePositionT,
         end: PrimitivePositionT,
-        thickness: float | None = 0.05,
-        dash_start: float | None = None,
+        radius: float | None = 0.05,
         dash_length: float | None = None,
-        gap_length: float | None = None,
         color: ColorT | None = None,
         tooltip: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Primitives:
         """
-        Defines a line, connecting a start and an end point.
+        Defines a tube (3D cylinder), connecting a start and an end point.
         :param start: origin coordinates
         :param end: destination coordinates
-        :param thickness: thickness of this line
-        :param dash_start: offset along this line until the 1st dash is drawn
+        :param radius: tube radius (in Angstroms)
         :param dash_length: length of each dash
-        :param gap_length: length of each gap that will follow each completed dash
-        :param color: color of the line
-        :param tooltip: tooltip to show when hovering the line
+        :param color: color of the tube
+        :param tooltip: tooltip to show when hovering the tube
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
-        params = make_params(LineParams, {"kind": "line", **locals()})
+        params = make_params(TubeParams, {"kind": "tube", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
@@ -926,13 +917,11 @@ class Primitives(_Base, _FocusMixin):
         *,
         start: PrimitivePositionT,
         end: PrimitivePositionT,
-        thickness: float | None = 0.01,
-        dash_start: float | None = 0.0,
+        radius: float | None = 0.01,
         dash_length: float | None = 0.05,
-        gap_length: float | None = 0.05,
         color: ColorT | None = None,
         label_template: str | None = "{{distance}}",
-        label_size: float | Literal["auto"] | None = "auto",
+        label_size: float | None = None,
         label_auto_size_scale: float | None = 0.1,
         label_auto_size_min: float | None = 0.2,
         label_color: ColorT | None = None,
@@ -940,18 +929,16 @@ class Primitives(_Base, _FocusMixin):
         ref: RefT = None,
     ) -> Primitives:
         """
-        Defines a line, connecting a start and an end point.
+        Defines a tube, connecting a start and an end point, with label containing distance between start and end.
         :param start: origin coordinates
         :param end: destination coordinates
-        :param thickness: thickness of this line
-        :param dash_start: offset along this line until the 1st dash is drawn
+        :param radius: tube radius (in Angstroms)
         :param dash_length: length of each dash
-        :param gap_length: length of each gap that will follow each completed dash
-        :param color: color of the line
+        :param color: color of the tube
         :param label_template: template used to construct the label, use {{distance}} as placeholder for the distance value
-        :param label_size: size of the label, auto scales the size by the distance
-        :param label_auto_size_scale: scaling factor when label_size is auto
-        :param label_auto_size_min: minimum size when label_size is auto
+        :param label_size: size of the label; if not provided (None), size will be computed relative to the distance (see label_auto_size_scale, label_auto_size_min)
+        :param label_auto_size_scale: scaling factor when label_size is None
+        :param label_auto_size_min: minimum size when label_size is None
         :param label_color: color of the label
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
@@ -977,7 +964,7 @@ class Primitives(_Base, _FocusMixin):
         Defines a label
         :param position: position coordinates
         :param text: label value
-        :param label_size: size of the label, auto scales the size by the distance
+        :param label_size: size of the label
         :param label_color: color of the label
         :param label_offset: camera-facing offset to prevent overlap with geometry
         :param custom: optional, custom data to attach to this node

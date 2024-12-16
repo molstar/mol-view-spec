@@ -682,19 +682,20 @@ class MeshParams(BaseModel):
     indices: list[int] = Field(
         description="3N length array of indices into vertices that form triangles (t1_1, t1_2, t1_3, ...)"
     )
-    triangle_groups: Optional[list[int]] = Field(description="Assign a number to each triangle to group them.")
+    triangle_groups: Optional[list[int]] = Field(
+        description="Assign a number to each triangle to group them. If not set, each triangle is considered a separate group."
+    )
     group_colors: Optional[Mapping[int, ColorT]] = Field(
-        description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over triangle_colors."
+        description="Assign a color to each group. If not assigned, default primitives group color is used."
     )
     group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
-    triangle_colors: Optional[list[ColorT]] = Field(description="Assign a color to each triangle.")
     tooltip: Optional[str] = Field(
         description="Tooltip shown when hovering over the mesh. Assigned group_tooltips take precedence."
     )
     color: Optional[ColorT] = Field(description="Default color of the triangles.")
     show_triangles: Optional[bool] = Field(description="Determine whether to render triangles of the mesh")
     show_wireframe: Optional[bool] = Field(description="Determine whether to render wireframe of the mesh")
-    wireframe_radius: Optional[float] = Field(description="Wireframe line radius")
+    wireframe_width: Optional[float] = Field(description="Wireframe line width")
     wireframe_color: Optional[ColorT] = Field(description="Wireframe color, uses triangle/group colors when not set")
 
 
@@ -713,36 +714,35 @@ class LinesParams(BaseModel):
         description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over line_colors."
     )
     group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
-    group_radius: Optional[Mapping[int, float]] = Field(
-        description="Assign an optional radius to each group. Take precenence over line_radius."
+    group_width: Optional[Mapping[int, float]] = Field(
+        description="Assign an optional line width to each group. Take precedence over `width`."
     )
-    line_colors: Optional[list[ColorT]] = Field(description="Assign a color to each line.")
     tooltip: Optional[str] = Field(
         description="Tooltip shown when hovering over the lines. Assigned group_tooltips take precedence."
     )
-    line_radius: Optional[float] = Field(description="Line radius")
+    width: Optional[float] = Field(description="Line width")
     color: Optional[ColorT] = Field(description="Default color of the lines.")
 
 
-class _LineParamsBase(BaseModel):
-    start: PrimitivePositionT = Field(description="Start of this line.")
-    end: PrimitivePositionT = Field(description="End of this line.")
-    thickness: Optional[float] = Field(description="Thickness of this line.")
+class _TubeParamsBase(BaseModel):
+    start: PrimitivePositionT = Field(description="Start of this tube.")
+    end: PrimitivePositionT = Field(description="End of this tube.")
+    radius: Optional[float] = Field(description="Tube radius (in Angstroms).")
     dash_length: Optional[float] = Field(description="Length of each dash.")
-    # NOTE: this is currently not supported by Mol*, but can add it later if needed.
+    color: Optional[ColorT] = Field(
+        description="Color of the tube. If not specified, the primitives group color is used."
+    )
+    # NOTE: this is currently not supported by Mol*, but can add it later if needed:
     # dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
     # gap_length: Optional[float] = Field(description="Length of optional gaps between dashes. Set to 0 for solid line.")
-    color: Optional[ColorT] = Field(
-        description="Color of the line. If not specified, the primitives group color is used."
-    )
 
 
-class LineParams(_LineParamsBase):
-    kind: Literal["line"] = "line"
-    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the line.")
+class TubeParams(_TubeParamsBase):
+    kind: Literal["tube"] = "tube"
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the tube.")
 
 
-class DistanceMeasurementParams(_LineParamsBase):
+class DistanceMeasurementParams(_TubeParamsBase):
     kind: Literal["distance_measurement"] = "distance_measurement"
     label_template: Optional[str] = Field(
         description="Template used to construct the label. Use {{distance}} as placeholder for the distance."
@@ -755,7 +755,7 @@ class DistanceMeasurementParams(_LineParamsBase):
     label_color: Optional[ColorT] = Field(description="Color of the label.")
 
 
-class PrimitiveLabelParams(_LineParamsBase):
+class PrimitiveLabelParams(BaseModel):
     kind: Literal["label"] = "label"
     position: PrimitivePositionT = Field(description="Position of this label.")
     text: str = Field(default="The label.")
@@ -770,7 +770,7 @@ class PlaneParams(BaseModel):
     normal: Vec3[float] = Field(description="Normal vector of plane.")
 
 
-PrimitiveParamsT = MeshParams | LinesParams | LineParams | DistanceMeasurementParams | PlaneParams
+PrimitiveParamsT = MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | PlaneParams
 
 
 class PrimitivesFromUriParams(BaseModel):
