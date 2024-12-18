@@ -502,7 +502,7 @@ class ComponentInlineParams(BaseModel):
     Selection based on function arguments.
     """
 
-    selector: Union[ComponentSelectorT, ComponentExpression, list[ComponentExpression]] = Field(
+    selector: Optional[Union[ComponentSelectorT, ComponentExpression, list[ComponentExpression]]] = Field(
         description="Describes one or more selections or one of the enumerated selectors."
     )
 
@@ -714,7 +714,7 @@ class LinesParams(BaseModel):
         description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over line_colors."
     )
     group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
-    group_width: Optional[Mapping[int, float]] = Field(
+    group_widths: Optional[Mapping[int, float]] = Field(
         description="Assign an optional line width to each group. Take precedence over `width`."
     )
     tooltip: Optional[str] = Field(
