@@ -33,7 +33,6 @@ from molviewspec.nodes import (
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
-    LineParams,
     LinesParams,
     Mat4,
     MeshParams,
@@ -58,6 +57,7 @@ from molviewspec.nodes import (
     TooltipFromUriParams,
     TooltipInlineParams,
     TransformParams,
+    TubeParams,
     Vec3,
 )
 from molviewspec.utils import make_params
@@ -128,13 +128,12 @@ class _PrimitivesMixin(_BuilderProtocol):
         """
         Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
         shared options (color, opacity etc.).
-        :param color: default color
-        :param label_color: default label color
-        :param tooltip: default tooltip
-        :param opacity: default primitive opacity
-        :param label_opacity: default label opacity
+        :param color: default color for primitives in this group (default: "white")
+        :param label_color: default label color for primitives in this group (default: "white")
+        :param tooltip: default tooltip for primitives in this group (default: no tooltip)
+        :param opacity: opacity of primitive geometry in this group (default: 1)
+        :param label_opacity: opacity of primitive labels in this group (default: 1)
         :param instances: instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices
-        :return: a builder for geometric primitives
         """
         params = make_params(PrimitivesParams, locals())
         node = Node(kind="primitives", params=params)
@@ -151,8 +150,8 @@ class _PrimitivesMixin(_BuilderProtocol):
         """
         Allows the definition of a (group of) geometric primitives provided dynamically.
         :param uri: location of the resource
-        :param format: format of the data
-        :param references: optional list of nodes the referenced by the dat
+        :param format: list of nodes the data are referencing
+        :param references: list of nodes the data are referencing (default: [])
         :return: current builder node
         """
         params = make_params(PrimitivesFromUriParams, locals())
@@ -173,8 +172,8 @@ class _FocusMixin(_BuilderProtocol):
     ) -> Self:
         """
         Focus on this structure or component.
-        :param direction: the direction from which to look at this component
-        :param up: where is up relative to the view direction
+        :param direction: the direction from which to look at this component (default: (0, 0, -1))
+        :param up: where is up relative to the view direction (default: (0, 1, 0))
         :param radius: radius of the focused sphere (overrides `radius_factor` and `radius_extra`)
         :param radius_factor: radius of the focused sphere relative to the radius of parent component (default: 1); focused radius = component_radius * radius_factor + radius_extent
         :param radius_extent: addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0); focused radius = component_radius * radius_factor + radius_extent
@@ -277,13 +276,13 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         *,
         target: Vec3[float],
         position: Vec3[float],
-        up: Vec3[float] | None = (0, 1, 0),
+        up: Vec3[float] | None = None,
     ):
         """
         Manually position the camera.
         :param target: what to look at
         :param position: the position of the camera
-        :param up: controls the rotation around the vector between target and position
+        :param up: controls the rotation around the vector between target and position (default: (0, 1, 0))
         :return: this builder
         """
         params = make_params(CameraParams, locals())
@@ -291,7 +290,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         self._add_child(node)
         return self
 
-    def canvas(self, *, background_color: ColorT | None = None) -> Root:
+    def canvas(self, *, background_color: ColorT) -> Root:
         """
         Customize canvas properties such as background color.
         :param background_color: desired background color, either as SVG color name or hex code
@@ -348,9 +347,9 @@ class Parse(_Base):
     ) -> Structure:
         """
         Create a structure for the deposited coordinates.
-        :param model_index: 0-based model index in case multiple NMR frames are present
-        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
-        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
         :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="model")
@@ -369,10 +368,10 @@ class Parse(_Base):
     ) -> Structure:
         """
         Create an assembly structure.
-        :param assembly_id: Use the name to specify which assembly to load
-        :param model_index: 0-based model index in case multiple NMR frames are present
-        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
-        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        :param assembly_id: Use the name to specify which assembly to load (default: load the first assembly)
+        :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
         :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="assembly")
@@ -383,8 +382,8 @@ class Parse(_Base):
     def symmetry_structure(
         self,
         *,
-        ijk_min: Vec3[int] | None = (-1, -1, -1),
-        ijk_max: Vec3[int] | None = (1, 1, 1),
+        ijk_min: Vec3[int] | None = None,
+        ijk_max: Vec3[int] | None = None,
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
@@ -392,11 +391,11 @@ class Parse(_Base):
     ) -> Structure:
         """
         Create symmetry structure for a given range of Miller indices.
-        :param ijk_min: Bottom-left Miller indices
-        :param ijk_max: Top-right Miller indices
-        :param model_index: 0-based model index in case multiple NMR frames are present
-        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
-        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        :param ijk_min: Bottom-left Miller indices (default: (-1, -1, -1))
+        :param ijk_max: Top-right Miller indices (default: (1, 1, 1))
+        :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
         :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="symmetry")
@@ -407,7 +406,7 @@ class Parse(_Base):
     def symmetry_mates_structure(
         self,
         *,
-        radius: float | None = 5.0,
+        radius: float | None = None,
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
@@ -415,9 +414,10 @@ class Parse(_Base):
     ) -> Structure:
         """
         Create structure of symmetry mates.
-        :param radius: Radius of symmetry partners to include
-        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present
-        :param block_header: Reference a specific mmCIF or SDF data block by its block header
+        :param radius: Radius of symmetry partners to include (default: 5)
+        :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
+        :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
+        :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
         :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="symmetry_mates")
@@ -468,10 +468,10 @@ class Structure(_Base, _PrimitivesMixin):
         Define a new component/selection for the given structure by fetching additional data from a resource.
         :param uri: resource location
         :param format: format ('cif', 'bcif', 'json') of the content
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the component identifier (default: "component")
+        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
+        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :param schema: granularity/type of the selection
         :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
         :param custom: optional, custom data to attach to this node
@@ -499,10 +499,10 @@ class Structure(_Base, _PrimitivesMixin):
     ) -> Component:
         """
         Define a new component/selection for the given structure by using categories from the source file.
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the component identifier (default: "component")
+        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
+        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :param schema: granularity/type of the selection
         :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
         :param custom: optional, custom data to attach to this node
@@ -531,10 +531,10 @@ class Structure(_Base, _PrimitivesMixin):
         Define a new label for the given structure by fetching additional data from a resource.
         :param uri: resource location
         :param format: format ('cif', 'bcif', 'json') of the content
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the label text (default: "label")
+        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
+        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :param schema: granularity/type of the selection
         :return: this builder
         """
@@ -554,10 +554,10 @@ class Structure(_Base, _PrimitivesMixin):
     ) -> Structure:
         """
         Define a new label for the given structure by fetching additional data from the source file.
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the label text (default: "label")
+        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
+        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :param schema: granularity/type of the selection
         :return: this builder
         """
@@ -581,10 +581,10 @@ class Structure(_Base, _PrimitivesMixin):
         Define a new tooltip for the given structure by fetching additional data from a resource.
         :param uri: resource location
         :param format: format ('cif', 'bcif', 'json') of the content
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the tooltip text (default: "tooltip")
+        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
+        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :param schema: granularity/type of the selection
         :return: this builder
         """
@@ -604,10 +604,10 @@ class Structure(_Base, _PrimitivesMixin):
     ) -> Structure:
         """
         Define a new tooltip for the given structure by fetching additional data from the source file.
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the tooltip text (default: "tooltip")
+        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
+        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :param schema: granularity/type of the selection
         :return: this builder
         """
@@ -626,8 +626,8 @@ class Structure(_Base, _PrimitivesMixin):
     ) -> Structure:
         """
         Transform a structure by applying a rotation matrix and/or translation vector.
-        :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left
-        :param translation: 3d vector describing the translation
+        :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
+        :param translation: 3d vector describing the translation (default: (0, 0, 0))
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -716,10 +716,10 @@ class Representation(_Base):
         """
         Use a custom category from the source file to define colors of this representation.
         :param schema: granularity/type of the selection
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
+        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
+        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :return: this builder
         """
         params = make_params(ColorFromSourceParams, locals())
@@ -732,7 +732,7 @@ class Representation(_Base):
         *,
         schema: SchemaT,
         uri: str,
-        format: str,
+        format: SchemaFormatT,
         category_name: str | None = None,
         field_name: str | None = None,
         block_header: str | None = None,
@@ -743,10 +743,10 @@ class Representation(_Base):
         :param schema: granularity/type of the selection
         :param uri: resource location
         :param format: format ('cif', 'bcif', 'json') of the content
-        :param category_name: only applies when format is 'cif' or 'bcif'
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the desired value (color/label/tooltip/component...); the default value is 'color'/'label'/'tooltip'/'component' depending on the node kind
-        :param block_header: only applies when format is 'cif' or 'bcif'
-        :param block_index: only applies when format is 'cif' or 'bcif'
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
+        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
+        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :return: this builder
         """
         params = make_params(ColorFromUriParams, locals())
@@ -758,13 +758,13 @@ class Representation(_Base):
         self,
         *,
         color: ColorT,
-        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
+        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
         custom: CustomT = None,
     ) -> Representation:
         """
         Customize the color of this representation.
         :param color: color using SVG color names or RGB hex code
-        :param selector: optional selector, defaults to applying the color to the whole representation
+        :param selector: optional selector, defaults to applying the color to the whole representation (default: "all")
         :param custom: optional, custom data to attach to this node
         :return: this builder
         """
@@ -815,15 +815,14 @@ class Primitives(_Base, _FocusMixin):
         *,
         vertices: list[float],
         indices: list[int],
-        triangle_colors: list[ColorT] | None = None,
         triangle_groups: list[int] | None = None,
         group_colors: dict[int, ColorT] | None = None,
         group_tooltips: dict[int, str] | None = None,
-        tooltip: str | None = None,
         color: ColorT | None = None,
-        show_triangles: bool | None = True,
-        show_wireframe: bool | None = False,
-        wireframe_radius: float | None = 1.0,
+        tooltip: str | None = None,
+        show_triangles: bool | None = None,
+        show_wireframe: bool | None = None,
+        wireframe_width: float | None = None,
         wireframe_color: ColorT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
@@ -832,16 +831,15 @@ class Primitives(_Base, _FocusMixin):
         Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
         :param vertices: collection of vertices
         :param indices: collection of indices
-        :param triangle_colors: color value of each triangle
-        :param triangle_groups: group number for each triangle
-        :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
-        :param group_tooltips: mapping of group number to optional hover tooltip
-        :param tooltip: tooltip, assigned group_tooltips take precedence
-        :param color: default color of triangle faces
-        :param show_triangles: determine whether to render triangles of the mesh
-        :param show_wireframe: determine whether to render wireframe of the mesh
-        :param wireframe_radius: wireframe line radius
-        :param wireframe_color: wireframe color, uses triangle/group colors when not set
+        :param triangle_groups: group number for each triangle (default: each triangle is considered a separate group (triangle i = group i))
+        :param group_colors: assign a color to each group. Where not assigned, uses `color` (default: {})
+        :param group_tooltips: assign a tooltip to each group. Where not assigned, uses `tooltip` (default: {})
+        :param color: color of the triangles and wireframe. Can be overwritten by `group_colors`. (default: use the parent primitives group `color`)
+        :param tooltip: tooltip shown when hovering over. Can be overwritten by `group_tooltips`. (default: uses the parent primitives group `tooltip`)
+        :param show_triangles: determine whether to render triangles of the mesh (default: true)
+        :param show_wireframe: determine whether to render wireframe of the mesh (default: false)
+        :param wireframe_width: wireframe line width (in screen-space units) (default: 1)
+        :param wireframe_color: wireframe color (default: use `group_colors`)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -856,29 +854,27 @@ class Primitives(_Base, _FocusMixin):
         *,
         vertices: list[float],
         indices: list[int],
-        line_colors: list[ColorT] | None = None,
         line_groups: list[int] | None = None,
         group_colors: dict[int, ColorT] | None = None,
         group_tooltips: dict[int, str] | None = None,
-        group_radius: dict[int, float] | None = None,
+        group_widths: dict[int, float] | None = None,
         tooltip: str | None = None,
         color: ColorT | None = None,
-        line_radius: float | None = 1.0,
+        width: float | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Primitives:
         """
-        Construct custom meshes/shapes in a low-level fashion by providing vertices and indices.
+        Construct custom set of lines in a low-level fashion by providing vertices and indices.
         :param vertices: 3N collection of vertices
         :param indices: 2N collection of indices
-        :param line_colors: color value of each line
-        :param line_groups: group number for each line
-        :param group_colors: mapping of group number to color, if not specified, use primitive group global option color
-        :param group_tooltips: mapping of group number to optional hover tooltip
-        :param group_radius: mapping of group number to optional line radius
-        :param tooltip: tooltip, assigned group_tooltips take precedence
-        :param color: default color of tre lines
-        :param line_radius: line radius
+        :param line_groups: assign a number to each triangle to group them (default: each line is considered a separate group (line i = group i)
+        :param group_colors: assign a color to each group. Where not assigned, uses `color` (default: {})
+        :param group_tooltips: assign a tooltip to each group. Where not assigned, uses `tooltip` (default: {})
+        :param group_widths: assign a line width to each group. Where not assigned, uses `width` (default: {})
+        :param tooltip: tooltip shown when hovering over. Can be overwritten by `group_tooltips`. (default: use the parent primitives group `tooltip`)
+        :param color: color of the lines. Can be overwritten by `group_colors`. (default: use the parent primitives group `color`)
+        :param width: line width (in screen-space units). Can be overwritten by `group_widths` (default: 1)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -888,35 +884,31 @@ class Primitives(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
-    def line(
+    def tube(
         self,
         *,
         start: PrimitivePositionT,
         end: PrimitivePositionT,
-        thickness: float | None = 0.05,
-        dash_start: float | None = None,
+        radius: float | None = None,
         dash_length: float | None = None,
-        gap_length: float | None = None,
         color: ColorT | None = None,
         tooltip: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Primitives:
         """
-        Defines a line, connecting a start and an end point.
+        Defines a tube (3D cylinder), connecting a start and an end point.
         :param start: origin coordinates
         :param end: destination coordinates
-        :param thickness: thickness of this line
-        :param dash_start: offset along this line until the 1st dash is drawn
-        :param dash_length: length of each dash
-        :param gap_length: length of each gap that will follow each completed dash
-        :param color: color of the line
-        :param tooltip: tooltip to show when hovering the line
+        :param radius: tube radius (in Angstroms) (default: 0.05)
+        :param dash_length: length of each dash and gap between dashes (default: draw full line)
+        :param color: color of the tube (default: use the parent primitives group `color`)
+        :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
-        params = make_params(LineParams, {"kind": "line", **locals()})
+        params = make_params(TubeParams, {"kind": "tube", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
@@ -926,33 +918,29 @@ class Primitives(_Base, _FocusMixin):
         *,
         start: PrimitivePositionT,
         end: PrimitivePositionT,
-        thickness: float | None = 0.01,
-        dash_start: float | None = 0.0,
-        dash_length: float | None = 0.05,
-        gap_length: float | None = 0.05,
+        radius: float | None = None,
+        dash_length: float | None = None,
         color: ColorT | None = None,
-        label_template: str | None = "{{distance}}",
-        label_size: float | Literal["auto"] | None = "auto",
-        label_auto_size_scale: float | None = 0.1,
-        label_auto_size_min: float | None = 0.2,
+        label_template: str | None = None,
+        label_size: float | None = None,
+        label_auto_size_scale: float | None = None,
+        label_auto_size_min: float | None = None,
         label_color: ColorT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Primitives:
         """
-        Defines a line, connecting a start and an end point.
+        Defines a tube, connecting a start and an end point, with label containing distance between start and end.
         :param start: origin coordinates
         :param end: destination coordinates
-        :param thickness: thickness of this line
-        :param dash_start: offset along this line until the 1st dash is drawn
-        :param dash_length: length of each dash
-        :param gap_length: length of each gap that will follow each completed dash
-        :param color: color of the line
-        :param label_template: template used to construct the label, use {{distance}} as placeholder for the distance value
-        :param label_size: size of the label, auto scales the size by the distance
-        :param label_auto_size_scale: scaling factor when label_size is auto
-        :param label_auto_size_min: minimum size when label_size is auto
-        :param label_color: color of the label
+        :param radius: tube radius (in Angstroms) (default: 0.05)
+        :param dash_length: length of each dash and gap between dashes (default: draw full line)
+        :param color: color of the tube (default: use the parent primitives group `color`)
+        :param label_template: template used to construct the label, use {{distance}} as placeholder for the distance value (default: "{{distance}}")
+        :param label_size: size of the label (text height in Angstroms) (default: size will be relative to the distance (see label_auto_size_scale, label_auto_size_min))
+        :param label_auto_size_scale: scaling factor for relative size when label_size is None (default: 0.1)
+        :param label_auto_size_min: scaling factor for relative size when label_size is None (default: 0)
+        :param label_color: color of the label (default: use the parent primitives group `label_color`)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -967,19 +955,19 @@ class Primitives(_Base, _FocusMixin):
         *,
         position: PrimitivePositionT,
         text: str,
-        label_size: float | None = 1,
+        label_size: float | None = None,
         label_color: ColorT | None = None,
-        label_offset: float | None = 1.0,
+        label_offset: float | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Primitives:
         """
-        Defines a label
+        Defines a label.
         :param position: position coordinates
         :param text: label value
-        :param label_size: size of the label, auto scales the size by the distance
-        :param label_color: color of the label
-        :param label_offset: camera-facing offset to prevent overlap with geometry
+        :param label_size: size of the label (text height in Angstroms) (default: 1)
+        :param label_color: color of the label (default: use the parent primitives group `label_color`)
+        :param label_offset: camera-facing offset to prevent overlap with geometry (default: 0)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
