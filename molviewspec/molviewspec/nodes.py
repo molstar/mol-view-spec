@@ -5,7 +5,7 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Literal, Mapping, Optional, Tuple, TypeVar, Union
+from typing import Any, Dict, Literal, Mapping, Optional, Tuple, Type, TypeVar, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -436,6 +436,29 @@ class RepresentationParams(BaseModel):
     """
 
     type: RepresentationTypeT = Field(description="Representation type, i.e. cartoon, ball-and-stick, etc.")
+
+
+class CartoonParams(RepresentationParams):
+    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+    tubular_helices: Optional[bool] = Field(description="Simplify corkscrew helices to tubes.")
+    # TODO support for variable size, e.g. based on b-factors?
+
+
+class BallAndStickParams(RepresentationParams):
+    ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
+    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+
+
+class SurfaceParams(RepresentationParams):
+    ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
+    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+
+
+RepresentationTypeParams: Dict[RepresentationTypeT, Type[Union[CartoonParams, BallAndStickParams, SurfaceParams]]] = {
+    "cartoon": CartoonParams,
+    "ball_and_stick": BallAndStickParams,
+    "surface": SurfaceParams,
+}
 
 
 SchemaT = Literal[

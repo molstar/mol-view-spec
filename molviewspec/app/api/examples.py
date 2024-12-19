@@ -728,6 +728,21 @@ async def refs_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/repr-params")
+async def repr_params_example() -> MVSResponse:
+    """
+    Individual representations (cartoon, ball-and-stick, surface) can be further customized. The corresponding builder
+    function exposes additional method arguments depending on the chosen representation type.
+    """
+    builder = create_builder()
+    component = (
+        builder.download(url=_url_for_mmcif("4hhb")).parse(format="mmcif").model_structure(ref="structure").component()
+    )
+    component.representation(type="cartoon", size_factor=1.5, tubular_helices=True)
+    component.representation(type="surface", ignore_hydrogens=True).opacity(opacity=0.8)
+    return PlainTextResponse(builder.get_state())
+
+
 @router.get("/primitives/cube")
 async def primitives_cube_example() -> MVSResponse:
     """
