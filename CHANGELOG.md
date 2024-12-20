@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file, following t
 - Breaking: Renamed geometrical primitive `line` to `tube`
 - Breaking: Change multiple geometrical primitive parameters
 - Multi-state data model tweaks
+- Support for representation-specific parameters (customize presentation visuals)
 
 
 ## [v1.1.0] - 2024-12-09

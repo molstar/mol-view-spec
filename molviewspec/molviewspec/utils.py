@@ -11,15 +11,18 @@ def make_params(params_type: Type[TParams], values=None, /, **more_values: objec
     if values is None:
         values = {}
     result = {}
+    consumed = set()
 
     # propagate custom properties
     if values:
         custom_values = values.get("custom")
         if custom_values is not None:
             result["custom"] = custom_values
+            consumed.add("custom")
         ref = values.get("ref")
         if ref is not None:
             result["ref"] = ref
+            consumed.add("ref")
 
     for field in params_type.__fields__.values():
         # must use alias here to properly resolve goodies like `schema_`
@@ -27,10 +30,17 @@ def make_params(params_type: Type[TParams], values=None, /, **more_values: objec
 
         if more_values.get(key) is not None:
             result[key] = more_values[key]
+            consumed.add(key)
         elif values.get(key) is not None:
             result[key] = values[key]
+            consumed.add(key)
         elif field.default is not None:  # currently not used
             result[key] = field.default
+            consumed.add(key)
+
+    non_model_keys = set(more_values.keys()) - consumed
+    if non_model_keys:
+        raise ValueError(f"Encountered unknown attribute on {params_type}: {non_model_keys}")
 
     return result  # type: ignore
 

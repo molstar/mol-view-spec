@@ -438,6 +438,28 @@ class RepresentationParams(BaseModel):
     type: RepresentationTypeT = Field(description="Representation type, i.e. cartoon, ball-and-stick, etc.")
 
 
+class CartoonParams(RepresentationParams):
+    type: Literal["cartoon"] = "cartoon"
+    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+    tubular_helices: Optional[bool] = Field(description="Simplify corkscrew helices to tubes.")
+    # TODO support for variable size, e.g. based on b-factors?
+
+
+class BallAndStickParams(RepresentationParams):
+    type: Literal["ball_and_stick"] = "ball_and_stick"
+    ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
+    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+
+
+class SurfaceParams(RepresentationParams):
+    type: Literal["surface"] = "surface"
+    ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
+    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+
+
+RepresentationTypeParams = {t.__fields__["type"].default: t for t in (CartoonParams, BallAndStickParams, SurfaceParams)}
+
+
 SchemaT = Literal[
     "whole_structure",
     "entity",

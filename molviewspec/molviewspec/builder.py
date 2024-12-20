@@ -8,7 +8,7 @@ from __future__ import annotations
 import math
 import os
 from abc import ABC, abstractmethod
-from typing import Literal, Self, Sequence
+from typing import Any, Literal, Self, Sequence, overload
 
 from pydantic import BaseModel, PrivateAttr
 
@@ -45,7 +45,7 @@ from molviewspec.nodes import (
     PrimitivesFromUriParams,
     PrimitivesParams,
     RefT,
-    RepresentationParams,
+    RepresentationTypeParams,
     RepresentationTypeT,
     SchemaFormatT,
     SchemaT,
@@ -78,17 +78,14 @@ class _BuilderProtocol(ABC):
 
     @property
     @abstractmethod
-    def _root(self) -> Root:
-        ...
+    def _root(self) -> Root: ...
 
     @property
     @abstractmethod
-    def _node(self) -> Node:
-        ...
+    def _node(self) -> Node: ...
 
     @abstractmethod
-    def _add_child(self, node: Node) -> None:
-        ...
+    def _add_child(self, node: Node) -> None: ...
 
 
 class _Base(BaseModel, _BuilderProtocol):
@@ -661,17 +658,82 @@ class Component(_Base, _FocusMixin):
     Builder step with operations relevant for a particular component.
     """
 
+    @overload
     def representation(
-        self, *, type: RepresentationTypeT = "cartoon", custom: CustomT = None, ref: RefT = None
+        self,
+        *,
+        type: Literal["cartoon"],
+        size_factor: float = None,
+        tubular_helices: bool = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a cartoon representation for this component.
+        :param type: the type of this representation ('cartoon')
+        :param size_factor: adjust the scale of the visuals (relative to 1.0)
+        :param tubular_helices: simplify helices to tubes
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def representation(
+        self,
+        *,
+        type: Literal["ball_and_stick"],
+        ignore_hydrogens: bool = None,
+        size_factor: float = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a ball-and-stick representation for this component.
+        :param type: the type of this representation ('ball_and_stick')
+        :param ignore_hydrogens: draw hydrogen atoms?
+        :param size_factor: adjust the scale of the visuals (relative to 1.0)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def representation(
+        self,
+        *,
+        type: Literal["surface"],
+        ignore_hydrogens: bool = None,
+        size_factor: float = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a surface representation for this component.
+        :param type: the type of this representation ('surface')
+        :param ignore_hydrogens: draw hydrogen atoms?
+        :param size_factor: adjust the scale of the visuals (relative to 1.0)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    def representation(
+        self, *, type: RepresentationTypeT = "cartoon", custom: CustomT = None, ref: RefT = None, **kwargs: Any
     ) -> Representation:
         """
         Add a representation for this component.
         :param type: the type of representation, defaults to 'cartoon'
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
+        :param kwargs: optional, representation-specific params
         :return: a builder that handles operations at representation level
         """
-        params = make_params(RepresentationParams, locals())
+        params_class = RepresentationTypeParams.get(type)
+        params = make_params(params_class, locals(), **kwargs)
         node = Node(kind="representation", params=params)
         self._add_child(node)
         return Representation(node=node, root=self._root)
