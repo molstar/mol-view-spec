@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file, following t
   - Can be on root
   - Focus node radius, radius_factor, radius_extent parameters
 - Breaking: Change `transparency` to `opacity`
+- Breaking: Renamed geometrical primitive `line` to `tube`
+- Breaking: Change multiple geometrical primitive parameters
 - Multi-state data model tweaks
 
 

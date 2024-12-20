@@ -746,10 +746,10 @@ async def repr_params_example() -> MVSResponse:
 @router.get("/primitives/cube")
 async def primitives_cube_example() -> MVSResponse:
     """
-    Let's draw a cube and 3 lines.
+    Draws a cube and axis labels.
     """
     builder = create_builder()
-    builder.primitives().mesh(
+    builder.primitives(tooltip="Primitives", color="magenta").mesh(
         vertices=[
             0.0,
             0.0,
@@ -821,33 +821,28 @@ async def primitives_cube_example() -> MVSResponse:
             5,
         ],
         triangle_groups=[0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
-        group_colors={0: "red", 1: "green", 2: "blue", 3: "yellow", 4: "magenta", 5: "cyan"},
+        group_colors={
+            0: "red",
+            1: "green",
+            2: "blue",
+            3: "yellow",
+            4: "cyan",
+        },  # Let group 5 fall back to parent color (magenta)
+        # # Optionally, use implicit grouping and color triangles individually:
+        # triangle_groups=None,
+        # group_colors={0: "red", 1: "red", 2: "green", 3: "green", 4: "blue", 5: "blue", 6: "yellow", 7: "yellow", 8: "cyan", 9: "cyan"},
         group_tooltips={
             0: "### Side\nbottom",
             1: "### Side\ntop",
             2: "### Side\nfront",
             3: "### Side\nback",
             4: "### Side\nleft",
-        },  # , 5: "### Side\nright"},
+            # 5: "### Side\nright",
+        },
         tooltip="Cube",
         show_wireframe=True,
-        wireframe_radius=2,
+        wireframe_width=2,
         wireframe_color="black",
-        # Optionally, instead of groups, triangle colors can be specified directly
-        # triangle_colors=[
-        #     "#FF0000",
-        #     "#FF0000",  # bottom: red
-        #     "#00FF00",
-        #     "#00FF00",  # top: green
-        #     "#0000FF",
-        #     "#0000FF",  # front: blue
-        #     "#FFFF00",
-        #     "#FFFF00",  # back: yellow
-        #     "#FF00FF",
-        #     "#FF00FF",  # left: magenta
-        #     "#00FFFF",
-        #     "#00FFFF",  # right: cyan
-        # ],
     )
     # let's throw in some lines that intersect each face in the middle
     (
@@ -859,11 +854,11 @@ async def primitives_cube_example() -> MVSResponse:
             label_opacity=0.6,
         )
         # chain primitives to create desired visuals
-        .line(start=(-0.5, 0.5, 0.5), end=(1.5, 0.5, 0.5), thickness=0.05, color="red", tooltip="### Axis\nX")
+        .tube(start=(-0.5, 0.5, 0.5), end=(1.5, 0.5, 0.5), radius=0.05, color="red", tooltip="### Axis\nX")
         .label(position=(-0.5, 0.5, 0.5), text="X", label_size=0.33, label_color="red")
-        .line(start=(0.5, -0.5, 0.5), end=(0.5, 1.5, 0.5), thickness=0.05, color="green", tooltip="### Axis\nY")
+        .tube(start=(0.5, -0.5, 0.5), end=(0.5, 1.5, 0.5), radius=0.05, color="green", tooltip="### Axis\nY")
         .label(position=(0.5, -0.5, 0.5), text="Y", label_size=0.33, label_color="green")
-        .line(start=(0.5, 0.5, -0.5), end=(0.5, 0.5, 1.5), thickness=0.05)
+        .tube(start=(0.5, 0.5, -0.5), end=(0.5, 0.5, 1.5), radius=0.05)
         .label(position=(0.5, 0.5, -0.5), text="Z", label_size=0.33)
     )
     return PlainTextResponse(builder.get_state())
@@ -872,18 +867,41 @@ async def primitives_cube_example() -> MVSResponse:
 @router.get("/primitives/lines")
 async def primitives_lines_example() -> MVSResponse:
     """
-    Draws a square
+    Draws a square and a wiggly line
     """
     builder = create_builder()
-    primitives = builder.primitives()
-    (
-        primitives.lines(
-            vertices=[0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0],
-            indices=[0, 1, 1, 2, 2, 3, 3, 0],
-            line_colors=["red", "green", "blue", "black"],
-            line_radius=1.5,
-            tooltip="Square",
-        )
+    primitives = builder.primitives(color="magenta", tooltip="Primitives")
+    primitives.lines(
+        vertices=[0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0],
+        indices=[0, 1, 1, 2, 2, 3, 3, 0],
+        group_colors={0: "red", 1: "green", 2: "blue", 3: "black"},
+        width=1.5,
+        tooltip="Square",
+    )
+    primitives.lines(
+        vertices=[
+            -0.3,
+            0.3,
+            -1.0,
+            0.1,
+            0.7,
+            -0.5,
+            0.5,
+            0.3,
+            0.0,
+            0.9,
+            0.7,
+            0.5,
+            1.3,
+            0.3,
+            1.0,
+        ],
+        indices=[0, 1, 1, 2, 2, 3, 3, 4],
+        line_groups=[0, 0, 1, 1],
+        group_colors={0: "cyan"},  # Let group 1 fall back to "brown"
+        color="brown",
+        width=3,
+        tooltip="Snake",
     )
     return PlainTextResponse(builder.get_state())
 
@@ -891,7 +909,7 @@ async def primitives_lines_example() -> MVSResponse:
 @router.get("/primitives/structure")
 async def primitives_structure_example() -> MVSResponse:
     """
-    Let's draw a cube and 3 lines.
+    Shows a structure with distance measurement between two ligands.
     """
     builder = create_builder()
     structure = builder.download(url=_url_for_mmcif("1tqn")).parse(format="mmcif").model_structure()
@@ -907,7 +925,7 @@ async def primitives_structure_example() -> MVSResponse:
             start=ComponentExpression(auth_seq_id=258),
             end=ComponentExpression(auth_seq_id=508),
             color="red",
-            thickness=0.1,
+            radius=0.1,
             dash_length=0.1,
             label_template="Distance: {{distance}}",
             label_color="red",
@@ -943,7 +961,7 @@ async def primitives_multi_structure_example() -> MVSResponse:
             start=PrimitiveComponentExpressions(structure_ref="X", expressions=[ComponentExpression(auth_seq_id=508)]),
             end=PrimitiveComponentExpressions(structure_ref="Y", expressions=[ComponentExpression(auth_seq_id=200)]),
             color="purple",
-            thickness=1,
+            radius=1,
             dash_length=1,
             label_template="Ligand Distance: {{distance}}",
             label_color="red",
@@ -1066,9 +1084,9 @@ async def basic_primitives_data() -> Response:
         ],
     )
     (
-        builder.line(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A")
-        .line(start=(0, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="green", tooltip="B")
-        .line(start=(1, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="blue")
+        builder.tube(start=(0, 0, 0), end=(1, 0, 0), color="red", tooltip="A")
+        .tube(start=(0, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="green", tooltip="B")
+        .tube(start=(1, 0, 0), end=(0.5, (1 - 0.5**2) ** 0.5, 0), color="blue")
     )
     return JSONResponse(builder.as_data_node())
 
