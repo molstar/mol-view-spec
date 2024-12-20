@@ -736,7 +736,7 @@ async def repr_params_example() -> MVSResponse:
     """
     builder = create_builder()
     component = (
-        builder.download(url=_url_for_mmcif("4hhb")).parse(format="mmcif").model_structure(ref="structure").component()
+        builder.download(url=_url_for_mmcif("1a23")).parse(format="mmcif").model_structure(ref="structure").component()
     )
     component.representation(type="cartoon", size_factor=1.5, tubular_helices=True)
     component.representation(type="surface", ignore_hydrogens=True).opacity(opacity=0.8)
