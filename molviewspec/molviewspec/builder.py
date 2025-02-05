@@ -840,7 +840,7 @@ class Representation(_Base):
     def color(
         self,
         *,
-        color: ColorT,
+        color: ColorT | None = None,
         selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
         custom: CustomT = None,
     ) -> Representation:

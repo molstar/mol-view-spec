@@ -243,10 +243,6 @@ class ComponentExpression(BaseModel):
     Component expressions are used to make selections.
     """
 
-    element_granularity: Optional[Literal["atom", "coarse"]] = Field(
-        description="Determines the element granularity this expression targets"
-    )
-
     label_entity_id: Optional[str] = Field(description="Select an entity by its identifier")
     label_asym_id: Optional[str] = Field(
         description="Select a chain using its standard, programmatically-assigned identifier"
@@ -570,7 +566,7 @@ class ColorInlineParams(ComponentInlineParams):
     Color based on function arguments.
     """
 
-    color: ColorT = Field(description="Color using SVG color names or RGB hex code")
+    color: Optional[ColorT] = Field(description="Color using SVG color names or RGB hex code")
 
 
 class ColorFromUriParams(_DataFromUriParams):

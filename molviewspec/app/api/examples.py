@@ -800,8 +800,12 @@ async def ihm_basic_restraints_example() -> MVSResponse:
     builder = create_builder()
     structure = builder.download(url="https://pdb-ihm.org/cif/8zz1.cif").parse(format="mmcif").model_structure()
 
-    structure.component(selector="coarse").representation(type="spacefill")
-    structure.component(selector="polymer").representation(type="cartoon")
+    structure.component(selector="coarse").representation(type="spacefill").color(
+        custom={"molstar_use_default_coloring": True}
+    )
+    structure.component(selector="polymer").representation(type="cartoon").color(
+        custom={"molstar_use_default_coloring": True}
+    )
 
     # Extracted manually from ihm_cross_link_restraint category of 8zz1.cif
     RESTRAINTS = [
@@ -816,12 +820,8 @@ async def ihm_basic_restraints_example() -> MVSResponse:
     primitives = structure.primitives()
     for e1, a1, s1, e2, a2, s2 in RESTRAINTS:
         primitives.tube(
-            start=ComponentExpression(
-                element_granularity="coarse", label_entity_id=e1, label_asym_id=a1, label_seq_id=s1
-            ),
-            end=ComponentExpression(
-                element_granularity="coarse", label_entity_id=e2, label_asym_id=a2, label_seq_id=s2
-            ),
+            start=ComponentExpression(label_entity_id=e1, label_asym_id=a1, label_seq_id=s1),
+            end=ComponentExpression(label_entity_id=e2, label_asym_id=a2, label_seq_id=s2),
             color="red",
             radius=1,
             dash_length=1,
