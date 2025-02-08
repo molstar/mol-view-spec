@@ -13,6 +13,7 @@ from typing import Any, Literal, Self, Sequence, overload
 from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
+    BoxParams,
     CameraParams,
     CanvasParams,
     ColorFromSourceParams,
@@ -1050,6 +1051,8 @@ class Primitives(_Base, _FocusMixin):
         theta_end: float | None = None,
         color: ColorT | None = None,
         tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Primitives:
         """
         Defines an ellipsis.
@@ -1060,9 +1063,50 @@ class Primitives(_Base, _FocusMixin):
         :param theta_start: start angle in radians (default: 0)
         :param theta_end: end angle in radians (default: 360)
         :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(EllipsisParams, {"kind": "ellipsis", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def box(
+        self,
+        *,
+        center: PrimitivePositionT,
+        extent: Vec3 | None = None,
+        show_faces: bool = True,
+        face_color: ColorT | None = None,
+        show_edges: bool = False,
+        edge_radius: float = 0.1,
+        edge_color: ColorT | None = None,
+        show_wireframe: bool = False,
+        wireframe_color: ColorT | None = None,
+        wireframe_width: float | None = None,
+        tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines a box.
+        :param center: center coordinates
+        :param extent: box extent (half-lengths along each axis)
+        :param show_faces: show box faces
+        :param face_color: color of the box faces
+        :param show_edges: show box edges
+        :param edge_radius: box edge radius
+        :param edge_color: color of the box edges
+        :param show_wireframe: show box wireframe
+        :param wireframe_color: color of the box wireframe
+        :param wireframe_width: box wireframe width
+        :param tooltip: tooltip shown when hovering over
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(BoxParams, {"kind": "box", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self

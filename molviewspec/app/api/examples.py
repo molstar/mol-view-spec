@@ -834,6 +834,34 @@ async def primitives_ellipsis_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/primitives/bounding-box")
+async def primitives_bounding_box_example() -> MVSResponse:
+    """
+    Draws a bounding box around a residue
+    """
+
+    builder = create_builder()
+
+    download = builder.download(url="https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif")
+    structure = download.parse(format="mmcif").model_structure()
+
+    structure.component(selector="ligand").representation(type="ball_and_stick")
+    structure.component(selector="polymer").representation(type="cartoon")
+
+    structure.primitives(opacity=0.55).box(
+        center=ComponentExpression(auth_seq_id=508),
+        extent=(1, 1, 1),
+        show_faces=True,
+        face_color="blue",
+        show_edges=True,
+        edge_color="red",
+        edge_radius=0.1,
+        tooltip="Residue 508, boxed",
+    ).focus()
+
+    return PlainTextResponse(builder.get_state())
+
+
 ##############################################################################
 # meta endpoints
 

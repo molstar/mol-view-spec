@@ -790,14 +790,39 @@ class EllipsisParams(BaseModel):
     kind: Literal["ellipsis"] = "ellipsis"
     color: Optional[ColorT] = Field(description="Default color for the ellipsis.")
     center: PrimitivePositionT = Field(description="The center of the ellipsis.")
-    major_axis: PrimitivePositionT = Field(description="Major axis of this circle. Computed as major_axis - center")
-    minor_axis: PrimitivePositionT = Field(description="Minor axis of this circle. Computed as minor_axis - center")
-    theta_start: Optional[float] = Field(description="Start of the arc. In radians")
-    theta_end: Optional[float] = Field(description="End of the arc. In radians")
+    major_axis: PrimitivePositionT = Field(description="Major axis of this circle. Computed as major_axis - center.")
+    minor_axis: PrimitivePositionT = Field(description="Minor axis of this circle. Computed as minor_axis - center.")
+    theta_start: Optional[float] = Field(description="Start of the arc. In radians.")
+    theta_end: Optional[float] = Field(description="End of the arc. In radians.")
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipsis.")
 
 
-PrimitiveParamsT = MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | EllipsisParams
+class BoxParams(BaseModel):
+    kind: Literal["box"] = "box"
+
+    center: PrimitivePositionT = Field(description="The center of the box.")
+    extent: Optional[Vec3] = Field(
+        description="The width, the height, and the depth of the box. Added to the bounding box determined by the center."
+    )
+
+    show_faces: bool = Field(True, description="Determine whether to render the faces of the box.")
+    face_color: Optional[ColorT] = Field(description="Color of the box faces.")
+
+    show_edges: bool = Field(False, description="Determine whether to render the edges of the box.")
+    edge_radius: Optional[float] = Field(0.1, description="Radius of the box edges. In angstroms.")
+    edge_color: Optional[ColorT] = Field(description="Color of the edges.")
+
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the box.")
+
+    # NOTE: Possible future extensions:
+    # - support box orientation
+    # - support for witewrame box in addition to edges
+    # show_wireframe: bool = Field(False, description="Determine whether to render the wireframe of the box.")
+    # wireframe_color: Optional[ColorT] = Field(description="Wireframe color, uses triangle/group colors when not set")
+    # wireframe_width: Optional[float] = Field(description="Wireframe line width")
+
+
+PrimitiveParamsT = MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | EllipsisParams | BoxParams
 
 
 class PrimitivesFromUriParams(BaseModel):
