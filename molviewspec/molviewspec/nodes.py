@@ -790,8 +790,10 @@ class EllipsisParams(BaseModel):
     kind: Literal["ellipsis"] = "ellipsis"
     color: Optional[ColorT] = Field(description="Default color for the ellipsis.")
     center: PrimitivePositionT = Field(description="The center of the ellipsis.")
-    major_axis: PrimitivePositionT = Field(description="Major axis of this circle. Computed as major_axis - center.")
-    minor_axis: PrimitivePositionT = Field(description="Minor axis of this circle. Computed as minor_axis - center.")
+    major_axis: Optional[Vec3] = Field(description="Major axis of this ellipsis.")
+    minor_axis: Optional[Vec3] = Field(description="Minor axis of this ellipsis.")
+    major_axis_endpoint: Optional[PrimitivePositionT] = Field(description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center.")
+    minor_axis_endpoint: Optional[PrimitivePositionT] = Field(description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center.")
     theta_start: Optional[float] = Field(description="Start of the arc. In radians.")
     theta_end: Optional[float] = Field(description="End of the arc. In radians.")
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipsis.")

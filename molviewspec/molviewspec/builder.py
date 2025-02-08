@@ -1045,8 +1045,10 @@ class Primitives(_Base, _FocusMixin):
         self,
         *,
         center: PrimitivePositionT,
-        major_axis: PrimitivePositionT,
-        minor_axis: PrimitivePositionT,
+        major_axis: Vec3 | None = None,
+        minor_axis: Vec3 | None = None,
+        major_axis_endpoint: PrimitivePositionT | None = None,
+        minor_axis_endpoint: PrimitivePositionT | None = None,
         theta_start: float | None = None,
         theta_end: float | None = None,
         color: ColorT | None = None,
@@ -1060,6 +1062,8 @@ class Primitives(_Base, _FocusMixin):
         :param color: color of the ellipsis (default: use the parent primitives group `color`)
         :param major_axis: major axis coordinates
         :param minor_axis: minor axis coordinates
+        :param major_axis_endpoint: endpoint of the major axis, if specified, `major_axis` is ignored and computed from `center` and `major_axis_endpoint`
+        :param minor_axis_endpoint: endpoint of the minor axis, if specified, `minor_axis` is ignored and computed from `center` and `minor_axis_endpoint`
         :param theta_start: start angle in radians (default: 0)
         :param theta_end: end angle in radians (default: 360)
         :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)

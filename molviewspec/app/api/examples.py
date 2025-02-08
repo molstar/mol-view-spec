@@ -803,8 +803,8 @@ async def primitives_ellipsis_example() -> MVSResponse:
         .ellipsis(
             color="red",
             center=(1, 1, 1),
-            major_axis=(1.5 + 1, 0 + 1, 0 + 1),
-            minor_axis=(0 + 1, 1 + 1, 0 + 1),
+            major_axis=(1.5, 0, 0),
+            minor_axis=(0, 1, 0),
             theta_start=0,
             theta_end=math.pi / 2,
             tooltip="XY",
@@ -812,8 +812,8 @@ async def primitives_ellipsis_example() -> MVSResponse:
         .ellipsis(
             color="green",
             center=(1, 1, 1),
-            major_axis=(1.5 + 1, 0 + 1, 0 + 1),
-            minor_axis=(0 + 1, 0 + 1, 1 + 1),
+            major_axis_endpoint=(1.5 + 1, 0 + 1, 0 + 1),
+            minor_axis_endpoint=(0 + 1, 0 + 1, 1 + 1),
             theta_start=0,
             theta_end=math.pi / 2,
             tooltip="XZ",
@@ -821,8 +821,8 @@ async def primitives_ellipsis_example() -> MVSResponse:
         .ellipsis(
             color="blue",
             center=(1, 1, 1),
-            major_axis=(0 + 1, 1 + 1, 0 + 1),
-            minor_axis=(0 + 1, 0 + 1, 1 + 1),
+            major_axis=(0, 1, 0),
+            minor_axis=(0, 0, 1),
             theta_start=0,
             theta_end=math.pi / 2,
             tooltip="YZ",
