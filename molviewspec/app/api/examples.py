@@ -792,8 +792,8 @@ async def primitives_multi_structure_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
-@router.get("/primitives/2d")
-async def primitives_structure_example() -> MVSResponse:
+@router.get("/primitives/ellipsis")
+async def primitives_ellipsis_example() -> MVSResponse:
     """
     Draws supported 2d primitives
     """
