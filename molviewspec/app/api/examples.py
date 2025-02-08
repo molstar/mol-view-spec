@@ -792,6 +792,48 @@ async def primitives_multi_structure_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/primitives/2d")
+async def primitives_structure_example() -> MVSResponse:
+    """
+    Draws supported 2d primitives
+    """
+    builder = create_builder()
+    (
+        builder.primitives(opacity=0.66)
+        .ellipsis(
+            color="red",
+            center=(1, 1, 1),
+            major_axis=(1.5 + 1, 0 + 1, 0 + 1),
+            minor_axis=(0 + 1, 1 + 1, 0 + 1),
+            theta_start=0,
+            theta_end=math.pi / 2,
+            tooltip="XY",
+        )
+        .ellipsis(
+            color="green",
+            center=(1, 1, 1),
+            major_axis=(1.5 + 1, 0 + 1, 0 + 1),
+            minor_axis=(0 + 1, 0 + 1, 1 + 1),
+            theta_start=0,
+            theta_end=math.pi / 2,
+            tooltip="XZ",
+        )
+        .ellipsis(
+            color="blue",
+            center=(1, 1, 1),
+            major_axis=(0 + 1, 1 + 1, 0 + 1),
+            minor_axis=(0 + 1, 0 + 1, 1 + 1),
+            theta_start=0,
+            theta_end=math.pi / 2,
+            tooltip="YZ",
+        )
+        .tube(start=(1, 1, 1), end=(1 + 1.2 * 1.5, 1 + 0, 1 + 0), radius=0.05, color="black", tooltip="X")
+        .tube(start=(1, 1, 1), end=(1 + 0, 1 + 1.2 * 1, 1 + 0), radius=0.05, color="black", tooltip="Y")
+        .tube(start=(1, 1, 1), end=(1 + 0, 1 + 0, 1 + 1.2 * 1), radius=0.05, color="black", tooltip="Z")
+    )
+    return PlainTextResponse(builder.get_state())
+
+
 ##############################################################################
 # meta endpoints
 

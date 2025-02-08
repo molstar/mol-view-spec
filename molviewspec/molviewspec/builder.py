@@ -28,6 +28,7 @@ from molviewspec.nodes import (
     DescriptionFormatT,
     DistanceMeasurementParams,
     DownloadParams,
+    EllipsisParams,
     FocusInlineParams,
     GlobalMetadata,
     LabelFromSourceParams,
@@ -1035,6 +1036,33 @@ class Primitives(_Base, _FocusMixin):
         :return: this builder
         """
         params = make_params(PrimitiveLabelParams, {"kind": "label", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def ellipsis(
+        self,
+        *,
+        center: PrimitivePositionT,
+        major_axis: PrimitivePositionT,
+        minor_axis: PrimitivePositionT,
+        theta_start: float | None = None,
+        theta_end: float | None = None,
+        color: ColorT | None = None,
+        tooltip: str | None = None,
+    ) -> Primitives:
+        """
+        Defines an ellipsis.
+        :param center: center coordinates
+        :param color: color of the ellipsis (default: use the parent primitives group `color`)
+        :param major_axis: major axis coordinates
+        :param minor_axis: minor axis coordinates
+        :param theta_start: start angle in radians (default: 0)
+        :param theta_end: end angle in radians (default: 360)
+        :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
+        :return: this builder
+        """
+        params = make_params(EllipsisParams, {"kind": "ellipsis", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self

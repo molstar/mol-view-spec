@@ -786,13 +786,18 @@ class PrimitiveLabelParams(BaseModel):
     label_offset: Optional[float] = Field(description="Camera-facing offset to prevent overlap with geometry.")
 
 
-class PlaneParams(BaseModel):
-    kind: Literal["plane"] = "plane"
-    point: PrimitivePositionT = Field(description="Point on plane.")
-    normal: Vec3[float] = Field(description="Normal vector of plane.")
+class EllipsisParams(BaseModel):
+    kind: Literal["ellipsis"] = "ellipsis"
+    color: Optional[ColorT] = Field(description="Default color for the ellipsis.")
+    center: PrimitivePositionT = Field(description="The center of the ellipsis.")
+    major_axis: PrimitivePositionT = Field(description="Major axis of this circle. Computed as major_axis - center")
+    minor_axis: PrimitivePositionT = Field(description="Minor axis of this circle. Computed as minor_axis - center")
+    theta_start: Optional[float] = Field(description="Start of the arc. In radians")
+    theta_end: Optional[float] = Field(description="End of the arc. In radians")
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipsis.")
 
 
-PrimitiveParamsT = MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | PlaneParams
+PrimitiveParamsT = MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | EllipsisParams
 
 
 class PrimitivesFromUriParams(BaseModel):
