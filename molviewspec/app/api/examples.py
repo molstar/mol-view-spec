@@ -820,9 +820,11 @@ async def primitives_ellipsis_example() -> MVSResponse:
         )
         .ellipsis(
             color="blue",
+            as_circle=True,
             center=(1, 1, 1),
-            major_axis=(0, 1, 0),
+            major_axis=(0, 10, 0),
             minor_axis=(0, 0, 1),
+            radius_major=1,
             theta_start=0,
             theta_end=math.pi / 2,
             tooltip="YZ",

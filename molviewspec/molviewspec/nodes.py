@@ -788,14 +788,32 @@ class PrimitiveLabelParams(BaseModel):
 
 class EllipsisParams(BaseModel):
     kind: Literal["ellipsis"] = "ellipsis"
-    color: Optional[ColorT] = Field(description="Default color for the ellipsis.")
+
     center: PrimitivePositionT = Field(description="The center of the ellipsis.")
+    as_circle: Optional[bool] = Field(description="If true, ignores radius_minor/magnitude of the minor axis.")
+
     major_axis: Optional[Vec3] = Field(description="Major axis of this ellipsis.")
     minor_axis: Optional[Vec3] = Field(description="Minor axis of this ellipsis.")
-    major_axis_endpoint: Optional[PrimitivePositionT] = Field(description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center.")
-    minor_axis_endpoint: Optional[PrimitivePositionT] = Field(description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center.")
+
+    major_axis_endpoint: Optional[PrimitivePositionT] = Field(
+        description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
+    )
+    minor_axis_endpoint: Optional[PrimitivePositionT] = Field(
+        description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center."
+    )
+
+    radius_major: Optional[float] = Field(
+        description="Radius of the major axis. If unset, the length of the major axis is used."
+    )
+    radius_minor: Optional[float] = Field(
+        description="Radius of the minor axis. If unset, the length of the minor axis is used."
+    )
+
     theta_start: Optional[float] = Field(description="Start of the arc. In radians.")
     theta_end: Optional[float] = Field(description="End of the arc. In radians.")
+
+    color: Optional[ColorT] = Field(description="Default color for the ellipsis.")
+
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipsis.")
 
 
