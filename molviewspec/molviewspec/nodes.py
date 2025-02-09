@@ -783,8 +783,9 @@ class ArrowParams(BaseModel):
     arrow_end_height: Optional[float] = Field(description="Height of the arrow at the end.")
     arrow_end_radius: Optional[float] = Field(description="Radius of the arrow at the end.")
 
-    radius: Optional[float] = Field(description="Tube radius (in Angstroms).")
-    dash_length: Optional[float] = Field(description="Length of each dash.")
+    show_tube: Optional[bool] = Field(description="Draw a tube between the start and end of the arrow.")
+    tube_radius: Optional[float] = Field(description="Tube radius (in Angstroms).")
+    tube_dash_length: Optional[float] = Field(description="Length of each dash.")
 
     color: Optional[ColorT] = Field(
         description="Color of the arrow. If not specified, the primitives group color is used."

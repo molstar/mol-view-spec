@@ -832,18 +832,20 @@ async def primitives_ellipsis_example() -> MVSResponse:
         .arrow(
             start=(1, 1, 1),
             end=(1 + 1.5, 1 + 0, 1 + 0),
-            radius=0.05,
-            length=1.2 * 1.5,
+            tube_radius=0.05,
+            length=1.5 + 0.2,
             arrow_end=True,
             color="#ffff00",
             tooltip="X",
         )
-        .arrow(start=(1, 1, 1), direction=(0, 1.2 * 1, 0), radius=0.05, arrow_end=True, color="#ff00ff", tooltip="Y")
+        .arrow(
+            start=(1, 1, 1), direction=(0, 1 + 0.2, 0), tube_radius=0.05, arrow_end=True, color="#ff00ff", tooltip="Y"
+        )
         .arrow(
             end=(1, 1, 1),
-            start=(1 + 0, 1 + 0, 1 + 1.2 * 1),
+            start=(1 + 0, 1 + 0, 1 + 1 + 0.2),
             arrow_start=True,
-            radius=0.05,
+            tube_radius=0.05,
             color="#00ffff",
             tooltip="Z",
         )

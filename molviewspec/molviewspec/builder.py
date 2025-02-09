@@ -991,8 +991,9 @@ class Primitives(_Base, _FocusMixin):
         arrow_end: bool | None = None,
         arrow_end_height: float | None = 0.1,
         arrow_end_radius: float | None = 0.1,
-        radius: float | None = 0.05,
-        dash_length: float | None = None,
+        show_tube: bool | None = True,
+        tube_radius: float | None = 0.05,
+        tube_dash_length: float | None = None,
         color: ColorT | None = None,
         tooltip: str | None = None,
         custom: CustomT = None,
@@ -1010,8 +1011,9 @@ class Primitives(_Base, _FocusMixin):
         :param arrow_end: if true, draw an arrow head at the end
         :param arrow_end_height: height of the arrow head at the end
         :param arrow_end_radius: radius of the arrow head at the end
-        :param radius: tube radius (in Angstroms) (default: 0.05)
-        :param dash_length: length of each dash and gap between dashes (default: draw full line)
+        :param show_tube: if true, draw a tube connecting the start and end points
+        :param tube_radius: tube radius (in Angstroms) (default: 0.05)
+        :param tube_dash_length: length of each dash and gap between dashes (default: draw full line)
         :param color: color of the arrow (default: use the parent primitives group `color`)
         :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
         :param custom: optional, custom data to attach to this node
