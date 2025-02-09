@@ -795,7 +795,7 @@ async def primitives_multi_structure_example() -> MVSResponse:
 @router.get("/primitives/ellipsis")
 async def primitives_ellipsis_example() -> MVSResponse:
     """
-    Draws supported 2d primitives
+    Draws ellipsis and arrows wrapped in an ellipsoid
     """
     builder = create_builder()
     (
@@ -804,7 +804,7 @@ async def primitives_ellipsis_example() -> MVSResponse:
             color="red",
             center=(1, 1, 1),
             major_axis=(1.5, 0, 0),
-            minor_axis=(0, 1, 0),
+            minor_axis=(0, 2, 0),
             theta_start=0,
             theta_end=math.pi / 2,
             tooltip="XY",
@@ -820,11 +820,11 @@ async def primitives_ellipsis_example() -> MVSResponse:
         )
         .ellipsis(
             color="blue",
-            as_circle=True,
             center=(1, 1, 1),
             major_axis=(0, 10, 0),
             minor_axis=(0, 0, 1),
-            radius_major=1,
+            radius_major=2,
+            radius_minor=1,
             theta_start=0,
             theta_end=math.pi / 2,
             tooltip="YZ",
@@ -839,7 +839,7 @@ async def primitives_ellipsis_example() -> MVSResponse:
             tooltip="X",
         )
         .arrow(
-            start=(1, 1, 1), direction=(0, 1 + 0.2, 0), tube_radius=0.05, arrow_end=True, color="#ff00ff", tooltip="Y"
+            start=(1, 1, 1), direction=(0, 2 + 0.2, 0), tube_radius=0.05, arrow_end=True, color="#ff00ff", tooltip="Y"
         )
         .arrow(
             end=(1, 1, 1),
@@ -850,11 +850,22 @@ async def primitives_ellipsis_example() -> MVSResponse:
             tooltip="Z",
         )
     )
+
+    (
+        builder.primitives(opacity=0.33).ellipsoid(
+            center=(1, 1, 1),
+            major_axis=(1, 0, 0),
+            minor_axis=(0, 1, 0),
+            radius=(1.5, 2, 1),
+            color="#cccccc",
+        )
+    )
+
     return PlainTextResponse(builder.get_state())
 
 
-@router.get("/primitives/bounding-box")
-async def primitives_bounding_box_example() -> MVSResponse:
+@router.get("/primitives/boundary")
+async def primitives_boundary_example() -> MVSResponse:
     """
     Draws a bounding box around a residue
     """
@@ -877,6 +888,11 @@ async def primitives_bounding_box_example() -> MVSResponse:
         edge_radius=0.1,
         tooltip="Residue 508, boxed",
     ).focus()
+
+    structure.primitives(opacity=0.25).sphere(
+        center=ComponentExpression(auth_seq_id=508),
+        color="green",
+    )
 
     return PlainTextResponse(builder.get_state())
 

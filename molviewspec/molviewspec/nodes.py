@@ -847,6 +847,29 @@ class EllipsisParams(BaseModel):
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipsis.")
 
 
+class EllipsoidParams(BaseModel):
+    kind: Literal["ellipsoid"] = "ellipsoid"
+
+    center: PrimitivePositionT = Field(description="The center of the ellipsoid.")
+
+    major_axis: Optional[Vec3] = Field(description="Major axis of this ellipsoid. Defaults to (1, 0, 0).")
+    minor_axis: Optional[Vec3] = Field(description="Minor axis of this ellipsoid. Defaults to (0, 1, 0).")
+
+    major_axis_endpoint: Optional[PrimitivePositionT] = Field(
+        description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
+    )
+    minor_axis_endpoint: Optional[PrimitivePositionT] = Field(
+        description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center."
+    )
+
+    radius: Optional[Vec3 | float] = Field(description="Radii of the ellipsoid along each axis.")
+    radius_extent: Optional[Vec3 | float] = Field(description="Added to the radii of the ellipsoid along each axis.")
+
+    color: Optional[ColorT] = Field(description="Default color for the ellipsoid.")
+
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipsoid.")
+
+
 class BoxParams(BaseModel):
     kind: Literal["box"] = "box"
 
@@ -872,7 +895,9 @@ class BoxParams(BaseModel):
     # wireframe_width: Optional[float] = Field(description="Wireframe line width")
 
 
-PrimitiveParamsT = MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | EllipsisParams | BoxParams
+PrimitiveParamsT = (
+    MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | EllipsisParams | EllipsoidParams | BoxParams
+)
 
 
 class PrimitivesFromUriParams(BaseModel):

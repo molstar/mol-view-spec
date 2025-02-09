@@ -31,6 +31,7 @@ from molviewspec.nodes import (
     DistanceMeasurementParams,
     DownloadParams,
     EllipsisParams,
+    EllipsoidParams,
     FocusInlineParams,
     GlobalMetadata,
     LabelFromSourceParams,
@@ -1110,7 +1111,6 @@ class Primitives(_Base, _FocusMixin):
         Defines an ellipsis.
         :param center: center coordinates
         :param as_circle: if true, true, ignores radius_minor/magnitude of the minor axis
-        :param color: color of the ellipsis (default: use the parent primitives group `color`)
         :param major_axis: major axis coordinates
         :param minor_axis: minor axis coordinates
         :param major_axis_endpoint: endpoint of the major axis, if specified, `major_axis` is ignored and computed from `center` and `major_axis_endpoint`
@@ -1119,12 +1119,75 @@ class Primitives(_Base, _FocusMixin):
         :param radius_minor: minor axis radius, if unset, computed from minor axis magnitude
         :param theta_start: start angle in radians (default: 0)
         :param theta_end: end angle in radians (default: 360)
+        :param color: color of the ellipsis (default: use the parent primitives group `color`)
         :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(EllipsisParams, {"kind": "ellipsis", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def ellipsoid(
+        self,
+        *,
+        center: PrimitivePositionT,
+        major_axis: Vec3 | None = None,
+        minor_axis: Vec3 | None = None,
+        major_axis_endpoint: PrimitivePositionT | None = None,
+        minor_axis_endpoint: PrimitivePositionT | None = None,
+        radius: Vec3 | float | None = None,
+        radius_extent: Vec3 | float | None = None,
+        color: ColorT | None = None,
+        tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines an ellipsoid.
+        :param center: center coordinates
+        :param major_axis: major axis coordinates
+        :param minor_axis: minor axis coordinates
+        :param major_axis_endpoint: endpoint of the major axis, if specified, `major_axis` is ignored and computed from `center` and `major_axis_endpoint`
+        :param minor_axis_endpoint: endpoint of the minor axis, if specified, `minor_axis` is ignored and computed from `center` and `minor_axis_endpoint`
+        :param radius: ellipsoid radii, if unset, bounding sphere is computed for the center position
+        :param radius_extent: ellipsoid radii extent added to the radius along each axis
+        :param color: color of the ellipsis (default: use the parent primitives group `color`)
+        :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(EllipsoidParams, {"kind": "ellipsoid", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def sphere(
+        self,
+        *,
+        center: PrimitivePositionT,
+        radius: float | None = None,
+        radius_extent: float | None = None,
+        color: ColorT | None = None,
+        tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines a sphere.
+        :param center: center coordinates
+        :param radius: sphere radius, if unset, computed from center bounding sphere
+        :param radius_extent: radius extent added to the radius
+        :param color: color of the sphere (default: use the parent primitives group `color`)
+        :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(EllipsoidParams, {"kind": "ellipsoid", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
