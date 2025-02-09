@@ -13,6 +13,7 @@ from typing import Any, Literal, Self, Sequence, overload
 from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
+    ArrowParams,
     BoxParams,
     CameraParams,
     CanvasParams,
@@ -973,6 +974,50 @@ class Primitives(_Base, _FocusMixin):
         :return: this builder
         """
         params = make_params(TubeParams, {"kind": "tube", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def arrow(
+        self,
+        *,
+        start: PrimitivePositionT,
+        end: PrimitivePositionT | None = None,
+        direction: Vec3 | None = None,
+        length: float | None = None,
+        arrow_start: bool | None = None,
+        arrow_start_height: float | None = 0.1,
+        arrow_start_radius: float | None = 0.1,
+        arrow_end: bool | None = None,
+        arrow_end_height: float | None = 0.1,
+        arrow_end_radius: float | None = 0.1,
+        radius: float | None = 0.05,
+        dash_length: float | None = None,
+        color: ColorT | None = None,
+        tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines an arrow.
+        :param start: origin coordinates
+        :param end: destination coordinates
+        :param direction: direction vector, if specified, `end` is ignored and computed as `start + direction`
+        :param length: length of the arrow, if not specified, computed from `start` and `end`
+        :param arrow_start: if true, draw an arrow head at the start
+        :param arrow_start_height: height of the arrow head at the start
+        :param arrow_start_radius: radius of the arrow head at the start
+        :param arrow_end: if true, draw an arrow head at the end
+        :param arrow_end_height: height of the arrow head at the end
+        :param arrow_end_radius: radius of the arrow head at the end
+        :param radius: tube radius (in Angstroms) (default: 0.05)
+        :param dash_length: length of each dash and gap between dashes (default: draw full line)
+        :param color: color of the arrow (default: use the parent primitives group `color`)
+        :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        """
+        params = make_params(ArrowParams, {"kind": "arrow", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self

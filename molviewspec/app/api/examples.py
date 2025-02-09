@@ -829,9 +829,24 @@ async def primitives_ellipsis_example() -> MVSResponse:
             theta_end=math.pi / 2,
             tooltip="YZ",
         )
-        .tube(start=(1, 1, 1), end=(1 + 1.2 * 1.5, 1 + 0, 1 + 0), radius=0.05, color="black", tooltip="X")
-        .tube(start=(1, 1, 1), end=(1 + 0, 1 + 1.2 * 1, 1 + 0), radius=0.05, color="black", tooltip="Y")
-        .tube(start=(1, 1, 1), end=(1 + 0, 1 + 0, 1 + 1.2 * 1), radius=0.05, color="black", tooltip="Z")
+        .arrow(
+            start=(1, 1, 1),
+            end=(1 + 1.5, 1 + 0, 1 + 0),
+            radius=0.05,
+            length=1.2 * 1.5,
+            arrow_end=True,
+            color="#ffff00",
+            tooltip="X",
+        )
+        .arrow(start=(1, 1, 1), direction=(0, 1.2 * 1, 0), radius=0.05, arrow_end=True, color="#ff00ff", tooltip="Y")
+        .arrow(
+            end=(1, 1, 1),
+            start=(1 + 0, 1 + 0, 1 + 1.2 * 1),
+            arrow_start=True,
+            radius=0.05,
+            color="#00ffff",
+            tooltip="Z",
+        )
     )
     return PlainTextResponse(builder.get_state())
 

@@ -764,6 +764,35 @@ class TubeParams(_TubeParamsBase):
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the tube.")
 
 
+class ArrowParams(BaseModel):
+    kind: Literal["arrow"] = "arrow"
+
+    start: PrimitivePositionT = Field(description="Start of this arrow.")
+    end: Optional[PrimitivePositionT] = Field(description="End of this arrow.")
+
+    direction: Optional[Vec3] = Field(description="If specified, the endpoint is computed as start + direction.")
+    length: Optional[float] = Field(
+        description="Length of the arrow. If unset, the distance between start and end is used."
+    )
+
+    arrow_start: Optional[bool] = Field(description="Draw an arrow at the start of the arrow.")
+    arrow_start_height: Optional[float] = Field(description="Height of the arrow at the start.")
+    arrow_start_radius: Optional[float] = Field(description="Radius of the arrow at the start.")
+
+    arrow_end: Optional[bool] = Field(description="Draw an arrow at the end of the arrow.")
+    arrow_end_height: Optional[float] = Field(description="Height of the arrow at the end.")
+    arrow_end_radius: Optional[float] = Field(description="Radius of the arrow at the end.")
+
+    radius: Optional[float] = Field(description="Tube radius (in Angstroms).")
+    dash_length: Optional[float] = Field(description="Length of each dash.")
+
+    color: Optional[ColorT] = Field(
+        description="Color of the arrow. If not specified, the primitives group color is used."
+    )
+
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the arrow.")
+
+
 class DistanceMeasurementParams(_TubeParamsBase):
     kind: Literal["distance_measurement"] = "distance_measurement"
     label_template: Optional[str] = Field(
