@@ -775,13 +775,13 @@ class ArrowParams(BaseModel):
         description="Length of the arrow. If unset, the distance between start and end is used."
     )
 
-    arrow_start: Optional[bool] = Field(description="Draw an arrow at the start of the arrow.")
-    arrow_start_height: Optional[float] = Field(description="Height of the arrow at the start.")
-    arrow_start_radius: Optional[float] = Field(description="Radius of the arrow at the start.")
+    show_start_cap: Optional[bool] = Field(description="Draw a cap at the start of the arrow.")
+    start_cap_length: Optional[float] = Field(description="Length of the start cap.")
+    start_cap_radius: Optional[float] = Field(description="Radius of the start cap.")
 
-    arrow_end: Optional[bool] = Field(description="Draw an arrow at the end of the arrow.")
-    arrow_end_height: Optional[float] = Field(description="Height of the arrow at the end.")
-    arrow_end_radius: Optional[float] = Field(description="Radius of the arrow at the end.")
+    show_end_cap: Optional[bool] = Field(description="Draw a cap at the end of the arrow.")
+    end_cap_length: Optional[float] = Field(description="Length of the end cap.")
+    end_cap_radius: Optional[float] = Field(description="Radius of the end cap.")
 
     show_tube: Optional[bool] = Field(description="Draw a tube between the start and end of the arrow.")
     tube_radius: Optional[float] = Field(description="Tube radius (in Angstroms).")
@@ -816,14 +816,14 @@ class PrimitiveLabelParams(BaseModel):
     label_offset: Optional[float] = Field(description="Camera-facing offset to prevent overlap with geometry.")
 
 
-class EllipsisParams(BaseModel):
-    kind: Literal["ellipsis"] = "ellipsis"
+class EllipseParams(BaseModel):
+    kind: Literal["ellipse"] = "ellipse"
 
-    center: PrimitivePositionT = Field(description="The center of the ellipsis.")
+    center: PrimitivePositionT = Field(description="The center of the ellipse.")
     as_circle: Optional[bool] = Field(description="If true, ignores radius_minor/magnitude of the minor axis.")
 
-    major_axis: Optional[Vec3] = Field(description="Major axis of this ellipsis.")
-    minor_axis: Optional[Vec3] = Field(description="Minor axis of this ellipsis.")
+    major_axis: Optional[Vec3] = Field(description="Major axis of this ellipse.")
+    minor_axis: Optional[Vec3] = Field(description="Minor axis of this ellipse.")
 
     major_axis_endpoint: Optional[PrimitivePositionT] = Field(
         description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
@@ -842,9 +842,9 @@ class EllipsisParams(BaseModel):
     theta_start: Optional[float] = Field(description="Start of the arc. In radians.")
     theta_end: Optional[float] = Field(description="End of the arc. In radians.")
 
-    color: Optional[ColorT] = Field(description="Default color for the ellipsis.")
+    color: Optional[ColorT] = Field(description="Default color for the ellipse.")
 
-    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipsis.")
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipse.")
 
 
 class EllipsoidParams(BaseModel):
@@ -896,7 +896,7 @@ class BoxParams(BaseModel):
 
 
 PrimitiveParamsT = (
-    MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | EllipsisParams | EllipsoidParams | BoxParams
+    MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | EllipseParams | EllipsoidParams | BoxParams
 )
 
 

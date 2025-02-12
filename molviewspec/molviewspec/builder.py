@@ -30,7 +30,7 @@ from molviewspec.nodes import (
     DescriptionFormatT,
     DistanceMeasurementParams,
     DownloadParams,
-    EllipsisParams,
+    EllipseParams,
     EllipsoidParams,
     FocusInlineParams,
     GlobalMetadata,
@@ -986,14 +986,14 @@ class Primitives(_Base, _FocusMixin):
         end: PrimitivePositionT | None = None,
         direction: Vec3 | None = None,
         length: float | None = None,
-        arrow_start: bool | None = None,
-        arrow_start_height: float | None = 0.1,
-        arrow_start_radius: float | None = 0.1,
-        arrow_end: bool | None = None,
-        arrow_end_height: float | None = 0.1,
-        arrow_end_radius: float | None = 0.1,
-        show_tube: bool | None = True,
-        tube_radius: float | None = 0.05,
+        show_start_cap: bool | None = None,
+        start_cap_length: float | None = None,
+        start_cap_radius: float | None = None,
+        show_end_cap: bool | None = None,
+        end_cap_length: float | None = None,
+        end_cap_radius: float | None = None,
+        show_tube: bool | None = None,
+        tube_radius: float | None = None,
         tube_dash_length: float | None = None,
         color: ColorT | None = None,
         tooltip: str | None = None,
@@ -1006,13 +1006,13 @@ class Primitives(_Base, _FocusMixin):
         :param end: destination coordinates
         :param direction: direction vector, if specified, `end` is ignored and computed as `start + direction`
         :param length: length of the arrow, if not specified, computed from `start` and `end`
-        :param arrow_start: if true, draw an arrow head at the start
-        :param arrow_start_height: height of the arrow head at the start
-        :param arrow_start_radius: radius of the arrow head at the start
-        :param arrow_end: if true, draw an arrow head at the end
-        :param arrow_end_height: height of the arrow head at the end
-        :param arrow_end_radius: radius of the arrow head at the end
-        :param show_tube: if true, draw a tube connecting the start and end points
+        :param show_start_cap: if true, draw an arrow head at the start (default: False)
+        :param start_cap_length: height of the arrow head at the start (default: 0.1)
+        :param start_cap_radius: radius of the arrow head at the start (default: 0.1)
+        :param show_end_cap: if true, draw an arrow head at the end (default: False)
+        :param end_cap_length: height of the arrow head at the end (default: 0.1)
+        :param end_cap_radius: radius of the arrow head at the end (default: 0.1)
+        :param show_tube: if true, draw a tube connecting the start and end points (default: True)
         :param tube_radius: tube radius (in Angstroms) (default: 0.05)
         :param tube_dash_length: length of each dash and gap between dashes (default: draw full line)
         :param color: color of the arrow (default: use the parent primitives group `color`)
@@ -1089,7 +1089,7 @@ class Primitives(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
-    def ellipsis(
+    def ellipse(
         self,
         *,
         center: PrimitivePositionT,
@@ -1108,7 +1108,7 @@ class Primitives(_Base, _FocusMixin):
         ref: RefT = None,
     ) -> Primitives:
         """
-        Defines an ellipsis.
+        Defines an ellipse.
         :param center: center coordinates
         :param as_circle: if true, true, ignores radius_minor/magnitude of the minor axis
         :param major_axis: major axis coordinates
@@ -1119,13 +1119,13 @@ class Primitives(_Base, _FocusMixin):
         :param radius_minor: minor axis radius, if unset, computed from minor axis magnitude
         :param theta_start: start angle in radians (default: 0)
         :param theta_end: end angle in radians (default: 360)
-        :param color: color of the ellipsis (default: use the parent primitives group `color`)
+        :param color: color of the ellipse (default: use the parent primitives group `color`)
         :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
-        params = make_params(EllipsisParams, {"kind": "ellipsis", **locals()})
+        params = make_params(EllipseParams, {"kind": "ellipse", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
@@ -1154,7 +1154,7 @@ class Primitives(_Base, _FocusMixin):
         :param minor_axis_endpoint: endpoint of the minor axis, if specified, `minor_axis` is ignored and computed from `center` and `minor_axis_endpoint`
         :param radius: ellipsoid radii, if unset, bounding sphere is computed for the center position
         :param radius_extent: ellipsoid radii extent added to the radius along each axis
-        :param color: color of the ellipsis (default: use the parent primitives group `color`)
+        :param color: color of the ellipse (default: use the parent primitives group `color`)
         :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node

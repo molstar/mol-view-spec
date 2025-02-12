@@ -792,15 +792,15 @@ async def primitives_multi_structure_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
-@router.get("/primitives/ellipsis")
-async def primitives_ellipsis_example() -> MVSResponse:
+@router.get("/primitives/ellipse")
+async def primitives_ellipse_example() -> MVSResponse:
     """
-    Draws ellipsis and arrows wrapped in an ellipsoid
+    Draws ellipse and arrows wrapped in an ellipsoid
     """
     builder = create_builder()
     (
         builder.primitives(opacity=0.66)
-        .ellipsis(
+        .ellipse(
             color="red",
             center=(1, 1, 1),
             major_axis=(1.5, 0, 0),
@@ -809,7 +809,7 @@ async def primitives_ellipsis_example() -> MVSResponse:
             theta_end=math.pi / 2,
             tooltip="XY",
         )
-        .ellipsis(
+        .ellipse(
             color="green",
             center=(1, 1, 1),
             major_axis_endpoint=(1.5 + 1, 0 + 1, 0 + 1),
@@ -818,7 +818,7 @@ async def primitives_ellipsis_example() -> MVSResponse:
             theta_end=math.pi / 2,
             tooltip="XZ",
         )
-        .ellipsis(
+        .ellipse(
             color="blue",
             center=(1, 1, 1),
             major_axis=(0, 10, 0),
@@ -834,17 +834,22 @@ async def primitives_ellipsis_example() -> MVSResponse:
             end=(1 + 1.5, 1 + 0, 1 + 0),
             tube_radius=0.05,
             length=1.5 + 0.2,
-            arrow_end=True,
+            show_end_cap=True,
             color="#ffff00",
             tooltip="X",
         )
         .arrow(
-            start=(1, 1, 1), direction=(0, 2 + 0.2, 0), tube_radius=0.05, arrow_end=True, color="#ff00ff", tooltip="Y"
+            start=(1, 1, 1),
+            direction=(0, 2 + 0.2, 0),
+            tube_radius=0.05,
+            show_end_cap=True,
+            color="#ff00ff",
+            tooltip="Y",
         )
         .arrow(
             end=(1, 1, 1),
             start=(1 + 0, 1 + 0, 1 + 1 + 0.2),
-            arrow_start=True,
+            show_start_cap=True,
             tube_radius=0.05,
             color="#00ffff",
             tooltip="Z",
