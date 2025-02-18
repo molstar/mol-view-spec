@@ -830,6 +830,116 @@ async def ihm_basic_restraints_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/primitives/ellipse")
+async def primitives_ellipse_example() -> MVSResponse:
+    """
+    Draws ellipse and arrows wrapped in an ellipsoid
+    """
+    builder = create_builder()
+    (
+        builder.primitives(opacity=0.66)
+        .ellipse(
+            color="red",
+            center=(1, 1, 1),
+            major_axis=(1.5, 0, 0),
+            minor_axis=(0, 2, 0),
+            theta_start=0,
+            theta_end=math.pi / 2,
+            tooltip="XY",
+        )
+        .ellipse(
+            color="green",
+            center=(1, 1, 1),
+            major_axis_endpoint=(1.5 + 1, 0 + 1, 0 + 1),
+            minor_axis_endpoint=(0 + 1, 0 + 1, 1 + 1),
+            theta_start=0,
+            theta_end=math.pi / 2,
+            tooltip="XZ",
+        )
+        .ellipse(
+            color="blue",
+            center=(1, 1, 1),
+            major_axis=(0, 10, 0),
+            minor_axis=(0, 0, 1),
+            radius_major=2,
+            radius_minor=1,
+            theta_start=0,
+            theta_end=math.pi / 2,
+            tooltip="YZ",
+        )
+        .arrow(
+            start=(1, 1, 1),
+            end=(1 + 1.5, 1 + 0, 1 + 0),
+            tube_radius=0.05,
+            length=1.5 + 0.2,
+            show_end_cap=True,
+            color="#ffff00",
+            tooltip="X",
+        )
+        .arrow(
+            start=(1, 1, 1),
+            direction=(0, 2 + 0.2, 0),
+            tube_radius=0.05,
+            show_end_cap=True,
+            color="#ff00ff",
+            tooltip="Y",
+        )
+        .arrow(
+            end=(1, 1, 1),
+            start=(1 + 0, 1 + 0, 1 + 1 + 0.2),
+            show_start_cap=True,
+            tube_radius=0.05,
+            color="#00ffff",
+            tooltip="Z",
+        )
+    )
+
+    (
+        builder.primitives(opacity=0.33).ellipsoid(
+            center=(1, 1, 1),
+            major_axis=(1, 0, 0),
+            minor_axis=(0, 1, 0),
+            radius=(1.5, 2, 1),
+            color="#cccccc",
+        )
+    )
+
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/primitives/boundary")
+async def primitives_boundary_example() -> MVSResponse:
+    """
+    Draws a bounding box around a residue
+    """
+
+    builder = create_builder()
+
+    download = builder.download(url="https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif")
+    structure = download.parse(format="mmcif").model_structure()
+
+    structure.component(selector="ligand").representation(type="ball_and_stick")
+    structure.component(selector="polymer").representation(type="cartoon")
+
+    structure.primitives(opacity=0.55).box(
+        center=ComponentExpression(auth_seq_id=508),
+        extent=(1, 1, 1),
+        show_faces=True,
+        face_color="blue",
+        show_edges=True,
+        edge_color="red",
+        edge_radius=0.1,
+        tooltip="Residue 508, boxed",
+    ).focus()
+
+    structure.primitives(opacity=0.25).sphere(
+        center=ComponentExpression(auth_seq_id=508),
+        color="green",
+    )
+
+    return PlainTextResponse(builder.get_state())
+
+
 ##############################################################################
 # meta endpoints
 

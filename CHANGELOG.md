@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `spacefill` representation
 - Add `element_granularity` field to component expressions
 - Add I/HM basic restraints example
+- Add primitives: ellipse, ellipsoid, box, arrow
 
 
 ## [v1.1.0] - 2024-12-09

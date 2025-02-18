@@ -13,6 +13,8 @@ from typing import Any, Literal, Self, Sequence, overload
 from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
+    ArrowParams,
+    BoxParams,
     CameraParams,
     CanvasParams,
     ColorFromSourceParams,
@@ -28,6 +30,8 @@ from molviewspec.nodes import (
     DescriptionFormatT,
     DistanceMeasurementParams,
     DownloadParams,
+    EllipseParams,
+    EllipsoidParams,
     FocusInlineParams,
     GlobalMetadata,
     LabelFromSourceParams,
@@ -996,6 +1000,52 @@ class Primitives(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
+    def arrow(
+        self,
+        *,
+        start: PrimitivePositionT,
+        end: PrimitivePositionT | None = None,
+        direction: Vec3 | None = None,
+        length: float | None = None,
+        show_start_cap: bool | None = None,
+        start_cap_length: float | None = None,
+        start_cap_radius: float | None = None,
+        show_end_cap: bool | None = None,
+        end_cap_length: float | None = None,
+        end_cap_radius: float | None = None,
+        show_tube: bool | None = None,
+        tube_radius: float | None = None,
+        tube_dash_length: float | None = None,
+        color: ColorT | None = None,
+        tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines an arrow.
+        :param start: origin coordinates
+        :param end: destination coordinates
+        :param direction: direction vector, if specified, `end` is ignored and computed as `start + direction`
+        :param length: length of the arrow, if not specified, computed from `start` and `end`
+        :param show_start_cap: if true, draw an arrow head at the start (default: False)
+        :param start_cap_length: height of the arrow head at the start (default: 0.1)
+        :param start_cap_radius: radius of the arrow head at the start (default: 0.1)
+        :param show_end_cap: if true, draw an arrow head at the end (default: False)
+        :param end_cap_length: height of the arrow head at the end (default: 0.1)
+        :param end_cap_radius: radius of the arrow head at the end (default: 0.1)
+        :param show_tube: if true, draw a tube connecting the start and end points (default: True)
+        :param tube_radius: tube radius (in Angstroms) (default: 0.05)
+        :param tube_dash_length: length of each dash and gap between dashes (default: draw full line)
+        :param color: color of the arrow (default: use the parent primitives group `color`)
+        :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        """
+        params = make_params(ArrowParams, {"kind": "arrow", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
     def distance(
         self,
         *,
@@ -1056,6 +1106,148 @@ class Primitives(_Base, _FocusMixin):
         :return: this builder
         """
         params = make_params(PrimitiveLabelParams, {"kind": "label", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def ellipse(
+        self,
+        *,
+        center: PrimitivePositionT,
+        as_circle: bool | None = None,
+        major_axis: Vec3 | None = None,
+        minor_axis: Vec3 | None = None,
+        major_axis_endpoint: PrimitivePositionT | None = None,
+        minor_axis_endpoint: PrimitivePositionT | None = None,
+        radius_major: float | None = None,
+        radius_minor: float | None = None,
+        theta_start: float | None = None,
+        theta_end: float | None = None,
+        color: ColorT | None = None,
+        tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines an ellipse.
+        :param center: center coordinates
+        :param as_circle: if true, true, ignores radius_minor/magnitude of the minor axis
+        :param major_axis: major axis coordinates
+        :param minor_axis: minor axis coordinates
+        :param major_axis_endpoint: endpoint of the major axis, if specified, `major_axis` is ignored and computed from `center` and `major_axis_endpoint`
+        :param minor_axis_endpoint: endpoint of the minor axis, if specified, `minor_axis` is ignored and computed from `center` and `minor_axis_endpoint`
+        :param radius_major: major axis radius, if unset, computed from major axis magnitude
+        :param radius_minor: minor axis radius, if unset, computed from minor axis magnitude
+        :param theta_start: start angle in radians (default: 0)
+        :param theta_end: end angle in radians (default: 360)
+        :param color: color of the ellipse (default: use the parent primitives group `color`)
+        :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(EllipseParams, {"kind": "ellipse", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def ellipsoid(
+        self,
+        *,
+        center: PrimitivePositionT,
+        major_axis: Vec3 | None = None,
+        minor_axis: Vec3 | None = None,
+        major_axis_endpoint: PrimitivePositionT | None = None,
+        minor_axis_endpoint: PrimitivePositionT | None = None,
+        radius: Vec3 | float | None = None,
+        radius_extent: Vec3 | float | None = None,
+        color: ColorT | None = None,
+        tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines an ellipsoid.
+        :param center: center coordinates
+        :param major_axis: major axis coordinates
+        :param minor_axis: minor axis coordinates
+        :param major_axis_endpoint: endpoint of the major axis, if specified, `major_axis` is ignored and computed from `center` and `major_axis_endpoint`
+        :param minor_axis_endpoint: endpoint of the minor axis, if specified, `minor_axis` is ignored and computed from `center` and `minor_axis_endpoint`
+        :param radius: ellipsoid radii, if unset, bounding sphere is computed for the center position
+        :param radius_extent: ellipsoid radii extent added to the radius along each axis
+        :param color: color of the ellipse (default: use the parent primitives group `color`)
+        :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(EllipsoidParams, {"kind": "ellipsoid", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def sphere(
+        self,
+        *,
+        center: PrimitivePositionT,
+        radius: float | None = None,
+        radius_extent: float | None = None,
+        color: ColorT | None = None,
+        tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines a sphere.
+        :param center: center coordinates
+        :param radius: sphere radius, if unset, computed from center bounding sphere
+        :param radius_extent: radius extent added to the radius
+        :param color: color of the sphere (default: use the parent primitives group `color`)
+        :param tooltip: tooltip shown when hovering over (default: use the parent primitives group `tooltip`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(EllipsoidParams, {"kind": "ellipsoid", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+    def box(
+        self,
+        *,
+        center: PrimitivePositionT,
+        extent: Vec3 | None = None,
+        show_faces: bool = True,
+        face_color: ColorT | None = None,
+        show_edges: bool = False,
+        edge_radius: float = 0.1,
+        edge_color: ColorT | None = None,
+        show_wireframe: bool = False,
+        wireframe_color: ColorT | None = None,
+        wireframe_width: float | None = None,
+        tooltip: str | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines a box.
+        :param center: center coordinates
+        :param extent: box extent (half-lengths along each axis)
+        :param show_faces: show box faces
+        :param face_color: color of the box faces
+        :param show_edges: show box edges
+        :param edge_radius: box edge radius
+        :param edge_color: color of the box edges
+        :param show_wireframe: show box wireframe
+        :param wireframe_color: color of the box wireframe
+        :param wireframe_width: box wireframe width
+        :param tooltip: tooltip shown when hovering over
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(BoxParams, {"kind": "box", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self

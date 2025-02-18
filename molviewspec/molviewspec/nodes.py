@@ -772,6 +772,36 @@ class TubeParams(_TubeParamsBase):
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the tube.")
 
 
+class ArrowParams(BaseModel):
+    kind: Literal["arrow"] = "arrow"
+
+    start: PrimitivePositionT = Field(description="Start of this arrow.")
+    end: Optional[PrimitivePositionT] = Field(description="End of this arrow.")
+
+    direction: Optional[Vec3] = Field(description="If specified, the endpoint is computed as start + direction.")
+    length: Optional[float] = Field(
+        description="Length of the arrow. If unset, the distance between start and end is used."
+    )
+
+    show_start_cap: Optional[bool] = Field(description="Draw a cap at the start of the arrow.")
+    start_cap_length: Optional[float] = Field(description="Length of the start cap.")
+    start_cap_radius: Optional[float] = Field(description="Radius of the start cap.")
+
+    show_end_cap: Optional[bool] = Field(description="Draw a cap at the end of the arrow.")
+    end_cap_length: Optional[float] = Field(description="Length of the end cap.")
+    end_cap_radius: Optional[float] = Field(description="Radius of the end cap.")
+
+    show_tube: Optional[bool] = Field(description="Draw a tube between the start and end of the arrow.")
+    tube_radius: Optional[float] = Field(description="Tube radius (in Angstroms).")
+    tube_dash_length: Optional[float] = Field(description="Length of each dash.")
+
+    color: Optional[ColorT] = Field(
+        description="Color of the arrow. If not specified, the primitives group color is used."
+    )
+
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the arrow.")
+
+
 class DistanceMeasurementParams(_TubeParamsBase):
     kind: Literal["distance_measurement"] = "distance_measurement"
     label_template: Optional[str] = Field(
@@ -794,13 +824,88 @@ class PrimitiveLabelParams(BaseModel):
     label_offset: Optional[float] = Field(description="Camera-facing offset to prevent overlap with geometry.")
 
 
-class PlaneParams(BaseModel):
-    kind: Literal["plane"] = "plane"
-    point: PrimitivePositionT = Field(description="Point on plane.")
-    normal: Vec3[float] = Field(description="Normal vector of plane.")
+class EllipseParams(BaseModel):
+    kind: Literal["ellipse"] = "ellipse"
+
+    center: PrimitivePositionT = Field(description="The center of the ellipse.")
+    as_circle: Optional[bool] = Field(description="If true, ignores radius_minor/magnitude of the minor axis.")
+
+    major_axis: Optional[Vec3] = Field(description="Major axis of this ellipse.")
+    minor_axis: Optional[Vec3] = Field(description="Minor axis of this ellipse.")
+
+    major_axis_endpoint: Optional[PrimitivePositionT] = Field(
+        description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
+    )
+    minor_axis_endpoint: Optional[PrimitivePositionT] = Field(
+        description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center."
+    )
+
+    radius_major: Optional[float] = Field(
+        description="Radius of the major axis. If unset, the length of the major axis is used."
+    )
+    radius_minor: Optional[float] = Field(
+        description="Radius of the minor axis. If unset, the length of the minor axis is used."
+    )
+
+    theta_start: Optional[float] = Field(description="Start of the arc. In radians.")
+    theta_end: Optional[float] = Field(description="End of the arc. In radians.")
+
+    color: Optional[ColorT] = Field(description="Default color for the ellipse.")
+
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipse.")
 
 
-PrimitiveParamsT = MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | PlaneParams
+class EllipsoidParams(BaseModel):
+    kind: Literal["ellipsoid"] = "ellipsoid"
+
+    center: PrimitivePositionT = Field(description="The center of the ellipsoid.")
+
+    major_axis: Optional[Vec3] = Field(description="Major axis of this ellipsoid. Defaults to (1, 0, 0).")
+    minor_axis: Optional[Vec3] = Field(description="Minor axis of this ellipsoid. Defaults to (0, 1, 0).")
+
+    major_axis_endpoint: Optional[PrimitivePositionT] = Field(
+        description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
+    )
+    minor_axis_endpoint: Optional[PrimitivePositionT] = Field(
+        description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center."
+    )
+
+    radius: Optional[Vec3 | float] = Field(description="Radii of the ellipsoid along each axis.")
+    radius_extent: Optional[Vec3 | float] = Field(description="Added to the radii of the ellipsoid along each axis.")
+
+    color: Optional[ColorT] = Field(description="Default color for the ellipsoid.")
+
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipsoid.")
+
+
+class BoxParams(BaseModel):
+    kind: Literal["box"] = "box"
+
+    center: PrimitivePositionT = Field(description="The center of the box.")
+    extent: Optional[Vec3] = Field(
+        description="The width, the height, and the depth of the box. Added to the bounding box determined by the center."
+    )
+
+    show_faces: bool = Field(True, description="Determine whether to render the faces of the box.")
+    face_color: Optional[ColorT] = Field(description="Color of the box faces.")
+
+    show_edges: bool = Field(False, description="Determine whether to render the edges of the box.")
+    edge_radius: Optional[float] = Field(0.1, description="Radius of the box edges. In angstroms.")
+    edge_color: Optional[ColorT] = Field(description="Color of the edges.")
+
+    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the box.")
+
+    # NOTE: Possible future extensions:
+    # - support box orientation
+    # - support for witewrame box in addition to edges
+    # show_wireframe: bool = Field(False, description="Determine whether to render the wireframe of the box.")
+    # wireframe_color: Optional[ColorT] = Field(description="Wireframe color, uses triangle/group colors when not set")
+    # wireframe_width: Optional[float] = Field(description="Wireframe line width")
+
+
+PrimitiveParamsT = (
+    MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | EllipseParams | EllipsoidParams | BoxParams
+)
 
 
 class PrimitivesFromUriParams(BaseModel):
