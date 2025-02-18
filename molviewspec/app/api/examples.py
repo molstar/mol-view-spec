@@ -792,6 +792,44 @@ async def primitives_multi_structure_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/ihm/basic-restraints")
+async def ihm_basic_restraints_example() -> MVSResponse:
+    """
+    Loads an I/HM structure and renders restraints as tube primitives
+    """
+    builder = create_builder()
+    structure = builder.download(url="https://pdb-ihm.org/cif/8zz1.cif").parse(format="mmcif").model_structure()
+
+    structure.component(selector="coarse").representation(type="spacefill").color(
+        custom={"molstar_use_default_coloring": True}
+    )
+    structure.component(selector="polymer").representation(type="cartoon").color(
+        custom={"molstar_use_default_coloring": True}
+    )
+
+    # Extracted manually from ihm_cross_link_restraint category of 8zz1.cif
+    RESTRAINTS = [
+        [3, "C", 17, 3, "C", 412],
+        [3, "C", 17, 3, "C", 735],
+        [3, "C", 206, 3, "C", 217],
+        [3, "C", 384, 3, "C", 362],
+        [3, "C", 400, 3, "C", 530],
+        # ...
+    ]
+
+    primitives = structure.primitives()
+    for e1, a1, s1, e2, a2, s2 in RESTRAINTS:
+        primitives.tube(
+            start=ComponentExpression(label_entity_id=e1, label_asym_id=a1, label_seq_id=s1),
+            end=ComponentExpression(label_entity_id=e2, label_asym_id=a2, label_seq_id=s2),
+            color="red",
+            radius=1,
+            dash_length=1,
+        )
+
+    return PlainTextResponse(builder.get_state())
+
+
 @router.get("/primitives/ellipse")
 async def primitives_ellipse_example() -> MVSResponse:
     """

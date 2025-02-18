@@ -708,6 +708,27 @@ class Component(_Base, _FocusMixin):
     def representation(
         self,
         *,
+        type: Literal["spacefill"],
+        ignore_hydrogens: bool = None,
+        size_factor: float = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a spacefill representation for this component.
+        :param type: the type of this representation ('ball_and_stick')
+        :param ignore_hydrogens: draw hydrogen atoms?
+        :param size_factor: adjust the scale of the visuals (relative to 1.0)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def representation(
+        self,
+        *,
         type: Literal["surface"],
         ignore_hydrogens: bool = None,
         size_factor: float = None,
@@ -823,7 +844,7 @@ class Representation(_Base):
     def color(
         self,
         *,
-        color: ColorT,
+        color: ColorT | None = None,
         selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
         custom: CustomT = None,
     ) -> Representation:

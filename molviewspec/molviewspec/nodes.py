@@ -235,7 +235,7 @@ class StructureParams(BaseModel):
     ijk_max: Optional[Vec3[int]] = Field(description="Top-right Miller indices")
 
 
-ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water"]
+ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water", "coarse"]
 
 
 class ComponentExpression(BaseModel):
@@ -277,7 +277,7 @@ class ComponentExpression(BaseModel):
     atom_index: Optional[int] = Field(description="0-based atom index in the source file")
 
 
-RepresentationTypeT = Literal["ball_and_stick", "cartoon", "surface"]
+RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface"]
 ColorNamesT = Literal[
     "aliceblue",
     "antiquewhite",
@@ -451,13 +451,21 @@ class BallAndStickParams(RepresentationParams):
     size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
 
 
+class SpacefillParams(RepresentationParams):
+    type: Literal["spacefill"] = "spacefill"
+    ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
+    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+
+
 class SurfaceParams(RepresentationParams):
     type: Literal["surface"] = "surface"
     ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
     size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
 
 
-RepresentationTypeParams = {t.__fields__["type"].default: t for t in (CartoonParams, BallAndStickParams, SurfaceParams)}
+RepresentationTypeParams = {
+    t.__fields__["type"].default: t for t in (CartoonParams, BallAndStickParams, SpacefillParams, SurfaceParams)
+}
 
 
 SchemaT = Literal[
@@ -558,7 +566,7 @@ class ColorInlineParams(ComponentInlineParams):
     Color based on function arguments.
     """
 
-    color: ColorT = Field(description="Color using SVG color names or RGB hex code")
+    color: Optional[ColorT] = Field(description="Color using SVG color names or RGB hex code")
 
 
 class ColorFromUriParams(_DataFromUriParams):
