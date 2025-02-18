@@ -63,6 +63,9 @@ from molviewspec.nodes import (
     TransformParams,
     TubeParams,
     Vec3,
+    VolumeParams,
+    VolumeRepresentationTypeParams,
+    VolumeRepresentationTypeT,
 )
 from molviewspec.utils import make_params
 
@@ -425,6 +428,23 @@ class Parse(_Base):
         node = Node(kind="structure", params=params)
         self._add_child(node)
         return Structure(node=node, root=self._root)
+
+    def volume(
+        self,
+        *,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Volume:
+        """
+        Create volume node.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at structure level
+        """
+        params = make_params(VolumeParams, locals())
+        node = Node(kind="volume", params=params)
+        self._add_child(node)
+        return Volume(node=node, root=self._root)
 
 
 class Structure(_Base, _PrimitivesMixin):
@@ -861,6 +881,86 @@ class Representation(_Base):
         return self
 
     def opacity(self, *, opacity: float) -> Representation:
+        """
+        Customize the opacity/transparency of this representation.
+        :param opacity: float describing how opaque this representation should be, 0.0: fully transparent, 1.0: fully opaque
+        :return: this builder
+        """
+        params = make_params(OpacityInlineParams, locals())
+        node = Node(kind="opacity", params=params)
+        self._add_child(node)
+        return self
+
+
+class Volume(_Base, _FocusMixin):
+    @overload
+    def representation(
+        self,
+        *,
+        type: Literal["isosurface"],
+        relative_isovalue: float | None = None,
+        absolute_isovalue: float | None = None,
+        show_wireframe: bool | None = None,
+        show_faces: bool | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> VolumeRepresentation:
+        """
+        Add a iso surface representation for this component.
+        :param type: the type of this representation ('cartoon')
+        :param relative_isovalue: relative isovalue to use for the surface
+        :param absolute_isovalue: absolute isovalue to use for the surface, overrides `relative_isovalue`
+        :param show_wireframe: show wireframe on the surface (default: False)
+        :param show_faces: show faces of the surface (default: True)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    def representation(
+        self, *, type: VolumeRepresentationTypeT = "isosurface", custom: CustomT = None, ref: RefT = None, **kwargs: Any
+    ) -> VolumeRepresentation:
+        """
+        Add a representation for this component.
+        :param type: the type of representation, defaults to 'isosurface'
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :param kwargs: optional, representation-specific params
+        :return: a builder that handles operations at representation level
+        """
+        params_class = VolumeRepresentationTypeParams.get(type)
+        params = make_params(params_class, locals(), **kwargs)
+        node = Node(kind="volume_representation", params=params)
+        self._add_child(node)
+        return VolumeRepresentation(node=node, root=self._root)
+
+
+class VolumeRepresentation(_Base):
+    """
+    Builder step with operations relating to particular representations.
+    """
+
+    def color(
+        self,
+        *,
+        color: ColorT | None = None,
+        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
+        custom: CustomT = None,
+    ) -> VolumeRepresentation:
+        """
+        Customize the color of this representation.
+        :param color: color using SVG color names or RGB hex code
+        :param selector: optional selector, defaults to applying the color to the whole representation (default: "all")
+        :param custom: optional, custom data to attach to this node
+        :return: this builder
+        """
+        params = make_params(ColorInlineParams, locals())
+        node = Node(kind="color", params=params)
+        self._add_child(node)
+        return self
+
+    def opacity(self, *, opacity: float) -> VolumeRepresentation:
         """
         Customize the opacity/transparency of this representation.
         :param opacity: float describing how opaque this representation should be, 0.0: fully transparent, 1.0: fully opaque
