@@ -936,7 +936,7 @@ class Volume(_Base, _FocusMixin):
         return VolumeRepresentation(node=node, root=self._root)
 
 
-class VolumeRepresentation(_Base):
+class VolumeRepresentation(_Base, _FocusMixin):
     """
     Builder step with operations relating to particular representations.
     """
