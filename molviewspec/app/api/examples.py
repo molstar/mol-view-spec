@@ -596,6 +596,8 @@ async def membrane_orientation_example_3sn6() -> MVSResponse:
         .assembly_structure(assembly_id="1")
         .component()
         .representation(type="cartoon")
+        # must provide color=None to set custom properties
+        .color(color=None, custom={"molstar_use_default_coloring": True})
     )
     (
         builder.primitives(tooltip="Membrane Layer", opacity=0.66)
@@ -644,6 +646,8 @@ async def membrane_orientation_example_1brr() -> MVSResponse:
         .assembly_structure(assembly_id="1")
         .component()
         .representation(type="cartoon")
+        # must provide color=None to set custom properties
+        .color(color=None, custom={"molstar_use_default_coloring": True})
     )
     (
         builder.primitives(tooltip="Membrane Layer", opacity=0.66)
