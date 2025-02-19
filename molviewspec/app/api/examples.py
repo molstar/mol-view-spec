@@ -565,6 +565,112 @@ async def repr_params_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/membrane-orientation-3sn6")
+async def membrane_orientation_example_3sn6() -> MVSResponse:
+    """
+    MolViewSpec supports primitives (i.e. simple geometric shapes likes circles). These can e.g. be used to visualize
+    the location of the phospholipid bilayer of membrane proteins. This assumes that you know these boundaries. Mol*
+    can predict them, and you can obtain these results using its Membrane Server CLI entry point. Start the server
+    using: `node lib/commonjs/servers/membrane-orientation/server.js`. By default, it will listen on port 1340. A
+    simple prediction looks like this: `http://localhost:1340/MembraneServer/predict/3sn6/?assemblyId=1`. Change the
+    entry_id as needed. The server will respond with JSON, describing key values needed to draw both membrane
+    primitives.
+    """
+    server_response = {
+        "planePoint1": [27.6286077232155, 10.3137003539375, 17.3841276600337],
+        "planePoint2": [24.2923627786858, 13.70617189513, -17.3918785297573],
+        "normalVector": [0.0950497135193607, -0.096651610860181, 0.99076940711652],
+        "centroid": [25.9604852509506, 12.0099361245337, -0.00387543486177577],
+        "radius": 29.8063842867283,
+    }
+
+    normal = _normalize(server_response["normalVector"])
+    reference = [1, 0, 0] if abs(_dot(normal, [1, 0, 0])) < 0.9 else [0, 1, 0]
+    major_axis = _normalize(_cross(normal, reference))
+    minor_axis = _normalize(_cross(normal, major_axis))
+
+    builder = create_builder()
+    (
+        builder.download(url=_url_for_mmcif("3sn6"))
+        .parse(format="mmcif")
+        .assembly_structure(assembly_id="1")
+        .component()
+        .representation(type="cartoon")
+        # must provide an arbitrary color to set custom properties
+        .color(color="white", custom={"molstar_use_default_coloring": True})
+    )
+    (
+        builder.primitives(tooltip="Membrane Layer", opacity=0.66)
+        .ellipse(
+            center=server_response["planePoint1"],
+            major_axis=major_axis,
+            minor_axis=minor_axis,
+            radius_major=server_response["radius"],
+            as_circle=True,
+            tooltip="Inner Membrane",
+        )
+        .ellipse(
+            center=server_response["planePoint2"],
+            major_axis=major_axis,
+            minor_axis=minor_axis,
+            radius_major=server_response["radius"],
+            as_circle=True,
+            tooltip="Outer Membrane",
+        )
+    )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/membrane-orientation-1brr")
+async def membrane_orientation_example_1brr() -> MVSResponse:
+    """
+    See the first membrane orientation for details. This serves as another test case.
+    """
+    server_response = {
+        "planePoint1": [10.3229835520205, -0.419982206460674, 2.10628676167936],
+        "planePoint2": [32.6548111099097, -0.359466197860531, 17.8090195091152],
+        "normalVector": [-0.818015661461147, -0.00221670361172687, -0.575191675730256],
+        "centroid": [21.4888973309651, -0.389724202160602, 9.9576531353973],
+        "radius": 32.3792382267291,
+    }
+
+    normal = _normalize(server_response["normalVector"])
+    reference = [1, 0, 0] if abs(_dot(normal, [1, 0, 0])) < 0.9 else [0, 1, 0]
+    major_axis = _normalize(_cross(normal, reference))
+    minor_axis = _normalize(_cross(normal, major_axis))
+
+    builder = create_builder()
+    (
+        builder.download(url=_url_for_mmcif("1brr"))
+        .parse(format="mmcif")
+        .assembly_structure(assembly_id="1")
+        .component()
+        .representation(type="cartoon")
+        # must provide an arbitrary color to set custom properties
+        .color(color="white", custom={"molstar_use_default_coloring": True})
+    )
+    (
+        builder.primitives(tooltip="Membrane Layer", opacity=0.66)
+        .ellipse(
+            center=server_response["planePoint1"],
+            major_axis=major_axis,
+            minor_axis=minor_axis,
+            radius_major=server_response["radius"],
+            as_circle=True,
+            tooltip="Outer Membrane",
+        )
+        .ellipse(
+            center=server_response["planePoint2"],
+            major_axis=major_axis,
+            minor_axis=minor_axis,
+            radius_major=server_response["radius"],
+            as_circle=True,
+            tooltip="Inner Membrane",
+        )
+    )
+    return PlainTextResponse(builder.get_state())
+
+
 @router.get("/primitives/cube")
 async def primitives_cube_example() -> MVSResponse:
     """
@@ -2437,3 +2543,16 @@ def _color_by_entity(
             for symbol, color in SYMBOL_COLORS.items():
                 repr.color(selector=ComponentExpression(label_entity_id=entity_id, type_symbol=symbol), color=color)
     return repr
+
+
+def _normalize(v):
+    length = (v[0] ** 2 + v[1] ** 2 + v[2] ** 2) ** 0.5
+    return [v[0] / length, v[1] / length, v[2] / length] if length != 0 else v
+
+
+def _dot(a, b):
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+
+def _cross(a, b):
+    return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]

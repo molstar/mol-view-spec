@@ -1246,6 +1246,11 @@ class Primitives(_Base, _FocusMixin):
         :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
+        if major_axis is None and major_axis_endpoint is None:
+            raise ValueError("Either `major_axis` or `major_axis_endpoint` must be provided.")
+        if minor_axis is None and minor_axis_endpoint is None:
+            raise ValueError("Either `minor_axis` or `minor_axis_endpoint` must be provided to define orientation.")
+
         params = make_params(EllipseParams, {"kind": "ellipse", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)

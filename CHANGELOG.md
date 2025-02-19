@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file, following t
 - Add I/HM basic restraints example
 - Add primitives: ellipse, ellipsoid, box, arrow
 - Add basic support for volumetric data
+- Add membrane orientation examples
 
 
 ## [v1.1.0] - 2024-12-09
