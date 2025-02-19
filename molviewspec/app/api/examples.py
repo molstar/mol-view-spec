@@ -975,34 +975,58 @@ async def primitives_ellipse_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
-@router.get("/primitives/boundary")
-async def primitives_boundary_example() -> MVSResponse:
+@router.get("/ihm/basic-restraints")
+async def ihm_basic_restraints_example() -> MVSResponse:
     """
-    Draws a bounding box around a residue
+    Loads an I/HM structure and renders restraints as tube primitives
+    """
+    builder = create_builder()
+    structure = builder.download(url="https://pdb-ihm.org/cif/8zz1.cif").parse(format="mmcif").model_structure()
+
+    structure.component(selector="coarse").representation(type="spacefill").color(
+        custom={"molstar_use_default_coloring": True}
+    )
+    structure.component(selector="polymer").representation(type="cartoon").color(
+        custom={"molstar_use_default_coloring": True}
+    )
+
+    # Extracted manually from ihm_cross_link_restraint category of 8zz1.cif
+    RESTRAINTS = [
+        [3, "C", 17, 3, "C", 412],
+        [3, "C", 17, 3, "C", 735],
+        [3, "C", 206, 3, "C", 217],
+        [3, "C", 384, 3, "C", 362],
+        [3, "C", 400, 3, "C", 530],
+        # ...
+    ]
+
+    primitives = structure.primitives()
+    for e1, a1, s1, e2, a2, s2 in RESTRAINTS:
+        primitives.tube(
+            start=ComponentExpression(label_entity_id=e1, label_asym_id=a1, label_seq_id=s1),
+            end=ComponentExpression(label_entity_id=e2, label_asym_id=a2, label_seq_id=s2),
+            color="red",
+            radius=1,
+            dash_length=1,
+        )
+
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/volume/map")
+async def volume_map_example() -> MVSResponse:
+    """
+    Renders a volume in MAP format
     """
 
     builder = create_builder()
 
-    download = builder.download(url="https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif")
-    structure = download.parse(format="mmcif").model_structure()
-
-    structure.component(selector="ligand").representation(type="ball_and_stick")
-    structure.component(selector="polymer").representation(type="cartoon")
-
-    structure.primitives(opacity=0.55).box(
-        center=ComponentExpression(auth_seq_id=508),
-        extent=(1, 1, 1),
-        show_faces=True,
-        face_color="blue",
-        show_edges=True,
-        edge_color="red",
-        edge_radius=0.1,
-        tooltip="Residue 508, boxed",
-    ).focus()
-
-    structure.primitives(opacity=0.25).sphere(
-        center=ComponentExpression(auth_seq_id=508),
-        color="green",
+    download = builder.download(url="https://www.ebi.ac.uk/pdbe/entry-files/1tqn.ccp4")
+    volume = download.parse(format="map").volume()
+    (
+        volume.representation(type="isosurface", relative_isovalue=1, show_wireframe=True)
+        .color(color="blue")
+        .opacity(opacity=0.66)
     )
 
     return PlainTextResponse(builder.get_state())
