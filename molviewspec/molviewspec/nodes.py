@@ -40,6 +40,8 @@ KindT = Literal[
     "tooltip_from_source",
     "tooltip_from_uri",
     "transform",
+    "volume",
+    "volume_representation",
 ]
 
 
@@ -180,7 +182,7 @@ class DownloadParams(BaseModel):
     url: str = Field(description="URL from which to pull structure data.")
 
 
-ParseFormatT = Literal["mmcif", "bcif", "pdb"]
+ParseFormatT = Literal["mmcif", "bcif", "pdb", "map"]
 
 
 class ParseParams(BaseModel):
@@ -235,6 +237,12 @@ class StructureParams(BaseModel):
     ijk_max: Optional[Vec3[int]] = Field(description="Top-right Miller indices")
 
 
+class VolumeParams(BaseModel):
+    """
+    Volume node, describing how to load and render volumetric data.
+    """
+
+
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water", "coarse"]
 
 
@@ -278,6 +286,7 @@ class ComponentExpression(BaseModel):
 
 
 RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface"]
+VolumeRepresentationTypeT = Literal["isosurface"]
 ColorNamesT = Literal[
     "aliceblue",
     "antiquewhite",
@@ -435,7 +444,7 @@ class RepresentationParams(BaseModel):
     Representation node, describing how to represent a component.
     """
 
-    type: RepresentationTypeT = Field(description="Representation type, i.e. cartoon, ball-and-stick, etc.")
+    type: RepresentationTypeT = Field(description="Representation type, i.e. cartoon, ball_and_stick, etc.")
 
 
 class CartoonParams(RepresentationParams):
@@ -482,6 +491,30 @@ SchemaT = Literal[
     "all_atomic",
 ]
 SchemaFormatT = Literal["cif", "bcif", "json"]
+
+
+class VolumeRepresentationParams(BaseModel):
+    """
+    Representation node, describing how to represent a component.
+    """
+
+    type: VolumeRepresentationTypeT = Field(description="Representation type, i.e. isosurface")
+
+
+class VolumeIsoSurfaceParams(RepresentationParams):
+    """
+    Volume isosurface representation.
+    """
+
+    type: Literal["isosurface"] = "isosurface"
+
+    relative_isovalue: Optional[float] = Field(description="Relative isovalue")
+    absolute_isovalue: Optional[float] = Field(description="Absolute isovalue. Overrides `relative_isovalue`.")
+    show_wireframe: Optional[bool] = Field(description="Show mesh wireframe. Defaults to false.")
+    show_faces: Optional[bool] = Field(description="Show mesh faces. Defaults to true.")
+
+
+VolumeRepresentationTypeParams = {t.__fields__["type"].default: t for t in (VolumeIsoSurfaceParams,)}
 
 
 class _DataFromUriParams(BaseModel):
