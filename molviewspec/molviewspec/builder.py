@@ -907,7 +907,7 @@ class Volume(_Base, _FocusMixin):
     ) -> VolumeRepresentation:
         """
         Add a iso surface representation for this component.
-        :param type: the type of this representation ('cartoon')
+        :param type: the type of this representation ('isosurface')
         :param relative_isovalue: relative isovalue to use for the surface
         :param absolute_isovalue: absolute isovalue to use for the surface, overrides `relative_isovalue`
         :param show_wireframe: show wireframe on the surface (default: False)
