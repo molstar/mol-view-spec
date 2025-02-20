@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file, following t
 - Support for representation-specific parameters (customize presentation visuals)
 - Add `coarse` component kind
 - Add `spacefill` representation
+- Add `carbohydrate` representation
 - Add `element_granularity` field to component expressions
 - Add I/HM basic restraints example
 - Add primitives: ellipse, ellipsoid, box, arrow

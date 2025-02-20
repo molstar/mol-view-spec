@@ -1403,6 +1403,23 @@ async def testing_components_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/testing/carbs")
+async def testing_components_example() -> MVSResponse:
+    """
+    Return state demonstrating carbohydrate representation
+    """
+    builder = create_builder()
+
+    struct = builder.download(url=_url_for_mmcif("5t3x")).parse(format="mmcif").model_structure()
+    struct.component(selector="polymer").representation(type="cartoon").color(color="orange")
+    struct.component(selector="branched").representation(type="ball_and_stick").color(color="green")
+    struct.component(selector="branched").representation(type="carbohydrate").color(
+        custom={"molstar_use_default_coloring": True}
+    )
+
+    return PlainTextResponse(builder.get_state())
+
+
 @router.get("/testing/color_from_source")
 async def testing_color_from_source_example(tooltips: bool = False) -> MVSResponse:
     """

@@ -468,6 +468,11 @@ class SpacefillParams(RepresentationParams):
     size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
 
 
+class CarbohydrateParams(RepresentationParams):
+    type: Literal["carbohydrate"] = "carbohydrate"
+    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+
+
 class SurfaceParams(RepresentationParams):
     type: Literal["surface"] = "surface"
     ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
@@ -475,7 +480,8 @@ class SurfaceParams(RepresentationParams):
 
 
 RepresentationTypeParams = {
-    t.__fields__["type"].default: t for t in (CartoonParams, BallAndStickParams, SpacefillParams, SurfaceParams)
+    t.__fields__["type"].default: t
+    for t in (CartoonParams, BallAndStickParams, SpacefillParams, CarbohydrateParams, SurfaceParams)
 }
 
 
