@@ -1032,6 +1032,56 @@ async def volume_map_example() -> MVSResponse:
     return PlainTextResponse(builder.get_state())
 
 
+@router.get("/volume/volume-server")
+async def volume_map_example() -> MVSResponse:
+    """
+    Renders a volume in MAP format
+    """
+
+    builder = create_builder()
+
+    structure = builder.download(url=_url_for_mmcif("1tqn")).parse(format="mmcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon").color(color="white")
+    ligand = structure.component(selector="ligand")
+    ligand.representation(type="ball_and_stick").color(custom={"molstar_color_theme_name": "element-symbol"})
+    ligand.focus(up=[0.98, -0.19, 0], direction=[-28.47, -17.66, -16.32], radius=14, radius_extent=5)
+
+    volume_data = builder.download(
+        url="https://www.ebi.ac.uk/pdbe/densities/x-ray/1tqn/box/-22.367,-33.367,-21.634/-7.106,-10.042,-0.937?detail=3"
+    ).parse(format="bcif")
+
+    volume_data.volume(channel_id="2FO-FC").representation(
+        type="isosurface",
+        relative_isovalue=1.5,
+        show_wireframe=True,
+        show_faces=False,
+    ).color(color="blue").opacity(opacity=0.3)
+
+    fo_fc = volume_data.volume(channel_id="FO-FC")
+    fo_fc.representation(type="isosurface", relative_isovalue=3, show_wireframe=True).color(color="green").opacity(
+        opacity=0.3
+    )
+    fo_fc.representation(type="isosurface", relative_isovalue=-3, show_wireframe=True).color(color="red").opacity(
+        opacity=0.3
+    )
+
+    snapshot = builder.get_snapshot(
+        title="1tqn",
+        description="""
+### 1tqn with ligand and electron density map
+- 2FO-FC at 1.5σ, blue
+- FO-FC (positive) at 3σ, green
+- FO-FC (negative) at -3σ, red
+""",
+    )
+
+    return PlainTextResponse(
+        States(snapshots=[snapshot], metadata=GlobalMetadata(description="1tqn + Volume Server")).json(
+            exclude_none=True, indent=2
+        )
+    )
+
+
 ##############################################################################
 # meta endpoints
 

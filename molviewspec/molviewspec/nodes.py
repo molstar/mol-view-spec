@@ -242,6 +242,8 @@ class VolumeParams(BaseModel):
     Volume node, describing how to load and render volumetric data.
     """
 
+    channel_id: Optional[str] = Field(description="ID of the channel to load from the source data.")
+
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water", "coarse"]
 

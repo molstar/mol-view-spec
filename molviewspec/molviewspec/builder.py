@@ -432,11 +432,13 @@ class Parse(_Base):
     def volume(
         self,
         *,
+        channel_id: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Volume:
         """
         Create volume node.
+        :param channel_id: optional, channel identifier
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
