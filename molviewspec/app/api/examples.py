@@ -1033,9 +1033,9 @@ async def volume_map_example() -> MVSResponse:
 
 
 @router.get("/volume/volume-server")
-async def volume_map_example() -> MVSResponse:
+async def volume_server_map_example() -> MVSResponse:
     """
-    Renders a volume in MAP format
+    Renders a volume obtained from the Mol* Volume Server
     """
 
     builder = create_builder()
