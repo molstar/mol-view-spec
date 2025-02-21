@@ -242,6 +242,8 @@ class VolumeParams(BaseModel):
     Volume node, describing how to load and render volumetric data.
     """
 
+    channel_id: Optional[str] = Field(description="ID of the channel to load from the source data.")
+
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water", "coarse"]
 
@@ -466,6 +468,11 @@ class SpacefillParams(RepresentationParams):
     size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
 
 
+class CarbohydrateParams(RepresentationParams):
+    type: Literal["carbohydrate"] = "carbohydrate"
+    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+
+
 class SurfaceParams(RepresentationParams):
     type: Literal["surface"] = "surface"
     ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
@@ -473,7 +480,8 @@ class SurfaceParams(RepresentationParams):
 
 
 RepresentationTypeParams = {
-    t.__fields__["type"].default: t for t in (CartoonParams, BallAndStickParams, SpacefillParams, SurfaceParams)
+    t.__fields__["type"].default: t
+    for t in (CartoonParams, BallAndStickParams, SpacefillParams, CarbohydrateParams, SurfaceParams)
 }
 
 

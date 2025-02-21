@@ -432,11 +432,13 @@ class Parse(_Base):
     def volume(
         self,
         *,
+        channel_id: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Volume:
         """
         Create volume node.
+        :param channel_id: optional, channel identifier
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
@@ -738,6 +740,25 @@ class Component(_Base, _FocusMixin):
         Add a spacefill representation for this component.
         :param type: the type of this representation ('ball_and_stick')
         :param ignore_hydrogens: draw hydrogen atoms?
+        :param size_factor: adjust the scale of the visuals (relative to 1.0)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def representation(
+        self,
+        *,
+        type: Literal["carbohydrate"],
+        size_factor: float = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a carbohydrate representation for this component.
+        :param type: the type of this representation ('carbohydrate')
         :param size_factor: adjust the scale of the visuals (relative to 1.0)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
