@@ -856,6 +856,34 @@ class DistanceMeasurementParams(_TubeParamsBase):
     label_color: Optional[ColorT] = Field(description="Color of the label.")
 
 
+class AngleMeasurementParams(_TubeParamsBase):
+    kind: Literal["angle_measurement"] = "angle_measurement"
+
+    a: PrimitivePositionT = Field(description="Point A.")
+    b: PrimitivePositionT = Field(description="Point B.")
+    c: PrimitivePositionT = Field(description="Point C.")
+
+    label_template: Optional[str] = Field(
+        description="Template used to construct the label. Use {{angle}} as placeholder for the value."
+    )
+    label_size: Optional[float | Literal["auto"]] = Field(
+        description="Size of the label. Auto scales it by the average magnitude of (b - a) and (c - b)."
+    )
+    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size.")
+    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size.")
+    label_color: Optional[ColorT] = Field(description="Color of the label.")
+
+    show_vector: Optional[bool] = Field(description="Draw vectors between (a, b) and (b, c).")
+    vector_color: Optional[ColorT] = Field(description="Color of the vectors.")
+    
+    show_section: Optional[bool] = Field(description="Draw a filled circle section representing the angle.")
+    section_color: Optional[ColorT] = Field(
+        description="Color of the angle section. If not specified, the primitives group color is used."
+    )
+    section_radius: Optional[float] = Field(description="Radius of the angle section. In angstroms.")
+    section_radius_scale: Optional[float] = Field(description="Factor to scale the radius of the angle section. Ignored if section_radius is set.")
+
+
 class PrimitiveLabelParams(BaseModel):
     kind: Literal["label"] = "label"
     position: PrimitivePositionT = Field(description="Position of this label.")
@@ -945,7 +973,7 @@ class BoxParams(BaseModel):
 
 
 PrimitiveParamsT = (
-    MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | EllipseParams | EllipsoidParams | BoxParams
+    MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | AngleMeasurementParams | EllipseParams | EllipsoidParams | BoxParams
 )
 
 
