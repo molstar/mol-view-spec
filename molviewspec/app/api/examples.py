@@ -1404,7 +1404,7 @@ async def testing_components_example() -> MVSResponse:
 
 
 @router.get("/testing/carbs")
-async def testing_components_example() -> MVSResponse:
+async def testing_carbs_example() -> MVSResponse:
     """
     Return state demonstrating carbohydrate representation
     """
@@ -2038,6 +2038,26 @@ async def testing_labels_from_source_example() -> MVSResponse:
     structure.label_from_source(
         schema="all_atomic", category_name="mvs_test_chain_label_annotation", field_name="tooltip"
     )
+    return PlainTextResponse(builder.get_state())
+
+
+@router.get("/testing/angle-primitive")
+async def testing_angle_primitive_example() -> MVSResponse:
+    """
+    Return a state showing an angle
+    """
+    builder = create_builder()
+    primitives = builder.primitives()
+    primitives.angle(
+        a=(2, 1, 1),
+        b=(1, 1, 1),
+        c=(2, 2, 1),
+        section_color="blue",
+        section_radius_scale=0.5,
+        vector_color="red",
+        label_color="green",
+    )
+
     return PlainTextResponse(builder.get_state())
 
 

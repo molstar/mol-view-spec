@@ -13,6 +13,7 @@ from typing import Any, Literal, Self, Sequence, overload
 from pydantic import BaseModel, PrivateAttr
 
 from molviewspec.nodes import (
+    AngleMeasurementParams,
     ArrowParams,
     BoxParams,
     CameraParams,
@@ -1200,6 +1201,54 @@ class Primitives(_Base, _FocusMixin):
         :return: this builder
         """
         params = make_params(DistanceMeasurementParams, {"kind": "distance_measurement", **locals()})
+        node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+    
+    def angle(
+        self,
+        *,
+        a: PrimitivePositionT,
+        b: PrimitivePositionT,
+        c: PrimitivePositionT,
+        radius: float | None = None,
+        dash_length: float | None = None,
+        color: ColorT | None = None,
+        label_template: str | None = None,
+        label_size: float | None = None,
+        label_auto_size_scale: float | None = None,
+        label_auto_size_min: float | None = None,
+        label_color: ColorT | None = None,
+        show_vector: bool | None = None,
+        vector_color: ColorT | None = None,        
+        show_section: bool | None = None,
+        section_color: ColorT | None = None,
+        section_radius: float | None = None,
+        section_radius_scale: float | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Primitives:
+        """
+        Defines a angle between vectors (b - a) and (c - b)
+        :param a: first point
+        :param b: second point
+        :param c: third point
+        :param label_template: template used to construct the label, use {{angle}} as placeholder for the angle value in degrees (default: "{{angle}}")
+        :param label_size: size of the label (text height in Angstroms) (default: size will be relative to the distance (see label_auto_size_scale, label_auto_size_min))
+        :param label_auto_size_scale: scaling factor for relative size when label_size is None (default: 0.33)
+        :param label_auto_size_min: scaling factor for relative size when label_size is None (default: 0)
+        :param label_color: color of the label (default: use the parent primitives group `label_color`)
+        :param show_vector: if true, draw a vector from a to b, and b to c (default: True)
+        :param vector_color: color of the vector (default: use the parent primitives group `color`)
+        :param show_section: if true, draw a section of the angle (default: True)
+        :param section_color: color of the section (default: use the parent primitives group `color`)
+        :param section_radius: radius of the section (in Angstroms). If unset, computed as smaller of the distances from b to a and b to c.
+        :param section_radius_scale: scaling factor for the section radius (default: 0.33). Ignored if `section_radius` is set.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(AngleMeasurementParams, {"kind": "angle_measurement", **locals()})
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self

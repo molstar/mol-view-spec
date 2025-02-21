@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `carbohydrate` representation
 - Add `element_granularity` field to component expressions
 - Add I/HM basic restraints example
-- Add primitives: ellipse, ellipsoid, box, arrow
+- Add primitives: ellipse, ellipsoid, box, arrow, angle
 - Add basic support for volumetric data (map, volume server)
 - Add membrane orientation examples
 
