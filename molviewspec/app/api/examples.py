@@ -511,11 +511,11 @@ def make_snapshot(
     )
 
 
-@router.get("/additional-properties")
-async def additional_properties_example() -> MVSResponse:
+@router.get("/custom-properties")
+async def custom_properties_example() -> MVSResponse:
     """
     MolViewSpec accepts typed parameters depending on the current node type. Additionally, arbitrary information can be
-    attached to each node using an optional `additional_properties()` method. Data must be provided as dict.
+    attached to each node using an optional `custom` parameter. Data must be provided as dict.
     Nonetheless, this information will propagate and be added to the final JSON, allowing users to build custom
     functionality independent of the official schema defined by MolViewSpec.
     """
