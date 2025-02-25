@@ -8,7 +8,8 @@ from __future__ import annotations
 import math
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Literal, Self, Sequence, overload
+from typing import Any, Literal, Sequence, overload
+from typing_extensions import Self
 
 from pydantic import BaseModel, PrivateAttr
 
@@ -86,14 +87,17 @@ class _BuilderProtocol(ABC):
 
     @property
     @abstractmethod
-    def _root(self) -> Root: ...
+    def _root(self) -> Root:
+        ...
 
     @property
     @abstractmethod
-    def _node(self) -> Node: ...
+    def _node(self) -> Node:
+        ...
 
     @abstractmethod
-    def _add_child(self, node: Node) -> None: ...
+    def _add_child(self, node: Node) -> None:
+        ...
 
 
 class _Base(BaseModel, _BuilderProtocol):
@@ -1204,7 +1208,7 @@ class Primitives(_Base, _FocusMixin):
         node = Node(kind="primitive", params=params)
         self._add_child(node)
         return self
-    
+
     def angle(
         self,
         *,
@@ -1220,7 +1224,7 @@ class Primitives(_Base, _FocusMixin):
         label_auto_size_min: float | None = None,
         label_color: ColorT | None = None,
         show_vector: bool | None = None,
-        vector_color: ColorT | None = None,        
+        vector_color: ColorT | None = None,
         show_section: bool | None = None,
         section_color: ColorT | None = None,
         section_radius: float | None = None,

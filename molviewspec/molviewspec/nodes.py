@@ -5,7 +5,7 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Literal, Mapping, Optional, Tuple, TypeVar, Union
+from typing import Any, cast, Literal, Mapping, Optional, Tuple, Type, TypeVar, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -287,7 +287,7 @@ class ComponentExpression(BaseModel):
     atom_index: Optional[int] = Field(description="0-based atom index in the source file")
 
 
-RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface"]
+RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate"]
 VolumeRepresentationTypeT = Literal["isosurface"]
 ColorNamesT = Literal[
     "aliceblue",
@@ -480,7 +480,7 @@ class SurfaceParams(RepresentationParams):
 
 
 RepresentationTypeParams = {
-    t.__fields__["type"].default: t
+    cast(Type[RepresentationParams], t).__fields__["type"].default: t
     for t in (CartoonParams, BallAndStickParams, SpacefillParams, CarbohydrateParams, SurfaceParams)
 }
 
@@ -727,7 +727,7 @@ class PrimitiveComponentExpressions(BaseModel):
 #       boundings boxes around docked ligands that contains surrounding residues
 PrimitivePositionT = Union[Vec3[float], ComponentExpression, PrimitiveComponentExpressions]
 """
-Positions of primitives can be defined by 3D vector, by providing a selection expressions, or by providing 
+Positions of primitives can be defined by 3D vector, by providing a selection expressions, or by providing
 a list of expressions within a specific structure.
 """
 
@@ -875,13 +875,15 @@ class AngleMeasurementParams(_TubeParamsBase):
 
     show_vector: Optional[bool] = Field(description="Draw vectors between (a, b) and (b, c).")
     vector_color: Optional[ColorT] = Field(description="Color of the vectors.")
-    
+
     show_section: Optional[bool] = Field(description="Draw a filled circle section representing the angle.")
     section_color: Optional[ColorT] = Field(
         description="Color of the angle section. If not specified, the primitives group color is used."
     )
     section_radius: Optional[float] = Field(description="Radius of the angle section. In angstroms.")
-    section_radius_scale: Optional[float] = Field(description="Factor to scale the radius of the angle section. Ignored if section_radius is set.")
+    section_radius_scale: Optional[float] = Field(
+        description="Factor to scale the radius of the angle section. Ignored if section_radius is set."
+    )
 
 
 class PrimitiveLabelParams(BaseModel):
@@ -973,7 +975,14 @@ class BoxParams(BaseModel):
 
 
 PrimitiveParamsT = (
-    MeshParams | LinesParams | TubeParams | DistanceMeasurementParams | AngleMeasurementParams | EllipseParams | EllipsoidParams | BoxParams
+    MeshParams
+    | LinesParams
+    | TubeParams
+    | DistanceMeasurementParams
+    | AngleMeasurementParams
+    | EllipseParams
+    | EllipsoidParams
+    | BoxParams
 )
 
 
