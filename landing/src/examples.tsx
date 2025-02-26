@@ -209,19 +209,163 @@ structure.tooltip_from_uri(
     field_name="label", schema="residue_range")
 
 return builder.get_state()`,
+}, {
+    header: 'Primitives',
+    description: 'Draw various geometrical primitives.',
+    name: 'primitives',
+    python: `builder = create_builder()
+(
+    builder.primitives(opacity=0.66)
+    .ellipse(
+        color="red",
+        center=(1, 1, 1),
+        major_axis=(1.5, 0, 0),
+        minor_axis=(0, 2, 0),
+        theta_start=0,
+        theta_end=math.pi / 2,
+        tooltip="XY",
+    )
+    .ellipse(
+        color="green",
+        center=(1, 1, 1),
+        major_axis_endpoint=(1.5 + 1, 0 + 1, 0 + 1),
+        minor_axis_endpoint=(0 + 1, 0 + 1, 1 + 1),
+        theta_start=0,
+        theta_end=math.pi / 2,
+        tooltip="XZ",
+    )
+    .ellipse(
+        color="blue",
+        center=(1, 1, 1),
+        major_axis=(0, 10, 0),
+        minor_axis=(0, 0, 1),
+        radius_major=2,
+        radius_minor=1,
+        theta_start=0,
+        theta_end=math.pi / 2,
+        tooltip="YZ",
+    )
+    .arrow(
+        start=(1, 1, 1),
+        end=(1 + 1.5, 1 + 0, 1 + 0),
+        tube_radius=0.05,
+        length=1.5 + 0.2,
+        show_end_cap=True,
+        color="#ffff00",
+        tooltip="X",
+    )
+    .arrow(
+        start=(1, 1, 1),
+        direction=(0, 2 + 0.2, 0),
+        tube_radius=0.05,
+        show_end_cap=True,
+        color="#ff00ff",
+        tooltip="Y",
+    )
+    .arrow(
+        end=(1, 1, 1),
+        start=(1 + 0, 1 + 0, 1 + 1 + 0.2),
+        show_start_cap=True,
+        tube_radius=0.05,
+        color="#00ffff",
+        tooltip="Z",
+    )
+)
+
+(
+    builder.primitives(opacity=0.33).ellipsoid(
+        center=(1, 1, 1),
+        major_axis=(1, 0, 0),
+        minor_axis=(0, 1, 0),
+        radius=(1.5, 2, 1),
+        color="#cccccc",
+    )
+)
+
+return builder.get_state()`,
+}, {
+    header: 'Volumes',
+    description: 'Load a structure and a volume from the Mol* Volume Server.',
+    name: 'volumes',
+    python: `builder = create_builder()
+
+structure = (
+    builder
+    .download(url=_url_for_mmcif("1tqn")).parse(format="mmcif").model_structure()
+)
+(
+    structure
+    .component(selector="polymer")
+    .representation(type="cartoon")
+    .color(color="white")
+)
+
+ligand = structure.component(selector="ligand")
+(
+    ligand
+    .representation(type="ball_and_stick")
+    .color(custom={"molstar_color_theme_name": "element-symbol"})
+)
+ligand.focus(
+    up=[0.98, -0.19, 0],
+    direction=[-28.47, -17.66, -16.32],
+    radius=14,
+    radius_extent=5
+)
+
+volume_data = builder.download(
+    url="https://www.ebi.ac.uk/pdbe/densities/x-ray/1tqn/box/-22.367,-33.367,-21.634/-7.106,-10.042,-0.937?detail=3"
+).parse(format="bcif")
+
+volume_data.volume(channel_id="2FO-FC").representation(
+    type="isosurface",
+    relative_isovalue=1.5,
+    show_wireframe=True,
+    show_faces=False,
+).color(color="blue").opacity(opacity=0.3)
+
+fo_fc = volume_data.volume(channel_id="FO-FC")
+fo_fc.representation(
+    type="isosurface",
+    relative_isovalue=3,
+    show_wireframe=True
+).color(color="green").opacity(
+    opacity=0.3
+)
+fo_fc.representation(
+    type="isosurface",
+    relative_isovalue=-3,
+    show_wireframe=True
+).color(color="red").opacity(
+    opacity=0.3
+)
+
+snapshot = builder.get_snapshot(
+    title="1tqn",
+    description="""
+### 1tqn with ligand and electron density map
+- 2FO-FC at 1.5σ, blue
+- FO-FC (positive) at 3σ, green
+- FO-FC (negative) at -3σ, red
+""",
+)
+
+return States(
+    snapshots=[snapshot],
+    metadata=GlobalMetadata(description="1tqn + Volume Server")
+)
+`,
 }];
 
 export function ExamplesUI() {
     const [example, setExample] = useState<ExampleSpec>(Examples[0]);
     return <>
-        <div className='row'>
-            <div className='twelve columns'>
-                <div className='examples'>
-                    {Examples.map((e, i) => <ExamplePreview key={i} example={e} setCurrent={() => setExample(e)} current={example === e} />)}
-                </div>
+        <div style={{ textAlign: 'center', marginTop: 20, padding: '0 20px' }}>
+            <div className='examples'>
+                {Examples.map((e, i) => <ExamplePreview key={i} example={e} setCurrent={() => setExample(e)} current={example === e} />)}
             </div>
         </div>
-        <div className='row' style={{ marginTop: 20 }}>
+        <div style={{ margin: 20, marginRight: 30 }}>
             <CurrentExample example={example} />
         </div>
     </>
@@ -241,24 +385,32 @@ function ExamplePreview({ example, setCurrent, current }: { example: ExampleSpec
 
 function CurrentExample({ example }: { example: ExampleSpec }) {
     const CB = CopyBlock as any;
+    const url = resolveExampleSnapshotURL(example.name);
     return <>
         <div className='row' style={{ marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
             <div className='nine columns'>
                 <b>{example.header}:</b><br/> {example.description}
             </div>
             <div className='three columns' style={{ display: 'flex', alignItems: 'flex-end' }}>
-                <a className='button button-primary' href={resolveExampleSnapshotURL(example.name)} target='_blank' rel='noreferrer' style={{ width: '100%', fontWeight: 'bold', fontSize: '1.5rem', marginBottom: 0 }}>Open in Mol*</a>
+                <a className='button button-primary' href={url} target='_blank' rel='noreferrer' style={{ width: '100%', fontWeight: 'bold', fontSize: '1.5rem', marginBottom: 0 }}>Open in New Window</a>
             </div>
         </div>
-        <div className='row'>
-            <div className='twelve columns'>
-                <CB text={example.python as any} language='python' wrapLongLines theme={dracula} showLineNumbers />
+        <div style={{ display: 'flex' }}>
+            <div style={{ flexGrow: 1, flexShrink: 0, flexBasis: '50%' }}>
+                <iframe src={url} style={{ width: '100%', aspectRatio: 4 / 3, border: '1px solid #E0DDD4' }} />
+            </div>
+            <div style={{ flexGrow: 1, flexShrink: 0, flexBasis: '50%' }}>
+                <div style={{ width: '100%', aspectRatio: 4 / 3, border: 'none', position: 'relative', marginLeft: 10 }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', overflowY: 'auto' }}>
+                        <CB text={example.python as any} language='python' wrapLongLines theme={dracula} showLineNumbers style={{ minHeight: '100%' }} />
+                    </div>
+                </div>
             </div>
         </div>
     </>
 }
 
-// const ViewerURL = 'file:///C:/Projects/molstar/molstar/build/viewer/index.html';
+// const ViewerRoot = 'file:///C:/Projects/molstar/molstar/build/viewer/index.html';
 const ViewerRoot = 'https://molstar.org/viewer';
 // const SnapshotRoot = window.location.origin;
 const SnapshotRoot = 'https://molstar.org/mol-view-spec';

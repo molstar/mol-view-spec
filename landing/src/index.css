@@ -855,7 +855,8 @@ there.
 }
 
 .founders,
-.examples {
+.examples,
+.demos {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -867,8 +868,14 @@ there.
   margin: 0 15px
 }
 
+.demos img {
+  max-width: 300px;
+  width: 100%;
+  margin: 0 10px;
+}
+
 .examples img {
-  max-width: 140px;
+  max-width: 160px;
   width: 100%;
   margin: 0 10px;
 }
@@ -890,8 +897,12 @@ there.
   opacity: 0.5;
 }
 
-.examples a:hover {
+.tooltip>a:hover {
   opacity: 1;
+}
+
+.demos {
+  a { opacity: 0.75 ;}
 }
 
 .tooltip {
