@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file, following the suggestions of [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v1.2.1] - 2025-02-26
+
+- State-related nodes are now exported by the package
+
 ## [v1.2.0] - 2025-02-25
 
 - Focus node 
