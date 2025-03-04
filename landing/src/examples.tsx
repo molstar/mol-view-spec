@@ -365,7 +365,7 @@ export function ExamplesUI() {
                 {Examples.map((e, i) => <ExamplePreview key={i} example={e} setCurrent={() => setExample(e)} current={example === e} />)}
             </div>
         </div>
-        <div style={{ margin: 20, marginRight: 30 }}>
+        <div style={{ margin: '20px auto', padding: '0 40px', maxWidth: 1980 }}>
             <CurrentExample example={example} />
         </div>
     </>
