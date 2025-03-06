@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import math
 import os
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Literal, Sequence, overload
 
 from pydantic import BaseModel, PrivateAttr
@@ -85,19 +85,14 @@ class _BuilderProtocol(ABC):
     Interface for `_Base` for correctly typing mixins.
     """
 
-    # @property
-    # @abstractmethod
-    # def _root(self) -> Root:
-    #     ...
+    @abstractmethod
+    def _get_root(self) -> Root: ...
 
-    # @property
-    # @abstractmethod
-    # def _node(self) -> Node:
-    #     ...
+    @abstractmethod
+    def _get_node(self) -> Node: ...
 
-    # @abstractmethod
-    # def _add_child(self, node: Node) -> None:
-    #     ...
+    @abstractmethod
+    def _add_child(self, node: Node) -> None: ...
 
 
 class _Base(BaseModel, _BuilderProtocol):
@@ -107,6 +102,14 @@ class _Base(BaseModel, _BuilderProtocol):
 
     _root: Root = PrivateAttr()
     _node: Node = PrivateAttr()
+
+    def _get_root(self) -> Root:
+        # need to define this separately because Pydantic v2 PrivateAttr does not work with abstract methods
+        return self._root
+
+    def _get_node(self) -> Node:
+        # need to define this separately because Pydantic v2 PrivateAttr does not work with abstract methods
+        return self._node
 
     def __init__(self, *, root: Root, node: Node) -> None:
         super().__init__()
@@ -147,7 +150,7 @@ class _PrimitivesMixin(_BuilderProtocol):
         params = make_params(PrimitivesParams, locals())
         node = Node(kind="primitives", params=params)
         self._add_child(node)
-        return Primitives(node=node, root=self._root)
+        return Primitives(node=node, root=self._get_root())
 
     def primitives_from_uri(
         self,
@@ -166,7 +169,7 @@ class _PrimitivesMixin(_BuilderProtocol):
         params = make_params(PrimitivesFromUriParams, locals())
         node = Node(kind="primitives_from_uri", params=params)
         self._add_child(node)
-        return PrimitivesFromUri(node=node, root=self._root)
+        return PrimitivesFromUri(node=node, root=self._get_root())
 
 
 class _FocusMixin(_BuilderProtocol):
@@ -809,8 +812,21 @@ class Component(_Base, _FocusMixin):
         :param kwargs: optional, representation-specific params
         :return: a builder that handles operations at representation level
         """
+        ...
+
+    def representation(
+        self, *, type: RepresentationTypeT = "cartoon", custom: CustomT = None, ref: RefT = None, **kwargs: Any
+    ) -> Representation:
+        """
+        Add a representation for this component.
+        :param type: the type of representation, defaults to 'cartoon'
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :param kwargs: optional, representation-specific params
+        :return: a builder that handles operations at representation level
+        """
         params_class = RepresentationTypeParams.get(type)
-        params = make_params(params_class, locals(), **kwargs)
+        params = make_params(params_class, locals(), **kwargs)  # type: ignore
         node = Node(kind="representation", params=params)
         self._add_child(node)
         return Representation(node=node, root=self._root)
@@ -950,6 +966,20 @@ class Volume(_Base, _FocusMixin):
         """
         ...
 
+    @overload
+    def representation(
+        self, *, type: VolumeRepresentationTypeT = "isosurface", custom: CustomT = None, ref: RefT = None, **kwargs: Any
+    ) -> VolumeRepresentation:
+        """
+        Add a representation for this component.
+        :param type: the type of representation, defaults to 'isosurface'
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :param kwargs: optional, representation-specific params
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
     def representation(
         self, *, type: VolumeRepresentationTypeT = "isosurface", custom: CustomT = None, ref: RefT = None, **kwargs: Any
     ) -> VolumeRepresentation:
@@ -962,7 +992,7 @@ class Volume(_Base, _FocusMixin):
         :return: a builder that handles operations at representation level
         """
         params_class = VolumeRepresentationTypeParams.get(type)
-        params = make_params(params_class, locals(), **kwargs)
+        params = make_params(params_class, locals(), **kwargs)  # type: ignore
         node = Node(kind="volume_representation", params=params)
         self._add_child(node)
         return VolumeRepresentation(node=node, root=self._root)

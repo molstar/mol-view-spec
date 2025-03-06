@@ -608,18 +608,18 @@ async def membrane_orientation_example_3sn6() -> MVSResponse:
     (
         builder.primitives(tooltip="Membrane Layer", opacity=0.66)
         .ellipse(
-            center=server_response["planePoint1"],
-            major_axis=major_axis,
-            minor_axis=minor_axis,
-            radius_major=server_response["radius"],
+            center=server_response["planePoint1"],  # type: ignore
+            major_axis=major_axis,  # type: ignore
+            minor_axis=minor_axis,  # type: ignore
+            radius_major=server_response["radius"],  # type: ignore
             as_circle=True,
             tooltip="Inner Membrane",
         )
         .ellipse(
-            center=server_response["planePoint2"],
-            major_axis=major_axis,
-            minor_axis=minor_axis,
-            radius_major=server_response["radius"],
+            center=server_response["planePoint2"],  # type: ignore
+            major_axis=major_axis,  # type: ignore
+            minor_axis=minor_axis,  # type: ignore
+            radius_major=server_response["radius"],  # type: ignore
             as_circle=True,
             tooltip="Outer Membrane",
         )
@@ -658,18 +658,18 @@ async def membrane_orientation_example_1brr() -> MVSResponse:
     (
         builder.primitives(tooltip="Membrane Layer", opacity=0.66)
         .ellipse(
-            center=server_response["planePoint1"],
-            major_axis=major_axis,
-            minor_axis=minor_axis,
-            radius_major=server_response["radius"],
+            center=server_response["planePoint1"],  # type: ignore
+            major_axis=major_axis,  # type: ignore
+            minor_axis=minor_axis,  # type: ignore
+            radius_major=server_response["radius"],  # type: ignore
             as_circle=True,
             tooltip="Outer Membrane",
         )
         .ellipse(
-            center=server_response["planePoint2"],
-            major_axis=major_axis,
-            minor_axis=minor_axis,
-            radius_major=server_response["radius"],
+            center=server_response["planePoint2"],  # type: ignore
+            major_axis=major_axis,  # type: ignore
+            minor_axis=minor_axis,  # type: ignore
+            radius_major=server_response["radius"],  # type: ignore
             as_circle=True,
             tooltip="Inner Membrane",
         )
@@ -1050,7 +1050,7 @@ async def volume_server_map_example() -> MVSResponse:
     structure.component(selector="polymer").representation(type="cartoon").color(color="white")
     ligand = structure.component(selector="ligand")
     ligand.representation(type="ball_and_stick").color(custom={"molstar_color_theme_name": "element-symbol"})
-    ligand.focus(up=[0.98, -0.19, 0], direction=[-28.47, -17.66, -16.32], radius=14, radius_extent=5)
+    ligand.focus(up=(0.98, -0.19, 0), direction=(-28.47, -17.66, -16.32), radius=14, radius_extent=5)
 
     volume_data = builder.download(
         url="https://www.ebi.ac.uk/pdbe/densities/x-ray/1tqn/box/-22.367,-33.367,-21.634/-7.106,-10.042,-0.937?detail=3"
