@@ -256,6 +256,8 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
             # `version` and `timestamp` added by the constructor
         )
         state = State(root=self._node, metadata=metadata)
+
+        # pydantic v1 compatibility
         if hasattr(state, "model_dump_json"):
             return state.model_dump_json(exclude_none=True, indent=indent)
         return state.json(exclude_none=True, indent=indent)
