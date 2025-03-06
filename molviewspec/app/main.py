@@ -25,12 +25,12 @@ The output is a JSON file that can be opened by Mol* and will create the defined
               """,
 )
 app.add_middleware(
-    CORSMiddleware,
+    CORSMiddleware,  # type: ignore
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
-app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=3)
+)  # type: ignore
+app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=3)  # type: ignore
 
 app.include_router(router, prefix="/api/v1")
