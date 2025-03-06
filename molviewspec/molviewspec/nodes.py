@@ -854,7 +854,7 @@ class DistanceMeasurementParams(_TubeParamsBase):
     label_color: Optional[ColorT] = Field(None, description="Color of the label.")
 
 
-class AngleMeasurementParams(_TubeParamsBase):
+class AngleMeasurementParams(BaseModel):
     kind: Literal["angle_measurement"] = "angle_measurement"
 
     a: PrimitivePositionT = Field(description="Point A.")

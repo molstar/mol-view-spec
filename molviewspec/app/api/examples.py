@@ -992,11 +992,11 @@ async def ihm_basic_restraints_example() -> MVSResponse:
 
     # Extracted manually from ihm_cross_link_restraint category of 8zz1.cif
     RESTRAINTS = [
-        [3, "C", 17, 3, "C", 412],
-        [3, "C", 17, 3, "C", 735],
-        [3, "C", 206, 3, "C", 217],
-        [3, "C", 384, 3, "C", 362],
-        [3, "C", 400, 3, "C", 530],
+        ["3", "C", 17, "3", "C", 412],
+        ["3", "C", 17, "3", "C", 735],
+        ["3", "C", 206, "3", "C", 217],
+        ["3", "C", 384, "3", "C", 362],
+        ["3", "C", 400, "3", "C", 530],
         # ...
     ]
 
@@ -1076,7 +1076,7 @@ async def volume_server_map_example() -> MVSResponse:
     )
 
     return PlainTextResponse(
-        States(snapshots=[snapshot], metadata=GlobalMetadata(description="1tqn + Volume Server")).json(
+        States(snapshots=[snapshot], metadata=GlobalMetadata(description="1tqn + Volume Server")).model_dump_json(
             exclude_none=True, indent=2
         )
     )
