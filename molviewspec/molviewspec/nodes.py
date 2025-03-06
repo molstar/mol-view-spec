@@ -139,7 +139,6 @@ class State(BaseModel):
 
     kind: StateTreeT = Field(
         default="single",
-        const=True,
         description="Specifies whether this is an individual state or a collection of states.",
     )
     root: Node = Field(description="Root of the node tree.")
@@ -162,7 +161,6 @@ class States(BaseModel):
 
     kind: StateTreeT = Field(
         default="multiple",
-        const=True,
         description="Specifies whether this is an individual state or a collection of states.",
     )
     metadata: GlobalMetadata = Field(description="Associated metadata.")
