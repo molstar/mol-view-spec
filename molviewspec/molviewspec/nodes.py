@@ -1020,4 +1020,8 @@ def validate_state_tree(json: str) -> None:
     :param json: payload to validate
     :raises ValidationError if JSON is malformed or state tree type definitions are violated
     """
-    State.model_validate_json(json)
+    if hasattr(State, "model_validate_json"):
+        State.model_validate_json(json)
+    else:
+        # Pydantic v1 support
+        State.parse_raw(json)
