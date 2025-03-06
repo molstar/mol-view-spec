@@ -85,19 +85,19 @@ class _BuilderProtocol(ABC):
     Interface for `_Base` for correctly typing mixins.
     """
 
-    @property
-    @abstractmethod
-    def _root(self) -> Root:
-        ...
+    # @property
+    # @abstractmethod
+    # def _root(self) -> Root:
+    #     ...
 
-    @property
-    @abstractmethod
-    def _node(self) -> Node:
-        ...
+    # @property
+    # @abstractmethod
+    # def _node(self) -> Node:
+    #     ...
 
-    @abstractmethod
-    def _add_child(self, node: Node) -> None:
-        ...
+    # @abstractmethod
+    # def _add_child(self, node: Node) -> None:
+    #     ...
 
 
 class _Base(BaseModel, _BuilderProtocol):
@@ -255,7 +255,10 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
             description_format=description_format,
             # `version` and `timestamp` added by the constructor
         )
-        return State(root=self._node, metadata=metadata).json(exclude_none=True, indent=indent)
+        state = State(root=self._node, metadata=metadata)
+        if hasattr(state, "model_dump_json"):
+            return state.model_dump_json(exclude_none=True, indent=indent)
+        return state.json(exclude_none=True, indent=indent)
 
     def save_state(
         self,

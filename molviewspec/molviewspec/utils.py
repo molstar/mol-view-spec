@@ -22,9 +22,9 @@ def make_params(params_type: Type[TParams], values=None, /, **more_values: objec
         if ref is not None:
             result["ref"] = ref
 
-    for field in params_type.model_fields.values():
+    for field_name, field in params_type.model_fields.items():
         # must use alias here to properly resolve goodies like `schema_`
-        key = field.alias
+        key = field.alias or field_name
 
         if more_values.get(key) is not None:
             result[key] = more_values[key]
