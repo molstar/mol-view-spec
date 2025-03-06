@@ -239,7 +239,9 @@ async def multiple_states() -> MVSResponse:
         for index, (id, repr) in enumerate(itertools.product(ids, representations))
     ]
     metadata = GlobalMetadata(description="test")
-    return PlainTextResponse(States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2))
+    return PlainTextResponse(
+        States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2)
+    )
 
 
 def _multistate_template(key: str, url: str, repr: RepresentationTypeT) -> Snapshot:
@@ -313,7 +315,9 @@ async def multiple_states_alignment() -> MVSResponse:
         ),
     ]
     metadata = GlobalMetadata(description="test")
-    return PlainTextResponse(States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2))
+    return PlainTextResponse(
+        States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2)
+    )
 
 
 @router.get("/multiple-states-alignment-focus")
@@ -401,7 +405,9 @@ async def multiple_states_alignment_focus() -> MVSResponse:
         ),
     ]
     metadata = GlobalMetadata(description="test")
-    return PlainTextResponse(States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2))
+    return PlainTextResponse(
+        States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2)
+    )
 
 
 camera1 = {

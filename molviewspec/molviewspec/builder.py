@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import math
 import os
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Any, Literal, Sequence, overload
-from typing_extensions import Self
 
 from pydantic import BaseModel, PrivateAttr
+from typing_extensions import Self
 
 from molviewspec.nodes import (
     AngleMeasurementParams,
