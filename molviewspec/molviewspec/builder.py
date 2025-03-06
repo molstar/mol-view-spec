@@ -699,8 +699,8 @@ class Component(_Base, _FocusMixin):
         self,
         *,
         type: Literal["cartoon"],
-        size_factor: float = None,
-        tubular_helices: bool = None,
+        size_factor: float | None = None,
+        tubular_helices: bool | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -720,8 +720,8 @@ class Component(_Base, _FocusMixin):
         self,
         *,
         type: Literal["ball_and_stick"],
-        ignore_hydrogens: bool = None,
-        size_factor: float = None,
+        ignore_hydrogens: bool | None = None,
+        size_factor: float | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -741,8 +741,8 @@ class Component(_Base, _FocusMixin):
         self,
         *,
         type: Literal["spacefill"],
-        ignore_hydrogens: bool = None,
-        size_factor: float = None,
+        ignore_hydrogens: bool | None = None,
+        size_factor: float | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -762,7 +762,7 @@ class Component(_Base, _FocusMixin):
         self,
         *,
         type: Literal["carbohydrate"],
-        size_factor: float = None,
+        size_factor: float | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -781,8 +781,8 @@ class Component(_Base, _FocusMixin):
         self,
         *,
         type: Literal["surface"],
-        ignore_hydrogens: bool = None,
-        size_factor: float = None,
+        ignore_hydrogens: bool | None = None,
+        size_factor: float | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -797,6 +797,7 @@ class Component(_Base, _FocusMixin):
         """
         ...
 
+    @overload
     def representation(
         self, *, type: RepresentationTypeT = "cartoon", custom: CustomT = None, ref: RefT = None, **kwargs: Any
     ) -> Representation:
