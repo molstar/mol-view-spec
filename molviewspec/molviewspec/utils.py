@@ -7,6 +7,16 @@ from molviewspec import __version__
 TParams = TypeVar("TParams", bound=BaseModel)
 
 
+def get_model_fields(model_type: Any) -> dict[str, Any]:
+    """
+    Get fields of a Pydantic model.
+    """
+    # Pydantic v1 compatibility
+    if hasattr(model_type, "model_fields"):
+        return model_type.model_fields
+    return model_type.__fields__
+
+
 def make_params(params_type: Type[TParams], values=None, /, **more_values: object) -> Mapping[str, Any]:
     if values is None:
         values = {}
@@ -22,7 +32,7 @@ def make_params(params_type: Type[TParams], values=None, /, **more_values: objec
         if ref is not None:
             result["ref"] = ref
 
-    for field_name, field in params_type.model_fields.items():
+    for field_name, field in get_model_fields(params_type).items():
         # must use alias here to properly resolve goodies like `schema_`
         key = field.alias or field_name
 

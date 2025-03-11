@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from molviewspec.utils import get_major_version_tag
+from molviewspec.utils import get_major_version_tag, get_model_fields
 
 KindT = Literal[
     "root",
@@ -484,7 +484,7 @@ class SurfaceParams(RepresentationParams):
 
 
 RepresentationTypeParams = {
-    cast(Type[RepresentationParams], t).__fields__["type"].default: t
+    get_model_fields(cast(Type[RepresentationParams], t))["type"].default: t
     for t in (CartoonParams, BallAndStickParams, SpacefillParams, CarbohydrateParams, SurfaceParams)
 }
 
@@ -526,7 +526,7 @@ class VolumeIsoSurfaceParams(RepresentationParams):
     show_faces: Optional[bool] = Field(None, description="Show mesh faces. Defaults to true.")
 
 
-VolumeRepresentationTypeParams = {t.model_fields["type"].default: t for t in (VolumeIsoSurfaceParams,)}
+VolumeRepresentationTypeParams = {get_model_fields(t)["type"].default: t for t in (VolumeIsoSurfaceParams,)}
 
 
 class _DataFromUriParams(BaseModel):
