@@ -8,6 +8,9 @@ TParams = TypeVar("TParams", bound=BaseModel)
 
 
 def make_params(params_type: Type[TParams], values=None, /, **more_values: object) -> Mapping[str, Any]:
+    if params_type is None:
+        raise ValueError("Param type couldn't be resolved to a concrete class -- did you misspell the value of `type`?")
+
     if values is None:
         values = {}
     result = {}
