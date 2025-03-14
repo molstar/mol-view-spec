@@ -5,12 +5,12 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, cast, Literal, Mapping, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Literal, Mapping, Optional, Tuple, Type, TypeVar, Union, cast
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from molviewspec.utils import get_major_version_tag
+from molviewspec.utils import get_major_version_tag, get_model_fields
 
 KindT = Literal[
     "root",
@@ -55,10 +55,10 @@ class Node(BaseModel):
     """
 
     kind: KindT = Field(description="The type of this node.")
-    params: Optional[Mapping[str, Any]] = Field(description="Optional params that are needed for this node.")
-    children: Optional[list[Node]] = Field(description="Optional collection of nested child nodes.")
-    custom: CustomT = Field(description="Custom data to store attached to this node.")
-    ref: RefT = Field(description="Optional reference that can be used to access this node.")
+    params: Optional[Mapping[str, Any]] = Field(None, description="Optional params that are needed for this node.")
+    children: Optional[list[Node]] = Field(None, description="Optional collection of nested child nodes.")
+    custom: CustomT = Field(None, description="Custom data to store attached to this node.")
+    ref: RefT = Field(None, description="Optional reference that can be used to access this node.")
 
     def __init__(self, **data):
         # extract `custom` value from `params`
@@ -88,10 +88,10 @@ class GlobalMetadata(BaseModel):
     Top-level metadata for a MVS file (single-state or multi-state).
     """
 
-    title: Optional[str] = Field(description="Name of this view(s).")
-    description: Optional[str] = Field(description="Detailed description of this view(s).")
+    title: Optional[str] = Field(None, description="Name of this view(s).")
+    description: Optional[str] = Field(None, description="Detailed description of this view(s).")
     description_format: Optional[DescriptionFormatT] = Field(
-        description="Format of `description`. Default is 'markdown'."
+        None, description="Format of `description`. Default is 'markdown'."
     )
     timestamp: str = Field(
         description="Timestamp when this file was exported.",
@@ -108,10 +108,10 @@ class SnapshotMetadata(BaseModel):
     Metadata for an individual snapshot.
     """
 
-    title: Optional[str] = Field(description="Name of this snapshot.")
-    description: Optional[str] = Field(description="Detailed description of this snapshot.")
+    title: Optional[str] = Field(None, description="Name of this snapshot.")
+    description: Optional[str] = Field(None, description="Detailed description of this snapshot.")
     description_format: Optional[DescriptionFormatT] = Field(
-        description="Format of `description`. Default is 'markdown'."
+        None, description="Format of `description`. Default is 'markdown'."
     )
     key: Optional[str] = Field(
         default_factory=generate_uuid,  # TODO remove this, it's probably superfluous
@@ -119,7 +119,7 @@ class SnapshotMetadata(BaseModel):
     )
     linger_duration_ms: int = Field(description="Timespan for snapshot.")
     transition_duration_ms: Optional[int] = Field(
-        description="Timespan for the animation to the next snapshot. Leave empty to skip animations."
+        None, description="Timespan for the animation to the next snapshot. Leave empty to skip animations."
     )
 
     def __init__(self, **data):
@@ -139,7 +139,6 @@ class State(BaseModel):
 
     kind: StateTreeT = Field(
         default="single",
-        const=True,
         description="Specifies whether this is an individual state or a collection of states.",
     )
     root: Node = Field(description="Root of the node tree.")
@@ -162,7 +161,6 @@ class States(BaseModel):
 
     kind: StateTreeT = Field(
         default="multiple",
-        const=True,
         description="Specifies whether this is an individual state or a collection of states.",
     )
     metadata: GlobalMetadata = Field(description="Associated metadata.")
@@ -225,16 +223,18 @@ class StructureParams(BaseModel):
     """
 
     type: StructureTypeT = Field(description="How to interpret the loaded data")
-    assembly_id: Optional[str] = Field(description="Use the name to specify which assembly to load")
-    assembly_index: Optional[int] = Field(description="0-based assembly index, use this to load the 1st assembly")
-    model_index: Optional[int] = Field(description="0-based model index in case multiple NMR frames are present")
+    assembly_id: Optional[str] = Field(None, description="Use the name to specify which assembly to load")
+    assembly_index: Optional[int] = Field(None, description="0-based assembly index, use this to load the 1st assembly")
+    model_index: Optional[int] = Field(None, description="0-based model index in case multiple NMR frames are present")
     block_index: Optional[int] = Field(
-        description="0-based block index in case multiple mmCIF or SDF data blocks are " "present"
+        None, description="0-based block index in case multiple mmCIF or SDF data blocks are " "present"
     )
-    block_header: Optional[str] = Field(description="Reference a specific mmCIF or SDF data block by its block header")
-    radius: Optional[float] = Field(description="Radius around model coordinates when loading symmetry mates")
-    ijk_min: Optional[Vec3[int]] = Field(description="Bottom-left Miller indices")
-    ijk_max: Optional[Vec3[int]] = Field(description="Top-right Miller indices")
+    block_header: Optional[str] = Field(
+        None, description="Reference a specific mmCIF or SDF data block by its block header"
+    )
+    radius: Optional[float] = Field(None, description="Radius around model coordinates when loading symmetry mates")
+    ijk_min: Optional[Vec3[int]] = Field(None, description="Bottom-left Miller indices")
+    ijk_max: Optional[Vec3[int]] = Field(None, description="Top-right Miller indices")
 
 
 class VolumeParams(BaseModel):
@@ -242,7 +242,7 @@ class VolumeParams(BaseModel):
     Volume node, describing how to load and render volumetric data.
     """
 
-    channel_id: Optional[str] = Field(description="ID of the channel to load from the source data.")
+    channel_id: Optional[str] = Field(None, description="ID of the channel to load from the source data.")
 
 
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water", "coarse"]
@@ -253,38 +253,42 @@ class ComponentExpression(BaseModel):
     Component expressions are used to make selections.
     """
 
-    label_entity_id: Optional[str] = Field(description="Select an entity by its identifier")
+    label_entity_id: Optional[str] = Field(None, description="Select an entity by its identifier")
     label_asym_id: Optional[str] = Field(
-        description="Select a chain using its standard, programmatically-assigned identifier"
+        None, description="Select a chain using its standard, programmatically-assigned identifier"
     )
-    auth_asym_id: Optional[str] = Field(description="Select a chain using its legacy, author-assigned identifier")
+    auth_asym_id: Optional[str] = Field(None, description="Select a chain using its legacy, author-assigned identifier")
     label_seq_id: Optional[int] = Field(
-        description="Select a residue by its standard, programmatically-assigned sequence position"
+        None, description="Select a residue by its standard, programmatically-assigned sequence position"
     )
-    auth_seq_id: Optional[int] = Field(description="Select a residue by its legacy, author-assigned sequence position")
+    auth_seq_id: Optional[int] = Field(
+        None, description="Select a residue by its legacy, author-assigned sequence position"
+    )
     pdbx_PDB_ins_code: Optional[str] = Field(
-        description="Optional legacy insertion code, only relevant for `auth_seq_id`"
+        None, description="Optional legacy insertion code, only relevant for `auth_seq_id`"
     )
     beg_label_seq_id: Optional[int] = Field(
-        description="Defines a consecutive range of residues when combined with `end_label_seq_id`."
+        None, description="Defines a consecutive range of residues when combined with `end_label_seq_id`."
     )
     end_label_seq_id: Optional[int] = Field(
-        description="Defines a consecutive range of residues when combined with `beg_label_seq_id`. End indices are inclusive."
+        None,
+        description="Defines a consecutive range of residues when combined with `beg_label_seq_id`. End indices are inclusive.",
     )
     beg_auth_seq_id: Optional[int] = Field(
-        description="Defines a consecutive range of residues when combined with `end_auth_seq_id`."
+        None, description="Defines a consecutive range of residues when combined with `end_auth_seq_id`."
     )
     end_auth_seq_id: Optional[int] = Field(
-        description="Defines a consecutive range of residues when combined with `beg_auth_seq_id`. End indices are inclusive."
+        None,
+        description="Defines a consecutive range of residues when combined with `beg_auth_seq_id`. End indices are inclusive.",
     )
-    residue_index: Optional[int] = Field(description="0-based residue index in the source file")
-    label_atom_id: Optional[str] = Field(description="Atom name like 'CA', 'N', 'O' (`_atom_site.label_atom_id`)")
-    auth_atom_id: Optional[str] = Field(description="Atom name like 'CA', 'N', 'O' (`_atom_site.auth_atom_id`)")
+    residue_index: Optional[int] = Field(None, description="0-based residue index in the source file")
+    label_atom_id: Optional[str] = Field(None, description="Atom name like 'CA', 'N', 'O' (`_atom_site.label_atom_id`)")
+    auth_atom_id: Optional[str] = Field(None, description="Atom name like 'CA', 'N', 'O' (`_atom_site.auth_atom_id`)")
     type_symbol: Optional[str] = Field(
-        description="Element symbol like 'H', 'HE', 'LI', 'BE' (`_atom_site.type_symbol`)"
+        None, description="Element symbol like 'H', 'HE', 'LI', 'BE' (`_atom_site.type_symbol`)"
     )
-    atom_id: Optional[int] = Field(description="Unique atom identifier (`_atom_site.id`)")
-    atom_index: Optional[int] = Field(description="0-based atom index in the source file")
+    atom_id: Optional[int] = Field(None, description="Unique atom identifier (`_atom_site.id`)")
+    atom_index: Optional[int] = Field(None, description="0-based atom index in the source file")
 
 
 RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate"]
@@ -451,36 +455,36 @@ class RepresentationParams(BaseModel):
 
 class CartoonParams(RepresentationParams):
     type: Literal["cartoon"] = "cartoon"
-    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
-    tubular_helices: Optional[bool] = Field(description="Simplify corkscrew helices to tubes.")
+    size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
+    tubular_helices: Optional[bool] = Field(None, description="Simplify corkscrew helices to tubes.")
     # TODO support for variable size, e.g. based on b-factors?
 
 
 class BallAndStickParams(RepresentationParams):
     type: Literal["ball_and_stick"] = "ball_and_stick"
-    ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
-    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+    ignore_hydrogens: Optional[bool] = Field(None, descripton="Controls whether hydrogen atoms are drawn.")
+    size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 
 class SpacefillParams(RepresentationParams):
     type: Literal["spacefill"] = "spacefill"
-    ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
-    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+    ignore_hydrogens: Optional[bool] = Field(None, descripton="Controls whether hydrogen atoms are drawn.")
+    size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 
 class CarbohydrateParams(RepresentationParams):
     type: Literal["carbohydrate"] = "carbohydrate"
-    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+    size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 
 class SurfaceParams(RepresentationParams):
     type: Literal["surface"] = "surface"
-    ignore_hydrogens: Optional[bool] = Field(descripton="Controls whether hydrogen atoms are drawn.")
-    size_factor: Optional[float] = Field(description="Scales the corresponding visuals.")
+    ignore_hydrogens: Optional[bool] = Field(None, descripton="Controls whether hydrogen atoms are drawn.")
+    size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 
 RepresentationTypeParams = {
-    cast(Type[RepresentationParams], t).__fields__["type"].default: t
+    get_model_fields(cast(Type[RepresentationParams], t))["type"].default: t
     for t in (CartoonParams, BallAndStickParams, SpacefillParams, CarbohydrateParams, SurfaceParams)
 }
 
@@ -516,13 +520,13 @@ class VolumeIsoSurfaceParams(RepresentationParams):
 
     type: Literal["isosurface"] = "isosurface"
 
-    relative_isovalue: Optional[float] = Field(description="Relative isovalue")
-    absolute_isovalue: Optional[float] = Field(description="Absolute isovalue. Overrides `relative_isovalue`.")
-    show_wireframe: Optional[bool] = Field(description="Show mesh wireframe. Defaults to false.")
-    show_faces: Optional[bool] = Field(description="Show mesh faces. Defaults to true.")
+    relative_isovalue: Optional[float] = Field(None, description="Relative isovalue")
+    absolute_isovalue: Optional[float] = Field(None, description="Absolute isovalue. Overrides `relative_isovalue`.")
+    show_wireframe: Optional[bool] = Field(None, description="Show mesh wireframe. Defaults to false.")
+    show_faces: Optional[bool] = Field(None, description="Show mesh faces. Defaults to true.")
 
 
-VolumeRepresentationTypeParams = {t.__fields__["type"].default: t for t in (VolumeIsoSurfaceParams,)}
+VolumeRepresentationTypeParams = {get_model_fields(t)["type"].default: t for t in (VolumeIsoSurfaceParams,)}
 
 
 class _DataFromUriParams(BaseModel):
@@ -533,19 +537,20 @@ class _DataFromUriParams(BaseModel):
     uri: str = Field(description="Location of the resource")
     format: SchemaFormatT = Field(description="Format of the resource, i.e. 'cif', 'bcif', or 'json'")
     category_name: Optional[str] = Field(
-        description="Category wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+        None, description="Category wherein selection is located. Only applies when format is 'cif' or 'bcif'."
     )
     field_name: Optional[str] = Field(
+        None,
         description="Name of the column in CIF or field name (key) in JSON that "
         "contains the desired value (color/label/tooltip/component...); the "
         "default value is 'color'/'label'/'tooltip'/'component' depending "
         "on the node kind",
     )
     block_header: Optional[str] = Field(
-        description="Block name wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+        None, description="Block name wherein selection is located. Only applies when format is 'cif' or 'bcif'."
     )
     block_index: Optional[int] = Field(
-        description="Block index wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+        None, description="Block index wherein selection is located. Only applies when format is 'cif' or 'bcif'."
     )
     # must be aliased to not shadow BaseModel attribute
     schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
@@ -558,12 +563,13 @@ class _DataFromSourceParams(BaseModel):
 
     category_name: str = Field(description="Category wherein selection is located.")
     field_name: Optional[str] = Field(
+        None,
         description="Name of the column in CIF that contains the desired value ("
         "color/label/tooltip/component...); the default value is "
         "'color'/'label'/'tooltip'/'component' depending on the node kind",
     )
-    block_header: Optional[str] = Field(description="Block name wherein selection is located.")
-    block_index: Optional[int] = Field(description="Block index wherein selection is located.")
+    block_header: Optional[str] = Field(None, description="Block name wherein selection is located.")
+    block_index: Optional[int] = Field(None, description="Block index wherein selection is located.")
     # must be aliased to not shadow BaseModel attribute
     schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
 
@@ -574,7 +580,7 @@ class ComponentInlineParams(BaseModel):
     """
 
     selector: Optional[Union[ComponentSelectorT, ComponentExpression, list[ComponentExpression]]] = Field(
-        description="Describes one or more selections or one of the enumerated selectors."
+        None, description="Describes one or more selections or one of the enumerated selectors."
     )
 
 
@@ -584,9 +590,10 @@ class ComponentFromUriParams(_DataFromUriParams):
     """
 
     field_values: Optional[list[str]] = Field(
+        None,
         description="Create the component from rows that have any of these "
         "values in the field specified by `field_name`. If not "
-        "provided, create the component from all rows."
+        "provided, create the component from all rows.",
     )
 
 
@@ -596,9 +603,10 @@ class ComponentFromSourceParams(_DataFromSourceParams):
     """
 
     field_values: Optional[list[str]] = Field(
+        None,
         description="Create the component from rows that have any of these "
         "values in the field specified by `field_name`. If not "
-        "provided, create the component from all rows."
+        "provided, create the component from all rows.",
     )
 
 
@@ -607,7 +615,7 @@ class ColorInlineParams(ComponentInlineParams):
     Color based on function arguments.
     """
 
-    color: Optional[ColorT] = Field(description="Color using SVG color names or RGB hex code")
+    color: Optional[ColorT] = Field(None, description="Color using SVG color names or RGB hex code")
 
 
 class ColorFromUriParams(_DataFromUriParams):
@@ -669,16 +677,20 @@ class FocusInlineParams(BaseModel):
     Define the camera focus based on function arguments.
     """
 
-    direction: Optional[Vec3[float]] = Field(description="Direction of the view (vector position -> target)")
-    up: Optional[Vec3[float]] = Field(description="Controls the rotation around the vector between target and position")
+    direction: Optional[Vec3[float]] = Field(None, description="Direction of the view (vector position -> target)")
+    up: Optional[Vec3[float]] = Field(
+        None, description="Controls the rotation around the vector between target and position"
+    )
     radius: Optional[float] = Field(
-        description="Radius of the focused sphere (overrides `radius_factor` and `radius_extra`)"
+        None, description="Radius of the focused sphere (overrides `radius_factor` and `radius_extra`)"
     )
     radius_factor: Optional[float] = Field(
-        description="Radius of the focused sphere relative to the radius of parent component (default: 1). Focused radius = component_radius * radius_factor + radius_extent."
+        None,
+        description="Radius of the focused sphere relative to the radius of parent component (default: 1). Focused radius = component_radius * radius_factor + radius_extent.",
     )
     radius_extent: Optional[float] = Field(
-        description="Addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0). Focused radius = component_radius * radius_factor + radius_extent."
+        None,
+        description="Addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0). Focused radius = component_radius * radius_factor + radius_extent.",
     )
 
 
@@ -688,9 +700,10 @@ class TransformParams(BaseModel):
     """
 
     rotation: Optional[Mat3[float]] = Field(
+        None,
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
-    translation: Optional[Vec3[float]] = Field(description="3d vector describing the translation")
+    translation: Optional[Vec3[float]] = Field(None, description="3d vector describing the translation")
 
 
 class CameraParams(BaseModel):
@@ -715,10 +728,11 @@ class CanvasParams(BaseModel):
 
 class PrimitiveComponentExpressions(BaseModel):
     structure_ref: Optional[RefT] = Field(
-        description="Reference to a structure node to apply this expresion to. If undefined, get the structure implicitly from the tree."
+        None,
+        description="Reference to a structure node to apply this expresion to. If undefined, get the structure implicitly from the tree.",
     )
     expression_schema: Optional[SchemaT] = Field(
-        description="Schema the expressions follow, used for optimization of structure query resolution."
+        None, description="Schema the expressions follow, used for optimization of structure query resolution."
     )
     expressions: list[ComponentExpression] = Field(description="Expression refencing elements froms the structure_ref.")
 
@@ -733,13 +747,14 @@ a list of expressions within a specific structure.
 
 
 class PrimitivesParams(BaseModel):
-    color: Optional[ColorT] = Field(description="Default color for primitives in this group")
-    label_color: Optional[ColorT] = Field(description="Default label color for primitives in this group")
-    tooltip: Optional[str] = Field(description="Default tooltip for primitives in this group")
-    opacity: Optional[float] = Field(description="Opacity of primitive geometry in this group")
-    label_opacity: Optional[float] = Field(description="Opacity of primitive labels in this group")
+    color: Optional[ColorT] = Field(None, description="Default color for primitives in this group")
+    label_color: Optional[ColorT] = Field(None, description="Default label color for primitives in this group")
+    tooltip: Optional[str] = Field(None, description="Default tooltip for primitives in this group")
+    opacity: Optional[float] = Field(None, description="Opacity of primitive geometry in this group")
+    label_opacity: Optional[float] = Field(None, description="Opacity of primitive labels in this group")
     instances: Optional[list[Mat4[float]]] = Field(
-        description="Instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices"
+        None,
+        description="Instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices",
     )
 
 
@@ -754,20 +769,23 @@ class MeshParams(BaseModel):
         description="3N length array of indices into vertices that form triangles (t1_1, t1_2, t1_3, ...)"
     )
     triangle_groups: Optional[list[int]] = Field(
-        description="Assign a number to each triangle to group them. If not set, each triangle is considered a separate group."
+        None,
+        description="Assign a number to each triangle to group them. If not set, each triangle is considered a separate group.",
     )
     group_colors: Optional[Mapping[int, ColorT]] = Field(
-        description="Assign a color to each group. If not assigned, default primitives group color is used."
+        None, description="Assign a color to each group. If not assigned, default primitives group color is used."
     )
-    group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
+    group_tooltips: Optional[Mapping[int, str]] = Field(None, description="Assign an optional tooltip to each group.")
     tooltip: Optional[str] = Field(
-        description="Tooltip shown when hovering over the mesh. Assigned group_tooltips take precedence."
+        None, description="Tooltip shown when hovering over the mesh. Assigned group_tooltips take precedence."
     )
-    color: Optional[ColorT] = Field(description="Default color of the triangles.")
-    show_triangles: Optional[bool] = Field(description="Determine whether to render triangles of the mesh")
-    show_wireframe: Optional[bool] = Field(description="Determine whether to render wireframe of the mesh")
-    wireframe_width: Optional[float] = Field(description="Wireframe line width")
-    wireframe_color: Optional[ColorT] = Field(description="Wireframe color, uses triangle/group colors when not set")
+    color: Optional[ColorT] = Field(None, description="Default color of the triangles.")
+    show_triangles: Optional[bool] = Field(None, description="Determine whether to render triangles of the mesh")
+    show_wireframe: Optional[bool] = Field(None, description="Determine whether to render wireframe of the mesh")
+    wireframe_width: Optional[float] = Field(None, description="Wireframe line width")
+    wireframe_color: Optional[ColorT] = Field(
+        None, description="Wireframe color, uses triangle/group colors when not set"
+    )
 
 
 class LinesParams(BaseModel):
@@ -780,28 +798,29 @@ class LinesParams(BaseModel):
     indices: list[int] = Field(
         description="2N length array of indices into vertices that form lines (l1_1, ll1_2, ...)"
     )
-    line_groups: Optional[list[int]] = Field(description="Assign a number to each triangle to group them.")
+    line_groups: Optional[list[int]] = Field(None, description="Assign a number to each triangle to group them.")
     group_colors: Optional[Mapping[int, ColorT]] = Field(
-        description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over line_colors."
+        None,
+        description="Assign a color to each group. If not assigned, default primitives group color is used. Takes precedence over line_colors.",
     )
-    group_tooltips: Optional[Mapping[int, str]] = Field(description="Assign an optional tooltip to each group.")
+    group_tooltips: Optional[Mapping[int, str]] = Field(None, description="Assign an optional tooltip to each group.")
     group_widths: Optional[Mapping[int, float]] = Field(
-        description="Assign an optional line width to each group. Take precedence over `width`."
+        None, description="Assign an optional line width to each group. Take precedence over `width`."
     )
     tooltip: Optional[str] = Field(
-        description="Tooltip shown when hovering over the lines. Assigned group_tooltips take precedence."
+        None, description="Tooltip shown when hovering over the lines. Assigned group_tooltips take precedence."
     )
-    width: Optional[float] = Field(description="Line width")
-    color: Optional[ColorT] = Field(description="Default color of the lines.")
+    width: Optional[float] = Field(None, description="Line width")
+    color: Optional[ColorT] = Field(None, description="Default color of the lines.")
 
 
 class _TubeParamsBase(BaseModel):
     start: PrimitivePositionT = Field(description="Start of this tube.")
     end: PrimitivePositionT = Field(description="End of this tube.")
-    radius: Optional[float] = Field(description="Tube radius (in Angstroms).")
-    dash_length: Optional[float] = Field(description="Length of each dash.")
+    radius: Optional[float] = Field(None, description="Tube radius (in Angstroms).")
+    dash_length: Optional[float] = Field(None, description="Length of each dash.")
     color: Optional[ColorT] = Field(
-        description="Color of the tube. If not specified, the primitives group color is used."
+        None, description="Color of the tube. If not specified, the primitives group color is used."
     )
     # NOTE: this is currently not supported by Mol*, but can add it later if needed:
     # dash_start: Optional[float] = Field(description="Offset from start coords before the 1st dash is drawn.")
@@ -810,53 +829,53 @@ class _TubeParamsBase(BaseModel):
 
 class TubeParams(_TubeParamsBase):
     kind: Literal["tube"] = "tube"
-    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the tube.")
+    tooltip: Optional[str] = Field(None, description="Tooltip to show when hovering on the tube.")
 
 
 class ArrowParams(BaseModel):
     kind: Literal["arrow"] = "arrow"
 
     start: PrimitivePositionT = Field(description="Start of this arrow.")
-    end: Optional[PrimitivePositionT] = Field(description="End of this arrow.")
+    end: Optional[PrimitivePositionT] = Field(None, description="End of this arrow.")
 
-    direction: Optional[Vec3] = Field(description="If specified, the endpoint is computed as start + direction.")
+    direction: Optional[Vec3] = Field(None, description="If specified, the endpoint is computed as start + direction.")
     length: Optional[float] = Field(
-        description="Length of the arrow. If unset, the distance between start and end is used."
+        None, description="Length of the arrow. If unset, the distance between start and end is used."
     )
 
-    show_start_cap: Optional[bool] = Field(description="Draw a cap at the start of the arrow.")
-    start_cap_length: Optional[float] = Field(description="Length of the start cap.")
-    start_cap_radius: Optional[float] = Field(description="Radius of the start cap.")
+    show_start_cap: Optional[bool] = Field(None, description="Draw a cap at the start of the arrow.")
+    start_cap_length: Optional[float] = Field(None, description="Length of the start cap.")
+    start_cap_radius: Optional[float] = Field(None, description="Radius of the start cap.")
 
-    show_end_cap: Optional[bool] = Field(description="Draw a cap at the end of the arrow.")
-    end_cap_length: Optional[float] = Field(description="Length of the end cap.")
-    end_cap_radius: Optional[float] = Field(description="Radius of the end cap.")
+    show_end_cap: Optional[bool] = Field(None, description="Draw a cap at the end of the arrow.")
+    end_cap_length: Optional[float] = Field(None, description="Length of the end cap.")
+    end_cap_radius: Optional[float] = Field(None, description="Radius of the end cap.")
 
-    show_tube: Optional[bool] = Field(description="Draw a tube between the start and end of the arrow.")
-    tube_radius: Optional[float] = Field(description="Tube radius (in Angstroms).")
-    tube_dash_length: Optional[float] = Field(description="Length of each dash.")
+    show_tube: Optional[bool] = Field(None, description="Draw a tube between the start and end of the arrow.")
+    tube_radius: Optional[float] = Field(None, description="Tube radius (in Angstroms).")
+    tube_dash_length: Optional[float] = Field(None, description="Length of each dash.")
 
     color: Optional[ColorT] = Field(
-        description="Color of the arrow. If not specified, the primitives group color is used."
+        None, description="Color of the arrow. If not specified, the primitives group color is used."
     )
 
-    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the arrow.")
+    tooltip: Optional[str] = Field(None, description="Tooltip to show when hovering on the arrow.")
 
 
 class DistanceMeasurementParams(_TubeParamsBase):
     kind: Literal["distance_measurement"] = "distance_measurement"
     label_template: Optional[str] = Field(
-        description="Template used to construct the label. Use {{distance}} as placeholder for the distance."
+        None, description="Template used to construct the label. Use {{distance}} as placeholder for the distance."
     )
     label_size: Optional[float | Literal["auto"]] = Field(
-        description="Size of the label. Auto scales it by the distance."
+        None, description="Size of the label. Auto scales it by the distance."
     )
-    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size.")
-    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size.")
-    label_color: Optional[ColorT] = Field(description="Color of the label.")
+    label_auto_size_scale: Optional[float] = Field(None, description="Scaling factor for auto size.")
+    label_auto_size_min: Optional[float] = Field(None, description="Minimum size for auto size.")
+    label_color: Optional[ColorT] = Field(None, description="Color of the label.")
 
 
-class AngleMeasurementParams(_TubeParamsBase):
+class AngleMeasurementParams(BaseModel):
     kind: Literal["angle_measurement"] = "angle_measurement"
 
     a: PrimitivePositionT = Field(description="Point A.")
@@ -864,25 +883,25 @@ class AngleMeasurementParams(_TubeParamsBase):
     c: PrimitivePositionT = Field(description="Point C.")
 
     label_template: Optional[str] = Field(
-        description="Template used to construct the label. Use {{angle}} as placeholder for the value."
+        None, description="Template used to construct the label. Use {{angle}} as placeholder for the value."
     )
     label_size: Optional[float | Literal["auto"]] = Field(
-        description="Size of the label. Auto scales it by the average magnitude of (b - a) and (c - b)."
+        None, description="Size of the label. Auto scales it by the average magnitude of (b - a) and (c - b)."
     )
-    label_auto_size_scale: Optional[float] = Field(description="Scaling factor for auto size.")
-    label_auto_size_min: Optional[float] = Field(description="Minimum size for auto size.")
-    label_color: Optional[ColorT] = Field(description="Color of the label.")
+    label_auto_size_scale: Optional[float] = Field(None, description="Scaling factor for auto size.")
+    label_auto_size_min: Optional[float] = Field(None, description="Minimum size for auto size.")
+    label_color: Optional[ColorT] = Field(None, description="Color of the label.")
 
-    show_vector: Optional[bool] = Field(description="Draw vectors between (a, b) and (b, c).")
-    vector_color: Optional[ColorT] = Field(description="Color of the vectors.")
+    show_vector: Optional[bool] = Field(None, description="Draw vectors between (a, b) and (b, c).")
+    vector_color: Optional[ColorT] = Field(None, description="Color of the vectors.")
 
-    show_section: Optional[bool] = Field(description="Draw a filled circle section representing the angle.")
+    show_section: Optional[bool] = Field(None, description="Draw a filled circle section representing the angle.")
     section_color: Optional[ColorT] = Field(
-        description="Color of the angle section. If not specified, the primitives group color is used."
+        None, description="Color of the angle section. If not specified, the primitives group color is used."
     )
-    section_radius: Optional[float] = Field(description="Radius of the angle section. In angstroms.")
+    section_radius: Optional[float] = Field(None, description="Radius of the angle section. In angstroms.")
     section_radius_scale: Optional[float] = Field(
-        description="Factor to scale the radius of the angle section. Ignored if section_radius is set."
+        None, description="Factor to scale the radius of the angle section. Ignored if section_radius is set."
     )
 
 
@@ -890,40 +909,40 @@ class PrimitiveLabelParams(BaseModel):
     kind: Literal["label"] = "label"
     position: PrimitivePositionT = Field(description="Position of this label.")
     text: str = Field(default="The label.")
-    label_size: Optional[float] = Field(description="Size of the label.")
-    label_color: Optional[ColorT] = Field(description="Color of the label.")
-    label_offset: Optional[float] = Field(description="Camera-facing offset to prevent overlap with geometry.")
+    label_size: Optional[float] = Field(None, description="Size of the label.")
+    label_color: Optional[ColorT] = Field(None, description="Color of the label.")
+    label_offset: Optional[float] = Field(None, description="Camera-facing offset to prevent overlap with geometry.")
 
 
 class EllipseParams(BaseModel):
     kind: Literal["ellipse"] = "ellipse"
 
     center: PrimitivePositionT = Field(description="The center of the ellipse.")
-    as_circle: Optional[bool] = Field(description="If true, ignores radius_minor/magnitude of the minor axis.")
+    as_circle: Optional[bool] = Field(None, description="If true, ignores radius_minor/magnitude of the minor axis.")
 
-    major_axis: Optional[Vec3] = Field(description="Major axis of this ellipse.")
-    minor_axis: Optional[Vec3] = Field(description="Minor axis of this ellipse.")
+    major_axis: Optional[Vec3] = Field(None, description="Major axis of this ellipse.")
+    minor_axis: Optional[Vec3] = Field(None, description="Minor axis of this ellipse.")
 
     major_axis_endpoint: Optional[PrimitivePositionT] = Field(
-        description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
+        None, description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
     )
     minor_axis_endpoint: Optional[PrimitivePositionT] = Field(
-        description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center."
+        None, description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center."
     )
 
     radius_major: Optional[float] = Field(
-        description="Radius of the major axis. If unset, the length of the major axis is used."
+        None, description="Radius of the major axis. If unset, the length of the major axis is used."
     )
     radius_minor: Optional[float] = Field(
-        description="Radius of the minor axis. If unset, the length of the minor axis is used."
+        None, description="Radius of the minor axis. If unset, the length of the minor axis is used."
     )
 
-    theta_start: Optional[float] = Field(description="Start of the arc. In radians.")
-    theta_end: Optional[float] = Field(description="End of the arc. In radians.")
+    theta_start: Optional[float] = Field(None, description="Start of the arc. In radians.")
+    theta_end: Optional[float] = Field(None, description="End of the arc. In radians.")
 
-    color: Optional[ColorT] = Field(description="Default color for the ellipse.")
+    color: Optional[ColorT] = Field(None, description="Default color for the ellipse.")
 
-    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipse.")
+    tooltip: Optional[str] = Field(None, description="Tooltip to show when hovering on the ellipse.")
 
 
 class EllipsoidParams(BaseModel):
@@ -931,22 +950,24 @@ class EllipsoidParams(BaseModel):
 
     center: PrimitivePositionT = Field(description="The center of the ellipsoid.")
 
-    major_axis: Optional[Vec3] = Field(description="Major axis of this ellipsoid. Defaults to (1, 0, 0).")
-    minor_axis: Optional[Vec3] = Field(description="Minor axis of this ellipsoid. Defaults to (0, 1, 0).")
+    major_axis: Optional[Vec3] = Field(None, description="Major axis of this ellipsoid. Defaults to (1, 0, 0).")
+    minor_axis: Optional[Vec3] = Field(None, description="Minor axis of this ellipsoid. Defaults to (0, 1, 0).")
 
     major_axis_endpoint: Optional[PrimitivePositionT] = Field(
-        description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
+        None, description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
     )
     minor_axis_endpoint: Optional[PrimitivePositionT] = Field(
-        description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center."
+        None, description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center."
     )
 
-    radius: Optional[Vec3 | float] = Field(description="Radii of the ellipsoid along each axis.")
-    radius_extent: Optional[Vec3 | float] = Field(description="Added to the radii of the ellipsoid along each axis.")
+    radius: Optional[Vec3 | float] = Field(None, description="Radii of the ellipsoid along each axis.")
+    radius_extent: Optional[Vec3 | float] = Field(
+        None, description="Added to the radii of the ellipsoid along each axis."
+    )
 
-    color: Optional[ColorT] = Field(description="Default color for the ellipsoid.")
+    color: Optional[ColorT] = Field(None, description="Default color for the ellipsoid.")
 
-    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the ellipsoid.")
+    tooltip: Optional[str] = Field(None, description="Tooltip to show when hovering on the ellipsoid.")
 
 
 class BoxParams(BaseModel):
@@ -954,15 +975,16 @@ class BoxParams(BaseModel):
 
     center: PrimitivePositionT = Field(description="The center of the box.")
     extent: Optional[Vec3] = Field(
-        description="The width, the height, and the depth of the box. Added to the bounding box determined by the center."
+        None,
+        description="The width, the height, and the depth of the box. Added to the bounding box determined by the center.",
     )
 
     show_faces: bool = Field(True, description="Determine whether to render the faces of the box.")
-    face_color: Optional[ColorT] = Field(description="Color of the box faces.")
+    face_color: Optional[ColorT] = Field(None, description="Color of the box faces.")
 
     show_edges: bool = Field(False, description="Determine whether to render the edges of the box.")
-    edge_radius: Optional[float] = Field(0.1, description="Radius of the box edges. In angstroms.")
-    edge_color: Optional[ColorT] = Field(description="Color of the edges.")
+    edge_radius: Optional[float] = Field(None, description="Radius of the box edges. In angstroms.")
+    edge_color: Optional[ColorT] = Field(None, description="Color of the edges.")
 
     tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the box.")
 
@@ -989,7 +1011,7 @@ PrimitiveParamsT = (
 class PrimitivesFromUriParams(BaseModel):
     uri: str = Field(description="Location of the resource")
     format: Literal["mvs-node-json"] = Field(description="Format of the data")
-    references: Optional[list[str]] = Field(description="List of nodes the data are referencing")
+    references: Optional[list[str]] = Field(None, description="List of nodes the data are referencing")
 
 
 def validate_state_tree(json: str) -> None:
@@ -998,4 +1020,8 @@ def validate_state_tree(json: str) -> None:
     :param json: payload to validate
     :raises ValidationError if JSON is malformed or state tree type definitions are violated
     """
-    State.parse_raw(json)
+    if hasattr(State, "model_validate_json"):
+        State.model_validate_json(json)
+    else:
+        # Pydantic v1 support
+        State.parse_raw(json)
