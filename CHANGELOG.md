@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file, following the suggestions of [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [v1.3.0] - 2025-03-18
 
 - Support for pydantic v2
 
