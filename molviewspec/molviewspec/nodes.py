@@ -264,6 +264,8 @@ class ComponentExpression(BaseModel):
     auth_seq_id: Optional[int] = Field(
         None, description="Select a residue by its legacy, author-assigned sequence position"
     )
+    label_comp_id: Optional[str] = Field(None, description="Select a residue by its name")
+    auth_comp_id: Optional[str] = Field(None, description="Select a residue by its legacy, author-assigned name")
     pdbx_PDB_ins_code: Optional[str] = Field(
         None, description="Optional legacy insertion code, only relevant for `auth_seq_id`"
     )
