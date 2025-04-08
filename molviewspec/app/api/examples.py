@@ -2668,7 +2668,7 @@ async def testing_mvsj_to_mvsx(id: str = "1cbs", download: bool = True) -> Respo
     import os
     import tempfile
     import json
-    from molviewspec.utils import mvsj_to_mvsx, extract_mvsx
+    from molviewspec.mvsx_converter import mvsj_to_mvsx, extract_mvsx
 
     # Create a simple visualization
     builder = create_builder()
