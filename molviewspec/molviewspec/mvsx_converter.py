@@ -125,7 +125,7 @@ def mvsj_to_mvsx(
     Raises:
         MVSXError: If there's an error reading the MVSJ file
         MVSXDownloadError: If downloading external resources fails and download_external is True
-        MVSXValidationError: If the MVSJ file is invalid
+        MVSXValidationError: If the MVSJ file is invalid or a referenced local file is missing
     """
     # Set up logging
     if logger is None:
@@ -166,7 +166,7 @@ def mvsj_to_mvsx(
                 if "root" in snapshot:
                     find_uri_references(snapshot["root"], uri_references)
                 else:
-                    logger.warning("Snapshot is missing 'root' node")
+                    raise MVSXValidationError("Snapshot is missing 'root' node")
         else:
             # For standard MVSJ files, start from root node
             if "root" in mvsj_data:
@@ -229,10 +229,13 @@ def mvsj_to_mvsx(
                         # Keep the same relative path in the archive
                         uri_mapping[uri] = uri
                     else:
-                        logger.warning(
-                            f"Local file not found: {local_file_path}"
-                        )
+                        error_msg = f"Local file not found: {local_file_path}"
+                        logger.error(error_msg)
+                        raise MVSXValidationError(f"Missing local file: {local_file_path}")
 
+            except MVSXValidationError:
+                # Re-raise validation errors
+                raise
             except Exception as e:
                 logger.error(f"Error processing URI {uri}: {e}")
 
