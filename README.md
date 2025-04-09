@@ -264,6 +264,21 @@ python test_server.py
 
 Will call all API endpoint that can be called without arguments.
 
+### Running unit tests
+
+```
+cd molviewspec
+python test_mvsj_to_mvsx.py
+```
+
+### Testing everything
+
+```
+cd molviewspec
+make test
+```
+will run both server as well as registered unit tests.
+
 ### Formatting the Project
 
 ```
