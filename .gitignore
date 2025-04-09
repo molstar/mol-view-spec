@@ -3,6 +3,8 @@
 node_modules/
 .DS_Store
 tmp/
+# used by Makefile to track PID of test server and use that to terminate the process after the server test suite ran
+.server_pid
 
 ### venv
 Scripts
