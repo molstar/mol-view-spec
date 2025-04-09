@@ -2665,10 +2665,11 @@ async def testing_mvsj_to_mvsx(id: str = "1cbs", download: bool = True) -> Respo
     :param download: Whether to download external resources (default: True)
     :return: The MVSX archive as a file attachment for download
     """
+    import json
     import os
     import tempfile
-    import json
-    from molviewspec.mvsx_converter import mvsj_to_mvsx, extract_mvsx
+
+    from molviewspec.mvsx_converter import extract_mvsx, mvsj_to_mvsx
 
     # Create a simple visualization
     builder = create_builder()
@@ -2702,7 +2703,7 @@ async def testing_mvsj_to_mvsx(id: str = "1cbs", download: bool = True) -> Respo
         os.makedirs(extract_dir, exist_ok=True)
 
         # Save MVSJ to a file
-        with open(mvsj_path, 'w', encoding='utf-8') as f:
+        with open(mvsj_path, "w", encoding="utf-8") as f:
             f.write(mvsj_content)
 
         # Create the MVSX archive
@@ -2718,7 +2719,7 @@ async def testing_mvsj_to_mvsx(id: str = "1cbs", download: bool = True) -> Respo
             return PlainTextResponse(f"Failed to extract MVSX archive for {id}", status_code=500)
 
         # Read the extracted index.mvsj to include in response headers
-        with open(index_path, 'r', encoding='utf-8') as f:
+        with open(index_path, "r", encoding="utf-8") as f:
             extracted_mvsj = json.load(f)
 
         # Include details about the archive in the response headers
@@ -2736,7 +2737,7 @@ async def testing_mvsj_to_mvsx(id: str = "1cbs", download: bool = True) -> Respo
             headers={
                 "X-MVSX-Original-URL": original_url or "Not found",
                 "X-MVSX-Contents": str(os.listdir(extract_dir)),
-            }
+            },
         )
     except Exception as e:
         return PlainTextResponse(f"Error creating MVSX archive: {str(e)}", status_code=500)

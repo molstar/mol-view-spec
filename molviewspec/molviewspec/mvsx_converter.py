@@ -13,27 +13,23 @@ import urllib.parse
 import urllib.request
 import zipfile
 from pathlib import Path
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin, urlparse
 
 
 class MVSXError(Exception):
     """Base exception for MVSX-related errors."""
-    pass
 
 
 class MVSXDownloadError(MVSXError):
     """Exception raised when downloading external resources fails."""
-    pass
 
 
 class MVSXExtractionError(MVSXError):
     """Exception raised when extracting an MVSX archive fails."""
-    pass
 
 
 class MVSXValidationError(MVSXError):
     """Exception raised when an MVSX archive is invalid."""
-    pass
 
 
 def find_uri_references(node: dict, uri_references: set) -> None:
@@ -100,8 +96,8 @@ def mvsj_to_mvsx(
     input_mvsj_path: str | os.PathLike,
     output_mvsx_path: str | os.PathLike,
     download_external: bool = True,  # Default is True to always download external files
-    base_url: str = None,
-    logger: logging.Logger = None,
+    base_url: str | None = None,
+    logger: logging.Logger | None = None,
 ) -> bool:
     """
     Create an MVSX archive from an MVSJ file, automatically including all referenced files.
@@ -140,7 +136,7 @@ def mvsj_to_mvsx(
 
     # Read the input MVSJ file
     try:
-        with open(input_path, 'r', encoding='utf-8') as f:
+        with open(input_path, "r", encoding="utf-8") as f:
             mvsj_data = json.load(f)
     except json.JSONDecodeError as e:
         logger.error(f"Error parsing MVSJ file: {e}")
@@ -152,7 +148,7 @@ def mvsj_to_mvsx(
     # Create a temporary directory for downloaded files
     with tempfile.TemporaryDirectory() as temp_dir:
         # Find all URI references
-        uri_references = set()
+        uri_references: set[str] = set()
 
         # Check if this is a multi-state MVSJ file
         is_multistate = mvsj_data.get("kind") == "multiple"
@@ -175,7 +171,7 @@ def mvsj_to_mvsx(
                 raise MVSXValidationError("MVSJ file is missing 'root' node")
 
         # Create a mapping from original URIs to archive paths
-        uri_mapping = {}
+        uri_mapping: dict[str, str] = {}
         download_errors = []
 
         # Process each URI reference
@@ -184,7 +180,7 @@ def mvsj_to_mvsx(
                 parsed_uri = urlparse(uri)
 
                 # Check if it's an external URI that needs to be downloaded
-                is_external = parsed_uri.scheme in ('http', 'https', 'ftp')
+                is_external = parsed_uri.scheme in ("http", "https", "ftp")
 
                 if is_external and download_external:
                     # Form the full URL
@@ -241,7 +237,9 @@ def mvsj_to_mvsx(
 
         # If we have download errors and download_external is True, raise an exception
         if download_errors and download_external:
-            raise MVSXDownloadError(f"Failed to download {len(download_errors)} resources: {'; '.join(download_errors)}")
+            raise MVSXDownloadError(
+                f"Failed to download {len(download_errors)} resources: {'; '.join(download_errors)}"
+            )
 
         # Update the MVSJ structure to use local references
         if is_multistate:
@@ -256,10 +254,10 @@ def mvsj_to_mvsx(
 
         # Create the MVSX archive
         try:
-            with zipfile.ZipFile(output_path, mode='w') as z:
+            with zipfile.ZipFile(output_path, mode="w") as z:
                 # Add the modified MVSJ as index.mvsj
                 index_mvsj_path = os.path.join(temp_dir, "index.mvsj")
-                with open(index_mvsj_path, 'w', encoding='utf-8') as f:
+                with open(index_mvsj_path, "w", encoding="utf-8") as f:
                     json.dump(mvsj_data, f, ensure_ascii=False, indent=2)
 
                 z.write(index_mvsj_path, arcname="index.mvsj")
@@ -273,7 +271,7 @@ def mvsj_to_mvsx(
                             z.write(source_path, arcname=archive_path)
                     elif download_external:
                         # This is a downloaded external file
-                        source_path = os.path.join(temp_dir, archive_path)
+                        source_path = Path(temp_dir) / archive_path
                         if os.path.exists(source_path):
                             z.write(source_path, arcname=archive_path)
 
@@ -287,8 +285,8 @@ def mvsj_to_mvsx(
 
 def extract_mvsx(
     mvsx_path: str | os.PathLike,
-    output_dir: str | os.PathLike = None,
-    logger: logging.Logger = None,
+    output_dir: str | os.PathLike | None = None,
+    logger: logging.Logger | None = None,
 ) -> str | None:
     """
     Extract an MVSX archive to a directory and return the path to the index.mvsj file.
@@ -322,7 +320,7 @@ def extract_mvsx(
 
         # Extract the archive
         try:
-            with zipfile.ZipFile(mvsx_path, 'r') as z:
+            with zipfile.ZipFile(mvsx_path, "r") as z:
                 z.extractall(output_dir)
         except zipfile.BadZipFile:
             raise MVSXValidationError(f"Invalid MVSX archive: {mvsx_path} is not a valid ZIP file")

@@ -1,29 +1,26 @@
 """Test module for MVSJ to MVSX conversion functionality."""
 
 import json
-import os
-import tempfile
-import shutil
-import unittest
-import zipfile
 import logging
-from urllib.parse import urlparse
+import os
+import shutil
+import tempfile
+import unittest
 import urllib.request
+import zipfile
+from urllib.parse import urlparse
 
 from molviewspec.mvsx_converter import (
-    find_uri_references,
-    update_uri_references,
-    mvsj_to_mvsx,
-    extract_mvsx,
     MVSXDownloadError,
     MVSXValidationError,
+    extract_mvsx,
+    find_uri_references,
+    mvsj_to_mvsx,
+    update_uri_references,
 )
 
 # Set up logging for tests
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -45,7 +42,7 @@ class TestMVSXFunctionality(unittest.TestCase):
             # Look in ./test-data/colab_examples (relative to current working directory)
             os.path.join(os.getcwd(), "test-data", "colab_examples"),
             # Fallback to direct path in case the script is run from a different location
-            os.path.join(script_dir, "test", "colab_examples")
+            os.path.join(script_dir, "test", "colab_examples"),
         ]
 
         self.colab_examples_dir = None
@@ -67,32 +64,20 @@ class TestMVSXFunctionality(unittest.TestCase):
                 "children": [
                     {
                         "kind": "download",
-                        "params": {
-                            "url": "local_file.cif"
-                        },
-                        "children": [
-                            {
-                                "kind": "parse",
-                                "params": {
-                                    "format": "mmcif"
-                                }
-                            }
-                        ]
+                        "params": {"url": "local_file.cif"},
+                        "children": [{"kind": "parse", "params": {"format": "mmcif"}}],
                     }
-                ]
+                ],
             },
-            "metadata": {
-                "version": "0.1",
-                "timestamp": "2023-11-27T12:05:32.145284"
-            }
+            "metadata": {"version": "0.1", "timestamp": "2023-11-27T12:05:32.145284"},
         }
 
-        with open(self.simple_mvsj_path, 'w') as f:
+        with open(self.simple_mvsj_path, "w") as f:
             json.dump(self.simple_mvsj_data, f, indent=2)
 
         # Create a local file referenced in the MVSJ
         self.local_file_path = os.path.join(self.test_dir, "local_file.cif")
-        with open(self.local_file_path, 'w') as f:
+        with open(self.local_file_path, "w") as f:
             f.write("data_test\n_entry.id TEST\n")
 
         # Create a complex MVSJ with both local and remote references
@@ -103,47 +88,25 @@ class TestMVSXFunctionality(unittest.TestCase):
                 "children": [
                     {
                         "kind": "download",
-                        "params": {
-                            "url": "local_file.cif"
-                        },
+                        "params": {"url": "local_file.cif"},
                         "children": [
                             {
                                 "kind": "parse",
-                                "params": {
-                                    "format": "mmcif"
-                                },
+                                "params": {"format": "mmcif"},
                                 "children": [
                                     {
                                         "kind": "structure",
-                                        "params": {
-                                            "type": "model"
-                                        },
-                                        "children": [
-                                            {
-                                                "kind": "component",
-                                                "params": {
-                                                    "selector": "all"
-                                                }
-                                            }
-                                        ]
+                                        "params": {"type": "model"},
+                                        "children": [{"kind": "component", "params": {"selector": "all"}}],
                                     }
-                                ]
+                                ],
                             }
-                        ]
+                        ],
                     },
                     {
                         "kind": "download",
-                        "params": {
-                            "url": "https://files.wwpdb.org/download/1cbs.cif"
-                        },
-                        "children": [
-                            {
-                                "kind": "parse",
-                                "params": {
-                                    "format": "mmcif"
-                                }
-                            }
-                        ]
+                        "params": {"url": "https://files.wwpdb.org/download/1cbs.cif"},
+                        "children": [{"kind": "parse", "params": {"format": "mmcif"}}],
                     },
                     {
                         "kind": "tooltip_from_uri",
@@ -153,24 +116,24 @@ class TestMVSXFunctionality(unittest.TestCase):
                             "category_name": "annotations",
                             "field_name": "label",
                             "block_header": "test_annotations",
-                            "schema": "residue_range"
-                        }
-                    }
-                ]
+                            "schema": "residue_range",
+                        },
+                    },
+                ],
             },
             "metadata": {
                 "version": "0.1",
                 "title": "A test with MVS annotations",
-                "timestamp": "2024-06-01T10:00:00.000000+00:00"
-            }
+                "timestamp": "2024-06-01T10:00:00.000000+00:00",
+            },
         }
 
-        with open(self.complex_mvsj_path, 'w') as f:
+        with open(self.complex_mvsj_path, "w") as f:
             json.dump(self.complex_mvsj_data, f, indent=2)
 
         # Create annotation file referenced in complex MVSJ
         self.annotation_file_path = os.path.join(self.test_dir, "annotations.cif")
-        with open(self.annotation_file_path, 'w') as f:
+        with open(self.annotation_file_path, "w") as f:
             f.write("data_test_annotations\n\nloop_\n_annotations.id\n_annotations.label\n1 'Test Label'\n")
 
         # Create a multi-state MVSJ file
@@ -180,50 +143,31 @@ class TestMVSXFunctionality(unittest.TestCase):
             "metadata": {
                 "version": "1.1",
                 "title": "Multi-state Test",
-                "timestamp": "2024-06-01T10:00:00.000000+00:00"
+                "timestamp": "2024-06-01T10:00:00.000000+00:00",
             },
             "snapshots": [
                 {
-                    "root": {
-                        "kind": "root",
-                        "children": [
-                            {
-                                "kind": "download",
-                                "params": {
-                                    "url": "local_file.cif"
-                                }
-                            }
-                        ]
-                    },
-                    "metadata": {
-                        "title": "Snapshot 1",
-                        "key": "snapshot1",
-                        "linger_duration_ms": 1000
-                    }
+                    "root": {"kind": "root", "children": [{"kind": "download", "params": {"url": "local_file.cif"}}]},
+                    "metadata": {"title": "Snapshot 1", "key": "snapshot1", "linger_duration_ms": 1000},
                 },
                 {
                     "root": {
                         "kind": "root",
                         "children": [
-                            {
-                                "kind": "download",
-                                "params": {
-                                    "url": "https://files.wwpdb.org/download/1cbs.cif"
-                                }
-                            }
-                        ]
+                            {"kind": "download", "params": {"url": "https://files.wwpdb.org/download/1cbs.cif"}}
+                        ],
                     },
                     "metadata": {
                         "title": "Snapshot 2",
                         "key": "snapshot2",
                         "linger_duration_ms": 1000,
-                        "transition_duration_ms": 500
-                    }
-                }
-            ]
+                        "transition_duration_ms": 500,
+                    },
+                },
+            ],
         }
 
-        with open(self.multistate_mvsj_path, 'w') as f:
+        with open(self.multistate_mvsj_path, "w") as f:
             json.dump(self.multistate_mvsj_data, f, indent=2)
 
     def tearDown(self):
@@ -267,7 +211,7 @@ class TestMVSXFunctionality(unittest.TestCase):
         uri_mapping = {
             "local_file.cif": "new_local.cif",
             "https://files.wwpdb.org/download/1cbs.cif": "1cbs.cif",
-            "annotations.cif": "new_annotations.cif"
+            "annotations.cif": "new_annotations.cif",
         }
         updated_data = json.loads(json.dumps(self.complex_mvsj_data))  # Deep copy
         update_uri_references(updated_data["root"], uri_mapping)
@@ -280,24 +224,19 @@ class TestMVSXFunctionality(unittest.TestCase):
         output_mvsx_path = os.path.join(self.test_dir, "simple.mvsx")
 
         # Create MVSX file from simple MVSJ
-        result = mvsj_to_mvsx(
-            self.simple_mvsj_path,
-            output_mvsx_path,
-            download_external=True,
-            logger=logger
-        )
+        result = mvsj_to_mvsx(self.simple_mvsj_path, output_mvsx_path, download_external=True, logger=logger)
         self.assertTrue(result)
         self.assertTrue(os.path.exists(output_mvsx_path))
 
         # Check MVSX contents
-        with zipfile.ZipFile(output_mvsx_path, 'r') as z:
+        with zipfile.ZipFile(output_mvsx_path, "r") as z:
             files = z.namelist()
             self.assertIn("index.mvsj", files)
             self.assertIn("local_file.cif", files)
 
             # Check that index.mvsj has updated URLs
             with z.open("index.mvsj") as f:
-                mvsj_content = json.loads(f.read().decode('utf-8'))
+                mvsj_content = json.loads(f.read().decode("utf-8"))
                 url = mvsj_content["root"]["children"][0]["params"]["url"]
                 self.assertEqual(url, "local_file.cif")
 
@@ -307,17 +246,12 @@ class TestMVSXFunctionality(unittest.TestCase):
 
         # Create MVSX file from complex MVSJ with external file download enabled
         try:
-            result = mvsj_to_mvsx(
-                self.complex_mvsj_path,
-                output_mvsx_path,
-                download_external=True,
-                logger=logger
-            )
+            result = mvsj_to_mvsx(self.complex_mvsj_path, output_mvsx_path, download_external=True, logger=logger)
             self.assertTrue(result)
             self.assertTrue(os.path.exists(output_mvsx_path))
 
             # Check MVSX contents
-            with zipfile.ZipFile(output_mvsx_path, 'r') as z:
+            with zipfile.ZipFile(output_mvsx_path, "r") as z:
                 files = z.namelist()
                 self.assertIn("index.mvsj", files)
                 self.assertIn("local_file.cif", files)
@@ -325,7 +259,7 @@ class TestMVSXFunctionality(unittest.TestCase):
 
                 # Check if external files were downloaded or their URLs updated
                 with z.open("index.mvsj") as f:
-                    mvsj_content = json.loads(f.read().decode('utf-8'))
+                    mvsj_content = json.loads(f.read().decode("utf-8"))
                     remote_url = mvsj_content["root"]["children"][1]["params"]["url"]
 
                     # Either the URL is updated to a local file (if download succeeded)
@@ -351,12 +285,12 @@ class TestMVSXFunctionality(unittest.TestCase):
         mock_url = "https://example.com/test.cif"
         mock_mvsj_data["root"]["children"][1]["params"]["url"] = mock_url
 
-        with open(mock_mvsj_path, 'w') as f:
+        with open(mock_mvsj_path, "w") as f:
             json.dump(mock_mvsj_data, f, indent=2)
 
         # Create a mock "downloaded" file
         mock_download_source = os.path.join(self.test_dir, "mock_download.cif")
-        with open(mock_download_source, 'w') as f:
+        with open(mock_download_source, "w") as f:
             f.write("data_mock\n_entry.id MOCK\n")
 
         # Define a function to mock URL retrieval
@@ -373,17 +307,12 @@ class TestMVSXFunctionality(unittest.TestCase):
 
         try:
             # Create MVSX file with our mocked download
-            result = mvsj_to_mvsx(
-                mock_mvsj_path,
-                output_mvsx_path,
-                download_external=True,
-                logger=logger
-            )
+            result = mvsj_to_mvsx(mock_mvsj_path, output_mvsx_path, download_external=True, logger=logger)
             self.assertTrue(result)
             self.assertTrue(os.path.exists(output_mvsx_path))
 
             # Check MVSX contents
-            with zipfile.ZipFile(output_mvsx_path, 'r') as z:
+            with zipfile.ZipFile(output_mvsx_path, "r") as z:
                 files = z.namelist()
                 self.assertIn("index.mvsj", files)
 
@@ -393,7 +322,7 @@ class TestMVSXFunctionality(unittest.TestCase):
 
                 # Check that index.mvsj has updated URL
                 with z.open("index.mvsj") as f:
-                    mvsj_content = json.loads(f.read().decode('utf-8'))
+                    mvsj_content = json.loads(f.read().decode("utf-8"))
                     updated_url = mvsj_content["root"]["children"][1]["params"]["url"]
                     self.assertEqual(updated_url, expected_filename)
         finally:
@@ -404,23 +333,14 @@ class TestMVSXFunctionality(unittest.TestCase):
         """Test extracting MVSX archive."""
         # First, create an MVSX file
         mvsx_path = os.path.join(self.test_dir, "extract_test.mvsx")
-        result = mvsj_to_mvsx(
-            self.simple_mvsj_path,
-            mvsx_path,
-            download_external=True,
-            logger=logger
-        )
+        result = mvsj_to_mvsx(self.simple_mvsj_path, mvsx_path, download_external=True, logger=logger)
         self.assertTrue(result)
 
         # Now extract it to a new directory
         extract_dir = os.path.join(self.test_dir, "extracted")
         os.makedirs(extract_dir, exist_ok=True)
 
-        index_path = extract_mvsx(
-            mvsx_path,
-            extract_dir,
-            logger=logger
-        )
+        index_path = extract_mvsx(mvsx_path, extract_dir, logger=logger)
 
         # Check that extraction was successful
         self.assertIsNotNone(index_path)
@@ -428,12 +348,12 @@ class TestMVSXFunctionality(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(extract_dir, "local_file.cif")))
 
         # Load and verify the extracted MVSJ content
-        with open(index_path, 'r', encoding='utf-8') as f:
+        with open(index_path, "r", encoding="utf-8") as f:
             extracted_mvsj = json.load(f)
             self.assertEqual(extracted_mvsj["metadata"]["version"], self.simple_mvsj_data["metadata"]["version"])
             self.assertEqual(
                 extracted_mvsj["root"]["children"][0]["params"]["url"],
-                self.simple_mvsj_data["root"]["children"][0]["params"]["url"]
+                self.simple_mvsj_data["root"]["children"][0]["params"]["url"],
             )
 
     def test_multistate_mvsx(self):
@@ -442,24 +362,19 @@ class TestMVSXFunctionality(unittest.TestCase):
 
         # Create MVSX file from multi-state MVSJ
         try:
-            result = mvsj_to_mvsx(
-                self.multistate_mvsj_path,
-                output_mvsx_path,
-                download_external=True,
-                logger=logger
-            )
+            result = mvsj_to_mvsx(self.multistate_mvsj_path, output_mvsx_path, download_external=True, logger=logger)
             self.assertTrue(result)
             self.assertTrue(os.path.exists(output_mvsx_path))
 
             # Check MVSX contents
-            with zipfile.ZipFile(output_mvsx_path, 'r') as z:
+            with zipfile.ZipFile(output_mvsx_path, "r") as z:
                 files = z.namelist()
                 self.assertIn("index.mvsj", files)
                 self.assertIn("local_file.cif", files)
 
                 # Check that index.mvsj has the correct structure
                 with z.open("index.mvsj") as f:
-                    mvsj_content = json.loads(f.read().decode('utf-8'))
+                    mvsj_content = json.loads(f.read().decode("utf-8"))
                     self.assertEqual(mvsj_content["kind"], "multiple")
                     self.assertEqual(len(mvsj_content["snapshots"]), 2)
 
@@ -497,7 +412,7 @@ class TestMVSXFunctionality(unittest.TestCase):
         os.makedirs(output_dir, exist_ok=True)
 
         # Get list of MVSJ files in colab_examples directory
-        mvsj_files = [f for f in os.listdir(self.colab_examples_dir) if f.endswith('.mvsj')]
+        mvsj_files = [f for f in os.listdir(self.colab_examples_dir) if f.endswith(".mvsj")]
         self.assertGreater(len(mvsj_files), 0, "No MVSJ files found in colab_examples directory")
 
         logger.info(f"Found {len(mvsj_files)} MVSJ files in colab_examples directory")
@@ -511,53 +426,48 @@ class TestMVSXFunctionality(unittest.TestCase):
 
             try:
                 # Create MVSX archive
-                result = mvsj_to_mvsx(
-                    mvsj_path,
-                    mvsx_path,
-                    download_external=True,
-                    logger=logger
-                )
+                result = mvsj_to_mvsx(mvsj_path, mvsx_path, download_external=True, logger=logger)
 
                 # Check that conversion was successful
                 self.assertTrue(result, f"Failed to convert {mvsj_filename} to MVSX")
                 self.assertTrue(os.path.exists(mvsx_path), f"MVSX file {mvsx_path} not created")
 
                 # Examine MVSX contents
-                with zipfile.ZipFile(mvsx_path, 'r') as z:
+                with zipfile.ZipFile(mvsx_path, "r") as z:
                     files = z.namelist()
                     self.assertIn("index.mvsj", files, f"index.mvsj not found in {mvsx_filename}")
 
                     # Check that the index.mvsj file is valid JSON
                     with z.open("index.mvsj") as f:
-                        mvsj_content = json.loads(f.read().decode('utf-8'))
-                        self.assertIsInstance(mvsj_content, dict, f"index.mvsj in {mvsx_filename} is not a valid JSON object")
+                        mvsj_content = json.loads(f.read().decode("utf-8"))
+                        self.assertIsInstance(
+                            mvsj_content, dict, f"index.mvsj in {mvsx_filename} is not a valid JSON object"
+                        )
 
                         # Check if it has metadata
                         if "metadata" in mvsj_content:
                             self.assertIsInstance(
                                 mvsj_content["metadata"],
                                 dict,
-                                f"metadata in {mvsx_filename} is not a valid JSON object"
+                                f"metadata in {mvsx_filename} is not a valid JSON object",
                             )
 
                 # Extract the MVSX and verify
                 extract_dir = os.path.join(output_dir, os.path.splitext(mvsj_filename)[0])
                 os.makedirs(extract_dir, exist_ok=True)
 
-                index_path = extract_mvsx(
-                    mvsx_path,
-                    extract_dir,
-                    logger=logger
-                )
+                index_path = extract_mvsx(mvsx_path, extract_dir, logger=logger)
 
                 # Check that extraction was successful
                 self.assertIsNotNone(index_path, f"Failed to extract {mvsx_filename}")
                 self.assertTrue(os.path.exists(index_path), f"index.mvsj not found in extracted {mvsx_filename}")
 
                 # Load and verify the extracted MVSJ content
-                with open(index_path, 'r', encoding='utf-8') as f:
+                with open(index_path, "r", encoding="utf-8") as f:
                     extracted_mvsj = json.load(f)
-                    self.assertIsInstance(extracted_mvsj, dict, f"Extracted index.mvsj from {mvsx_filename} is not a valid JSON object")
+                    self.assertIsInstance(
+                        extracted_mvsj, dict, f"Extracted index.mvsj from {mvsx_filename} is not a valid JSON object"
+                    )
 
             except MVSXValidationError as e:
                 # Skip files that don't meet our validation requirements
@@ -569,7 +479,7 @@ class TestMVSXFunctionality(unittest.TestCase):
                 # Continue with the test if the file was created
                 if os.path.exists(mvsx_path):
                     # Examine MVSX contents as above
-                    with zipfile.ZipFile(mvsx_path, 'r') as z:
+                    with zipfile.ZipFile(mvsx_path, "r") as z:
                         files = z.namelist()
                         self.assertIn("index.mvsj", files, f"index.mvsj not found in {mvsx_filename}")
                 else:
@@ -584,26 +494,18 @@ class TestMVSXFunctionality(unittest.TestCase):
         # Create an invalid MVSJ file (missing root node)
         invalid_mvsj_path = os.path.join(self.test_dir, "invalid.mvsj")
         invalid_mvsj_data = {
-            "metadata": {
-                "version": "0.1",
-                "timestamp": "2023-11-27T12:05:32.145284"
-            }
+            "metadata": {"version": "0.1", "timestamp": "2023-11-27T12:05:32.145284"}
             # Missing root node
         }
 
-        with open(invalid_mvsj_path, 'w') as f:
+        with open(invalid_mvsj_path, "w") as f:
             json.dump(invalid_mvsj_data, f, indent=2)
 
         output_mvsx_path = os.path.join(self.test_dir, "invalid.mvsx")
 
         # Test that MVSXValidationError is raised
         with self.assertRaises(MVSXValidationError) as context:
-            mvsj_to_mvsx(
-                invalid_mvsj_path,
-                output_mvsx_path,
-                download_external=True,
-                logger=logger
-            )
+            mvsj_to_mvsx(invalid_mvsj_path, output_mvsx_path, download_external=True, logger=logger)
 
         # Verify the error message
         self.assertIn("missing 'root' node", str(context.exception))
@@ -615,34 +517,19 @@ class TestMVSXFunctionality(unittest.TestCase):
         download_test_data = {
             "root": {
                 "kind": "root",
-                "children": [
-                    {
-                        "kind": "download",
-                        "params": {
-                            "url": "https://example.com/nonexistent_file.cif"
-                        }
-                    }
-                ]
+                "children": [{"kind": "download", "params": {"url": "https://example.com/nonexistent_file.cif"}}],
             },
-            "metadata": {
-                "version": "0.1",
-                "timestamp": "2023-11-27T12:05:32.145284"
-            }
+            "metadata": {"version": "0.1", "timestamp": "2023-11-27T12:05:32.145284"},
         }
 
-        with open(download_test_path, 'w') as f:
+        with open(download_test_path, "w") as f:
             json.dump(download_test_data, f, indent=2)
 
         output_mvsx_path = os.path.join(self.test_dir, "download_test.mvsx")
 
         # Test that MVSXDownloadError is raised
         with self.assertRaises(MVSXDownloadError) as context:
-            mvsj_to_mvsx(
-                download_test_path,
-                output_mvsx_path,
-                download_external=True,
-                logger=logger
-            )
+            mvsj_to_mvsx(download_test_path, output_mvsx_path, download_external=True, logger=logger)
 
         # Verify the error message contains download failure information
         self.assertIn("Failed to download", str(context.exception))

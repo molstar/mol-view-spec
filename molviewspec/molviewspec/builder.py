@@ -86,13 +86,16 @@ class _BuilderProtocol(ABC):
     """
 
     @abstractmethod
-    def _get_root(self) -> Root: ...
+    def _get_root(self) -> Root:
+        ...
 
     @abstractmethod
-    def _get_node(self) -> Node: ...
+    def _get_node(self) -> Node:
+        ...
 
     @abstractmethod
-    def _add_child(self, node: Node) -> None: ...
+    def _add_child(self, node: Node) -> None:
+        ...
 
 
 class _Base(BaseModel, _BuilderProtocol):
