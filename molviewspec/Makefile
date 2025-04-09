@@ -12,7 +12,7 @@ serve:
 # starts server in background
 start-server:
 	@echo "Starting server..."
-	@uvicorn app.main:app --host 0.0.0.0 --port 9000 --log-level warning & echo $$! > .server_pid
+	@sh -c 'uvicorn app.main:app --host 0.0.0.0 --port 9000 --log-level warning & echo $$! | tee .server_pid'
 	@sleep 1  # wait to start
 
 # stop background server
