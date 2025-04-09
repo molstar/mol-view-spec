@@ -2649,3 +2649,94 @@ def _dot(a, b):
 
 def _cross(a, b):
     return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+
+
+@router.get("/testing/mvsj_to_mvsx")
+async def testing_mvsj_to_mvsx(id: str = "1cbs", download: bool = True) -> Response:
+    """
+    Create and use a self-contained MVSX archive with all external resources for offline use.
+
+    This example demonstrates how to:
+    1. Create an MVSX archive from a MVSJ visualization
+    2. Include all external resources in the archive
+    3. Extract and verify the archive contents
+
+    :param id: PDB entry ID to visualize
+    :param download: Whether to download external resources (default: True)
+    :return: The MVSX archive as a file attachment for download
+    """
+    import os
+    import tempfile
+    import json
+    from molviewspec.mvsx_converter import mvsj_to_mvsx, extract_mvsx
+
+    # Create a simple visualization
+    builder = create_builder()
+    (
+        builder.download(url=_url_for_mmcif(id))
+        .parse(format="mmcif")
+        .model_structure()
+        .component()
+        .representation()
+        .color(color="blue")
+    )
+
+    # Get the MVSJ content
+    mvsj_content = builder.get_state(
+        title=f"MVSX Archive Example - {id}",
+        description="This visualization is packaged as an MVSX archive with all external resources included.",
+        description_format="plaintext",
+    )
+
+    # Use a single persistent output directory for all files
+    output_dir = os.path.join(tempfile.gettempdir(), "mvsx_archives")
+    os.makedirs(output_dir, exist_ok=True)
+
+    try:
+        # Define all the paths we'll need
+        mvsj_path = os.path.join(output_dir, f"{id}.mvsj")
+        mvsx_path = os.path.join(output_dir, f"{id}.mvsx")
+        extract_dir = os.path.join(output_dir, f"{id}_extracted")
+
+        # Create the extract directory before using it
+        os.makedirs(extract_dir, exist_ok=True)
+
+        # Save MVSJ to a file
+        with open(mvsj_path, 'w', encoding='utf-8') as f:
+            f.write(mvsj_content)
+
+        # Create the MVSX archive
+        result = mvsj_to_mvsx(mvsj_path, mvsx_path, download_external=download)
+
+        if not result:
+            return PlainTextResponse(f"Failed to create MVSX archive for {id}", status_code=500)
+
+        # Extract MVSX to verify its contents
+        index_path = extract_mvsx(mvsx_path, extract_dir)
+
+        if not index_path or not os.path.exists(index_path):
+            return PlainTextResponse(f"Failed to extract MVSX archive for {id}", status_code=500)
+
+        # Read the extracted index.mvsj to include in response headers
+        with open(index_path, 'r', encoding='utf-8') as f:
+            extracted_mvsj = json.load(f)
+
+        # Include details about the archive in the response headers
+        original_url = None
+        for child in extracted_mvsj.get("root", {}).get("children", []):
+            if child.get("kind") == "download" and "params" in child and "url" in child["params"]:
+                original_url = child["params"]["url"]
+                break
+
+        # Return the MVSX file as an attachment for download
+        return FileResponse(
+            mvsx_path,
+            media_type="application/zip",
+            filename=f"{id}.mvsx",
+            headers={
+                "X-MVSX-Original-URL": original_url or "Not found",
+                "X-MVSX-Contents": str(os.listdir(extract_dir)),
+            }
+        )
+    except Exception as e:
+        return PlainTextResponse(f"Error creating MVSX archive: {str(e)}", status_code=500)

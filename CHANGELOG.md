@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file, following t
 ## [Unreleased]
 
 - Add `auth/label_comp_id` to `ComponentExpression`
+- Add MVSJ to MVSX archive functionality
+  - Create self-contained archives with all external resources for offline use
+  - Functions for finding and updating URI references in MVSJ files
+  - Download external resources and package them with MVSJ into a ZIP archive
+  - Extract archives to recover original files with localized references
 
 ## [v1.3.0] - 2025-03-18
 
