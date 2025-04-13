@@ -85,10 +85,9 @@ export function App() {
             <div style={{ width: '100%', textAlign: 'center', marginTop: 20 }}>
                 <div className='demos'>
                     <div className='tooltip'>
-                        <a href='https://molstar.org/demos/mvs-kinase-story/' target='_blank' rel='noreferrer'><img alt='Kinase Story' src='img/kinases.png' /></a>
+                        <a href='https://molstar.org/demos/mvs-stories/' target='_blank' rel='noreferrer'><img alt='Stories' src='img/stories.png' /></a>
                         <p className='tooltip-info'>
-                            <b>Kinases Story:</b> BCR-ABL is a classic case of how structural biology can drive drug discovery. This story will help you understand
-                            the role of BCR-ABL in chronic myeloid leukemia and how the drug Imatinib works. The source code can be found <a
+                            <b>Stories:</b> An interactive molecular story-telling app. The source code can be found <a
                             href='https://github.com/molstar/molstar/tree/master/src/examples' target='_blank' rel='noreferrer'>here</a>.
                         </p>
                     </div>
