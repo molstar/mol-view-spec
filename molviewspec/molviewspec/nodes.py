@@ -988,7 +988,7 @@ class BoxParams(BaseModel):
     edge_radius: Optional[float] = Field(None, description="Radius of the box edges. In angstroms.")
     edge_color: Optional[ColorT] = Field(None, description="Color of the edges.")
 
-    tooltip: Optional[str] = Field(description="Tooltip to show when hovering on the box.")
+    tooltip: Optional[str] = Field(None, description="Tooltip to show when hovering on the box.")
 
     # NOTE: Possible future extensions:
     # - support box orientation
