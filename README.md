@@ -269,6 +269,7 @@ Will call all API endpoint that can be called without arguments.
 ```
 cd molviewspec
 python test_mvsj_to_mvsx.py
+python test_serialization.py
 ```
 
 ### Testing everything
