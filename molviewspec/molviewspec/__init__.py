@@ -13,3 +13,4 @@ from molviewspec.nodes import (
     States,
     validate_state_tree,
 )
+from molviewspec.mvsx_converter import mvsj_to_mvsx
