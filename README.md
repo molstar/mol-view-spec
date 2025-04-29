@@ -33,8 +33,12 @@ Opposed to the traditional workflow that locks users into using a specific 3D vi
 
 
 ## See the MolViewSpec in Action
+
 Colab Notebook: https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9
 
+Jupyter Notebook on Binder: https://mybinder.org/v2/gh/molstar/mol-view-spec/master?labpath=test-data%2Fnotebooks%2F01_kras_structure_visualization.ipynb
+
+Streamlit web app component example: [/test-data/streamlit](/test-data/streamlit)
 
 ## Access Type Definitions
 All type definitions can be found here:
