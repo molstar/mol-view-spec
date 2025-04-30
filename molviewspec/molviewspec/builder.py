@@ -334,6 +334,12 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         self._add_child(node)
         return Download(node=node, root=self._root)
 
+    def _ipython_display_(self):
+        """
+        Display the current state as a Molstar HTML component for Jupyter or Google Colab.
+        """
+        self.molstar_notebook()
+
     def molstar_notebook(self, data: dict[str, bytes]=None, width=950, height=600, download_filename='molstar_download'):
         """
         Visualize the current state as a Molstar HTML component for Jupyter or Google Colab.
