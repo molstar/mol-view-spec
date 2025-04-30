@@ -3,9 +3,25 @@ import uuid
 from io import BytesIO
 import zipfile
 import base64
+from molviewspec.nodes import MVSData
 
-def molstar_html(state: str, data=None):
+
+def molstar_html(state: str | dict | MVSData, data=None):
     """Create an HTML string to display a Mol* viewer with the given state."""
+    if isinstance(state, str):
+        pass
+    elif isinstance(state, dict):
+        state = json.dumps(state)
+    elif isinstance(state, MVSData):
+        # convert state to JSON string
+        if hasattr(state, "model_dump_json"):
+            # pydantic v1 compatibility
+            state = state.model_dump_json(exclude_none=True)
+        else:
+            state = state.json(exclude_none=True)
+    else:
+        raise TypeError(f"State should be str, dict, State or States, got: {type(state).__name__}: {state}")
+
     if data is not None:
         zip_data = BytesIO()
         with zipfile.ZipFile(zip_data, 'w') as zipf:
@@ -38,10 +54,11 @@ def molstar_html(state: str, data=None):
     </html>
     '''
 
-def molstar_notebook(state: str, data: dict[str, bytes]=None, width=950, height=600, download_filename='molstar_download'):
+def molstar_notebook(state: str | dict | MVSData, data: dict[str, bytes]=None, width=950, height=600, download_filename='molstar_download'):
     """
     Visualize a state as a Molstar HTML component for Jupyter or Google Colab.
 
+    :param state: MolViewSpec state(s) - string from builder.get_state(), or the State or States object itself
     :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
     :param width: width of the Molstar viewer (default: 950)
     :param height: height of the Molstar viewer (default: 600)
@@ -90,7 +107,7 @@ def molstar_notebook(state: str, data: dict[str, bytes]=None, width=950, height=
     display(Javascript(js_code))
 
 
-def molstar_streamlit(state: str, data=None, width=None, height=500):
+def molstar_streamlit(state: str | dict | MVSData, data=None, width=None, height=500):
     """Show Mol* viewer in a Streamlit app."""
     import streamlit.components.v1 as components
     iframe_html = molstar_html(state, data=data)
