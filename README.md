@@ -1,5 +1,7 @@
 [![PyPI version](https://badge.fury.io/py/molviewspec.svg)](https://badge.fury.io/py/molviewspec)
 [![Changelog](https://img.shields.io/badge/changelog--lightgrey.svg?style=flat)](https://github.com/molstar/mol-view-spec/blob/master/CHANGELOG.md)
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9)
+[![Jupyter](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Merck/Sapiens/main?labpath=notebooks%2F01_sapiens_antibody_infilling.ipynb)
 
 MolViewSpec
 =============
@@ -33,8 +35,12 @@ Opposed to the traditional workflow that locks users into using a specific 3D vi
 
 
 ## See the MolViewSpec in Action
+
 Colab Notebook: https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9
 
+Jupyter Notebook on Binder: https://mybinder.org/v2/gh/molstar/mol-view-spec/master?labpath=test-data%2Fnotebooks%2F01_kras_structure_visualization.ipynb
+
+Streamlit web app component example: [/test-data/streamlit](/test-data/streamlit)
 
 ## Access Type Definitions
 All type definitions can be found here:

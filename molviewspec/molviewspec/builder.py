@@ -70,6 +70,7 @@ from molviewspec.nodes import (
     VolumeRepresentationTypeT,
 )
 from molviewspec.utils import make_params
+from molviewspec.molstar_widgets import molstar_notebook, molstar_streamlit
 
 
 def create_builder() -> Root:
@@ -332,6 +333,44 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         node = Node(kind="download", params=params)
         self._add_child(node)
         return Download(node=node, root=self._root)
+
+    def _ipython_display_(self):
+        """
+        Display the current state as a Molstar HTML component for Jupyter or Google Colab.
+        """
+        self.molstar_notebook()
+
+    def molstar_notebook(self, data: dict[str, bytes]=None, width=950, height=600, download_filename='molstar_download'):
+        """
+        Visualize the current state as a Molstar HTML component for Jupyter or Google Colab.
+
+        :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
+        :param width: width of the Molstar viewer (default: 950)
+        :param height: height of the Molstar viewer (default: 600)
+        :param download_filename: filename for the Molstar HTML file (default: "molstar_download")
+        """
+        molstar_notebook(
+            state=self.get_state(),
+            data=data,
+            width=width,
+            height=height,
+            download_filename=download_filename,
+        )
+
+    def molstar_streamlit(self, data=None, width=None, height=500):
+        """
+        Show Mol* viewer in a Streamlit app.
+
+        :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
+        :param width: width of the Molstar viewer (default: full width)
+        :param height: height of the Molstar viewer (default: 500)
+        """
+        return molstar_streamlit(
+            self.get_state(),
+            data=data,
+            width=width,
+            height=height,
+        )
 
 
 class Download(_Base):

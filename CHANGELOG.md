@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 - Fix missing tooltip default value for `BoxParams`
+- Add simple widgets for Jupyter & Colab (`builder.molstar_notebook()`) and Streamlit (`builder.molstar_streamlit()`)
 
 ## [v1.4.0] - 2025-04-09
 
