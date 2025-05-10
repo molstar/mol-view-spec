@@ -388,21 +388,27 @@ function CurrentExample({ example }: { example: ExampleSpec }) {
     const url = resolveExampleSnapshotURL(example.name);
     return <>
         <div className='row' style={{ marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
-            <div className='nine columns'>
+            <div className='twelve columns'>
                 <b>{example.header}:</b><br/> {example.description}
             </div>
-            <div className='three columns' style={{ display: 'flex', alignItems: 'flex-end' }}>
-                <a className='button button-primary' href={url} target='_blank' rel='noreferrer' style={{ width: '100%', fontWeight: 'bold', fontSize: '1.5rem', marginBottom: 0 }}>Open in New Window</a>
-            </div>
         </div>
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', gap: 10 }}>
             <div style={{ flexGrow: 1, flexShrink: 0, flexBasis: '50%' }}>
                 <iframe src={url} style={{ width: '100%', aspectRatio: 4 / 3, border: '1px solid #E0DDD4' }} />
             </div>
             <div style={{ flexGrow: 1, flexShrink: 0, flexBasis: '50%' }}>
-                <div style={{ width: '100%', aspectRatio: 4 / 3, border: 'none', position: 'relative', marginLeft: 10 }}>
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', overflowY: 'auto' }}>
-                        <CB text={example.python as any} language='python' wrapLongLines theme={dracula} showLineNumbers style={{ minHeight: '100%' }} />
+                <div style={{ width: '100%', aspectRatio: 4 / 3, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                    <a className='button' href={url} target='_blank' rel='noreferrer' style={{ 
+                        width: '100%', fontWeight: 'bold', fontSize: '1.5rem', marginBottom: 0, borderRadius: 0, border: 'none', padding: '0 8px', overflow: 'hidden',
+                        borderBottom: '1px solid white', color: 'white', background: '#282a36'
+                    }}>
+                        Open in Mol*
+                    </a>
+
+                    <div style={{ width: '100%', flexGrow: 1, border: 'none', position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', overflowY: 'auto', background: '#282a36' }}>
+                            <CB text={example.python as any} language='python' wrapLongLines theme={dracula} showLineNumbers style={{ minHeight: '100%' }} />
+                        </div>
                     </div>
                 </div>
             </div>

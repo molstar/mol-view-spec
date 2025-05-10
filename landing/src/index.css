@@ -1,12 +1,16 @@
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
 
+* {
+  box-sizing: border-box;
+}
+
 /**
  * 1. Set default font family to sans-serif.
  * 2. Prevent iOS text size adjust after orientation change, without disabling
  *    user zoom.
  */
 
- html {
+html {
   font-family: sans-serif; /* 1 */
   -ms-text-size-adjust: 100%; /* 2 */
   -webkit-text-size-adjust: 100%; /* 2 */
@@ -729,7 +733,7 @@ ol ul {
   margin: 1.5rem 0 1.5rem 3rem;
   font-size: 90%; }
 li {
-  margin-bottom: 1rem; }
+  margin-bottom: 0rem; }
 
 
 /* Code
@@ -858,6 +862,7 @@ there.
 .examples,
 .demos {
   display: flex;
+  flex-wrap: wrap;;
   justify-content: center;
   align-items: center;
 }
@@ -875,7 +880,7 @@ there.
 }
 
 .examples img {
-  max-width: 160px;
+  max-width: 120px;
   width: 100%;
   margin: 0 10px;
 }
@@ -946,4 +951,35 @@ a:focus+.tooltip .tooltip-info {
 
 a {
   text-decoration: none;
+}
+
+.header-links {
+  display: flex;
+}
+
+.header-links a {
+  padding: 0 8px;
+  flex-grow: 1;
+  flex-basis: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-links a:not(:first-child):not(:last-child) {
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+}
+
+.header-links a:not(:first-child):not(:last-child) + a:not(:first-child):not(:last-child) {
+  border-left: 1px solid #E0DDD4;
+}
+
+.header-links a:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.header-links a:last-child {
+  border-radius: 0 4px 4px 0;
 }

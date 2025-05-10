@@ -7,20 +7,22 @@ export function App() {
     return <>
         <div className='container' style={{ marginBottom: 20 }}>
             <div className='row' style={{ textAlign: 'center', marginTop: 40 }}>
-                <img style={{ maxWidth: 160, width: '100%', marginBottom: 20 }} src='img/molstar-logo.png' alt='logo' />
+                <a href='https://molstar.org/' target='_blank' rel='noreferrer'>
+                    <img style={{ maxWidth: 160, width: '100%', marginBottom: 20 }} src='img/molstar-logo.png' alt='logo' />
+                </a>
                 <h2 style={{ fontWeight: 'bold' }}>
                     MolViewSpec
                 </h2>
             </div>
 
             <div className='row' style={{ textAlign: 'center' }}>
-                <div className='two columns'>&nbsp;</div>
-                <div className='eight columns' style={{ borderTop: '1px solid #E0DDD4', paddingTop: 20 }}>
+                <div className='one columns'>&nbsp;</div>
+                <div className='ten columns' style={{ borderTop: '1px solid #E0DDD4', paddingTop: 20 }}>
                     <h5 className='hero-heading'>
                         Toolkit and <a href='https://molstar.org/'>Mol*</a> Extension for Describing Molecular Visualizations
                     </h5>
                 </div>
-                <div className='two columns'>&nbsp;</div>
+                <div className='one columns'>&nbsp;</div>
             </div>
 
             <div className='row' style={{ marginTop: 0, display: 'flex' }}>
@@ -44,34 +46,43 @@ export function App() {
             </div>
 
             <div className='row' style={{ display: 'flex' }}>
-                <div className='six columns'>
-                    <a className='button button-primary' href='https://github.com/molstar/mol-view-spec/' style={{ fontSize: '2rem', width: '100%' }} target='_blank' rel='noreferrer'>
+                <div className='twelve columns header-links'>
+                    <a className='button button-primary' href='https://github.com/molstar/mol-view-spec/' style={{ fontSize: '2rem' }} target='_blank' rel='noreferrer'>
                         <svg width='14' height='14' style={{ marginRight: '0.75rem' }}><use href='#github-logo' /></svg>
                         GitHub
                     </a>
-                </div>
-
-
-                <div className='six columns'>
-                    <a className='button' href='https://github.com/molstar/mol-view-spec/issues' style={{ fontSize: '2rem', width: '100%', marginBottom: 0 }}
+                    <a className='button' href='https://github.com/molstar/mol-view-spec/issues' style={{ fontSize: '2rem' }}
                         target='_blank' rel='noreferrer'>Issues and Feedback</a>
                 </div>
             </div>
 
             <div className='row' style={{ display: 'flex' }}>
-                <div className='four columns'>
-                    <a className='button' href={MkDocsLink} style={{ fontSize: '2rem', width: '100%' }}
+                <div className='twelve columns header-links'>
+                    <a className='button' href={MkDocsLink} style={{ fontSize: '1.5rem' }}
                         target='_blank' rel='noreferrer'>Documentation</a>
-                </div>
-
-                <div className='four columns'>
-                    <a className='button' href={PythonCollabLink} style={{ fontSize: '2rem', width: '100%' }}
-                        target='_blank' rel='noreferrer'>Python Collab Notebook</a>
-                </div>
-
-                <div className='four columns'>
-                    <a className='button' href='https://doi.org/10.1002/cpz1.1099' style={{ fontSize: '2rem', width: '100%' }}
+                    <a className='button' href={PythonCollabLink} style={{ fontSize: '1.5rem' }}
+                        target='_blank' rel='noreferrer'>Python Collab</a>
+                    <a className='button' href='https://doi.org/10.1002/cpz1.1099' style={{ fontSize: '1.5rem' }}
                         target='_blank' rel='noreferrer'>Protocols</a>
+                    <a className='button' href='https://doi.org/10.1093/nar/gkaf370' style={{ fontSize: '1.5rem' }}
+                        target='_blank' rel='noreferrer'>NAR Paper</a>
+                </div>
+            </div>
+
+            <div className='row' style={{ textAlign: 'justify', marginTop: 20 }}>
+                <div className='twelve columns'>
+                    <b>When using MolViewSpec, please cite:</b><br />
+                    <ul>
+                        <li><span style={{ fontSize: 'smaller' }}>Adam Midlik, Sebastian Bittrich, Jennifer R Fleming, Sreenath Nair, Sameer Velankar, Stephen K Burley, Jasmine Y Young, Brinda Vallat, David Sehnal: <a
+                            href='https://doi.org/10.1093/nar/gkaf370'>MolViewSpec: a Mol* extension for describing and sharing molecular visualizations</a>, <i>Nucleic Acids Research</i>, 2025; <a
+                                href='https://doi.org/10.1093/nar/gkaf370'>10.1093/nar/gkaf370</a>.</span>
+                        </li>
+                        <li>
+                            <span style={{ fontSize: 'smaller' }}>Sebastian Bittrich, Adam Midlik, Mihaly Varadi, Sameer Velankar, Stephen K. Burley, Jasmine Y. Young, David Sehnal, Brinda Vallat: <a
+                                href='https://doi.org/10.1002/cpz1.1099'>Describing and Sharing Molecular Visualizations Using the MolViewSpec Toolkit</a>, <i>Current Protocols</i>, 2024; <a
+                                    href='https://doi.org/10.1002/cpz1.1099'>10.1002/cpz1.1099</a>.</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
 
@@ -88,7 +99,7 @@ export function App() {
                         <a href='https://molstar.org/demos/mvs-stories/' target='_blank' rel='noreferrer'><img alt='Stories' src='img/stories.png' /></a>
                         <p className='tooltip-info'>
                             <b>Stories:</b> An interactive molecular story-telling app. The source code can be found <a
-                            href='https://github.com/molstar/molstar/tree/master/src/examples' target='_blank' rel='noreferrer'>here</a>.
+                                href='https://github.com/molstar/molstar/tree/master/src/examples' target='_blank' rel='noreferrer'>here</a>.
                         </p>
                     </div>
 
@@ -96,7 +107,7 @@ export function App() {
                         <a href='https://molstar.org/demos/ihm-restraints/' target='_blank' rel='noreferrer'><img alt='I/HM Restraints' src='img/ihm-restraints.png' /></a>
                         <p className='tooltip-info'>
                             <b>I/HM Restraints:</b> Visualize structural restraints for integrated hybrid models (I/HM). The source code can be found <a
-                            href='https://github.com/molstar/molstar/tree/master/src/examples' target='_blank' rel='noreferrer'>here</a>.
+                                href='https://github.com/molstar/molstar/tree/master/src/examples' target='_blank' rel='noreferrer'>here</a>.
                         </p>
                     </div>
                 </div>
@@ -118,20 +129,6 @@ export function App() {
                 WebGL2 support is required to view the interactive examples. The examples were tested in Firefox, Chrome & Safari on PC, Linux and MacOS/iOS.
             </div>
 
-            <div className='row' style={{ textAlign: 'justify', marginTop: 50, paddingTop: 40, borderTop: '1px solid #E0DDD4' }}>
-                <div className='twelve columns'>
-                    <div style={{ margin: '0 4px' }}>
-                        <b>When using MolViewSpec, please cite:</b><br />
-                        <span style={{ fontSize: 'smaller' }}>Sebastian Bittrich, Adam Midlik, Mihaly Varadi, Sameer Velankar, Stephen K. Burley, Jasmine Y. Young, David Sehnal, Brinda Vallat: <a
-                            href='https://doi.org/10.1002/cpz1.1099'>Describing and Sharing Molecular Visualizations Using the MolViewSpec Toolkit</a>, <i>Current Protocols</i>, 2024; <a
-                                href='https://doi.org/10.1002/cpz1.1099'>10.1002/cpz1.1099</a>.</span>
-                    </div>
-                </div>
-
-                <div className='one columns'>
-                </div>
-            </div>
-
             <div className='row' style={{ textAlign: 'center', marginTop: 40 }}>
                 <div className='twelve columns' style={{ borderTop: '1px solid #E0DDD4', paddingTop: 30 }}>
                     <h5 className='hero-heading'>The project is an open collaboration started by</h5>
@@ -144,8 +141,8 @@ export function App() {
             </div>
 
 
-            <div className='row' style={{ textAlign: 'right', color: '#999', marginTop: 20 }}>
-                Copyright 2023–now, MolViewSpec Contributors | <a href='/mol-view-spec/terms-of-use.html' style={{ color: '#999' }}>Terms of Use &
+            <div className='row' style={{ textAlign: 'right', color: '#999', marginTop: 20, marginBottom: 20, fontSize: '0.9rem' }}>
+                Copyright © 2023–now, MolViewSpec Contributors | <a href='/mol-view-spec/terms-of-use.html' style={{ color: '#999' }}>Terms of Use &
                     GDPR</a>
             </div>
 
