@@ -16,7 +16,8 @@ tree format that can be consumed by visualization software tools such as
 
 When using MolViewSpec, please cite:
 
-Sebastian Bittrich, Adam Midlik, Mihaly Varadi, Sameer Velankar, Stephen K. Burley, Jasmine Y. Young, David Sehnal, Brinda Vallat: Describing and Sharing Molecular Visualizations Using the MolViewSpec Toolkit, Current Protocols, 2024; https://doi.org/10.1002/cpz1.1099.
+- Adam Midlik, Sebastian Bittrich, Jennifer R Fleming, Sreenath Nair, Sameer Velankar, Stephen K Burley, Jasmine Y Young, Brinda Vallat, David Sehnal: MolViewSpec: a Mol* extension for describing and sharing molecular visualizations, Nucleic Acids Research, 2025; https://doi.org/10.1093/nar/gkaf370.
+- Sebastian Bittrich, Adam Midlik, Mihaly Varadi, Sameer Velankar, Stephen K. Burley, Jasmine Y. Young, David Sehnal, Brinda Vallat: Describing and Sharing Molecular Visualizations Using the MolViewSpec Toolkit, Current Protocols, 2024; https://doi.org/10.1002/cpz1.1099.
 
 ## The Idea behind MolViewSpec
 
@@ -25,7 +26,7 @@ concrete 3D viewer.
 
 MolViewSpec's workflow is:
 1. `define scene using MolViewSpec`
-2. `generic state description as .msvj`
+2. `generic state description as .msvj or .mvsx file`
 3. `open in any MolViewSpec-compatible 3D viewer`
 
 Opposed to the traditional workflow that locks users into using a specific 3D viewer, such as:
