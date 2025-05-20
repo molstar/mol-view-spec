@@ -252,20 +252,18 @@ class MVSX(BaseModel):
             except Exception:
                 parsed_url = None
 
-            asset_path = os.path.join("assets", asset_name)
-
             if parsed_url and parsed_url.scheme in ("http", "https", "ftp"):
                 with io.BytesIO() as urlbytes:
                     with urllib.request.urlopen(data) as req:
                         urlbytes.write(req.read())
                     urlbytes.flush()
-                    z.writestr(asset_path, urlbytes.getvalue())
+                    z.writestr(asset_name, urlbytes.getvalue())
                 continue
 
             if isinstance(data, bytes):
-                z.writestr(asset_path, data)
+                z.writestr(asset_name, data)
             else:
-                z.write(data, arcname=asset_path)
+                z.write(data, arcname=asset_name)
 
     def dump(self, filename: str | os.PathLike) -> None:
         """
