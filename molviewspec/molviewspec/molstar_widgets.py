@@ -3,11 +3,14 @@ import json
 import uuid
 import zipfile
 from io import BytesIO
+from typing import Literal
 
 from molviewspec.nodes import MVSJ, MVSX, MVSData
 
 
-def molstar_html(state: str | dict | MVSData | bytes | MVSX | MVSJ, data=None):
+def molstar_html(
+    state: str | dict | MVSData | bytes | MVSX | MVSJ, data=None, ui: Literal["viewer", "stories"] = "viewer"
+):
     """Create an HTML string to display a Mol* viewer with the given state."""
 
     format = "mvsj"
@@ -43,26 +46,10 @@ def molstar_html(state: str | dict | MVSData | bytes | MVSX | MVSJ, data=None):
         state = "base64," + base64.b64encode(zip_data.getvalue()).decode("utf-8")
         format = "mvsx"
 
-    return f"""
-    <!DOCTYPE html>
-    <html lang="en">
-        <head>
-            <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
-            <script src="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.js"></script>
-            <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
-            <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.css" />
-        </head>
-        <body>
-            <div id="viewer1"></div>
-            <script>
-                const mvsData = {json.dumps(state)};
-                molstar.Viewer
-                    .create('viewer1', {{ layoutIsExpanded: false, layoutShowControls: false }})
-                    .then(viewer => viewer.loadMvsData(mvsData, '{format}'));
-            </script>
-        </body>
-    </html>
-    """
+    template = STORIES_TEMPLATE if ui == "stories" else VIEWER_TEMPLATE
+    template = template.replace("{{format}}", format).replace("{{state}}", json.dumps(state))
+
+    return template
 
 
 def molstar_notebook(
@@ -71,6 +58,7 @@ def molstar_notebook(
     width=950,
     height=600,
     download_filename="molstar_download",
+    ui: Literal["viewer", "stories"] = "viewer",
 ):
     """
     Visualize a state as a Molstar HTML component for Jupyter or Google Colab.
@@ -83,7 +71,7 @@ def molstar_notebook(
     """
     from IPython.display import HTML, Javascript, display
 
-    iframe_html = molstar_html(state, data=data)
+    iframe_html = molstar_html(state, data=data, ui=ui)
 
     # We turn "...</script>" into "...</script" + ">" to avoid closing script tag in VScode
     html_string = json.dumps(iframe_html).replace("</script>", '</" + "script" + ">')
@@ -130,3 +118,135 @@ def molstar_streamlit(state: str | dict | MVSData, data=None, width=None, height
 
     iframe_html = molstar_html(state, data=data)
     return components.html(iframe_html, width=width, height=height)
+
+
+VIEWER_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
+        <script src="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.js"></script>
+        <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.css" />
+    </head>
+    <body>
+        <div id="viewer1"></div>
+        <script>
+            var mvsData = {{state}};
+            molstar.Viewer
+                .create('viewer1', { layoutIsExpanded: false, layoutShowControls: false })
+                .then(viewer => viewer.loadMvsData(mvsData, '{{format}}'));
+        </script>
+    </body>
+</html>
+"""
+
+STORIES_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Molecular Stories</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #viewer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 34%;
+            bottom: 0;
+        }
+
+        #controls {
+            position: absolute;
+            left: 66%;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            padding: 16px;
+            padding-bottom: 20px;
+            border: 1px solid #ccc;
+            border-left: none;
+            background: #F6F5F3;
+            z-index: -2;
+            display: flex; 
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        #links {
+            position: absolute;
+            bottom: 4px;
+            right: 8px;
+            font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 0.6rem;
+            z-index: -1;
+            color: #666;
+        }
+
+        #links a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        @media (orientation:portrait) {
+            #viewer {
+                position: absolute;
+                left: 0;
+                top: 0;
+                right: 0;
+                bottom: 40%;
+            }
+
+            #controls {
+                position: absolute;
+                left: 0;
+                top: 60%;
+                right: 0;
+                bottom: 0;  
+                border-top: none;  
+            }
+
+            .markdown-explanation {
+                font-size: 0.9rem !important;    
+            }
+
+            .markdown-explanation h3 {
+                font-size: 1.5rem !important;
+            }
+
+            .msp-viewport-controls-buttons {
+                display: none;
+            }
+        }
+    </style>
+    <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
+    <script src="https://molstar.org/demos/mvs-stories/index.js"></script>
+    <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
+    <link rel="stylesheet" type="text/css" href="https://molstar.org/demos/mvs-stories/molstar.css" />
+</head>
+<body>
+    <div id="viewer">
+        <mc-viewer name="v1" />
+    </div>
+    <div id="controls">
+        <div class="markdown-explanation" style="flex-grow: 1;">
+            <mc-snapshot-markdown viewer-name="v1" />
+        </div>
+    </div>
+
+    <script>
+        var mvsData = {{state}};
+        setTimeout(() => {
+            window.mc.getContext().dispatch({
+                kind: 'load-mvs',
+                format: '{{format}}',
+                data: JSON.parse(mvsData),
+            });
+        }, 0);
+    </script>
+</body>
+</html>
+"""
