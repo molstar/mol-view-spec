@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file, following t
 
 - `MSVJ` and `MVSX` wrapper objects
 - Add option to return `State` from `Root.get_state()` instead of just serialized JSON
+- Support `stories` UI in `molstar_html`
 
 ## [v1.5.0] - 2025-04-09
 
