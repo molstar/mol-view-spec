@@ -4,6 +4,12 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 
 from __future__ import annotations
 
+import io
+import os
+import urllib
+import urllib.parse
+import urllib.request
+import zipfile
 from datetime import datetime, timezone
 from typing import Any, Literal, Mapping, Optional, Tuple, Type, TypeVar, Union, cast
 from uuid import uuid4
@@ -144,6 +150,14 @@ class State(BaseModel):
     root: Node = Field(description="Root of the node tree.")
     metadata: GlobalMetadata = Field(description="Associated metadata.")
 
+    def _ipython_display_(self):
+        """
+        Display the current state as a Molstar HTML component for Jupyter or Google Colab.
+        """
+        from molviewspec.molstar_widgets import molstar_notebook
+
+        molstar_notebook(self)
+
 
 class Snapshot(BaseModel):
     """
@@ -167,9 +181,121 @@ class States(BaseModel):
     snapshots: list[Snapshot] = Field(description="Ordered collection of individual states.")
     # TODO add ordered collection that describes transition/interpolation wrt previous state
 
+    def _ipython_display_(self):
+        """
+        Display the current state as a Molstar HTML component for Jupyter or Google Colab.
+        """
+        from molviewspec.molstar_widgets import molstar_notebook
+
+        molstar_notebook(self)
+
 
 MVSData = Union[State, States]
 """Flavors of MolViewSpec states."""
+
+
+class MVSJ(BaseModel):
+    data: MVSData = Field(description="The data to be serialized.")
+
+    def dump(self, filename: str | os.PathLike, *, indent: int | None = None) -> None:
+        """
+        Write the serialized data to a file.
+        """
+
+        if hasattr(self.data, "model_dump_json"):
+            state = self.data.model_dump_json(exclude_none=True, indent=indent)
+        else:
+            state = self.data.json(exclude_none=True, indent=indent)
+
+        with open(filename, "w") as out:
+            out.write(state)
+
+    def dumps(self, *, indent: int | None = 2) -> str:
+        """
+        Write the serialized data to a file.
+        """
+
+        if hasattr(self.data, "model_dump_json"):
+            return self.data.model_dump_json(exclude_none=True, indent=indent)
+        else:
+            return self.data.json(exclude_none=True, indent=indent)
+
+    def _ipython_display_(self):
+        """
+        Display the current state as a Molstar HTML component for Jupyter or Google Colab.
+        """
+        from molviewspec.molstar_widgets import molstar_notebook
+
+        molstar_notebook(self)
+
+
+class MVSX(BaseModel):
+    data: MVSData = Field(description="The data to be serialized.")
+    assets: dict[str, bytes | str | os.PathLike] = Field({}, description="Assets to be serialized with the data.")
+
+    def _serialize(self, z: zipfile.ZipFile) -> None:
+        """
+        Serialize the data a zip zip file.
+        """
+
+        # pydantic v1 compatibility
+        if hasattr(self.data, "model_dump_json"):
+            state = self.data.model_dump_json(exclude_none=True)
+        else:
+            state = self.data.json(exclude_none=True)
+
+        z.writestr("index.mvsj", state.encode("utf-8"))
+
+        for asset_name, data in self.assets.items():
+            try:
+                parsed_url = urllib.parse.urlparse(data)
+            except Exception:
+                parsed_url = None
+
+            asset_path = os.path.join("assets", asset_name)
+
+            if parsed_url and parsed_url.scheme in ("http", "https", "ftp"):
+                with io.BytesIO() as urlbytes:
+                    with urllib.request.urlopen(data) as req:
+                        urlbytes.write(req.read())
+                    urlbytes.flush()
+                    z.writestr(asset_path, urlbytes.getvalue())
+                continue
+
+            if isinstance(data, bytes):
+                z.writestr(asset_path, data)
+            else:
+                z.write(data, arcname=asset_path)
+
+    def dump(self, filename: str | os.PathLike) -> None:
+        """
+        Write the serialized data to a file.
+        """
+
+        with open(filename, "wb") as f:
+            with zipfile.ZipFile(f, "w") as z:
+                self._serialize(z)
+
+    def dumps(self) -> bytes:
+        """
+        Write the serialized data to a file.
+        """
+
+        with io.BytesIO() as f:
+            with zipfile.ZipFile(f, "w") as z:
+                self._serialize(z)
+            f.flush()
+            ret = f.getvalue()
+
+        return ret
+
+    def _ipython_display_(self):
+        """
+        Display the current state as a Molstar HTML component for Jupyter or Google Colab.
+        """
+        from molviewspec.molstar_widgets import molstar_notebook
+
+        molstar_notebook(self)
 
 
 class DownloadParams(BaseModel):

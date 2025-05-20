@@ -1,13 +1,17 @@
+import base64
 import json
 import uuid
-from io import BytesIO
 import zipfile
-import base64
-from molviewspec.nodes import MVSData
+from io import BytesIO
+
+from molviewspec.nodes import MVSJ, MVSX, MVSData
 
 
-def molstar_html(state: str | dict | MVSData, data=None):
+def molstar_html(state: str | dict | MVSData | bytes | MVSX | MVSJ, data=None):
     """Create an HTML string to display a Mol* viewer with the given state."""
+
+    format = "mvsj"
+
     if isinstance(state, str):
         pass
     elif isinstance(state, dict):
@@ -19,21 +23,27 @@ def molstar_html(state: str | dict | MVSData, data=None):
             state = state.model_dump_json(exclude_none=True)
         else:
             state = state.json(exclude_none=True)
+    elif isinstance(state, MVSJ):
+        state = state.dumps()
+    elif isinstance(state, MVSX):
+        state = "base64," + base64.b64encode(state.dumps()).decode("utf-8")
+        format = "mvsx"
+    elif isinstance(state, bytes):
+        state = "base64," + base64.b64encode(state).decode("utf-8")
+        format = "mvsx"
     else:
         raise TypeError(f"State should be str, dict, State or States, got: {type(state).__name__}: {state}")
 
-    if data is not None:
+    if not isinstance(state, MVSX) and not isinstance(state, bytes) and data is not None:
         zip_data = BytesIO()
-        with zipfile.ZipFile(zip_data, 'w') as zipf:
-            zipf.writestr('index.mvsj', state)
+        with zipfile.ZipFile(zip_data, "w") as zipf:
+            zipf.writestr("index.mvsj", state)
             for path, file_contents in data.items():
                 zipf.writestr(path, file_contents)
-        state = 'base64,' + base64.b64encode(zip_data.getvalue()).decode('utf-8')
-        format = 'mvsx'
-    else:
-        format = 'mvsj'
+        state = "base64," + base64.b64encode(zip_data.getvalue()).decode("utf-8")
+        format = "mvsx"
 
-    return f'''
+    return f"""
     <!DOCTYPE html>
     <html lang="en">
         <head>
@@ -52,9 +62,16 @@ def molstar_html(state: str | dict | MVSData, data=None):
             </script>
         </body>
     </html>
-    '''
+    """
 
-def molstar_notebook(state: str | dict | MVSData, data: dict[str, bytes]=None, width=950, height=600, download_filename='molstar_download'):
+
+def molstar_notebook(
+    state: str | dict | MVSData | MVSX,
+    data: dict[str, bytes] = None,
+    width=950,
+    height=600,
+    download_filename="molstar_download",
+):
     """
     Visualize a state as a Molstar HTML component for Jupyter or Google Colab.
 
@@ -64,12 +81,12 @@ def molstar_notebook(state: str | dict | MVSData, data: dict[str, bytes]=None, w
     :param height: height of the Molstar viewer (default: 600)
     :param download_filename: filename for the Molstar HTML file (default: "molstar_download")
     """
-    from IPython.display import display, HTML, Javascript
+    from IPython.display import HTML, Javascript, display
 
     iframe_html = molstar_html(state, data=data)
 
     # We turn "...</script>" into "...</script" + ">" to avoid closing script tag in VScode
-    html_string = json.dumps(iframe_html).replace('</script>', '</" + "script" + ">')
+    html_string = json.dumps(iframe_html).replace("</script>", '</" + "script" + ">')
 
     wrapper_id = f"molstar_{uuid.uuid4()}"
 
@@ -110,5 +127,6 @@ def molstar_notebook(state: str | dict | MVSData, data: dict[str, bytes]=None, w
 def molstar_streamlit(state: str | dict | MVSData, data=None, width=None, height=500):
     """Show Mol* viewer in a Streamlit app."""
     import streamlit.components.v1 as components
+
     iframe_html = molstar_html(state, data=data)
     return components.html(iframe_html, width=width, height=height)

@@ -13,6 +13,7 @@ from typing import Any, Literal, Sequence, overload
 from pydantic import BaseModel, PrivateAttr
 from typing_extensions import Self
 
+from molviewspec.molstar_widgets import molstar_notebook, molstar_streamlit
 from molviewspec.nodes import (
     AngleMeasurementParams,
     ArrowParams,
@@ -70,7 +71,6 @@ from molviewspec.nodes import (
     VolumeRepresentationTypeT,
 )
 from molviewspec.utils import make_params
-from molviewspec.molstar_widgets import molstar_notebook, molstar_streamlit
 
 
 def create_builder() -> Root:
@@ -87,16 +87,13 @@ class _BuilderProtocol(ABC):
     """
 
     @abstractmethod
-    def _get_root(self) -> Root:
-        ...
+    def _get_root(self) -> Root: ...
 
     @abstractmethod
-    def _get_node(self) -> Node:
-        ...
+    def _get_node(self) -> Node: ...
 
     @abstractmethod
-    def _add_child(self, node: Node) -> None:
-        ...
+    def _add_child(self, node: Node) -> None: ...
 
 
 class _Base(BaseModel, _BuilderProtocol):
@@ -240,13 +237,35 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         )
         return Snapshot(root=self._node, metadata=metadata)  # TODO create deep copy of node
 
+    @overload
     def get_state(
         self,
         *,
-        title: str | None = None,
-        description: str | None = None,
-        description_format: DescriptionFormatT | None = None,
-        indent: int | None = 2,
+        title: str | None,
+        description: str | None,
+        description_format: DescriptionFormatT | None,
+        indent: int | None,
+        serialize: Literal[False],
+    ) -> State:
+        """
+        Return single-state MVSJ State object. Can be enriched with metadata.
+        :param title: optional title of the scene
+        :param description: optional detailed description of the scene
+        :param description_format: format of the description
+        :param indent: control format by specifying if and how to indent attributes
+        :return: JSON string that resembles that whole state
+        """
+        ...
+
+    @overload
+    def get_state(
+        self,
+        *,
+        title: str | None,
+        description: str | None,
+        description_format: DescriptionFormatT | None,
+        indent: int | None,
+        serialize: Literal[True],
     ) -> str:
         """
         Return single-state MVSJ representation (JSON) of the current state. Can be enriched with metadata.
@@ -256,6 +275,26 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         :param indent: control format by specifying if and how to indent attributes
         :return: JSON string that resembles that whole state
         """
+        ...
+
+    def get_state(
+        self,
+        *,
+        title: str | None = None,
+        description: str | None = None,
+        description_format: DescriptionFormatT | None = None,
+        indent: int | None = 2,
+        serialize: bool = True,
+    ) -> str | State:
+        """
+        Return single-state MVSJ representation (JSON) of the current state. Can be enriched with metadata.
+        :param title: optional title of the scene
+        :param description: optional detailed description of the scene
+        :param description_format: format of the description
+        :param indent: control format by specifying if and how to indent attributes
+        :param serialize: if True, return a JSON string, otherwise return the State object
+        :return: JSON string that resembles that whole state
+        """
         metadata = GlobalMetadata(
             title=title,
             description=description,
@@ -263,6 +302,9 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
             # `version` and `timestamp` added by the constructor
         )
         state = State(root=self._node, metadata=metadata)
+
+        if not serialize:
+            return state
 
         # pydantic v1 compatibility
         if hasattr(state, "model_dump_json"):
@@ -340,7 +382,9 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         """
         self.molstar_notebook()
 
-    def molstar_notebook(self, data: dict[str, bytes]=None, width=950, height=600, download_filename='molstar_download'):
+    def molstar_notebook(
+        self, data: dict[str, bytes] = None, width=950, height=600, download_filename="molstar_download"
+    ):
         """
         Visualize the current state as a Molstar HTML component for Jupyter or Google Colab.
 

@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+- `MSVJ` and `MVSX` wrapper objects
+- Add option to return `State` from `Root.get_state()` instead of just serialized JSON
 
 ## [v1.5.0] - 2025-04-09
 
