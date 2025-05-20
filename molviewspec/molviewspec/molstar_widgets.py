@@ -7,9 +7,11 @@ from typing import Literal
 
 from molviewspec.nodes import MVSJ, MVSX, MVSData
 
+SupportedStates = str | dict | MVSData | bytes | MVSX | MVSJ
+
 
 def molstar_html(
-    state: str | dict | MVSData | bytes | MVSX | MVSJ,
+    state: SupportedStates,
     data=None,
     ui: Literal["viewer", "stories"] = "viewer",
     molstar_version: str = "latest",
@@ -60,7 +62,7 @@ def molstar_html(
 
 
 def molstar_notebook(
-    state: str | dict | MVSData | MVSX,
+    state: SupportedStates,
     data: dict[str, bytes] = None,
     width=950,
     height=600,
@@ -120,11 +122,18 @@ def molstar_notebook(
     display(Javascript(js_code))
 
 
-def molstar_streamlit(state: str | dict | MVSData, data=None, width=None, height=500):
+def molstar_streamlit(
+    state: SupportedStates,
+    data=None,
+    width=None,
+    height=500,
+    ui: Literal["viewer", "stories"] = "viewer",
+    molstar_version: str = "latest",
+):
     """Show Mol* viewer in a Streamlit app."""
     import streamlit.components.v1 as components
 
-    iframe_html = molstar_html(state, data=data)
+    iframe_html = molstar_html(state, data=data, ui=ui, molstar_version=molstar_version)
     return components.html(iframe_html, width=width, height=height)
 
 
