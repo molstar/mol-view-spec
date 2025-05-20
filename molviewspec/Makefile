@@ -27,6 +27,6 @@ test-server: start-server
 
 # unit tests
 test-units:
-	@python test_mvsj_to_mvsx.py
+	@python -m unittest discover -s ./tests -p "test_*.py"
 
 test: test-server test-units
