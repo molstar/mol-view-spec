@@ -9,7 +9,10 @@ from molviewspec.nodes import MVSJ, MVSX, MVSData
 
 
 def molstar_html(
-    state: str | dict | MVSData | bytes | MVSX | MVSJ, data=None, ui: Literal["viewer", "stories"] = "viewer"
+    state: str | dict | MVSData | bytes | MVSX | MVSJ,
+    data=None,
+    ui: Literal["viewer", "stories"] = "viewer",
+    molstar_version: str = "latest",
 ):
     """Create an HTML string to display a Mol* viewer with the given state."""
 
@@ -23,11 +26,11 @@ def molstar_html(
         # convert state to JSON string
         if hasattr(state, "model_dump_json"):
             # pydantic v1 compatibility
-            state = state.model_dump_json(exclude_none=True)
+            state = state.model_dump_json(exclude_none=True, indent=None)
         else:
-            state = state.json(exclude_none=True)
+            state = state.json(exclude_none=True, indent=None)
     elif isinstance(state, MVSJ):
-        state = state.dumps()
+        state = state.dumps(indent=None)
     elif isinstance(state, MVSX):
         state = "base64," + base64.b64encode(state.dumps()).decode("utf-8")
         format = "mvsx"
@@ -47,7 +50,11 @@ def molstar_html(
         format = "mvsx"
 
     template = STORIES_TEMPLATE if ui == "stories" else VIEWER_TEMPLATE
-    template = template.replace("{{format}}", format).replace("{{state}}", json.dumps(state))
+    template = (
+        template.replace("{{version}}", molstar_version)
+        .replace("{{format}}", format)
+        .replace("{{state}}", json.dumps(state))
+    )
 
     return template
 
@@ -59,6 +66,7 @@ def molstar_notebook(
     height=600,
     download_filename="molstar_download",
     ui: Literal["viewer", "stories"] = "viewer",
+    molstar_version: str = "latest",
 ):
     """
     Visualize a state as a Molstar HTML component for Jupyter or Google Colab.
@@ -71,7 +79,7 @@ def molstar_notebook(
     """
     from IPython.display import HTML, Javascript, display
 
-    iframe_html = molstar_html(state, data=data, ui=ui)
+    iframe_html = molstar_html(state, data=data, ui=ui, molstar_version=molstar_version)
 
     # We turn "...</script>" into "...</script" + ">" to avoid closing script tag in VScode
     html_string = json.dumps(iframe_html).replace("</script>", '</" + "script" + ">')
@@ -123,10 +131,8 @@ def molstar_streamlit(state: str | dict | MVSData, data=None, width=None, height
 VIEWER_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
     <head>
-        <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
-        <script src="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.js"></script>
-        <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.css" />
+        <script src="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/viewer/molstar.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/viewer/molstar.css" />
     </head>
     <body>
         <div id="viewer1"></div>
@@ -143,7 +149,6 @@ VIEWER_TEMPLATE = """<!DOCTYPE html>
 STORIES_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Molecular Stories</title>
     <style>
         * {
             margin: 0;
@@ -176,21 +181,6 @@ STORIES_TEMPLATE = """<!DOCTYPE html>
             gap: 16px;
         }
 
-        #links {
-            position: absolute;
-            bottom: 4px;
-            right: 8px;
-            font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 0.6rem;
-            z-index: -1;
-            color: #666;
-        }
-
-        #links a {
-            color: #666;
-            text-decoration: none;
-        }
-
         @media (orientation:portrait) {
             #viewer {
                 position: absolute;
@@ -209,43 +199,28 @@ STORIES_TEMPLATE = """<!DOCTYPE html>
                 border-top: none;  
             }
 
-            .markdown-explanation {
-                font-size: 0.9rem !important;    
-            }
-
-            .markdown-explanation h3 {
-                font-size: 1.5rem !important;
-            }
-
             .msp-viewport-controls-buttons {
                 display: none;
             }
         }
     </style>
-    <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
-    <script src="https://molstar.org/demos/mvs-stories/index.js"></script>
-    <!-- Replace "latest" by the specific version you want to use, e.g. "4.0.0" -->
-    <link rel="stylesheet" type="text/css" href="https://molstar.org/demos/mvs-stories/molstar.css" />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/molstar.js"></script> -->
+    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/molstar.css" /> -->
+    <script src="http://localhost:1338/build/mvs-stories/molstar.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://localhost:1338/build/mvs-stories/molstar.css" />
 </head>
 <body>
     <div id="viewer">
-        <mc-viewer name="v1" />
+        <mvs-stories-viewer />
     </div>
     <div id="controls">
-        <div class="markdown-explanation" style="flex-grow: 1;">
-            <mc-snapshot-markdown viewer-name="v1" />
-        </div>
+        <mvs-stories-snapshot-markdown style="flex-grow: 1;" />
     </div>
 
     <script>
         var mvsData = {{state}};
-        setTimeout(() => {
-            window.mc.getContext().dispatch({
-                kind: 'load-mvs',
-                format: '{{format}}',
-                data: JSON.parse(mvsData),
-            });
-        }, 0);
+
+        mvsStories.loadFromData(mvsData, { format: '{{format}}' });
     </script>
 </body>
 </html>
