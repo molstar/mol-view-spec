@@ -75,9 +75,9 @@ def molstar_html(
 def molstar_notebook(
     state: SupportedStates,
     data: dict[str, bytes] | None = None,
-    width: int | None =950,
-    height: int | None =600,
-    download_filename: str ="molstar_download",
+    width: int | str = 950,
+    height: int | str = 600,
+    download_filename: str = "molstar_download",
     ui: Literal["viewer", "stories"] = "viewer",
     molstar_version: str = "latest",
 ):
@@ -101,6 +101,9 @@ def molstar_notebook(
 
     wrapper_id = f"molstar_{uuid.uuid4()}"
 
+    w = width if isinstance(width, str) else f"{width}px"
+    h = height if isinstance(height, str) else f"{height}px"
+
     # JavaScript code to create a Blob URL and a download link
     js_code = f"""
     setTimeout(function(){{
@@ -114,7 +117,7 @@ def molstar_notebook(
         // Create the iframe
         var iframe = document.createElement('iframe');
         iframe.src = url;
-        iframe.style = "border: 0; width: {width}px; height: {height}px"
+        iframe.style = "border: 0; width: {w}; height: {h}"
         iframe.allow = "fullscreen";
         iframe.allowFullscreen = true;
         wrapper.appendChild(iframe);
@@ -137,9 +140,9 @@ def molstar_notebook(
 
 def molstar_streamlit(
     state: SupportedStates,
-    data: dict[str, bytes] | None =None,
-    width: int | None =None,
-    height: int | None =500,
+    data: dict[str, bytes] | None = None,
+    width: int | None = None,
+    height: int | None = 500,
     ui: Literal["viewer", "stories"] = "viewer",
     molstar_version: str = "latest",
 ):

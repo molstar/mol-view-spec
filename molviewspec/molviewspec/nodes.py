@@ -142,8 +142,8 @@ class MolstarWidgetsMixin:
     def molstar_notebook(
         self,
         data: dict[str, bytes] | None = None,
-        width: int | None = 950,
-        height: int | None = 600,
+        width: int | str = 950,
+        height: int | str = 600,
         download_filename: str = "molstar_download",
         ui: Literal["viewer", "stories"] = "viewer",
         molstar_version: str = "latest",
