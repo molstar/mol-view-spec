@@ -6,7 +6,7 @@ from io import BytesIO
 from typing import Literal
 
 from molviewspec.builder import Root as BuilderRoot
-from molviewspec.nodes import MVSJ, MVSX, MVSData
+from molviewspec.nodes import MVSJ, MVSX, MVSData, State, States
 
 SupportedStates = str | dict | BuilderRoot | MVSData | bytes | MVSX | MVSJ
 
@@ -34,14 +34,7 @@ def molstar_html(
         state = state.get_state().dumps()
     elif isinstance(state, dict):
         state = json.dumps(state)
-    elif isinstance(state, MVSData):
-        # convert state to JSON string
-        if hasattr(state, "model_dump_json"):
-            # pydantic v1 compatibility
-            state = state.model_dump_json(exclude_none=True, indent=None)
-        else:
-            state = state.json(exclude_none=True, indent=None)
-    elif isinstance(state, MVSJ):
+    elif isinstance(state, MVSJ) or isinstance(state, State) or isinstance(state, States):
         state = state.dumps(indent=None)
     elif isinstance(state, MVSX):
         if data is not None:
@@ -81,10 +74,10 @@ def molstar_html(
 
 def molstar_notebook(
     state: SupportedStates,
-    data: dict[str, bytes] = None,
-    width=950,
-    height=600,
-    download_filename="molstar_download",
+    data: dict[str, bytes] | None = None,
+    width: int | None =950,
+    height: int | None =600,
+    download_filename: str ="molstar_download",
     ui: Literal["viewer", "stories"] = "viewer",
     molstar_version: str = "latest",
 ):
@@ -144,9 +137,9 @@ def molstar_notebook(
 
 def molstar_streamlit(
     state: SupportedStates,
-    data=None,
-    width=None,
-    height=500,
+    data: dict[str, bytes] | None =None,
+    width: int | None =None,
+    height: int | None =500,
     ui: Literal["viewer", "stories"] = "viewer",
     molstar_version: str = "latest",
 ):

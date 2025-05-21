@@ -141,7 +141,7 @@ StateTreeT = Literal["single", "multiple"]
 class MolstarWidgetsMixin:
     def molstar_notebook(
         self,
-        data: dict[str, bytes] = None,
+        data: dict[str, bytes] | None = None,
         width: int | None = 950,
         height: int | None = 600,
         download_filename: str = "molstar_download",
@@ -161,7 +161,7 @@ class MolstarWidgetsMixin:
         from molviewspec.molstar_widgets import molstar_notebook
 
         molstar_notebook(
-            state=self,
+            state=self,  # type: ignore
             data=data,
             width=width,
             height=height,
@@ -190,7 +190,7 @@ class MolstarWidgetsMixin:
         from molviewspec.molstar_widgets import molstar_streamlit
 
         return molstar_streamlit(
-            self,
+            self,  # type: ignore
             data=data,
             width=width,
             height=height,
@@ -214,7 +214,7 @@ class MolstarWidgetsMixin:
         from molviewspec.molstar_widgets import molstar_html
 
         return molstar_html(
-            self,
+            self,  # type: ignore
             data=data,
             ui=ui,
             molstar_version=molstar_version,
@@ -363,23 +363,27 @@ class MVSX(BaseModel, MolstarWidgetsMixin):
         z.writestr("index.mvsj", state.encode("utf-8"))
 
         for asset_name, data in self.assets.items():
+            # check for bytes
+            if isinstance(data, bytes):
+                z.writestr(asset_name, data)
+                continue
+
+            # check for URL
             try:
-                parsed_url = urllib.parse.urlparse(data)
+                parsed_url = urllib.parse.urlparse(data)  # type: ignore
             except Exception:
                 parsed_url = None
 
             if parsed_url and parsed_url.scheme in ("http", "https", "ftp"):
                 with io.BytesIO() as urlbytes:
-                    with urllib.request.urlopen(data) as req:
+                    with urllib.request.urlopen(data) as req:  # type: ignore
                         urlbytes.write(req.read())
                     urlbytes.flush()
                     z.writestr(asset_name, urlbytes.getvalue())
                 continue
 
-            if isinstance(data, bytes):
-                z.writestr(asset_name, data)
-            else:
-                z.write(data, arcname=asset_name)
+            # assume file path
+            z.write(data, arcname=asset_name)
 
     def dump(self, filename: str | os.PathLike) -> None:
         """
