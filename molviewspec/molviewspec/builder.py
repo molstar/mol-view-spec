@@ -13,7 +13,6 @@ from typing import Any, Literal, Sequence, overload
 from pydantic import BaseModel, PrivateAttr
 from typing_extensions import Self
 
-from molviewspec.molstar_widgets import molstar_notebook, molstar_streamlit
 from molviewspec.nodes import (
     AngleMeasurementParams,
     ArrowParams,
@@ -43,6 +42,7 @@ from molviewspec.nodes import (
     LinesParams,
     Mat4,
     MeshParams,
+    MolstarWidgetsMixin,
     Node,
     OpacityInlineParams,
     ParseFormatT,
@@ -198,7 +198,7 @@ class _FocusMixin(_BuilderProtocol):
         return self
 
 
-class Root(_Base, _PrimitivesMixin, _FocusMixin):
+class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
     """
     The builder for MolViewSpec state descriptions. Provides fine-grained options as well as global properties such as
     canvas color or camera position and functionality to eventually export this scene.
@@ -237,15 +237,13 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         )
         return Snapshot(root=self._node, metadata=metadata)  # TODO create deep copy of node
 
-    @overload
     def get_state(
         self,
         *,
-        title: str | None,
-        description: str | None,
-        description_format: DescriptionFormatT | None,
-        indent: int | None,
-        serialize: Literal[False],
+        title: str | None = None,
+        description: str | None = None,
+        description_format: DescriptionFormatT | None = None,
+        indent: int | None = 2,
     ) -> State:
         """
         Return single-state MVSJ State object. Can be enriched with metadata.
@@ -255,61 +253,13 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         :param indent: control format by specifying if and how to indent attributes
         :return: JSON string that resembles that whole state
         """
-        ...
-
-    @overload
-    def get_state(
-        self,
-        *,
-        title: str | None,
-        description: str | None,
-        description_format: DescriptionFormatT | None,
-        indent: int | None,
-        serialize: Literal[True],
-    ) -> str:
-        """
-        Return single-state MVSJ representation (JSON) of the current state. Can be enriched with metadata.
-        :param title: optional title of the scene
-        :param description: optional detailed description of the scene
-        :param description_format: format of the description
-        :param indent: control format by specifying if and how to indent attributes
-        :return: JSON string that resembles that whole state
-        """
-        ...
-
-    def get_state(
-        self,
-        *,
-        title: str | None = None,
-        description: str | None = None,
-        description_format: DescriptionFormatT | None = None,
-        indent: int | None = 2,
-        serialize: bool = True,
-    ) -> str | State:
-        """
-        Return single-state MVSJ representation (JSON) of the current state. Can be enriched with metadata.
-        :param title: optional title of the scene
-        :param description: optional detailed description of the scene
-        :param description_format: format of the description
-        :param indent: control format by specifying if and how to indent attributes
-        :param serialize: if True, return a JSON string, otherwise return the State object
-        :return: JSON string that resembles that whole state
-        """
         metadata = GlobalMetadata(
             title=title,
             description=description,
             description_format=description_format,
             # `version` and `timestamp` added by the constructor
         )
-        state = State(root=self._node, metadata=metadata)
-
-        if not serialize:
-            return state
-
-        # pydantic v1 compatibility
-        if hasattr(state, "model_dump_json"):
-            return state.model_dump_json(exclude_none=True, indent=indent)
-        return state.json(exclude_none=True, indent=indent)
+        return State(root=self._node, metadata=metadata)
 
     def save_state(
         self,
@@ -321,6 +271,8 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         indent: int | None = 2,
     ) -> None:
         """
+        Deprecated, use MVSJ/X(data=builder.get_state()).dump instead.
+
         Saves the JSON representation of the current state to a file. Can be enriched with metadata.
         :param destination: file path to write
         :param title: optional title of the scene
@@ -331,8 +283,14 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         state = self.get_state(
             title=title, description=description, description_format=description_format, indent=indent
         )
+
+        if hasattr(state, "model_dump_json"):
+            data = state.model_dump_json(exclude_none=True, indent=indent)
+        else:
+            data = state.json(exclude_none=True, indent=indent)
+
         with open(destination, "w") as out:
-            out.write(state)
+            out.write(data)
 
     def camera(
         self,
@@ -375,46 +333,6 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin):
         node = Node(kind="download", params=params)
         self._add_child(node)
         return Download(node=node, root=self._root)
-
-    def _ipython_display_(self):
-        """
-        Display the current state as a Molstar HTML component for Jupyter or Google Colab.
-        """
-        self.molstar_notebook()
-
-    def molstar_notebook(
-        self, data: dict[str, bytes] = None, width=950, height=600, download_filename="molstar_download"
-    ):
-        """
-        Visualize the current state as a Molstar HTML component for Jupyter or Google Colab.
-
-        :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
-        :param width: width of the Molstar viewer (default: 950)
-        :param height: height of the Molstar viewer (default: 600)
-        :param download_filename: filename for the Molstar HTML file (default: "molstar_download")
-        """
-        molstar_notebook(
-            state=self.get_state(),
-            data=data,
-            width=width,
-            height=height,
-            download_filename=download_filename,
-        )
-
-    def molstar_streamlit(self, data=None, width=None, height=500):
-        """
-        Show Mol* viewer in a Streamlit app.
-
-        :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
-        :param width: width of the Molstar viewer (default: full width)
-        :param height: height of the Molstar viewer (default: 500)
-        """
-        return molstar_streamlit(
-            self.get_state(),
-            data=data,
-            width=width,
-            height=height,
-        )
 
 
 class Download(_Base):

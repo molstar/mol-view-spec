@@ -5,23 +5,33 @@ import zipfile
 from io import BytesIO
 from typing import Literal
 
+from molviewspec.builder import Root as BuilderRoot
 from molviewspec.nodes import MVSJ, MVSX, MVSData
 
-SupportedStates = str | dict | MVSData | bytes | MVSX | MVSJ
+SupportedStates = str | dict | BuilderRoot | MVSData | bytes | MVSX | MVSJ
 
 
 def molstar_html(
     state: SupportedStates,
-    data=None,
+    data: dict[str, bytes] | None = None,
     ui: Literal["viewer", "stories"] = "viewer",
     molstar_version: str = "latest",
 ):
-    """Create an HTML string to display a Mol* viewer with the given state."""
+    """
+    Create an HTML string to display a Mol* viewer with the given state.
+
+    :param state: MolViewSpec state(s) - JSON string, State, States, MVSJ, MVSX, bytes, dict, or Builder Root
+    :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
+    :param ui: "viewer" or "stories" (default: "viewer")
+    :param molstar_version: Mol* version to use (default: "latest")
+    """
 
     format = "mvsj"
 
     if isinstance(state, str):
         pass
+    elif isinstance(state, BuilderRoot):
+        state = state.get_state().dumps()
     elif isinstance(state, dict):
         state = json.dumps(state)
     elif isinstance(state, MVSData):
@@ -34,15 +44,23 @@ def molstar_html(
     elif isinstance(state, MVSJ):
         state = state.dumps(indent=None)
     elif isinstance(state, MVSX):
+        if data is not None:
+            print("Warning: data is ignored when state is MVSX")
+            data = None
+
         state = "base64," + base64.b64encode(state.dumps()).decode("utf-8")
         format = "mvsx"
     elif isinstance(state, bytes):
+        if data is not None:
+            print("Warning: data is ignored when state is MVSX bytes")
+            data = None
+
         state = "base64," + base64.b64encode(state).decode("utf-8")
         format = "mvsx"
     else:
         raise TypeError(f"State should be str, dict, State or States, got: {type(state).__name__}: {state}")
 
-    if not isinstance(state, MVSX) and not isinstance(state, bytes) and data is not None:
+    if data is not None:
         zip_data = BytesIO()
         with zipfile.ZipFile(zip_data, "w") as zipf:
             zipf.writestr("index.mvsj", state)
@@ -73,11 +91,13 @@ def molstar_notebook(
     """
     Visualize a state as a Molstar HTML component for Jupyter or Google Colab.
 
-    :param state: MolViewSpec state(s) - string from builder.get_state(), or the State or States object itself
+    :param state: MolViewSpec state(s) - JSON string, State, States, MVSJ, MVSX, bytes, dict, or Builder Root
     :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
     :param width: width of the Molstar viewer (default: 950)
     :param height: height of the Molstar viewer (default: 600)
     :param download_filename: filename for the Molstar HTML file (default: "molstar_download")
+    :param ui: "viewer" or "stories" (default: "viewer")
+    :param molstar_version: Mol* version to use (default: "latest")
     """
     from IPython.display import HTML, Javascript, display
 
@@ -130,7 +150,19 @@ def molstar_streamlit(
     ui: Literal["viewer", "stories"] = "viewer",
     molstar_version: str = "latest",
 ):
-    """Show Mol* viewer in a Streamlit app."""
+    """
+    Show Mol* viewer in a Streamlit app.
+
+    :param state: MolViewSpec state(s) - JSON string, State, States, MVSJ, MVSX, bytes, dict, or Builder Root
+    :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
+    :param width: width of the Molstar viewer (default: 950)
+    :param height: height of the Molstar viewer (default: 600)
+    :param download_filename: filename for the Molstar HTML file (default: "molstar_download")
+    :param ui: "viewer" or "stories" (default: "viewer")
+    :param molstar_version: Mol* version to use (default: "latest")
+
+    :return: Streamlit HTML component
+    """
     import streamlit.components.v1 as components
 
     iframe_html = molstar_html(state, data=data, ui=ui, molstar_version=molstar_version)
@@ -213,10 +245,10 @@ STORIES_TEMPLATE = """<!DOCTYPE html>
             }
         }
     </style>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/molstar.js"></script> -->
-    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/molstar.css" /> -->
-    <script src="http://localhost:1338/build/mvs-stories/molstar.js"></script>
-    <link rel="stylesheet" type="text/css" href="http://localhost:1338/build/mvs-stories/molstar.css" />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/mvs-stories.js"></script> -->
+    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/mvs-stories.css" /> -->
+    <script src="http://localhost:1338/build/mvs-stories/mvs-stories.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://localhost:1338/build/mvs-stories/mvs-stories.css" />
 </head>
 <body>
     <div id="viewer">

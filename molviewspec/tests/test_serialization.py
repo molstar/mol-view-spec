@@ -4,6 +4,7 @@ import logging
 import unittest
 
 from molviewspec.builder import create_builder
+from molviewspec.molviewspec.nodes import MVSJ
 
 # Set up logging for tests
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -21,7 +22,7 @@ class TestSerialization(unittest.TestCase):
             face_color="blue",
             show_edges=False,
         )
-        state = builder.get_state()
+        state = MVSJ(data=builder.get_state()).dumps()
 
         self.assertIn("primitives", state)
         self.assertIn("box", state)
