@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+- Add `load/s` to `MVSJ` object
+- Add `find_ref` to `State` and `MVSJ` objects
+
 ## [v1.6.0] - 2025-04-22
 
 - Add `MSVJ` and `MVSX` wrapper objects
