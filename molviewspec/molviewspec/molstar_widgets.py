@@ -241,10 +241,8 @@ STORIES_TEMPLATE = """<!DOCTYPE html>
             }
         }
     </style>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/mvs-stories.js"></script> -->
-    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/mvs-stories.css" /> -->
-    <script src="http://localhost:1338/build/mvs-stories/mvs-stories.js"></script>
-    <link rel="stylesheet" type="text/css" href="http://localhost:1338/build/mvs-stories/mvs-stories.css" />
+    <script src="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/mvs-stories.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/molstar@{{version}}/build/mvs-stories/mvs-stories.css" />
 </head>
 <body>
     <div id="viewer">
