@@ -9,7 +9,6 @@ import json
 import logging
 import os
 import tempfile
-import urllib.parse
 import urllib.request
 import zipfile
 from pathlib import Path
