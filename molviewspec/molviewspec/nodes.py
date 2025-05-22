@@ -4,6 +4,12 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 
 from __future__ import annotations
 
+import io
+import os
+import urllib
+import urllib.parse
+import urllib.request
+import zipfile
 from datetime import datetime, timezone
 from typing import Any, Literal, Mapping, Optional, Tuple, Type, TypeVar, Union, cast
 from uuid import uuid4
@@ -132,7 +138,96 @@ StateTreeT = Literal["single", "multiple"]
 """Type of a state description, either 'single' (individual state) or 'multiple' (ordered collection of multiple states aka snapshots)."""
 
 
-class State(BaseModel):
+class MolstarWidgetsMixin:
+    def molstar_notebook(
+        self,
+        data: dict[str, bytes] | None = None,
+        width: int | str = 950,
+        height: int | str = 600,
+        download_filename: str = "molstar_download",
+        ui: Literal["viewer", "stories"] = "viewer",
+        molstar_version: str = "latest",
+    ):
+        """
+        Visualize the current state as a Molstar HTML component for Jupyter or Google Colab.
+
+        :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
+        :param width: width of the Molstar viewer (default: 950)
+        :param height: height of the Molstar viewer (default: 600)
+        :param download_filename: filename for the Molstar HTML file (default: "molstar_download")
+        :param ui: UI type to use, either "viewer" or "stories"
+        :param molstar_version: version of Mol* to use
+        """
+        from molviewspec.molstar_widgets import molstar_notebook
+
+        molstar_notebook(
+            state=self,  # type: ignore
+            data=data,
+            width=width,
+            height=height,
+            download_filename=download_filename,
+            ui=ui,
+            molstar_version=molstar_version,
+        )
+
+    def molstar_streamlit(
+        self,
+        data: dict[str, bytes] | None = None,
+        width: int | None = None,
+        height: int | None = 500,
+        ui: Literal["viewer", "stories"] = "viewer",
+        molstar_version: str = "latest",
+    ):
+        """
+        Show Mol* viewer in a Streamlit app.
+
+        :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
+        :param width: width of the Molstar viewer (default: full width)
+        :param height: height of the Molstar viewer (default: 500)
+        :param ui: UI type to use, either "viewer" or "stories"
+        :param molstar_version: version of Mol* to use
+        """
+        from molviewspec.molstar_widgets import molstar_streamlit
+
+        return molstar_streamlit(
+            self,  # type: ignore
+            data=data,
+            width=width,
+            height=height,
+            ui=ui,
+            molstar_version=molstar_version,
+        )
+
+    def molstar_html(
+        self,
+        data: dict[str, bytes] | None = None,
+        ui: Literal["viewer", "stories"] = "viewer",
+        molstar_version: str = "latest",
+    ):
+        """
+        Generate HTML with the state embedded and shown in the Mol* viewer
+
+        :param data: optional, create MVSX archive with additional file contents to include (filename -> file contents)
+        :param ui: UI type to use, either "viewer" or "stories"
+        :param molstar_version: version of Mol* to use
+        """
+        from molviewspec.molstar_widgets import molstar_html
+
+        return molstar_html(
+            self,  # type: ignore
+            data=data,
+            ui=ui,
+            molstar_version=molstar_version,
+        )
+
+    def _ipython_display_(self):
+        """
+        Display the current state as a Molstar HTML component for Jupyter or Google Colab.
+        """
+        self.molstar_notebook()
+
+
+class State(BaseModel, MolstarWidgetsMixin):
     """
     Root node of a single state tree with metadata.
     """
@@ -144,6 +239,34 @@ class State(BaseModel):
     root: Node = Field(description="Root of the node tree.")
     metadata: GlobalMetadata = Field(description="Associated metadata.")
 
+    def to_dict(self) -> dict:
+        """
+        Convert to a dictionary representation.
+        """
+
+        if hasattr(self, "model_dump"):
+            return self.model_dump(exclude_none=True)
+        else:
+            return self.dict(exclude_none=True)
+
+    def dumps(self, *, indent: int | None = 2) -> str:
+        """
+        Serialize the data to a JSON string.
+        """
+
+        if hasattr(self, "model_dump_json"):
+            return self.model_dump_json(exclude_none=True, indent=indent)
+        else:
+            return self.json(exclude_none=True, indent=indent)
+
+    def _ipython_display_(self):
+        """
+        Display the current state as a Molstar HTML component for Jupyter or Google Colab.
+        """
+        from molviewspec.molstar_widgets import molstar_notebook
+
+        molstar_notebook(self)
+
 
 class Snapshot(BaseModel):
     """
@@ -154,7 +277,7 @@ class Snapshot(BaseModel):
     metadata: SnapshotMetadata = Field(description="Associated metadata.")
 
 
-class States(BaseModel):
+class States(BaseModel, MolstarWidgetsMixin):
     """
     Root node of state descriptions that encompass multiple distinct state trees (snapshots).
     """
@@ -167,9 +290,122 @@ class States(BaseModel):
     snapshots: list[Snapshot] = Field(description="Ordered collection of individual states.")
     # TODO add ordered collection that describes transition/interpolation wrt previous state
 
+    def to_dict(self) -> dict:
+        """
+        Convert to a dictionary representation.
+        """
+
+        if hasattr(self, "model_dump"):
+            return self.model_dump(exclude_none=True)
+        else:
+            return self.dict(exclude_none=True)
+
+    def dumps(self, *, indent: int | None = 2) -> str:
+        """
+        Serialize the data to a JSON string.
+        """
+
+        if hasattr(self, "model_dump_json"):
+            return self.model_dump_json(exclude_none=True, indent=indent)
+        else:
+            return self.json(exclude_none=True, indent=indent)
+
 
 MVSData = Union[State, States]
 """Flavors of MolViewSpec states."""
+
+
+class MVSJ(BaseModel, MolstarWidgetsMixin):
+    data: MVSData = Field(description="The data to be serialized.")
+
+    def dump(self, filename: str | os.PathLike, *, indent: int | None = None) -> None:
+        """
+        Write the serialized data to a file.
+        """
+
+        if hasattr(self.data, "model_dump_json"):
+            state = self.data.model_dump_json(exclude_none=True, indent=indent)
+        else:
+            state = self.data.json(exclude_none=True, indent=indent)
+
+        with open(filename, "w") as out:
+            out.write(state)
+
+    def dumps(self, *, indent: int | None = 2) -> str:
+        """
+        Serialize the data to a JSON string.
+        """
+
+        if hasattr(self.data, "model_dump_json"):
+            return self.data.model_dump_json(exclude_none=True, indent=indent)
+        else:
+            return self.data.json(exclude_none=True, indent=indent)
+
+
+class MVSX(BaseModel, MolstarWidgetsMixin):
+    data: MVSData = Field(description="The data to be serialized.")
+    assets: dict[str, bytes | str | os.PathLike] = Field(
+        {},
+        description="Assets to be serialized with the data. Can be a file path, URL, or raw bytes. Files and URLs will be automatically synchronouly copied into the archive during serialization.",
+    )
+
+    def _serialize(self, z: zipfile.ZipFile) -> None:
+        """
+        Serialize the data a zip zip file.
+        """
+
+        # pydantic v1 compatibility
+        if hasattr(self.data, "model_dump_json"):
+            state = self.data.model_dump_json(exclude_none=True)
+        else:
+            state = self.data.json(exclude_none=True)
+
+        z.writestr("index.mvsj", state.encode("utf-8"))
+
+        for asset_name, data in self.assets.items():
+            # check for bytes
+            if isinstance(data, bytes):
+                z.writestr(asset_name, data)
+                continue
+
+            # check for URL
+            try:
+                parsed_url = urllib.parse.urlparse(data)  # type: ignore
+            except Exception:
+                parsed_url = None
+
+            if parsed_url and parsed_url.scheme in ("http", "https", "ftp"):
+                with io.BytesIO() as urlbytes:
+                    with urllib.request.urlopen(data) as req:  # type: ignore
+                        urlbytes.write(req.read())
+                    urlbytes.flush()
+                    z.writestr(asset_name, urlbytes.getvalue())
+                continue
+
+            # assume file path
+            z.write(data, arcname=asset_name)
+
+    def dump(self, filename: str | os.PathLike) -> None:
+        """
+        Write the serialized data to a file.
+        """
+
+        with open(filename, "wb") as f:
+            with zipfile.ZipFile(f, "w") as z:
+                self._serialize(z)
+
+    def dumps(self) -> bytes:
+        """
+        Serialize the data to a bytes object.
+        """
+
+        with io.BytesIO() as f:
+            with zipfile.ZipFile(f, "w") as z:
+                self._serialize(z)
+            f.flush()
+            ret = f.getvalue()
+
+        return ret
 
 
 class DownloadParams(BaseModel):

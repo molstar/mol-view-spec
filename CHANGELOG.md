@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+- Add `MSVJ` and `MVSX` wrapper objects
+- Add `to_dict` and `dumps` methods to `State` and `States` objects
+- Support `stories` UI in `molstar_html`
+- Add `molstar_notebook/html/streamlit/_ipython_display_` methods to `State`/`States`/`MVSJ`/`MVSX`/`Root` objects
+- Breaking: state builder `Root.get_state` now returns `State` object instead of serialized JSON
+  - Use `get_state().dumps()` to achieve the same result
 
 ## [v1.5.0] - 2025-04-09
 

@@ -8,6 +8,7 @@ import tempfile
 import unittest
 import urllib.request
 import zipfile
+from pathlib import Path
 from urllib.parse import urlparse
 
 from molviewspec.mvsx_converter import (
@@ -35,7 +36,7 @@ class TestMVSXFunctionality(unittest.TestCase):
         os.makedirs(self.test_resources_dir, exist_ok=True)
 
         # Path to colab_examples directory - try multiple possible locations
-        script_dir = os.path.dirname(os.path.abspath(__file__))
+        script_dir = os.path.dirname(Path(__file__).parent)
         potential_paths = [
             # Look in ../test-data/colab_examples (relative to script)
             os.path.join(os.path.dirname(script_dir), "test-data", "colab_examples"),
