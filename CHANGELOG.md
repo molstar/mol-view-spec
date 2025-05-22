@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+## [v1.6.0] - 2025-04-22
+
 - Add `MSVJ` and `MVSX` wrapper objects
 - Add `to_dict` and `dumps` methods to `State` and `States` objects
 - Support `stories` UI in `molstar_html`
