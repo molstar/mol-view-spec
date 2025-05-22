@@ -77,6 +77,9 @@ class Node(BaseModel):
         if self.ref == ref:
             return self
 
+        if self.children is None:
+            return None
+
         for child in self.children:
             found = child.find_ref(ref)
             if found is not None:
@@ -358,7 +361,7 @@ class MVSJ(BaseModel, MolstarWidgetsMixin):
             return self.data.model_dump_json(exclude_none=True, indent=indent)
         else:
             return self.data.json(exclude_none=True, indent=indent)
-        
+
     def find_ref(self, ref: str) -> Node | None:
         """
         Find a child node by reference.
@@ -367,9 +370,9 @@ class MVSJ(BaseModel, MolstarWidgetsMixin):
         """
         if isinstance(self.data, State):
             return self.data.root.find_ref(ref)
-        
+
         raise RuntimeError("Cannot find ref in MVSJ with multiple states")
-        
+
     @staticmethod
     def loads(data: str | dict) -> MVSJ:
         """
@@ -380,6 +383,17 @@ class MVSJ(BaseModel, MolstarWidgetsMixin):
             data = json.loads(data)
 
         return MVSJ(data=data)
+
+    @staticmethod
+    def load(filename: str | os.PathLike, encoding: str = "utf-8") -> MVSJ:
+        """
+        Load MVSJ object from a file.
+        """
+
+        with open(filename, mode="r", encoding="utf-8") as f:
+            data = f.read()
+
+        return MVSJ.loads(data)
 
 
 class MVSX(BaseModel, MolstarWidgetsMixin):
