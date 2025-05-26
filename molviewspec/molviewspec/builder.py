@@ -298,12 +298,16 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         target: Vec3[float],
         position: Vec3[float],
         up: Vec3[float] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ):
         """
         Manually position the camera.
         :param target: what to look at
         :param position: the position of the camera
         :param up: controls the rotation around the vector between target and position (default: (0, 1, 0))
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(CameraParams, locals())
@@ -311,10 +315,18 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         self._add_child(node)
         return self
 
-    def canvas(self, *, background_color: ColorT) -> Root:
+    def canvas(
+        self,
+        *,
+        background_color: ColorT,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Root:
         """
         Customize canvas properties such as background color.
         :param background_color: desired background color, either as SVG color name or hex code
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(CanvasParams, locals())
@@ -322,10 +334,17 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         self._add_child(node)
         return self
 
-    def download(self, *, url: str, ref: RefT = None) -> Download:
+    def download(
+        self,
+        *,
+        url: str,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Download:
         """
         Add a new structure to the builder by downloading structure data from a URL.
         :param url: source of structure data
+        :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations on the downloaded resource
         """
@@ -340,10 +359,17 @@ class Download(_Base):
     Builder step with operations needed after downloading structure data.
     """
 
-    def parse(self, *, format: ParseFormatT, ref: RefT = None) -> Parse:
+    def parse(
+        self,
+        *,
+        format: ParseFormatT,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Parse:
         """
         Parse the content by specifying the file format.
         :param format: specify the format of your structure data
+        :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations on the parsed content
         """
@@ -364,6 +390,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
         """
@@ -371,6 +398,8 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
         :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="model")
@@ -385,6 +414,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
         """
@@ -393,6 +423,8 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
         :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="assembly")
@@ -408,6 +440,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
         """
@@ -417,6 +450,8 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
         :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="symmetry")
@@ -431,6 +466,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
         """
@@ -439,6 +475,8 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
         :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
         """
         params = make_params(StructureParams, locals(), type="symmetry_mates")
@@ -566,6 +604,8 @@ class Structure(_Base, _PrimitivesMixin):
         block_header: str | None = None,
         block_index: int | None = None,
         schema: SchemaT,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Define a new label for the given structure by fetching additional data from a resource.
@@ -591,6 +631,8 @@ class Structure(_Base, _PrimitivesMixin):
         block_header: str | None = None,
         block_index: int | None = None,
         schema: SchemaT,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Define a new label for the given structure by fetching additional data from the source file.
@@ -599,6 +641,8 @@ class Structure(_Base, _PrimitivesMixin):
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :param schema: granularity/type of the selection
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(LabelFromSourceParams, locals())
@@ -616,6 +660,8 @@ class Structure(_Base, _PrimitivesMixin):
         block_header: str | None = None,
         block_index: int | None = None,
         schema: SchemaT,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Define a new tooltip for the given structure by fetching additional data from a resource.
@@ -626,6 +672,8 @@ class Structure(_Base, _PrimitivesMixin):
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :param schema: granularity/type of the selection
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(TooltipFromUriParams, locals())
@@ -641,6 +689,8 @@ class Structure(_Base, _PrimitivesMixin):
         block_header: str | None = None,
         block_index: int | None = None,
         schema: SchemaT,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Structure:
         """
         Define a new tooltip for the given structure by fetching additional data from the source file.
@@ -649,6 +699,8 @@ class Structure(_Base, _PrimitivesMixin):
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
         :param schema: granularity/type of the selection
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(TooltipFromSourceParams, locals())
@@ -835,10 +887,18 @@ class Component(_Base, _FocusMixin):
         self._add_child(node)
         return Representation(node=node, root=self._root)
 
-    def label(self, *, text: str) -> Component:
+    def label(
+        self,
+        *,
+        text: str,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Component:
         """
         Add a text label to a component.
         :param text: label to add in 3D
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(LabelInlineParams, locals())
@@ -846,10 +906,18 @@ class Component(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
-    def tooltip(self, *, text: str) -> Component:
+    def tooltip(
+        self,
+        *,
+        text: str,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Component:
         """
         Add a tooltip that shows additional information of a component when hovering over it.
         :param text: text to show upon hover
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(TooltipInlineParams, locals())
@@ -871,6 +939,8 @@ class Representation(_Base):
         field_name: str | None = None,
         block_header: str | None = None,
         block_index: int | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Representation:
         """
         Use a custom category from the source file to define colors of this representation.
@@ -879,6 +949,8 @@ class Representation(_Base):
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(ColorFromSourceParams, locals())
@@ -896,6 +968,8 @@ class Representation(_Base):
         field_name: str | None = None,
         block_header: str | None = None,
         block_index: int | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Representation:
         """
         Use another resource to define colors of this representation.
@@ -906,6 +980,8 @@ class Representation(_Base):
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(ColorFromUriParams, locals())
@@ -919,12 +995,14 @@ class Representation(_Base):
         color: ColorT | None = None,
         selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
         custom: CustomT = None,
+        ref: RefT = None,
     ) -> Representation:
         """
         Customize the color of this representation.
         :param color: color using SVG color names or RGB hex code
         :param selector: optional selector, defaults to applying the color to the whole representation (default: "all")
         :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(ColorInlineParams, locals())
@@ -932,10 +1010,18 @@ class Representation(_Base):
         self._add_child(node)
         return self
 
-    def opacity(self, *, opacity: float) -> Representation:
+    def opacity(
+        self,
+        *,
+        opacity: float,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
         """
         Customize the opacity/transparency of this representation.
         :param opacity: float describing how opaque this representation should be, 0.0: fully transparent, 1.0: fully opaque
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(OpacityInlineParams, locals())
@@ -1013,12 +1099,14 @@ class VolumeRepresentation(_Base, _FocusMixin):
         color: ColorT | None = None,
         selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
         custom: CustomT = None,
+        ref: RefT = None,
     ) -> VolumeRepresentation:
         """
         Customize the color of this representation.
         :param color: color using SVG color names or RGB hex code
         :param selector: optional selector, defaults to applying the color to the whole representation (default: "all")
         :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(ColorInlineParams, locals())
@@ -1026,10 +1114,12 @@ class VolumeRepresentation(_Base, _FocusMixin):
         self._add_child(node)
         return self
 
-    def opacity(self, *, opacity: float) -> VolumeRepresentation:
+    def opacity(self, *, opacity: float, custom: CustomT = None, ref: RefT = None) -> VolumeRepresentation:
         """
         Customize the opacity/transparency of this representation.
         :param opacity: float describing how opaque this representation should be, 0.0: fully transparent, 1.0: fully opaque
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(OpacityInlineParams, locals())
@@ -1055,13 +1145,19 @@ class Primitives(_Base, _FocusMixin):
         Convert the current primitives builder to data which can be serialized and served independently.
         Only primitive kind children are kept.
         """
-        return Node(
+        node = Node(
             kind="primitives",
             params=self._node.params,
             children=[child for child in self._node.children or [] if child.kind == "primitive"],
             custom=self._node.custom,
             ref=self._node.ref,
-        ).dict()
+        )
+
+        if hasattr(node, "model_dump"):
+            return node.model_dump(exclude_none=True)
+        else:
+            # Pydantic v1 compat
+            return node.dict(exclude_none=True)
 
     def mesh(
         self,
