@@ -1290,11 +1290,11 @@ class Primitives(_Base, _FocusMixin):
         :param direction: direction vector, if specified, `end` is ignored and computed as `start + direction`
         :param length: length of the arrow, if not specified, computed from `start` and `end`
         :param show_start_cap: if true, draw an arrow head at the start (default: False)
-        :param start_cap_length: height of the arrow head at the start (default: 0.1)
-        :param start_cap_radius: radius of the arrow head at the start (default: 0.1)
+        :param start_cap_length: height of the arrow head at the start (default: 2 * start_cap_radius)
+        :param start_cap_radius: radius of the arrow head at the start (default: 2 * tube_radius)
         :param show_end_cap: if true, draw an arrow head at the end (default: False)
-        :param end_cap_length: height of the arrow head at the end (default: 0.1)
-        :param end_cap_radius: radius of the arrow head at the end (default: 0.1)
+        :param end_cap_length: height of the arrow head at the end (default: 2 * end_cap_radius)
+        :param end_cap_radius: radius of the arrow head at the end (default: 2 * tube_radius)
         :param show_tube: if true, draw a tube connecting the start and end points (default: True)
         :param tube_radius: tube radius (in Angstroms) (default: 0.05)
         :param tube_dash_length: length of each dash and gap between dashes (default: draw full line)
@@ -1361,6 +1361,7 @@ class Primitives(_Base, _FocusMixin):
         label_color: ColorT | None = None,
         show_vector: bool | None = None,
         vector_color: ColorT | None = None,
+        vector_radius: float | None = None,
         show_section: bool | None = None,
         section_color: ColorT | None = None,
         section_radius: float | None = None,
@@ -1380,6 +1381,7 @@ class Primitives(_Base, _FocusMixin):
         :param label_color: color of the label (default: use the parent primitives group `label_color`)
         :param show_vector: if true, draw a vector from a to b, and b to c (default: True)
         :param vector_color: color of the vector (default: use the parent primitives group `color`)
+        :param vector_radius: radius of the vector (default: 0.05)
         :param show_section: if true, draw a section of the angle (default: True)
         :param section_color: color of the section (default: use the parent primitives group `color`)
         :param section_radius: radius of the section (in Angstroms). If unset, computed as smaller of the distances from b to a and b to c.

@@ -1136,12 +1136,12 @@ class ArrowParams(BaseModel):
     )
 
     show_start_cap: Optional[bool] = Field(None, description="Draw a cap at the start of the arrow.")
-    start_cap_length: Optional[float] = Field(None, description="Length of the start cap.")
-    start_cap_radius: Optional[float] = Field(None, description="Radius of the start cap.")
+    start_cap_length: Optional[float] = Field(None, description="Length of the start cap. If not provided, will be 2 * start_cap_radius.")
+    start_cap_radius: Optional[float] = Field(None, description="Radius of the start cap. If not provided, will be 2 * tube_radius.")
 
     show_end_cap: Optional[bool] = Field(None, description="Draw a cap at the end of the arrow.")
-    end_cap_length: Optional[float] = Field(None, description="Length of the end cap.")
-    end_cap_radius: Optional[float] = Field(None, description="Radius of the end cap.")
+    end_cap_length: Optional[float] = Field(None, description="Length of the end cap. If not provided, will be 2 * end_cap_radius.")
+    end_cap_radius: Optional[float] = Field(None, description="Radius of the end cap. If not provided, will be 2 * tube_radius.")
 
     show_tube: Optional[bool] = Field(None, description="Draw a tube between the start and end of the arrow.")
     tube_radius: Optional[float] = Field(None, description="Tube radius (in Angstroms).")
@@ -1186,6 +1186,7 @@ class AngleMeasurementParams(BaseModel):
 
     show_vector: Optional[bool] = Field(None, description="Draw vectors between (a, b) and (b, c).")
     vector_color: Optional[ColorT] = Field(None, description="Color of the vectors.")
+    vector_radius: Optional[float] = Field(0.05, description="Radius of the vectors.")
 
     show_section: Optional[bool] = Field(None, description="Draw a filled circle section representing the angle.")
     section_color: Optional[ColorT] = Field(

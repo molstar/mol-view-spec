@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `load/s` to `MVSJ` object
 - Add `find_ref` to `State` and `MVSJ` objects
 - Add `ref/custom` props to builder methods where previously missing
+- Add `vector_radius` param for primitive `angle_measurement`
 
 ## [v1.6.0] - 2025-04-22
 
