@@ -5,6 +5,7 @@ Definitions of all 'nodes' used by the MolViewSpec format specification and its 
 from __future__ import annotations
 
 import io
+import json
 import os
 import urllib
 import urllib.parse
@@ -65,6 +66,26 @@ class Node(BaseModel):
     children: Optional[list[Node]] = Field(None, description="Optional collection of nested child nodes.")
     custom: CustomT = Field(None, description="Custom data to store attached to this node.")
     ref: RefT = Field(None, description="Optional reference that can be used to access this node.")
+
+    def find_ref(self, ref: str) -> Node | None:
+        """
+        Find a child node by reference.
+        :param parent: parent node
+        :param ref: reference to find
+        :return: child node or None
+        """
+        if self.ref == ref:
+            return self
+
+        if self.children is None:
+            return None
+
+        for child in self.children:
+            found = child.find_ref(ref)
+            if found is not None:
+                return found
+
+        return None
 
     def __init__(self, **data):
         # extract `custom` value from `params`
@@ -340,6 +361,39 @@ class MVSJ(BaseModel, MolstarWidgetsMixin):
             return self.data.model_dump_json(exclude_none=True, indent=indent)
         else:
             return self.data.json(exclude_none=True, indent=indent)
+
+    def find_ref(self, ref: str) -> Node | None:
+        """
+        Find a child node by reference.
+        :param ref: reference to find
+        :return: child node or None
+        """
+        if isinstance(self.data, State):
+            return self.data.root.find_ref(ref)
+
+        raise RuntimeError("Cannot find ref in MVSJ with multiple states")
+
+    @staticmethod
+    def loads(data: str | dict) -> MVSJ:
+        """
+        Deserialize a JSON string or a dict to a MVSJ object.
+        """
+
+        if isinstance(data, str):
+            data = json.loads(data)
+
+        return MVSJ(data=data)
+
+    @staticmethod
+    def load(filename: str | os.PathLike, encoding: str = "utf-8") -> MVSJ:
+        """
+        Load MVSJ object from a file.
+        """
+
+        with open(filename, mode="r", encoding="utf-8") as f:
+            data = f.read()
+
+        return MVSJ.loads(data)
 
 
 class MVSX(BaseModel, MolstarWidgetsMixin):
