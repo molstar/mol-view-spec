@@ -828,6 +828,14 @@ class _DataFromUriParams(BaseModel):
 
     uri: str = Field(description="Location of the resource")
     format: SchemaFormatT = Field(description="Format of the resource, i.e. 'cif', 'bcif', or 'json'")
+    # must be aliased to not shadow BaseModel attribute
+    schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
+    block_header: Optional[str] = Field(
+        None, description="Block name wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+    )
+    block_index: Optional[int] = Field(
+        None, description="Block index wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+    )
     category_name: Optional[str] = Field(
         None, description="Category wherein selection is located. Only applies when format is 'cif' or 'bcif'."
     )
@@ -838,14 +846,6 @@ class _DataFromUriParams(BaseModel):
         "default value is 'color'/'label'/'tooltip'/'component' depending "
         "on the node kind",
     )
-    block_header: Optional[str] = Field(
-        None, description="Block name wherein selection is located. Only applies when format is 'cif' or 'bcif'."
-    )
-    block_index: Optional[int] = Field(
-        None, description="Block index wherein selection is located. Only applies when format is 'cif' or 'bcif'."
-    )
-    # must be aliased to not shadow BaseModel attribute
-    schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
 
 
 class _DataFromSourceParams(BaseModel):
@@ -853,6 +853,10 @@ class _DataFromSourceParams(BaseModel):
     Abstract node that's shared by all selections based on the source file.
     """
 
+    # must be aliased to not shadow BaseModel attribute
+    schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
+    block_header: Optional[str] = Field(None, description="Block name wherein selection is located.")
+    block_index: Optional[int] = Field(None, description="Block index wherein selection is located.")
     category_name: str = Field(description="Category wherein selection is located.")
     field_name: Optional[str] = Field(
         None,
@@ -860,10 +864,6 @@ class _DataFromSourceParams(BaseModel):
         "color/label/tooltip/component...); the default value is "
         "'color'/'label'/'tooltip'/'component' depending on the node kind",
     )
-    block_header: Optional[str] = Field(None, description="Block name wherein selection is located.")
-    block_index: Optional[int] = Field(None, description="Block index wherein selection is located.")
-    # must be aliased to not shadow BaseModel attribute
-    schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
 
 
 class ComponentInlineParams(BaseModel):
@@ -1136,12 +1136,20 @@ class ArrowParams(BaseModel):
     )
 
     show_start_cap: Optional[bool] = Field(None, description="Draw a cap at the start of the arrow.")
-    start_cap_length: Optional[float] = Field(None, description="Length of the start cap. If not provided, will be 2 * start_cap_radius.")
-    start_cap_radius: Optional[float] = Field(None, description="Radius of the start cap. If not provided, will be 2 * tube_radius.")
+    start_cap_length: Optional[float] = Field(
+        None, description="Length of the start cap. If not provided, will be 2 * start_cap_radius."
+    )
+    start_cap_radius: Optional[float] = Field(
+        None, description="Radius of the start cap. If not provided, will be 2 * tube_radius."
+    )
 
     show_end_cap: Optional[bool] = Field(None, description="Draw a cap at the end of the arrow.")
-    end_cap_length: Optional[float] = Field(None, description="Length of the end cap. If not provided, will be 2 * end_cap_radius.")
-    end_cap_radius: Optional[float] = Field(None, description="Radius of the end cap. If not provided, will be 2 * tube_radius.")
+    end_cap_length: Optional[float] = Field(
+        None, description="Length of the end cap. If not provided, will be 2 * end_cap_radius."
+    )
+    end_cap_radius: Optional[float] = Field(
+        None, description="Radius of the end cap. If not provided, will be 2 * tube_radius."
+    )
 
     show_tube: Optional[bool] = Field(None, description="Draw a tube between the start and end of the arrow.")
     tube_radius: Optional[float] = Field(None, description="Tube radius (in Angstroms).")
