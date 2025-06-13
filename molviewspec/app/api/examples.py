@@ -4,7 +4,7 @@ A collection of MolViewSpec examples that showcase common visualization tasks th
 
 import itertools
 import math
-from typing import Literal, TypeAlias, Union
+from typing import Literal, Mapping, TypeAlias, Union
 
 import requests
 from fastapi import APIRouter
@@ -241,7 +241,7 @@ async def multiple_states() -> MVSResponse:
     ]
     metadata = GlobalMetadata(description="test")
     return PlainTextResponse(
-        States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2)
+        States(snapshots=snapshots, metadata=metadata).dumps(indent=2)
     )
 
 
@@ -317,7 +317,7 @@ async def multiple_states_alignment() -> MVSResponse:
     ]
     metadata = GlobalMetadata(description="test")
     return PlainTextResponse(
-        States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2)
+        States(snapshots=snapshots, metadata=metadata).dumps(indent=2)
     )
 
 
@@ -407,7 +407,7 @@ async def multiple_states_alignment_focus() -> MVSResponse:
     ]
     metadata = GlobalMetadata(description="test")
     return PlainTextResponse(
-        States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2)
+        States(snapshots=snapshots, metadata=metadata).dumps(indent=2)
     )
 
 
@@ -1083,9 +1083,7 @@ async def volume_server_map_example() -> MVSResponse:
     )
 
     return PlainTextResponse(
-        States(snapshots=[snapshot], metadata=GlobalMetadata(description="1tqn + Volume Server")).model_dump_json(
-            exclude_none=True, indent=2
-        )
+        States(snapshots=[snapshot], metadata=GlobalMetadata(description="1tqn + Volume Server")).dumps(indent=2)
     )
 
 
@@ -2082,32 +2080,32 @@ async def primitives_from_uri_example() -> MVSResponse:
 ##############################################################################
 # MVS specification of existing visualizations
 
-CAMERA_FOR_1HDA = {
+CAMERA_FOR_1HDA: Mapping = {
     "target": (19.752, 39.904, 19.170),
     "position": (34.411, 131.418, 44.150),
     "up": (0.035, -0.268, 0.962),
 }
-CAMERA_FOR_1HDA_A = {
+CAMERA_FOR_1HDA_A: Mapping = {
     "target": (30.403, 48.948, 10.986),
     "position": (5.350, 4.252, 45.337),
     "up": (0.704, -0.636, -0.313),
 }
-CAMERA_FOR_1HDA_HEM = {
+CAMERA_FOR_1HDA_HEM: Mapping = {
     "target": (26.795, 49.162, 6.437),
     "position": (-11.895, 72.486, 22.770),
     "up": (0.587, 0.728, 0.352),
 }
-CAMERA_FOR_1TQN = {
+CAMERA_FOR_1TQN: Mapping = {
     "target": (-19.768, -24.352, -12.891),
     "position": (82.412, -19.409, -11.594),
     "up": (0.015, -0.063, -0.997),
 }
-CAMERA_FOR_1GKT = {
+CAMERA_FOR_1GKT: Mapping = {
     "target": (8.594, 28.682, 11.525),
     "position": (69.856, -31.750, 25.286),
     "up": (0.211, -0.007, -0.977),
 }
-CAMERA_FOR_Q5VSL9 = {
+CAMERA_FOR_Q5VSL9: Mapping = {
     "target": (16.066, 10.270, -4.742),
     "position": (97.823, 164.346, 45.265),
     "up": (-0.576, 0.512, -0.636),
