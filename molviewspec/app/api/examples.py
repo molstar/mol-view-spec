@@ -1427,26 +1427,31 @@ async def testing_color_from_source_example(tooltips: bool = False) -> MVSRespon
     builder = create_builder()
     structure_url = f"http://0.0.0.0:9000/api/v1/examples/data/1cbs/molecule-and-cif-annotations"
     structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    field_remapping = {"label_asym_id": "label_asym_id", "label_seq_id": "label_seq_id", "label_atom_id": None}
     structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_source(
         schema="all_atomic",
         category_name="mvs_test_chain_label_annotation",
+        field_remapping=field_remapping,
     )
     structure.component(selector="ligand").representation(type="ball_and_stick").color(color="white").color_from_source(
         schema="all_atomic",
         block_header="1CBS",
         category_name="mvs_test_chain_label_annotation",
         field_name="color",
+        field_remapping=field_remapping,
     )
     if tooltips:
         structure.tooltip_from_source(
             schema="all_atomic",
             category_name="mvs_test_chain_label_annotation",
             field_name="tooltip",
+            field_remapping=field_remapping,
         )
         structure.tooltip_from_source(
             schema="all_atomic",
             category_name="mvs_test_chain_label_annotation",
             field_name="color",
+            field_remapping=field_remapping,
         )
     return JSONResponse(builder.get_state().to_dict())
 

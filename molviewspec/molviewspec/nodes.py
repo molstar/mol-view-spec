@@ -846,6 +846,10 @@ class _DataFromUriParams(BaseModel):
         "default value is 'color'/'label'/'tooltip'/'component' depending "
         "on the node kind",
     )
+    field_remapping: Optional[dict[str, str | None]] = Field(
+        None,
+        description="Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).",
+    )
 
 
 class _DataFromSourceParams(BaseModel):
@@ -863,6 +867,10 @@ class _DataFromSourceParams(BaseModel):
         description="Name of the column in CIF that contains the desired value ("
         "color/label/tooltip/component...); the default value is "
         "'color'/'label'/'tooltip'/'component' depending on the node kind",
+    )
+    field_remapping: Optional[dict[str, str | None]] = Field(
+        None,
+        description="Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).",
     )
 
 
