@@ -14,7 +14,10 @@ from app.config import settings
 from molviewspec.builder import Representation, create_builder
 from molviewspec.nodes import (
     MVSJ,
+    CategoricalPalette,
     ComponentExpression,
+    ContinuousPalette,
+    DiscretePalette,
     GlobalMetadata,
     PrimitiveComponentExpressions,
     RepresentationTypeT,
@@ -1684,6 +1687,128 @@ async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
+@router.get("/testing/color_palette_categorical")
+async def testing_color_palette_categorical(id: str = "1hda") -> MVSResponse:
+    """
+    An example with color_from_source with categorical color palette.
+    """
+    builder = create_builder()
+    structure_url = _url_for_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    (
+        structure.component(selector="polymer")
+        .representation(type="cartoon")
+        .color_from_source(
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="auth_asym_id",
+            # Set1 palette as named color list:
+            palette=CategoricalPalette(colors="Set1"),
+        )
+    )
+    (
+        structure.component(selector="ligand")
+        .representation(type="ball_and_stick")
+        .color_from_source(
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="auth_asym_id",
+            # Pastel1 palette as explicit color list:
+            palette=CategoricalPalette(
+                colors=[
+                    "#fbb4ae",
+                    "#b3cde3",
+                    "#ccebc5",
+                    "#decbe4",
+                    "#fed9a6",
+                    "#ffffcc",
+                    "#e5d8bd",
+                    "#fddaec",
+                    "#f2f2f2",
+                ],
+                repeat_color_list=False,
+                sort="lexical",
+                sort_direction="ascending",
+                case_insensitive=False,
+                missing_color="magenta",
+            ),
+            # Pastel1 palette as explicit color dict:
+            # palette=CategoricalPalette(colors={"A": "#fbb4ae", "B": "#b3cde3", "C": "#ccebc5", "D": "#decbe4", "E": "#fed9a6", "F": "#ffffcc", "G": "#e5d8bd", "H": "#fddaec", "I": "#f2f2f2"}),
+            # Pastel1 palette as named color list:
+            # palette=CategoricalPalette(colors="Pastel1"),
+        )
+        .color_from_source(
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="type_symbol",
+            # ElementSymbol palette as named color dict:
+            palette=CategoricalPalette(colors="ElementSymbol"),
+        )
+    )
+    structure.component().tooltip(text="Chain:")
+    structure.tooltip_from_source(schema="all_atomic", category_name="atom_site", field_name="auth_asym_id")
+    return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/testing/color_palette_discrete")
+async def testing_color_palette_discrete(id: str = "Q8W3K0") -> MVSResponse:
+    """
+    An example with color_from_source with discrete color palette.
+    """
+    builder = create_builder()
+    structure_url = _url_for_alphafold_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    (
+        structure.component(selector="polymer")
+        .representation(type="cartoon")
+        .color_from_source(
+            # Color by pLDDT:
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="B_iso_or_equiv",
+            palette=DiscretePalette(
+                colors=[["#FF7D45", 0], ["#FFDB13", 50], ["#65CBF3", 70], ["#0053D6", 90]],
+                mode="absolute",
+            ),
+        )
+    )
+    structure.component().tooltip(text="pLDDT:")
+    structure.tooltip_from_source(schema="all_atomic", category_name="atom_site", field_name="B_iso_or_equiv")
+    return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/testing/color_palette_continuous")
+async def testing_color_palette_continuous(id: str = "1hda") -> MVSResponse:
+    """
+    An example with color_from_source with continuous color palette.
+    """
+    # TODO
+    builder = create_builder()
+    structure_url = _url_for_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    (
+        structure.component(selector="polymer")
+        .representation(type="cartoon")
+        .color_from_source(
+            # Color by B-factor:
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="B_iso_or_equiv",
+            palette=ContinuousPalette(
+                colors="OrRd",
+                reverse=False,
+                mode="normalized",
+                value_domain=[0, 100],
+                underflow_color="white",
+                overflow_color="red",
+            ),
+        )
+    )
+    structure.component().tooltip(text="B-factor:")
+    structure.tooltip_from_source(schema="all_atomic", category_name="atom_site", field_name="B_iso_or_equiv")
+    return JSONResponse(builder.get_state().to_dict())
+
+
 @router.get("/testing/component_from_uri")
 async def testing_component_from_uri(id: str = "1h9t") -> MVSResponse:
     """
@@ -2579,6 +2704,11 @@ def _url_for_mmcif(id: str) -> str:
 def _url_for_bcif(id: str) -> str:
     """Return URL for updated binary CIF file from PDBe server"""
     return f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}.bcif"
+
+
+def _url_for_alphafold_bcif(id: str) -> str:
+    """Return URL for updated binary CIF file from AlphaFoldDB server"""
+    return f"https://alphafold.ebi.ac.uk/files/AF-{id}-F1-model_v4.bcif"
 
 
 def _url_for_pdb(id: str) -> str:

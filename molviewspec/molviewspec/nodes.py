@@ -806,35 +806,50 @@ ColorDictNameT = Literal[
 
 
 class CategoricalPalette(BaseModel):
-    kind: Literal["categorical"] = Field(description="Kind of palette")
+    kind: Literal["categorical"] = Field("categorical", description="Kind of palette")
+    """Kind of palette"""
+
     colors: Optional[ColorListNameT | ColorDictNameT | list[ColorT] | dict[str, ColorT]] = Field(
         None,
         description="Define colors in the categorical palette or a name of color list/dictionary (default is color list is 'Category10'). ",
     )
+    """Define colors in the categorical palette or a name of color list/dictionary (default is color list is 'Category10')."""
+
     repeat_color_list: Optional[bool] = Field(
         None,
         description="Repeat color list once all colors are depleted (only applies if `colors` is a list or a color list name).",
     )
+    """Repeat color list once all colors are depleted (only applies if `colors` is a list or a color list name)."""
+
     sort: Optional[Literal["none", "lexical", "numeric"]] = Field(
         None,
         description="Sort actual annotation values before assigning colors from a list (none = take values in order of their first occurrence, default behavior is 'none').",
     )
+    """Sort actual annotation values before assigning colors from a list (none = take values in order of their first occurrence, default behavior is 'none')."""
+
     sort_direction: Optional[Literal["ascending", "descending"]] = Field(
         None,
         description="Sort direction (default behavior is 'ascending').",
     )
+    """Sort direction (default behavior is 'ascending')."""
+
     case_insensitive: Optional[bool] = Field(
         None,
         description="Treat annotation values as case-insensitive strings.",
     )
+    """Treat annotation values as case-insensitive strings."""
+
     missing_color: Optional[ColorT] = Field(
         None,
         description="Color to use when a) `colors` is a dictionary (or a color dictionary name) and given key is not present, or b) `colors` is a list (or a color list name) and there are more actual annotation values than listed colors and `repeat_color_list` is not true (default behavior is not to apply any color in those cases).",
     )
+    """Color to use when a) `colors` is a dictionary (or a color dictionary name) and given key is not present, or b) `colors` is a list (or a color list name) and there are more actual annotation values than listed colors and `repeat_color_list` is not true (default behavior is not to apply any color in those cases)."""
 
 
 class DiscretePalette(BaseModel):
-    kind: Literal["discrete"] = Field(description="Kind of palette")
+    kind: Literal["discrete"] = Field("discrete", description="Kind of palette")
+    """Kind of palette"""
+
     colors: Optional[
         ColorListNameT
         | list[ColorT]
@@ -849,48 +864,77 @@ class DiscretePalette(BaseModel):
         "If 2 checkpoints are provided for each color, then the color applies to values from the first until the second checkpoint (inclusive); `None` means +/-Infinity; if ranges overlap, the later listed takes precedence. "
         "Default is color list 'YlGn'.",
     )
+    """Define colors for the discrete color palette and optionally corresponding checkpoints.
+    Checkpoints refer to the values normalized to interval [0, 1] if `mode` is 'normalized' (default), or to the values directly if `mode` is 'absolute'.
+    If checkpoints are not provided, they will created automatically (uniformly distributed over interval [0, 1]).
+    If 1 checkpoint is provided for each color, then the color applies to values from this checkpoint (inclusive) until the next listed checkpoint (exclusive); the last color applies until Infinity.
+    If 2 checkpoints are provided for each color, then the color applies to values from the first until the second checkpoint (inclusive); `None` means +/-Infinity; if ranges overlap, the later listed takes precedence.
+    Default is color list 'YlGn'."""
+
     reverse: Optional[bool] = Field(
         None,
         description="Reverse order of `colors` list. Only has effect when `colors` is a color list name or a color list without explicit checkpoints.",
     )
+    """Reverse order of `colors` list. Only has effect when `colors` is a color list name or a color list without explicit checkpoints."""
+
     mode: Optional[Literal["normalized", "absolute"]] = Field(
         None,
         description="Defines whether the annotation values should be normalized before assigning color based on checkpoints in `colors` (`x_normalized = (x - x_min) / (x_max - x_min)`, where `[x_min, x_max]` are either `value_domain` if provided, or the lowest and the highest value encountered in the annotation). Default behavior is 'normalized'.",
     )
+    """Defines whether the annotation values should be normalized before assigning color based on checkpoints in `colors` (`x_normalized = (x - x_min) / (x_max - x_min)`, where `[x_min, x_max]` are either `value_domain` if provided, or the lowest and the highest value encountered in the annotation). Default behavior is 'normalized'."""
+
     value_domain: Optional[tuple[float | None, float | None]] = Field(
         None,
         description="Defines `x_min` and `x_max` for normalization of annotation values. Either can be `None`, meaning that minimum/maximum of the actual values will be used. Only used when `mode` is 'normalized'.",
     )
+    """Defines `x_min` and `x_max` for normalization of annotation values. Either can be `None`, meaning that minimum/maximum of the actual values will be used. Only used when `mode` is 'normalized'."""
 
 
 class ContinuousPalette(BaseModel):
-    kind: Literal["continuous"] = Field(description="Kind of palette")
+    kind: Literal["continuous"] = Field("continuous", description="Kind of palette")
+    """Kind of palette"""
+
     colors: Optional[ColorListNameT | list[ColorT] | list[tuple[ColorT, float]]] = Field(
         None,
         description="Define colors for the continuous color palette and optionally corresponding checkpoints (i.e. annotation values that are mapped to each color). "
         "Checkpoints refer to the values normalized to interval [0, 1] if `mode` is 'normalized' (default), or to the values directly if `mode` is 'absolute'. "
         "If checkpoints are not provided, they will created automatically (uniformly distributed over interval [0, 1]).",
     )
+    """Define colors for the continuous color palette and optionally corresponding checkpoints (i.e. annotation values that are mapped to each color).
+    Checkpoints refer to the values normalized to interval [0, 1] if `mode` is 'normalized' (default), or to the values directly if `mode` is 'absolute'.
+    If checkpoints are not provided, they will created automatically (uniformly distributed over interval [0, 1])."""
+
     reverse: Optional[bool] = Field(
         None,
         description="Reverse order of `colors` list. Only has effect when `colors` is a color list name or a color list without explicit checkpoints.",
     )
+    """Reverse order of `colors` list. Only has effect when `colors` is a color list name or a color list without explicit checkpoints."""
+
     mode: Optional[Literal["normalized", "absolute"]] = Field(
         None,
         description="Defines whether the annotation values should be normalized before assigning color based on checkpoints in `colors` (`x_normalized = (x - x_min) / (x_max - x_min)`, where `[x_min, x_max]` are either `value_domain` if provided, or the lowest and the highest value encountered in the annotation). Default behavior is 'normalized'.",
     )
+    """Defines whether the annotation values should be normalized before assigning color based on checkpoints in `colors` (`x_normalized = (x - x_min) / (x_max - x_min)`, where `[x_min, x_max]` are either `value_domain` if provided, or the lowest and the highest value encountered in the annotation). Default behavior is 'normalized'."""
+
     value_domain: Optional[tuple[float | None, float | None]] = Field(
         None,
         description="Defines `x_min` and `x_max` for normalization of annotation values. Either can be `None`, meaning that minimum/maximum of the actual values will be used. Only used when `mode` is 'normalized'.",
     )
+    """Defines `x_min` and `x_max` for normalization of annotation values. Either can be `None`, meaning that minimum/maximum of the actual values will be used. Only used when `mode` is 'normalized'."""
+
     underflow_color: Optional[Literal["auto"] | ColorT] = Field(
         None,
         description="Color to use for values below the lowest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values below the lowest checkpoint.)",
     )
+    """Color to use for values below the lowest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values below the lowest checkpoint.)"""
+
     overflow_color: Optional[Literal["auto"] | ColorT] = Field(
         None,
         description="Color to use for values above the highest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values above the highest checkpoint.)",
     )
+    """Color to use for values above the highest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values above the highest checkpoint.)"""
+
+    # TODO mvs.palette.categorical
 
 
 PaletteT = CategoricalPalette | DiscretePalette | ContinuousPalette

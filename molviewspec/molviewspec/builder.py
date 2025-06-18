@@ -45,6 +45,7 @@ from molviewspec.nodes import (
     MolstarWidgetsMixin,
     Node,
     OpacityInlineParams,
+    PaletteT,
     ParseFormatT,
     ParseParams,
     PrimitiveLabelParams,
@@ -954,6 +955,7 @@ class Representation(_Base):
         category_name: str,
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
+        palette: PaletteT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -965,6 +967,7 @@ class Representation(_Base):
         :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
         :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
+        :param palette: customize mapping of annotation values to colors (default: annotation values are color strings directly)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -985,6 +988,7 @@ class Representation(_Base):
         category_name: str | None = None,
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
+        palette: PaletteT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -998,6 +1002,7 @@ class Representation(_Base):
         :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
         :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
+        :param palette: customize mapping of annotation values to colors (default: annotation values are color strings directly)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
