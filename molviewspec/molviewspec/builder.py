@@ -45,6 +45,7 @@ from molviewspec.nodes import (
     MolstarWidgetsMixin,
     Node,
     OpacityInlineParams,
+    PaletteT,
     ParseFormatT,
     ParseParams,
     PrimitiveLabelParams,
@@ -533,12 +534,13 @@ class Structure(_Base, _PrimitivesMixin):
         *,
         uri: str,
         format: SchemaFormatT,
-        category_name: str | None = None,
-        field_name: str | None = None,
+        schema: SchemaT,
         block_header: str | None = None,
         block_index: int | None = None,
-        schema: SchemaT,
+        category_name: str | None = None,
+        field_name: str | None = None,
         field_values: str | list[str] | None = None,
+        field_remapping: dict[str, str | None] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Component:
@@ -546,12 +548,13 @@ class Structure(_Base, _PrimitivesMixin):
         Define a new component/selection for the given structure by fetching additional data from a resource.
         :param uri: resource location
         :param format: format ('cif', 'bcif', 'json') of the content
-        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the component identifier (default: "component")
+        :param schema: granularity/type of the selection
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
-        :param schema: granularity/type of the selection
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the component identifier (default: "component")
         :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
+        :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at component level
@@ -566,23 +569,25 @@ class Structure(_Base, _PrimitivesMixin):
     def component_from_source(
         self,
         *,
-        category_name: str,
-        field_name: str | None = None,
+        schema: SchemaT,
         block_header: str | None = None,
         block_index: int | None = None,
-        schema: SchemaT,
+        category_name: str,
+        field_name: str | None = None,
         field_values: str | list[str] | None = None,
+        field_remapping: dict[str, str | None] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Component:
         """
         Define a new component/selection for the given structure by using categories from the source file.
-        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the component identifier (default: "component")
+        :param schema: granularity/type of the selection
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
-        :param schema: granularity/type of the selection
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the component identifier (default: "component")
         :param field_values: create the component from rows that have any of these values in the field specified by `field_name`. If not provided, create the component from all rows.
+        :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at component level
@@ -599,11 +604,12 @@ class Structure(_Base, _PrimitivesMixin):
         *,
         uri: str,
         format: SchemaFormatT,
-        category_name: str | None = None,
-        field_name: str | None = None,
+        schema: SchemaT,
         block_header: str | None = None,
         block_index: int | None = None,
-        schema: SchemaT,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        field_remapping: dict[str, str | None] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -611,11 +617,14 @@ class Structure(_Base, _PrimitivesMixin):
         Define a new label for the given structure by fetching additional data from a resource.
         :param uri: resource location
         :param format: format ('cif', 'bcif', 'json') of the content
-        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the label text (default: "label")
+        :param schema: granularity/type of the selection
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
-        :param schema: granularity/type of the selection
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the label text (default: "label")
+        :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(LabelFromUriParams, locals())
@@ -626,21 +635,23 @@ class Structure(_Base, _PrimitivesMixin):
     def label_from_source(
         self,
         *,
-        category_name: str,
-        field_name: str | None = None,
+        schema: SchemaT,
         block_header: str | None = None,
         block_index: int | None = None,
-        schema: SchemaT,
+        category_name: str,
+        field_name: str | None = None,
+        field_remapping: dict[str, str | None] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
         """
         Define a new label for the given structure by fetching additional data from the source file.
-        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the label text (default: "label")
+        :param schema: granularity/type of the selection
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
-        :param schema: granularity/type of the selection
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the label text (default: "label")
+        :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -655,11 +666,12 @@ class Structure(_Base, _PrimitivesMixin):
         *,
         uri: str,
         format: SchemaFormatT,
-        category_name: str | None = None,
-        field_name: str | None = None,
+        schema: SchemaT,
         block_header: str | None = None,
         block_index: int | None = None,
-        schema: SchemaT,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        field_remapping: dict[str, str | None] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -667,11 +679,12 @@ class Structure(_Base, _PrimitivesMixin):
         Define a new tooltip for the given structure by fetching additional data from a resource.
         :param uri: resource location
         :param format: format ('cif', 'bcif', 'json') of the content
-        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the tooltip text (default: "tooltip")
+        :param schema: granularity/type of the selection
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
-        :param schema: granularity/type of the selection
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the tooltip text (default: "tooltip")
+        :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -684,21 +697,23 @@ class Structure(_Base, _PrimitivesMixin):
     def tooltip_from_source(
         self,
         *,
-        category_name: str,
-        field_name: str | None = None,
+        schema: SchemaT,
         block_header: str | None = None,
         block_index: int | None = None,
-        schema: SchemaT,
+        category_name: str,
+        field_name: str | None = None,
+        field_remapping: dict[str, str | None] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
         """
         Define a new tooltip for the given structure by fetching additional data from the source file.
+        :param schema: granularity/type of the selection
+        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
+        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the tooltip text (default: "tooltip")
-        :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
-        :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
-        :param schema: granularity/type of the selection
+        :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -935,20 +950,24 @@ class Representation(_Base):
         self,
         *,
         schema: SchemaT,
-        category_name: str,
-        field_name: str | None = None,
         block_header: str | None = None,
         block_index: int | None = None,
+        category_name: str,
+        field_name: str | None = None,
+        field_remapping: dict[str, str | None] | None = None,
+        palette: PaletteT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
         """
         Use a custom category from the source file to define colors of this representation.
         :param schema: granularity/type of the selection
-        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
+        :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
+        :param palette: customize mapping of annotation values to colors (default: annotation values are color strings directly)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -961,25 +980,29 @@ class Representation(_Base):
     def color_from_uri(
         self,
         *,
-        schema: SchemaT,
         uri: str,
         format: SchemaFormatT,
-        category_name: str | None = None,
-        field_name: str | None = None,
+        schema: SchemaT,
         block_header: str | None = None,
         block_index: int | None = None,
+        category_name: str | None = None,
+        field_name: str | None = None,
+        field_remapping: dict[str, str | None] | None = None,
+        palette: PaletteT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
         """
         Use another resource to define colors of this representation.
-        :param schema: granularity/type of the selection
         :param uri: resource location
         :param format: format ('cif', 'bcif', 'json') of the content
-        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
-        :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
+        :param schema: granularity/type of the selection
         :param block_header: header of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: block is selected based on `block_index`)
         :param block_index: 0-based index of the CIF block to read annotation from (only applies when `format` is `"cif"` or `"bcif"` and `block_header` is not specified) (default: 0)
+        :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
+        :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
+        :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
+        :param palette: customize mapping of annotation values to colors (default: annotation values are color strings directly)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder

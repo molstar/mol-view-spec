@@ -8,7 +8,10 @@ from molviewspec.mvsx_converter import mvsj_to_mvsx
 from molviewspec.nodes import (
     MVSJ,
     MVSX,
+    CategoricalPalette,
     ComponentExpression,
+    ContinuousPalette,
+    DiscretePalette,
     GlobalMetadata,
     MVSData,
     PrimitiveComponentExpressions,
