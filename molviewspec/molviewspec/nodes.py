@@ -934,7 +934,6 @@ class ContinuousPalette(BaseModel):
     )
     """Color to use for values above the highest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values above the highest checkpoint.)"""
 
-    # TODO mvs.palette.categorical
 
 
 PaletteT = CategoricalPalette | DiscretePalette | ContinuousPalette

@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file, following t
 - Add `find_ref` to `State` and `MVSJ` objects
 - Add `ref/custom` props to builder methods where previously missing
 - Add `vector_radius` param for primitive `angle_measurement`
+- Add `field_remapping` param for `*_from_*` nodes
+- Add `palette` param for `color_from_*` nodes
 
 ## [v1.6.0] - 2025-04-22
 
