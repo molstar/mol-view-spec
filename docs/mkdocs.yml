@@ -1,0 +1,44 @@
+site_name: MolViewSpec Documentation
+theme:
+  name: material
+
+  # 404 page
+  static_templates:
+    - 404.html
+
+  # Necessary for search to work properly
+  include_search_page: false
+  search_index_only: true
+
+  # Default values, taken from mkdocs_theme.yml
+  language: en
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/favicon.png
+  icon:
+    logo: logo
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+# Scripts for rendering Latex equations (in addition to pymdownx.arithmatex):
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+nav:
+  - Introduction: 'index.md'
+  - Tree Schema: 'tree-schema.md'
+  - Selectors: 'selectors.md'
+  - Annotations: 'annotations.md'
+  - Camera Settings: 'camera-settings.md'
+  - Primitives: 'primitives.md'
+  - Volumetric Data: 'volumes.md'
+  - Animations: 'animations.md'
+  - Mol* MVS Extension:
+    - Overview: 'mvs-molstar-extension/index.md'
+    - Integration Examples: 'mvs-molstar-extension/integration.md'
+    - Custom Load Extensions: 'mvs-molstar-extension/load-extensions.md'
+  - Demos: 'demos.md'
+repo_url: https://github.com/molstar/mol-view-spec-docs
