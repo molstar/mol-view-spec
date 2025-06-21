@@ -6,4 +6,7 @@
 ## Actions
 
 - [ ] Added description of changes to the `[Unreleased]` section of `CHANGELOG.md`
-- [ ] (Optional but encouraged) Added example(s) for new feature(s) in this PR (e.g., in `app/api/examples.py` or a Jupyter Notebook)
+- [ ] When adding new features:
+  - [ ] Added example(s) to `app/api/examples.py`
+  - [ ] Added Jupyter Notebook to `test-data/notebooks` with new features
+  - [ ] Added MkDocs documentation in `docs`
