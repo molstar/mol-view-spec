@@ -12,7 +12,7 @@ import urllib.parse
 import urllib.request
 import zipfile
 from datetime import datetime, timezone
-from typing import Any, Literal, Mapping, Optional, Tuple, Type, TypeVar, Union, cast
+from typing import Any, Literal, Mapping, Optional, Type, TypeVar, cast
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -332,7 +332,7 @@ class States(BaseModel, MolstarWidgetsMixin):
             return self.json(exclude_none=True, indent=indent)
 
 
-MVSData = Union[State, States]
+MVSData = State | States
 """Flavors of MolViewSpec states."""
 
 
@@ -485,9 +485,9 @@ StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
 
 
 ScalarT = TypeVar("ScalarT", int, float)
-Vec3 = Tuple[ScalarT, ScalarT, ScalarT]
-Mat3 = Tuple[ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT]
-Mat4 = Tuple[
+Vec3 = tuple[ScalarT, ScalarT, ScalarT]
+Mat3 = tuple[ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT, ScalarT]
+Mat4 = tuple[
     ScalarT,
     ScalarT,
     ScalarT,
@@ -734,7 +734,209 @@ ColorNamesT = Literal[
     "yellow",
     "yellowgreen",
 ]
-ColorT = Union[ColorNamesT, str]  # str represents hex colors for now
+HexColorT = str  # hexadecimal color code, e.g. '#f0f0f0'; str represents hex colors for now
+ColorT = ColorNamesT | HexColorT
+
+ColorListNameT = Literal[
+    # Color lists from https://observablehq.com/@d3/color-schemes (definitions: https://colorbrewer2.org/export/colorbrewer.js)
+    # Sequential single-hue
+    "Reds",
+    "Oranges",
+    "Greens",
+    "Blues",
+    "Purples",
+    "Greys",
+    # Sequential multi-hue
+    "OrRd",
+    "BuGn",
+    "PuBuGn",
+    "GnBu",
+    "PuBu",
+    "BuPu",
+    "RdPu",
+    "PuRd",
+    "YlOrRd",
+    "YlOrBr",
+    "YlGn",
+    "YlGnBu",
+    "Magma",
+    "Inferno",
+    "Plasma",
+    "Viridis",
+    "Cividis",
+    "Turbo",
+    "Warm",
+    "Cool",
+    "CubehelixDefault",
+    # Cyclical
+    "Rainbow",
+    "Sinebow",
+    # Diverging
+    "RdBu",
+    "RdGy",
+    "PiYG",
+    "BrBG",
+    "PRGn",
+    "PuOr",
+    "RdYlGn",
+    "RdYlBu",
+    "Spectral",
+    # Categorical
+    "Category10",
+    "Observable10",
+    "Tableau10",
+    "Set1",
+    "Set2",
+    "Set3",
+    "Pastel1",
+    "Pastel2",
+    "Dark2",
+    "Paired",
+    "Accent",
+    # Additional lists, not standard for visualization in general, but commonly used for structures
+    "Chainbow",
+]
+
+ColorDictNameT = Literal[
+    "ElementSymbol",
+    "ResidueName",
+    "ResidueProperties",
+    "SecondaryStructure",
+]
+
+
+class CategoricalPalette(BaseModel):
+    kind: Literal["categorical"] = Field("categorical", description="Kind of palette")
+    """Kind of palette"""
+
+    colors: Optional[ColorListNameT | ColorDictNameT | list[ColorT] | dict[str, ColorT]] = Field(
+        None,
+        description="Define colors in the categorical palette or a name of color list/dictionary (default is color list is 'Category10'). ",
+    )
+    """Define colors in the categorical palette or a name of color list/dictionary (default is color list is 'Category10')."""
+
+    repeat_color_list: Optional[bool] = Field(
+        None,
+        description="Repeat color list once all colors are depleted (only applies if `colors` is a list or a color list name).",
+    )
+    """Repeat color list once all colors are depleted (only applies if `colors` is a list or a color list name)."""
+
+    sort: Optional[Literal["none", "lexical", "numeric"]] = Field(
+        None,
+        description="Sort actual annotation values before assigning colors from a list (none = take values in order of their first occurrence, default behavior is 'none').",
+    )
+    """Sort actual annotation values before assigning colors from a list (none = take values in order of their first occurrence, default behavior is 'none')."""
+
+    sort_direction: Optional[Literal["ascending", "descending"]] = Field(
+        None,
+        description="Sort direction (default behavior is 'ascending').",
+    )
+    """Sort direction (default behavior is 'ascending')."""
+
+    case_insensitive: Optional[bool] = Field(
+        None,
+        description="Treat annotation values as case-insensitive strings.",
+    )
+    """Treat annotation values as case-insensitive strings."""
+
+    missing_color: Optional[ColorT] = Field(
+        None,
+        description="Color to use when a) `colors` is a dictionary (or a color dictionary name) and given key is not present, or b) `colors` is a list (or a color list name) and there are more actual annotation values than listed colors and `repeat_color_list` is not true (default behavior is not to apply any color in those cases).",
+    )
+    """Color to use when a) `colors` is a dictionary (or a color dictionary name) and given key is not present, or b) `colors` is a list (or a color list name) and there are more actual annotation values than listed colors and `repeat_color_list` is not true (default behavior is not to apply any color in those cases)."""
+
+
+class DiscretePalette(BaseModel):
+    kind: Literal["discrete"] = Field("discrete", description="Kind of palette")
+    """Kind of palette"""
+
+    colors: Optional[
+        ColorListNameT
+        | list[ColorT]
+        | list[tuple[ColorT, float]]
+        | list[tuple[ColorT | None, float | None, float | None]]
+    ] = Field(
+        None,
+        description="Define colors for the discrete color palette and optionally corresponding checkpoints. "
+        "Checkpoints refer to the values normalized to interval [0, 1] if `mode` is 'normalized' (default), or to the values directly if `mode` is 'absolute'. "
+        "If checkpoints are not provided, they will created automatically (uniformly distributed over interval [0, 1]). "
+        "If 1 checkpoint is provided for each color, then the color applies to values from this checkpoint (inclusive) until the next listed checkpoint (exclusive); the last color applies until Infinity. "
+        "If 2 checkpoints are provided for each color, then the color applies to values from the first until the second checkpoint (inclusive); `None` means +/-Infinity; if ranges overlap, the later listed takes precedence. "
+        "Default is color list 'YlGn'.",
+    )
+    """Define colors for the discrete color palette and optionally corresponding checkpoints.
+    Checkpoints refer to the values normalized to interval [0, 1] if `mode` is 'normalized' (default), or to the values directly if `mode` is 'absolute'.
+    If checkpoints are not provided, they will created automatically (uniformly distributed over interval [0, 1]).
+    If 1 checkpoint is provided for each color, then the color applies to values from this checkpoint (inclusive) until the next listed checkpoint (exclusive); the last color applies until Infinity.
+    If 2 checkpoints are provided for each color, then the color applies to values from the first until the second checkpoint (inclusive); `None` means +/-Infinity; if ranges overlap, the later listed takes precedence.
+    Default is color list 'YlGn'."""
+
+    reverse: Optional[bool] = Field(
+        None,
+        description="Reverse order of `colors` list. Only has effect when `colors` is a color list name or a color list without explicit checkpoints.",
+    )
+    """Reverse order of `colors` list. Only has effect when `colors` is a color list name or a color list without explicit checkpoints."""
+
+    mode: Optional[Literal["normalized", "absolute"]] = Field(
+        None,
+        description="Defines whether the annotation values should be normalized before assigning color based on checkpoints in `colors` (`x_normalized = (x - x_min) / (x_max - x_min)`, where `[x_min, x_max]` are either `value_domain` if provided, or the lowest and the highest value encountered in the annotation). Default behavior is 'normalized'.",
+    )
+    """Defines whether the annotation values should be normalized before assigning color based on checkpoints in `colors` (`x_normalized = (x - x_min) / (x_max - x_min)`, where `[x_min, x_max]` are either `value_domain` if provided, or the lowest and the highest value encountered in the annotation). Default behavior is 'normalized'."""
+
+    value_domain: Optional[tuple[float | None, float | None]] = Field(
+        None,
+        description="Defines `x_min` and `x_max` for normalization of annotation values. Either can be `None`, meaning that minimum/maximum of the actual values will be used. Only used when `mode` is 'normalized'.",
+    )
+    """Defines `x_min` and `x_max` for normalization of annotation values. Either can be `None`, meaning that minimum/maximum of the actual values will be used. Only used when `mode` is 'normalized'."""
+
+
+class ContinuousPalette(BaseModel):
+    kind: Literal["continuous"] = Field("continuous", description="Kind of palette")
+    """Kind of palette"""
+
+    colors: Optional[ColorListNameT | list[ColorT] | list[tuple[ColorT, float]]] = Field(
+        None,
+        description="Define colors for the continuous color palette and optionally corresponding checkpoints (i.e. annotation values that are mapped to each color). "
+        "Checkpoints refer to the values normalized to interval [0, 1] if `mode` is 'normalized' (default), or to the values directly if `mode` is 'absolute'. "
+        "If checkpoints are not provided, they will created automatically (uniformly distributed over interval [0, 1]).",
+    )
+    """Define colors for the continuous color palette and optionally corresponding checkpoints (i.e. annotation values that are mapped to each color).
+    Checkpoints refer to the values normalized to interval [0, 1] if `mode` is 'normalized' (default), or to the values directly if `mode` is 'absolute'.
+    If checkpoints are not provided, they will created automatically (uniformly distributed over interval [0, 1])."""
+
+    reverse: Optional[bool] = Field(
+        None,
+        description="Reverse order of `colors` list. Only has effect when `colors` is a color list name or a color list without explicit checkpoints.",
+    )
+    """Reverse order of `colors` list. Only has effect when `colors` is a color list name or a color list without explicit checkpoints."""
+
+    mode: Optional[Literal["normalized", "absolute"]] = Field(
+        None,
+        description="Defines whether the annotation values should be normalized before assigning color based on checkpoints in `colors` (`x_normalized = (x - x_min) / (x_max - x_min)`, where `[x_min, x_max]` are either `value_domain` if provided, or the lowest and the highest value encountered in the annotation). Default behavior is 'normalized'.",
+    )
+    """Defines whether the annotation values should be normalized before assigning color based on checkpoints in `colors` (`x_normalized = (x - x_min) / (x_max - x_min)`, where `[x_min, x_max]` are either `value_domain` if provided, or the lowest and the highest value encountered in the annotation). Default behavior is 'normalized'."""
+
+    value_domain: Optional[tuple[float | None, float | None]] = Field(
+        None,
+        description="Defines `x_min` and `x_max` for normalization of annotation values. Either can be `None`, meaning that minimum/maximum of the actual values will be used. Only used when `mode` is 'normalized'.",
+    )
+    """Defines `x_min` and `x_max` for normalization of annotation values. Either can be `None`, meaning that minimum/maximum of the actual values will be used. Only used when `mode` is 'normalized'."""
+
+    underflow_color: Optional[Literal["auto"] | ColorT] = Field(
+        None,
+        description="Color to use for values below the lowest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values below the lowest checkpoint.)",
+    )
+    """Color to use for values below the lowest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values below the lowest checkpoint.)"""
+
+    overflow_color: Optional[Literal["auto"] | ColorT] = Field(
+        None,
+        description="Color to use for values above the highest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values above the highest checkpoint.)",
+    )
+    """Color to use for values above the highest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values above the highest checkpoint.)"""
+
+
+
+PaletteT = CategoricalPalette | DiscretePalette | ContinuousPalette
 
 
 class RepresentationParams(BaseModel):
@@ -828,6 +1030,14 @@ class _DataFromUriParams(BaseModel):
 
     uri: str = Field(description="Location of the resource")
     format: SchemaFormatT = Field(description="Format of the resource, i.e. 'cif', 'bcif', or 'json'")
+    # must be aliased to not shadow BaseModel attribute
+    schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
+    block_header: Optional[str] = Field(
+        None, description="Block name wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+    )
+    block_index: Optional[int] = Field(
+        None, description="Block index wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+    )
     category_name: Optional[str] = Field(
         None, description="Category wherein selection is located. Only applies when format is 'cif' or 'bcif'."
     )
@@ -838,14 +1048,10 @@ class _DataFromUriParams(BaseModel):
         "default value is 'color'/'label'/'tooltip'/'component' depending "
         "on the node kind",
     )
-    block_header: Optional[str] = Field(
-        None, description="Block name wherein selection is located. Only applies when format is 'cif' or 'bcif'."
+    field_remapping: Optional[dict[str, str | None]] = Field(
+        None,
+        description="Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).",
     )
-    block_index: Optional[int] = Field(
-        None, description="Block index wherein selection is located. Only applies when format is 'cif' or 'bcif'."
-    )
-    # must be aliased to not shadow BaseModel attribute
-    schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
 
 
 class _DataFromSourceParams(BaseModel):
@@ -853,6 +1059,10 @@ class _DataFromSourceParams(BaseModel):
     Abstract node that's shared by all selections based on the source file.
     """
 
+    # must be aliased to not shadow BaseModel attribute
+    schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
+    block_header: Optional[str] = Field(None, description="Block name wherein selection is located.")
+    block_index: Optional[int] = Field(None, description="Block index wherein selection is located.")
     category_name: str = Field(description="Category wherein selection is located.")
     field_name: Optional[str] = Field(
         None,
@@ -860,10 +1070,10 @@ class _DataFromSourceParams(BaseModel):
         "color/label/tooltip/component...); the default value is "
         "'color'/'label'/'tooltip'/'component' depending on the node kind",
     )
-    block_header: Optional[str] = Field(None, description="Block name wherein selection is located.")
-    block_index: Optional[int] = Field(None, description="Block index wherein selection is located.")
-    # must be aliased to not shadow BaseModel attribute
-    schema_: SchemaT = Field(alias="schema", description="granularity/type of the selection")
+    field_remapping: Optional[dict[str, str | None]] = Field(
+        None,
+        description="Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).",
+    )
 
 
 class ComponentInlineParams(BaseModel):
@@ -871,7 +1081,7 @@ class ComponentInlineParams(BaseModel):
     Selection based on function arguments.
     """
 
-    selector: Optional[Union[ComponentSelectorT, ComponentExpression, list[ComponentExpression]]] = Field(
+    selector: Optional[ComponentSelectorT | ComponentExpression | list[ComponentExpression]] = Field(
         None, description="Describes one or more selections or one of the enumerated selectors."
     )
 
@@ -915,11 +1125,15 @@ class ColorFromUriParams(_DataFromUriParams):
     Color based on another resource.
     """
 
+    palette: Optional[PaletteT] = Field(None, description="Customize mapping of annotation values to colors.")
+
 
 class ColorFromSourceParams(_DataFromSourceParams):
     """
     Color based on a category in the source file.
     """
+
+    palette: Optional[PaletteT] = Field(None, description="Customize mapping of annotation values to colors.")
 
 
 class OpacityInlineParams(ComponentInlineParams):
@@ -1031,7 +1245,7 @@ class PrimitiveComponentExpressions(BaseModel):
 
 # TODO: Consider supporting a list of PrimitiveComponentExpressions too to enable things like
 #       boundings boxes around docked ligands that contains surrounding residues
-PrimitivePositionT = Union[Vec3[float], ComponentExpression, PrimitiveComponentExpressions]
+PrimitivePositionT = Vec3[float] | ComponentExpression | PrimitiveComponentExpressions
 """
 Positions of primitives can be defined by 3D vector, by providing a selection expressions, or by providing
 a list of expressions within a specific structure.
@@ -1136,12 +1350,20 @@ class ArrowParams(BaseModel):
     )
 
     show_start_cap: Optional[bool] = Field(None, description="Draw a cap at the start of the arrow.")
-    start_cap_length: Optional[float] = Field(None, description="Length of the start cap. If not provided, will be 2 * start_cap_radius.")
-    start_cap_radius: Optional[float] = Field(None, description="Radius of the start cap. If not provided, will be 2 * tube_radius.")
+    start_cap_length: Optional[float] = Field(
+        None, description="Length of the start cap. If not provided, will be 2 * start_cap_radius."
+    )
+    start_cap_radius: Optional[float] = Field(
+        None, description="Radius of the start cap. If not provided, will be 2 * tube_radius."
+    )
 
     show_end_cap: Optional[bool] = Field(None, description="Draw a cap at the end of the arrow.")
-    end_cap_length: Optional[float] = Field(None, description="Length of the end cap. If not provided, will be 2 * end_cap_radius.")
-    end_cap_radius: Optional[float] = Field(None, description="Radius of the end cap. If not provided, will be 2 * tube_radius.")
+    end_cap_length: Optional[float] = Field(
+        None, description="Length of the end cap. If not provided, will be 2 * end_cap_radius."
+    )
+    end_cap_radius: Optional[float] = Field(
+        None, description="Radius of the end cap. If not provided, will be 2 * tube_radius."
+    )
 
     show_tube: Optional[bool] = Field(None, description="Draw a tube between the start and end of the arrow.")
     tube_radius: Optional[float] = Field(None, description="Tube radius (in Angstroms).")

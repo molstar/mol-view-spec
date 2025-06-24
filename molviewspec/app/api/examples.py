@@ -4,7 +4,7 @@ A collection of MolViewSpec examples that showcase common visualization tasks th
 
 import itertools
 import math
-from typing import Literal, TypeAlias, Union
+from typing import Literal, Mapping, TypeAlias, Union
 
 import requests
 from fastapi import APIRouter
@@ -14,7 +14,10 @@ from app.config import settings
 from molviewspec.builder import Representation, create_builder
 from molviewspec.nodes import (
     MVSJ,
+    CategoricalPalette,
     ComponentExpression,
+    ContinuousPalette,
+    DiscretePalette,
     GlobalMetadata,
     PrimitiveComponentExpressions,
     RepresentationTypeT,
@@ -240,9 +243,7 @@ async def multiple_states() -> MVSResponse:
         for index, (id, repr) in enumerate(itertools.product(ids, representations))
     ]
     metadata = GlobalMetadata(description="test")
-    return PlainTextResponse(
-        States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2)
-    )
+    return PlainTextResponse(States(snapshots=snapshots, metadata=metadata).dumps(indent=2))
 
 
 def _multistate_template(key: str, url: str, repr: RepresentationTypeT) -> Snapshot:
@@ -316,9 +317,7 @@ async def multiple_states_alignment() -> MVSResponse:
         ),
     ]
     metadata = GlobalMetadata(description="test")
-    return PlainTextResponse(
-        States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2)
-    )
+    return PlainTextResponse(States(snapshots=snapshots, metadata=metadata).dumps(indent=2))
 
 
 @router.get("/multiple-states-alignment-focus")
@@ -406,9 +405,7 @@ async def multiple_states_alignment_focus() -> MVSResponse:
         ),
     ]
     metadata = GlobalMetadata(description="test")
-    return PlainTextResponse(
-        States(snapshots=snapshots, metadata=metadata).model_dump_json(exclude_none=True, indent=2)
-    )
+    return PlainTextResponse(States(snapshots=snapshots, metadata=metadata).dumps(indent=2))
 
 
 camera1 = {
@@ -1083,9 +1080,7 @@ async def volume_server_map_example() -> MVSResponse:
     )
 
     return PlainTextResponse(
-        States(snapshots=[snapshot], metadata=GlobalMetadata(description="1tqn + Volume Server")).model_dump_json(
-            exclude_none=True, indent=2
-        )
+        States(snapshots=[snapshot], metadata=GlobalMetadata(description="1tqn + Volume Server")).dumps(indent=2)
     )
 
 
@@ -1435,26 +1430,31 @@ async def testing_color_from_source_example(tooltips: bool = False) -> MVSRespon
     builder = create_builder()
     structure_url = f"http://0.0.0.0:9000/api/v1/examples/data/1cbs/molecule-and-cif-annotations"
     structure = builder.download(url=structure_url).parse(format="mmcif").model_structure()
+    field_remapping = {"label_asym_id": "label_asym_id", "label_seq_id": "label_seq_id", "label_atom_id": None}
     structure.component(selector="polymer").representation(type="cartoon").color(color="white").color_from_source(
         schema="all_atomic",
         category_name="mvs_test_chain_label_annotation",
+        field_remapping=field_remapping,
     )
     structure.component(selector="ligand").representation(type="ball_and_stick").color(color="white").color_from_source(
         schema="all_atomic",
         block_header="1CBS",
         category_name="mvs_test_chain_label_annotation",
         field_name="color",
+        field_remapping=field_remapping,
     )
     if tooltips:
         structure.tooltip_from_source(
             schema="all_atomic",
             category_name="mvs_test_chain_label_annotation",
             field_name="tooltip",
+            field_remapping=field_remapping,
         )
         structure.tooltip_from_source(
             schema="all_atomic",
             category_name="mvs_test_chain_label_annotation",
             field_name="color",
+            field_remapping=field_remapping,
         )
     return JSONResponse(builder.get_state().to_dict())
 
@@ -1684,6 +1684,128 @@ async def testing_color_multilayer_example(id: str = "1tqn") -> MVSResponse:
         .color(color="yellow", selector=[ComponentExpression(type_symbol="S")])
         .color(color="#AA0022", selector=[ComponentExpression(type_symbol="FE")])
     )
+    return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/testing/color_palette_categorical")
+async def testing_color_palette_categorical(id: str = "1hda") -> MVSResponse:
+    """
+    An example with color_from_source with categorical color palette.
+    """
+    builder = create_builder()
+    structure_url = _url_for_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    (
+        structure.component(selector="polymer")
+        .representation(type="cartoon")
+        .color_from_source(
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="auth_asym_id",
+            # Set1 palette as named color list:
+            palette=CategoricalPalette(colors="Set1"),
+        )
+    )
+    (
+        structure.component(selector="ligand")
+        .representation(type="ball_and_stick")
+        .color_from_source(
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="auth_asym_id",
+            # Pastel1 palette as explicit color list:
+            palette=CategoricalPalette(
+                colors=[
+                    "#fbb4ae",
+                    "#b3cde3",
+                    "#ccebc5",
+                    "#decbe4",
+                    "#fed9a6",
+                    "#ffffcc",
+                    "#e5d8bd",
+                    "#fddaec",
+                    "#f2f2f2",
+                ],
+                repeat_color_list=False,
+                sort="lexical",
+                sort_direction="ascending",
+                case_insensitive=False,
+                missing_color="magenta",
+            ),
+            # Pastel1 palette as explicit color dict:
+            # palette=CategoricalPalette(colors={"A": "#fbb4ae", "B": "#b3cde3", "C": "#ccebc5", "D": "#decbe4", "E": "#fed9a6", "F": "#ffffcc", "G": "#e5d8bd", "H": "#fddaec", "I": "#f2f2f2"}),
+            # Pastel1 palette as named color list:
+            # palette=CategoricalPalette(colors="Pastel1"),
+        )
+        .color_from_source(
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="type_symbol",
+            # ElementSymbol palette as named color dict:
+            palette=CategoricalPalette(colors="ElementSymbol"),
+        )
+    )
+    structure.component().tooltip(text="Chain:")
+    structure.tooltip_from_source(schema="all_atomic", category_name="atom_site", field_name="auth_asym_id")
+    return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/testing/color_palette_discrete")
+async def testing_color_palette_discrete(id: str = "Q8W3K0") -> MVSResponse:
+    """
+    An example with color_from_source with discrete color palette.
+    """
+    builder = create_builder()
+    structure_url = _url_for_alphafold_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    (
+        structure.component(selector="polymer")
+        .representation(type="cartoon")
+        .color_from_source(
+            # Color by pLDDT:
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="B_iso_or_equiv",
+            palette=DiscretePalette(
+                colors=[["#FF7D45", 0], ["#FFDB13", 50], ["#65CBF3", 70], ["#0053D6", 90]],
+                mode="absolute",
+            ),
+        )
+    )
+    structure.component().tooltip(text="pLDDT:")
+    structure.tooltip_from_source(schema="all_atomic", category_name="atom_site", field_name="B_iso_or_equiv")
+    return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/testing/color_palette_continuous")
+async def testing_color_palette_continuous(id: str = "1hda") -> MVSResponse:
+    """
+    An example with color_from_source with continuous color palette.
+    """
+    # TODO
+    builder = create_builder()
+    structure_url = _url_for_bcif(id)
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    (
+        structure.component(selector="polymer")
+        .representation(type="cartoon")
+        .color_from_source(
+            # Color by B-factor:
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="B_iso_or_equiv",
+            palette=ContinuousPalette(
+                colors="OrRd",
+                reverse=False,
+                mode="normalized",
+                value_domain=[0, 100],
+                underflow_color="white",
+                overflow_color="red",
+            ),
+        )
+    )
+    structure.component().tooltip(text="B-factor:")
+    structure.tooltip_from_source(schema="all_atomic", category_name="atom_site", field_name="B_iso_or_equiv")
     return JSONResponse(builder.get_state().to_dict())
 
 
@@ -2082,32 +2204,32 @@ async def primitives_from_uri_example() -> MVSResponse:
 ##############################################################################
 # MVS specification of existing visualizations
 
-CAMERA_FOR_1HDA = {
+CAMERA_FOR_1HDA: Mapping = {
     "target": (19.752, 39.904, 19.170),
     "position": (34.411, 131.418, 44.150),
     "up": (0.035, -0.268, 0.962),
 }
-CAMERA_FOR_1HDA_A = {
+CAMERA_FOR_1HDA_A: Mapping = {
     "target": (30.403, 48.948, 10.986),
     "position": (5.350, 4.252, 45.337),
     "up": (0.704, -0.636, -0.313),
 }
-CAMERA_FOR_1HDA_HEM = {
+CAMERA_FOR_1HDA_HEM: Mapping = {
     "target": (26.795, 49.162, 6.437),
     "position": (-11.895, 72.486, 22.770),
     "up": (0.587, 0.728, 0.352),
 }
-CAMERA_FOR_1TQN = {
+CAMERA_FOR_1TQN: Mapping = {
     "target": (-19.768, -24.352, -12.891),
     "position": (82.412, -19.409, -11.594),
     "up": (0.015, -0.063, -0.997),
 }
-CAMERA_FOR_1GKT = {
+CAMERA_FOR_1GKT: Mapping = {
     "target": (8.594, 28.682, 11.525),
     "position": (69.856, -31.750, 25.286),
     "up": (0.211, -0.007, -0.977),
 }
-CAMERA_FOR_Q5VSL9 = {
+CAMERA_FOR_Q5VSL9: Mapping = {
     "target": (16.066, 10.270, -4.742),
     "position": (97.823, 164.346, 45.265),
     "up": (-0.576, 0.512, -0.636),
@@ -2582,6 +2704,11 @@ def _url_for_mmcif(id: str) -> str:
 def _url_for_bcif(id: str) -> str:
     """Return URL for updated binary CIF file from PDBe server"""
     return f"https://www.ebi.ac.uk/pdbe/entry-files/download/{id.lower()}.bcif"
+
+
+def _url_for_alphafold_bcif(id: str) -> str:
+    """Return URL for updated binary CIF file from AlphaFoldDB server"""
+    return f"https://alphafold.ebi.ac.uk/files/AF-{id}-F1-model_v4.bcif"
 
 
 def _url_for_pdb(id: str) -> str:
