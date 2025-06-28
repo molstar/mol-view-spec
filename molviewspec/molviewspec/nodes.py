@@ -23,6 +23,7 @@ KindT = Literal[
     "root",
     "camera",
     "canvas",
+    "clip",
     "color",
     "color_from_source",
     "color_from_uri",
@@ -935,7 +936,6 @@ class ContinuousPalette(BaseModel):
     """Color to use for values above the highest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values above the highest checkpoint.)"""
 
 
-
 PaletteT = CategoricalPalette | DiscretePalette | ContinuousPalette
 
 
@@ -1021,6 +1021,26 @@ class VolumeIsoSurfaceParams(RepresentationParams):
 
 
 VolumeRepresentationTypeParams = {get_model_fields(t)["type"].default: t for t in (VolumeIsoSurfaceParams,)}
+
+
+ClipTypeT = Literal["cube", "sphere", "cylinder", "plane", "infinite-cone"]
+
+
+class ClipParams(BaseModel):
+    """
+    Clip node, describing how to clip a representation.
+    """
+
+    type: ClipTypeT = Field(description="Kind of clipping region, i.e. box, sphere, cylinder, plane, or infinite cone.")
+    position: Vec3 = Field((0, 0, 0), description="Position of the clipping region.")
+    rotation_axis: Vec3 = Field((1, 0, 0), description="Axis of rotation of the clipping region. Default is (1, 0, 0).")
+    rotation_angle: float = Field(0.0, description="Rotation angle of the clipping region in radians. Default is 0.")
+    scale: Vec3 = Field((1, 1, 1), description="Scale of the clipping region. Default is (1, 1, 1).")
+    transform: Optional[Mat4] = Field(None, description="Transformation matrix to apply to the clipping region")
+    invert: Optional[bool] = Field(False, description="Inverts the clipping region. Default is false")
+    variant: Literal["object", "pixel"] = Field(
+        "pixel", description="Variant of the clip node, either 'object' or 'pixel'"
+    )
 
 
 class _DataFromUriParams(BaseModel):
