@@ -19,6 +19,8 @@ from molviewspec.nodes import (
     BoxParams,
     CameraParams,
     CanvasParams,
+    ClipParams,
+    ClipTypeT,
     ColorFromSourceParams,
     ColorFromUriParams,
     ColorInlineParams,
@@ -195,6 +197,37 @@ class _FocusMixin(_BuilderProtocol):
         """
         params = make_params(FocusInlineParams, locals())
         node = Node(kind="focus", params=params)
+        self._add_child(node)
+        return self
+
+
+class _ClipMixin(_BuilderProtocol):
+    def clip(
+        self,
+        *,
+        type: ClipTypeT,
+        position: Vec3,
+        rotation_axis: Vec3 | None = None,
+        rotation_angle: float | None = None,
+        scale: Vec3 | None = None,
+        transform: Mat4 | None = None,
+        invert: bool = False,
+        variant: Literal["object", "pixel"] | None = None,
+    ) -> Self:
+        """
+        Clip this representation. Multiple clip objects can be defined.
+        :param type: type of clipping region, i.e. box, sphere, cylinder, plane, or infinite cone
+        :param position: position of the clip plane
+        :param rotation_axis: axis of rotation around which the clip plane is rotated (default: (1, 0, 0))
+        :param rotation_angle: angle in radians by which the clip plane is rotated around the `rotation_axis` (default: 0)
+        :param scale: scale factor for the clip plane (default: (1, 1, 1))
+        :param transform: transformation matrix to apply to the clip plane (default: None)
+        :param invert: whether to invert the clip object (default: False)
+        :param variant: whether to clip the object or pixel space (default: "pixel")
+        :return: this builder
+        """
+        params = make_params(ClipParams, locals())
+        node = Node(kind="clip", params=params)
         self._add_child(node)
         return self
 
@@ -941,7 +974,7 @@ class Component(_Base, _FocusMixin):
         return self
 
 
-class Representation(_Base):
+class Representation(_Base, _ClipMixin):
     """
     Builder step with operations relating to particular representations.
     """
@@ -1111,7 +1144,7 @@ class Volume(_Base, _FocusMixin):
         return VolumeRepresentation(node=node, root=self._root)
 
 
-class VolumeRepresentation(_Base, _FocusMixin):
+class VolumeRepresentation(_Base, _FocusMixin, _ClipMixin):
     """
     Builder step with operations relating to particular representations.
     """
