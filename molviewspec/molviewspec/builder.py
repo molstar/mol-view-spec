@@ -140,6 +140,8 @@ class _PrimitivesMixin(_BuilderProtocol):
         opacity: float | None = None,
         label_opacity: float | None = None,
         instances: list[Mat4[float]] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Primitives:
         """
         Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
@@ -150,6 +152,9 @@ class _PrimitivesMixin(_BuilderProtocol):
         :param opacity: opacity of primitive geometry in this group (default: 1)
         :param label_opacity: opacity of primitive labels in this group (default: 1)
         :param instances: instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: primitives builder node
         """
         params = make_params(PrimitivesParams, locals())
         node = Node(kind="primitives", params=params)
@@ -185,6 +190,8 @@ class _FocusMixin(_BuilderProtocol):
         radius: float | None = None,
         radius_factor: float | None = None,
         radius_extent: float | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Self:
         """
         Focus on this structure or component.
@@ -193,6 +200,8 @@ class _FocusMixin(_BuilderProtocol):
         :param radius: radius of the focused sphere (overrides `radius_factor` and `radius_extra`)
         :param radius_factor: radius of the focused sphere relative to the radius of parent component (default: 1); focused radius = component_radius * radius_factor + radius_extent
         :param radius_extent: addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0); focused radius = component_radius * radius_factor + radius_extent
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(FocusInlineParams, locals())
@@ -213,6 +222,8 @@ class _ClipMixin(_BuilderProtocol):
         transform: Mat4 | None = None,
         invert: bool = False,
         variant: Literal["object", "pixel"] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Self:
         """
         Clip this representation. Multiple clip objects can be defined.
@@ -224,6 +235,8 @@ class _ClipMixin(_BuilderProtocol):
         :param transform: transformation matrix to apply to the clip plane (default: None)
         :param invert: whether to invert the clip object (default: False)
         :param variant: whether to clip the object or pixel space (default: "pixel")
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(ClipParams, locals())
