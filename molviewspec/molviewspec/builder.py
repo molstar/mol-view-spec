@@ -228,12 +228,12 @@ class _ClipMixin(_BuilderProtocol):
         """
         Clip this representation. Multiple clip objects can be defined.
         :param type: type of clipping region, i.e. box, sphere, cylinder, plane, or infinite cone
-        :param position: position of the clip plane
+        :param position: position of the clipping region
         :param rotation_axis: axis of rotation around which the clip plane is rotated (default: (1, 0, 0))
         :param rotation_angle: angle in radians by which the clip plane is rotated around the `rotation_axis` (default: 0)
-        :param scale: scale factor for the clip plane (default: (1, 1, 1))
-        :param transform: transformation matrix to apply to the clip plane (default: None)
-        :param invert: whether to invert the clip object (default: False)
+        :param scale: scale factor for the clipping region (default: (1, 1, 1))
+        :param transform: transformation matrix to apply to the clipping region (default: None)
+        :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
         :param variant: whether to clip the object or pixel space (default: "pixel")
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
