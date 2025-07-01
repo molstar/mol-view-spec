@@ -1036,7 +1036,7 @@ class ClipParams(BaseModel):
     rotation_axis: Vec3 = Field((1, 0, 0), description="Axis of rotation of the clipping region. Default is (1, 0, 0).")
     rotation_angle: float = Field(0.0, description="Rotation angle of the clipping region in radians. Default is 0.")
     scale: Vec3 = Field((1, 1, 1), description="Scale of the clipping region. Default is (1, 1, 1).")
-    transform: Optional[Mat4] = Field(None, description="Transformation matrix to apply to the clipping region")
+    point_transform: Optional[Mat4] = Field(None, description="Transformation matrix to applied to each point before clipping. For example, can be used to clip volumes in the grid/fractional space. Default is None.")
     invert: Optional[bool] = Field(False, description="Inverts the clipping region. Default is false")
     variant: Literal["object", "pixel"] = Field(
         "pixel", description="Variant of the clip node, either 'object' or 'pixel'"

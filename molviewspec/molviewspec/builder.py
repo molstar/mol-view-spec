@@ -219,7 +219,7 @@ class _ClipMixin(_BuilderProtocol):
         rotation_axis: Vec3 | None = None,
         rotation_angle: float | None = None,
         scale: Vec3 | None = None,
-        transform: Mat4 | None = None,
+        point_transform: Mat4 | None = None,
         invert: bool = False,
         variant: Literal["object", "pixel"] | None = None,
         custom: CustomT = None,
@@ -232,7 +232,7 @@ class _ClipMixin(_BuilderProtocol):
         :param rotation_axis: axis of rotation around which the clip plane is rotated (default: (1, 0, 0))
         :param rotation_angle: angle in radians by which the clip plane is rotated around the `rotation_axis` (default: 0)
         :param scale: scale factor for the clipping region (default: (1, 1, 1))
-        :param transform: transformation matrix to apply to the clipping region (default: None)
+        :param point_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
         :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
         :param variant: whether to clip the object or pixel space (default: "pixel")
         :param custom: optional, custom data to attach to this node
