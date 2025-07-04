@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `vector_radius` param for primitive `angle_measurement`
 - Add `field_remapping` param for `*_from_*` nodes
 - Add `palette` param for `color_from_*` nodes
+- Add `clip` node support for structure and volume representations
 
 ## [v1.6.0] - 2025-04-22
 
