@@ -2203,6 +2203,17 @@ async def testing_operator_name_inline_selector() -> MVSResponse:
             .label(text=f"Selected {chain}")
             .tooltip(text=f"The selected instance - Chain {chain}")
         )
+    (
+        structure.primitives(opacity=0.3)
+        .sphere(center=ComponentExpression(operator_name="54-75", label_asym_id="A"), color="yellow")
+        .sphere(center=ComponentExpression(operator_name="25-86", label_asym_id="A"), color="yellow")
+        .tube(
+            start=ComponentExpression(operator_name="54-75", label_asym_id="A"),
+            end=ComponentExpression(operator_name="25-86", label_asym_id="A"),
+            radius=2,
+            color="yellow",
+        )
+    )
     return JSONResponse(builder.get_state().to_dict())
 
 
