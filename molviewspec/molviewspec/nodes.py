@@ -581,6 +581,9 @@ class ComponentExpression(BaseModel):
     )
     atom_id: Optional[int] = Field(None, description="Unique atom identifier (`_atom_site.id`)")
     atom_index: Optional[int] = Field(None, description="0-based atom index in the source file")
+    operator_name: Optional[str] = Field(
+        None, description="Symmetry operator name like 'X0-1' for assemblies or '1_555' for crystals"
+    )
 
 
 RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate"]
@@ -933,7 +936,6 @@ class ContinuousPalette(BaseModel):
         description="Color to use for values above the highest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values above the highest checkpoint.)",
     )
     """Color to use for values above the highest checkpoint. 'auto' means color of the lowest checkpoint. (Default behavior is not to color values above the highest checkpoint.)"""
-
 
 
 PaletteT = CategoricalPalette | DiscretePalette | ContinuousPalette
