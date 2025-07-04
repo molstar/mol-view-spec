@@ -42,6 +42,7 @@ from molviewspec.nodes import (
     LabelFromUriParams,
     LabelInlineParams,
     LinesParams,
+    Mat3,
     Mat4,
     MeshParams,
     MolstarWidgetsMixin,
@@ -227,7 +228,7 @@ class _ClipMixin(_BuilderProtocol):
         """
         Add a surface representation for this component.
         :param type: the type of this representation ('plane')
-        :param normal: the normal vector of the clipping plane
+        :param normal: the normal vector of the clipping plane, points towards the clipped region
         :param constant: the distance of the clipping plane from the origin along the normal vector
         :param check_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
         :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
@@ -271,8 +272,7 @@ class _ClipMixin(_BuilderProtocol):
         *,
         type: Literal["box"],
         center: Vec3[float],
-        rotation: Vec3[float] | None = None,
-        translation: Vec3[float] | None = None,
+        rotation: Mat3[float] | None = None,
         size: Vec3[float] | None = None,
         check_transform: Mat4 | None = None,
         invert: bool = False,
@@ -285,9 +285,8 @@ class _ClipMixin(_BuilderProtocol):
         :param type: the type of this representation ('plane')
         :param center: the center of the clipping box
         :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
-        :param translation: 3d vector describing the translation (default: (0, 0, 0))
         :param size: 3d vector describing the box size (default: (1, 1, 1))
-        :param point_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
+        :param check_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
         :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
         :param variant: whether to clip the object or pixel space (default: "pixel")
         :param custom: optional, custom data to attach to this node

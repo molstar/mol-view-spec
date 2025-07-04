@@ -1050,7 +1050,7 @@ class ClipPlaneParams(ClipParamsBase):
 
     type: Literal["plane"] = "plane"
 
-    normal: Vec3 = Field(description="Normal vector of the clipping plane.")
+    normal: Vec3 = Field(description="Normal vector of the clipping plane. Points towards the clipped region.")
     point: Vec3 = Field(description="Point on the clipping plane.")
 
 
@@ -1078,7 +1078,6 @@ class ClipBoxParams(BaseModel):
         None,
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
-    translation: Optional[Vec3[float]] = Field(None, description="3d vector describing the translation")
 
 
 ClipTypeParams = {
