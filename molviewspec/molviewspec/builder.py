@@ -19,7 +19,7 @@ from molviewspec.nodes import (
     BoxParams,
     CameraParams,
     CanvasParams,
-    ClipParams,
+    ClipTypeParams,
     ClipTypeT,
     ColorFromSourceParams,
     ColorFromUriParams,
@@ -211,35 +211,102 @@ class _FocusMixin(_BuilderProtocol):
 
 
 class _ClipMixin(_BuilderProtocol):
+    @overload
     def clip(
         self,
         *,
-        type: ClipTypeT,
-        position: Vec3,
-        rotation_axis: Vec3 | None = None,
-        rotation_angle: float | None = None,
-        scale: Vec3 | None = None,
-        point_transform: Mat4 | None = None,
+        type: Literal["plane"],
+        normal: Vec3[float],
+        point: Vec3[float],
+        check_transform: Mat4 | Sequence[float] | None = None,
         invert: bool = False,
         variant: Literal["object", "pixel"] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
-    ) -> Self:
+    ) -> Representation:
         """
-        Clip this representation. Multiple clip objects can be defined.
-        :param type: type of clipping region, i.e. box, sphere, cylinder, plane, or infinite cone
-        :param position: position of the clipping region
-        :param rotation_axis: axis of rotation around which the clip plane is rotated (default: (1, 0, 0))
-        :param rotation_angle: angle in radians by which the clip plane is rotated around the `rotation_axis` (default: 0)
-        :param scale: scale factor for the clipping region (default: (1, 1, 1))
+        Add a surface representation for this component.
+        :param type: the type of this representation ('plane')
+        :param normal: the normal vector of the clipping plane
+        :param constant: the distance of the clipping plane from the origin along the normal vector
+        :param check_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
+        :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
+        :param variant: whether to clip the object or pixel space (default: "pixel")
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def clip(
+        self,
+        *,
+        type: Literal["sphere"],
+        center: Vec3[float],
+        radius: float = 1.0,
+        check_transform: Mat4[float] | None = None,
+        invert: bool = False,
+        variant: Literal["object", "pixel"] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a surface representation for this component.
+        :param type: the type of this representation ('plane')
+        :param center: the center of the clipping sphere
+        :param radius: the radius of the clipping sphere (default: 1.0)
+        :param check_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
+        :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
+        :param variant: whether to clip the object or pixel space (default: "pixel")
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def clip(
+        self,
+        *,
+        type: Literal["box"],
+        center: Vec3[float],
+        rotation: Vec3[float] | None = None,
+        translation: Vec3[float] | None = None,
+        size: Vec3[float] | None = None,
+        check_transform: Mat4 | None = None,
+        invert: bool = False,
+        variant: Literal["object", "pixel"] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a surface representation for this component.
+        :param type: the type of this representation ('plane')
+        :param center: the center of the clipping box
+        :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
+        :param translation: 3d vector describing the translation (default: (0, 0, 0))
+        :param size: 3d vector describing the box size (default: (1, 1, 1))
         :param point_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
         :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
         :param variant: whether to clip the object or pixel space (default: "pixel")
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    def clip(self, *, type: ClipTypeT, custom: CustomT = None, ref: RefT = None, **kwargs: Any) -> Representation:
+        """
+        Add a clip object for this component.
+        :param type: the type of clip object
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :param kwargs: optional, representation-specific params
         :return: this builder
         """
-        params = make_params(ClipParams, locals())
+        params_class = ClipTypeParams.get(type)
+        params = make_params(params_class, locals(), **kwargs)  # type: ignore
         node = Node(kind="clip", params=params)
         self._add_child(node)
         return self
