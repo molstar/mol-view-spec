@@ -19,6 +19,8 @@ from molviewspec.nodes import (
     BoxParams,
     CameraParams,
     CanvasParams,
+    ClipTypeParams,
+    ClipTypeT,
     ColorFromSourceParams,
     ColorFromUriParams,
     ColorInlineParams,
@@ -40,6 +42,7 @@ from molviewspec.nodes import (
     LabelFromUriParams,
     LabelInlineParams,
     LinesParams,
+    Mat3,
     Mat4,
     MeshParams,
     MolstarWidgetsMixin,
@@ -138,6 +141,8 @@ class _PrimitivesMixin(_BuilderProtocol):
         opacity: float | None = None,
         label_opacity: float | None = None,
         instances: list[Mat4[float]] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Primitives:
         """
         Allows the definition of a (group of) geometric primitives. You can add any number of primitives and then assign
@@ -148,6 +153,9 @@ class _PrimitivesMixin(_BuilderProtocol):
         :param opacity: opacity of primitive geometry in this group (default: 1)
         :param label_opacity: opacity of primitive labels in this group (default: 1)
         :param instances: instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: primitives builder node
         """
         params = make_params(PrimitivesParams, locals())
         node = Node(kind="primitives", params=params)
@@ -183,6 +191,8 @@ class _FocusMixin(_BuilderProtocol):
         radius: float | None = None,
         radius_factor: float | None = None,
         radius_extent: float | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
     ) -> Self:
         """
         Focus on this structure or component.
@@ -191,10 +201,112 @@ class _FocusMixin(_BuilderProtocol):
         :param radius: radius of the focused sphere (overrides `radius_factor` and `radius_extra`)
         :param radius_factor: radius of the focused sphere relative to the radius of parent component (default: 1); focused radius = component_radius * radius_factor + radius_extent
         :param radius_extent: addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0); focused radius = component_radius * radius_factor + radius_extent
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
         :return: this builder
         """
         params = make_params(FocusInlineParams, locals())
         node = Node(kind="focus", params=params)
+        self._add_child(node)
+        return self
+
+
+class _ClipMixin(_BuilderProtocol):
+    @overload
+    def clip(
+        self,
+        *,
+        type: Literal["plane"],
+        normal: Vec3[float],
+        point: Vec3[float],
+        check_transform: Mat4 | Sequence[float] | None = None,
+        invert: bool = False,
+        variant: Literal["object", "pixel"] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a surface representation for this component.
+        :param type: the type of this representation ('plane')
+        :param normal: the normal vector of the clipping plane, points towards the clipped region
+        :param constant: the distance of the clipping plane from the origin along the normal vector
+        :param check_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
+        :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
+        :param variant: whether to clip the object or pixel space (default: "pixel")
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def clip(
+        self,
+        *,
+        type: Literal["sphere"],
+        center: Vec3[float],
+        radius: float = 1.0,
+        check_transform: Mat4[float] | None = None,
+        invert: bool = False,
+        variant: Literal["object", "pixel"] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a surface representation for this component.
+        :param type: the type of this representation ('plane')
+        :param center: the center of the clipping sphere
+        :param radius: the radius of the clipping sphere (default: 1.0)
+        :param check_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
+        :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
+        :param variant: whether to clip the object or pixel space (default: "pixel")
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def clip(
+        self,
+        *,
+        type: Literal["box"],
+        center: Vec3[float],
+        rotation: Mat3[float] | None = None,
+        size: Vec3[float] | None = None,
+        check_transform: Mat4 | None = None,
+        invert: bool = False,
+        variant: Literal["object", "pixel"] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a surface representation for this component.
+        :param type: the type of this representation ('plane')
+        :param center: the center of the clipping box
+        :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
+        :param size: 3d vector describing the box size (default: (1, 1, 1))
+        :param check_transform: transformation matrix applied to each point before clipping, used for example to clip volumes in the grid/fractional space (default: None)
+        :param invert: whether to invert the clip object, e.g., clip outside a sphere (default: False)
+        :param variant: whether to clip the object or pixel space (default: "pixel")
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    def clip(self, *, type: ClipTypeT, custom: CustomT = None, ref: RefT = None, **kwargs: Any) -> Representation:
+        """
+        Add a clip object for this component.
+        :param type: the type of clip object
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :param kwargs: optional, representation-specific params
+        :return: this builder
+        """
+        params_class = ClipTypeParams.get(type)
+        params = make_params(params_class, locals(), **kwargs)  # type: ignore
+        node = Node(kind="clip", params=params)
         self._add_child(node)
         return self
 
@@ -941,7 +1053,7 @@ class Component(_Base, _FocusMixin):
         return self
 
 
-class Representation(_Base):
+class Representation(_Base, _ClipMixin):
     """
     Builder step with operations relating to particular representations.
     """
@@ -1111,7 +1223,7 @@ class Volume(_Base, _FocusMixin):
         return VolumeRepresentation(node=node, root=self._root)
 
 
-class VolumeRepresentation(_Base, _FocusMixin):
+class VolumeRepresentation(_Base, _FocusMixin, _ClipMixin):
     """
     Builder step with operations relating to particular representations.
     """

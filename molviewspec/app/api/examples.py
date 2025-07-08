@@ -1084,6 +1084,29 @@ async def volume_server_map_example() -> MVSResponse:
     )
 
 
+@router.get("/clip/minimal")
+async def minimal_clip_example() -> MVSResponse:
+    """
+    Minimal clipping example
+    """
+    builder = create_builder()
+    model = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure()
+
+    (
+        model.component(selector="polymer")
+        .representation()
+        .clip(type="sphere", center=(22.03, 25.62, 21.05), radius=10)
+        .clip(type="plane", normal=(1, 0, 0), point=(22.03, 25.62, 21.05))
+    )
+    (
+        model.component(selector="ligand")
+        .representation(type="ball_and_stick")
+        .color(color="red")
+        .clip(type="box", center=(22.03, 25.62, 21.05), size=(1, 1, 1))
+    )
+    return JSONResponse(builder.get_state().to_dict())
+
+
 ##############################################################################
 # meta endpoints
 

@@ -23,6 +23,7 @@ KindT = Literal[
     "root",
     "camera",
     "canvas",
+    "clip",
     "color",
     "color_from_source",
     "color_from_uri",
@@ -1023,6 +1024,73 @@ class VolumeIsoSurfaceParams(RepresentationParams):
 
 
 VolumeRepresentationTypeParams = {get_model_fields(t)["type"].default: t for t in (VolumeIsoSurfaceParams,)}
+
+
+ClipTypeT = Literal["plane", "sphere", "box"]
+
+
+class ClipParamsBase(BaseModel):
+    """
+    Clip node, describing how to clip a representation.
+    """
+
+    type: ClipTypeT = Field(description="Kind of clipping region, i.e. sphere, plane, or box.")
+
+    check_transform: Optional[Mat4] = Field(
+        None,
+        description="Transformation matrix applied to each point before clipping. For example, can be used to clip volumes in the grid/fractional space. Default is None.",
+    )
+    invert: Optional[bool] = Field(None, description="Inverts the clipping region. Default is false")
+    variant: Literal["object", "pixel"] = Field(
+        "pixel", description="Variant of the clip node, either 'object' or 'pixel'"
+    )
+
+
+class ClipPlaneParams(ClipParamsBase):
+    """
+    Plane clip node, describing how to clip a representation with a plane.
+    """
+
+    type: Literal["plane"] = "plane"
+
+    normal: Vec3 = Field(description="Normal vector of the clipping plane. Points towards the clipped region.")
+    point: Vec3 = Field(description="Point on the clipping plane.")
+
+
+class ClipSphereParams(ClipParamsBase):
+    """
+    Sphere clip node, describing how to clip a representation with a sphere.
+    """
+
+    type: Literal["sphere"] = "sphere"
+
+    center: Vec3 = Field(description="Center of the clipping sphere.")
+    radius: Optional[float] = Field(description="Radius of the clipping sphere. Defaults to 1.0.")
+
+
+class ClipBoxParams(BaseModel):
+    """
+    Box clip node, describing how to clip a representation with a box.
+    """
+
+    type: Literal["box"] = "box"
+
+    center: Vec3 = Field(description="Position of the center of the unit box.")
+    size: Optional[Vec3] = Field(None, description="Size of the box in each dimension. Defaults to (1, 1, 1).")
+    rotation: Optional[Mat3[float]] = Field(
+        None,
+        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
+
+
+ClipTypeParams = {
+    get_model_fields(t)["type"].default: t
+    for t in (
+        ClipPlaneParams,
+        ClipSphereParams,
+        ClipBoxParams,
+    )
+}
 
 
 class _DataFromUriParams(BaseModel):
