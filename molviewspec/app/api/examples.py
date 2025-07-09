@@ -2211,10 +2211,10 @@ async def testing_instance_id_inline_selector() -> MVSResponse:
             field_name="label_asym_id",
             palette=CategoricalPalette(colors="Pastel2"),
         )
-        .color(selector=ComponentExpression(instance_id="54-75"), color="red")
+        .color(selector=ComponentExpression(instance_id="ASM-54-75"), color="red")
     )
     (
-        structure.component(selector=ComponentExpression(instance_id="54-75"))
+        structure.component(selector=ComponentExpression(instance_id="ASM-54-75"))
         .focus()
         .representation(type="surface")
         .color(color="red")
@@ -2222,17 +2222,17 @@ async def testing_instance_id_inline_selector() -> MVSResponse:
     )
     for chain in ["A", "B", "C"]:
         (
-            structure.component(selector=ComponentExpression(instance_id="54-75", label_asym_id=chain))
+            structure.component(selector=ComponentExpression(instance_id="ASM-54-75", label_asym_id=chain))
             .label(text=f"Selected {chain}")
             .tooltip(text=f"The selected instance - Chain {chain}")
         )
     (
         structure.primitives(opacity=0.3)
-        .sphere(center=ComponentExpression(instance_id="54-75", label_asym_id="A"), color="yellow")
-        .sphere(center=ComponentExpression(instance_id="25-86", label_asym_id="A"), color="yellow")
+        .sphere(center=ComponentExpression(instance_id="ASM-54-75", label_asym_id="A"), color="yellow")
+        .sphere(center=ComponentExpression(instance_id="ASM-25-86", label_asym_id="A"), color="yellow")
         .tube(
-            start=ComponentExpression(instance_id="54-75", label_asym_id="A"),
-            end=ComponentExpression(instance_id="25-86", label_asym_id="A"),
+            start=ComponentExpression(instance_id="ASM-54-75", label_asym_id="A"),
+            end=ComponentExpression(instance_id="ASM-25-86", label_asym_id="A"),
             radius=2,
             color="yellow",
         )
@@ -2256,10 +2256,10 @@ async def testing_instance_id_annot_selector() -> MVSResponse:
         "  _annotations.end_label_seq_id"
         "  _annotations.instance_id"
         "  _annotations.color"
-        "  A  20  50 1 red"
-        "  A  60  90 2 yellow"
-        "  A 100 130 3 green"
-        "  A 140 170 4 blue"
+        "  A  20  50 ASM-1 red"
+        "  A  60  90 ASM-2 yellow"
+        "  A 100 130 ASM-3 green"
+        "  A 140 170 ASM-4 blue"
     )
     structure = builder.download(url=structure_url).parse(format="bcif").assembly_structure(assembly_id="2")
     (
