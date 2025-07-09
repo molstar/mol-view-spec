@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `field_remapping` param for `*_from_*` nodes
 - Add `palette` param for `color_from_*` nodes
 - Add `clip` node support for structure and volume representations
-- Add `operator_name` field to ComponentExpression and MVS annotations
+- Add `instance_id` field to ComponentExpression and MVS annotations
 
 ## [v1.6.0] - 2025-04-22
 

@@ -2193,10 +2193,10 @@ async def testing_labels_from_source_example() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
-@router.get("/testing/operator_name_inline_selector")
-async def testing_operator_name_inline_selector() -> MVSResponse:
+@router.get("/testing/instance_id_inline_selector")
+async def testing_instance_id_inline_selector() -> MVSResponse:
     """
-    Example for `operator_name` field used in ComponentExpression
+    Example for `instance_id` field used in ComponentExpression
     """
     builder = create_builder()
     structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/1m4x.bcif"
@@ -2211,10 +2211,10 @@ async def testing_operator_name_inline_selector() -> MVSResponse:
             field_name="label_asym_id",
             palette=CategoricalPalette(colors="Pastel2"),
         )
-        .color(selector=ComponentExpression(operator_name="54-75"), color="red")
+        .color(selector=ComponentExpression(instance_id="54-75"), color="red")
     )
     (
-        structure.component(selector=ComponentExpression(operator_name="54-75"))
+        structure.component(selector=ComponentExpression(instance_id="54-75"))
         .focus()
         .representation(type="surface")
         .color(color="red")
@@ -2222,17 +2222,17 @@ async def testing_operator_name_inline_selector() -> MVSResponse:
     )
     for chain in ["A", "B", "C"]:
         (
-            structure.component(selector=ComponentExpression(operator_name="54-75", label_asym_id=chain))
+            structure.component(selector=ComponentExpression(instance_id="54-75", label_asym_id=chain))
             .label(text=f"Selected {chain}")
             .tooltip(text=f"The selected instance - Chain {chain}")
         )
     (
         structure.primitives(opacity=0.3)
-        .sphere(center=ComponentExpression(operator_name="54-75", label_asym_id="A"), color="yellow")
-        .sphere(center=ComponentExpression(operator_name="25-86", label_asym_id="A"), color="yellow")
+        .sphere(center=ComponentExpression(instance_id="54-75", label_asym_id="A"), color="yellow")
+        .sphere(center=ComponentExpression(instance_id="25-86", label_asym_id="A"), color="yellow")
         .tube(
-            start=ComponentExpression(operator_name="54-75", label_asym_id="A"),
-            end=ComponentExpression(operator_name="25-86", label_asym_id="A"),
+            start=ComponentExpression(instance_id="54-75", label_asym_id="A"),
+            end=ComponentExpression(instance_id="25-86", label_asym_id="A"),
             radius=2,
             color="yellow",
         )
@@ -2240,10 +2240,10 @@ async def testing_operator_name_inline_selector() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
-@router.get("/testing/operator_name_annot_selector")
-async def testing_operator_name_annot_selector() -> MVSResponse:
+@router.get("/testing/instance_id_annot_selector")
+async def testing_instance_id_annot_selector() -> MVSResponse:
     """
-    Example for `operator_name` field used in MVS annotations
+    Example for `instance_id` field used in MVS annotations
     """
     builder = create_builder()
     structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif"
@@ -2254,7 +2254,7 @@ async def testing_operator_name_annot_selector() -> MVSResponse:
         "  _annotations.label_asym_id"
         "  _annotations.beg_label_seq_id"
         "  _annotations.end_label_seq_id"
-        "  _annotations.operator_name"
+        "  _annotations.instance_id"
         "  _annotations.color"
         "  A  20  50 1 red"
         "  A  60  90 2 yellow"

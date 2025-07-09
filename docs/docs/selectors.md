@@ -27,7 +27,7 @@ There are three kinds of selectors:
         type_symbol?: str,        // Element symbol like 'H', 'HE', 'LI', 'BE'
         atom_id?: int,            // Unique atom identifier (_atom_site.id)
         atom_index?: int,         // 0-based index of the atom in the source data
-        operator_name?: str       // Symmetry operator name like 'X0-1' for assemblies or '1_555' for crystals
+        instance_id?: str         // Instance identifier to distinguish instances of the same chain created by applying different symmetry operators, like 'ASM-X0-1' for assemblies or '1_555' for crystals
     }
     ```
 

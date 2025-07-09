@@ -133,7 +133,7 @@ Table of selector field names supported by individual MVS annotation schemas:
 | type_symbol       |                 |        |       |         |               |  X   |            |              |                    |     X     |     X      |
 | atom_id           |                 |        |       |         |               |  X   |            |              |                    |     X     |     X      |
 | atom_index        |                 |        |       |         |               |  X   |            |              |                    |     X     |     X      |
-| operator_name     |                 |   X    |   X   |    X    |       X       |  X   |     X      |      X       |         X          |     X     |     X      |
+| instance_id       |                 |   X    |   X   |    X    |       X       |  X   |     X      |      X       |         X          |     X     |     X      |
 
 To include all selector field names that are present in the annotation, one can use `"schema": "all_atomic"` (we could use it in the example above and the result would be the same). In future versions of MVS, non-atomic schemas might be added, to select parts of structures that are not composed of atoms, e.g. coarse models or geometric primitives.
 

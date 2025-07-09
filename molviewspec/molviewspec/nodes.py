@@ -582,8 +582,9 @@ class ComponentExpression(BaseModel):
     )
     atom_id: Optional[int] = Field(None, description="Unique atom identifier (`_atom_site.id`)")
     atom_index: Optional[int] = Field(None, description="0-based atom index in the source file")
-    operator_name: Optional[str] = Field(
-        None, description="Symmetry operator name like 'X0-1' for assemblies or '1_555' for crystals"
+    instance_id: Optional[str] = Field(
+        None,
+        description="Instance identifier to distinguish instances of the same chain created by applying different symmetry operators, like 'ASM-X0-1' for assemblies or '1_555' for crystals",
     )
 
 

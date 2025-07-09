@@ -124,7 +124,7 @@ Parent: `structure`
 
 Params:
 
-- **`selector: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }>`
+- **`selector: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }>`
 
   Defines what part of the parent structure should be included in this component.
 
@@ -378,7 +378,7 @@ Params:
 
   Default: `"white"`
 
-- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }>`
+- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }>`
 
   Defines to what part of the representation this color should be applied.
 
@@ -487,6 +487,114 @@ Params:
   Customize mapping of annotation values to colors.
 
   Default: `null`
+
+## `clip`
+
+This node instructs to apply clipping to a visual representation.
+
+Parent: `representation` or `volume_representation`
+
+Params:
+
+- **`type: `**`plane | sphere | box`
+
+  Clip type
+
+  [This parameter determines the rest of parameters]
+
+  **Case `type: "plane"`:**
+
+  - **`check_transform?: `**`Array<number> | null`
+
+    Transformation matrix to applied to each point before clipping. For example, can be used to clip volumes in the grid/fractional space. Default is null.
+
+    Default: `null`
+
+  - **`invert?: `**`boolean`
+
+    Inverts the clipping region. Default is false
+
+    Default: `false`
+
+  - **`variant?: `**`"object" | "pixel"`
+
+    Variant of the clip node, either "object" or "pixel"
+
+    Default: `"pixel"`
+
+  - **`normal: `**`[number, number, number]`
+
+    Normal vector of the clipping plane.
+
+  - **`point: `**`[number, number, number]`
+
+    Point on the clipping plane.
+
+  **Case `type: "sphere"`:**
+
+  - **`check_transform?: `**`Array<number> | null`
+
+    Transformation matrix to applied to each point before clipping. For example, can be used to clip volumes in the grid/fractional space. Default is null.
+
+    Default: `null`
+
+  - **`invert?: `**`boolean`
+
+    Inverts the clipping region. Default is false
+
+    Default: `false`
+
+  - **`variant?: `**`"object" | "pixel"`
+
+    Variant of the clip node, either "object" or "pixel"
+
+    Default: `"pixel"`
+
+  - **`center: `**`[number, number, number]`
+
+    Center of the clipping sphere.
+
+  - **`radius?: `**`number`
+
+    Radius of the clipping sphere.
+
+    Default: `1`
+
+  **Case `type: "box"`:**
+
+  - **`check_transform?: `**`Array<number> | null`
+
+    Transformation matrix to applied to each point before clipping. For example, can be used to clip volumes in the grid/fractional space. Default is null.
+
+    Default: `null`
+
+  - **`invert?: `**`boolean`
+
+    Inverts the clipping region. Default is false
+
+    Default: `false`
+
+  - **`variant?: `**`"object" | "pixel"`
+
+    Variant of the clip node, either "object" or "pixel"
+
+    Default: `"pixel"`
+
+  - **`center: `**`[number, number, number]`
+
+    Center of the clipping box.
+
+  - **`size?: `**`[number, number, number]`
+
+    Size of the clipping box.
+
+    Default: `[1, 1, 1]`
+
+  - **`rotation?: `**`Array<number>`
+
+    Rotation matrix (3x3 matrix flattened in column major format (j*3+i indexing), this is equivalent to Fortran-order in numpy). This matrix will multiply the structure coordinates from the left. The default value is the identity matrix (corresponds to no rotation).
+
+    Default: `[1, 0, 0, 0, 1, 0, 0, 0, 1]`
 
 ## `opacity`
 
@@ -978,11 +1086,11 @@ Params:
 
   **Case `kind: "tube"`:**
 
-  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Start point of the tube.
 
-  - **`end: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`end: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     End point of the tube.
 
@@ -1012,11 +1120,11 @@ Params:
 
   **Case `kind: "arrow"`:**
 
-  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Start point of the arrow.
 
-  - **`end?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> } | null`
+  - **`end?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     End point of the arrow.
 
@@ -1102,11 +1210,11 @@ Params:
 
   **Case `kind: "distance_measurement"`:**
 
-  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Start point of the tube.
 
-  - **`end: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`end: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     End point of the tube.
 
@@ -1160,15 +1268,15 @@ Params:
 
   **Case `kind: "angle_measurement"`:**
 
-  - **`a: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`a: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Point A.
 
-  - **`b: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`b: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Point B.
 
-  - **`c: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`c: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Point C.
 
@@ -1246,7 +1354,7 @@ Params:
 
   **Case `kind: "label"`:**
 
-  - **`position: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`position: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Position of this label.
 
@@ -1286,7 +1394,7 @@ Params:
 
     Default: `false`
 
-  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     The center of the ellipse.
 
@@ -1302,13 +1410,13 @@ Params:
 
     Default: `null`
 
-  - **`major_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> } | null`
+  - **`major_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center.
 
     Default: `null`
 
-  - **`minor_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> } | null`
+  - **`minor_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center.
 
@@ -1352,7 +1460,7 @@ Params:
 
     Default: `null`
 
-  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     The center of the ellipsoid.
 
@@ -1368,13 +1476,13 @@ Params:
 
     Default: `null`
 
-  - **`major_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> } | null`
+  - **`major_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center.
 
     Default: `null`
 
-  - **`minor_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> } | null`
+  - **`minor_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center.
 
@@ -1400,7 +1508,7 @@ Params:
 
   **Case `kind: "box"`:**
 
-  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, operator_name?: string }> }`
+  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     The center of the box.
 
