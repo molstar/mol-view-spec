@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `palette` param for `color_from_*` nodes
 - Add `clip` node support for structure and volume representations
 - Add `grid-slice` volume representation support
+- Add `label_show_tether`, `label_tether_length`, `label_attachment`, and `label_background_color` to `PrimitivesParams`
 
 ## [v1.6.0] - 2025-04-22
 

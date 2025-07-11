@@ -1344,6 +1344,18 @@ Positions of primitives can be defined by 3D vector, by providing a selection ex
 a list of expressions within a specific structure.
 """
 
+LabelAttachmentT = Literal[
+    "bottom-left",
+    "bottom-center",
+    "bottom-right",
+    "middle-left",
+    "middle-center",
+    "middle-right",
+    "top-left",
+    "top-center",
+    "top-right",
+]
+
 
 class PrimitivesParams(BaseModel):
     color: Optional[ColorT] = Field(None, description="Default color for primitives in this group")
@@ -1351,6 +1363,22 @@ class PrimitivesParams(BaseModel):
     tooltip: Optional[str] = Field(None, description="Default tooltip for primitives in this group")
     opacity: Optional[float] = Field(None, description="Opacity of primitive geometry in this group")
     label_opacity: Optional[float] = Field(None, description="Opacity of primitive labels in this group")
+    label_show_tether: Optional[bool] = Field(
+        None,
+        description="Whether to show a tether line between the label and the target. Defaults to false.",
+    )
+    label_tether_length: Optional[float] = Field(
+        None,
+        description="Length of the tether line between the label and the target. Defaults to 1 (Angstrom).",
+    )
+    label_attachment: Optional[LabelAttachmentT] = Field(
+        None,
+        description="How to attach the label to the target. Defaults to 'middle-center'.",
+    )
+    label_background_color: Optional[ColorT] = Field(
+        None,
+        description="Background color of the label. Defaults to none/transparent.",
+    )
     instances: Optional[list[Mat4[float]]] = Field(
         None,
         description="Instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices",

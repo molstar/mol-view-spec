@@ -38,6 +38,7 @@ from molviewspec.nodes import (
     EllipsoidParams,
     FocusInlineParams,
     GlobalMetadata,
+    LabelAttachmentT,
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
@@ -140,6 +141,10 @@ class _PrimitivesMixin(_BuilderProtocol):
         tooltip: str | None = None,
         opacity: float | None = None,
         label_opacity: float | None = None,
+        label_show_tether: bool | None = None,
+        label_tether_length: float | None = None,
+        label_attachment: LabelAttachmentT | None = None,
+        label_background_color: ColorT | None = None,
         instances: list[Mat4[float]] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
@@ -152,6 +157,10 @@ class _PrimitivesMixin(_BuilderProtocol):
         :param tooltip: default tooltip for primitives in this group (default: no tooltip)
         :param opacity: opacity of primitive geometry in this group (default: 1)
         :param label_opacity: opacity of primitive labels in this group (default: 1)
+        :param label_show_tether: whether to show a tether line between the label and the target (default: False)
+        :param label_tether_length: length of the tether line between the label and the target (default: 1 Angstrom)
+        :param label_attachment: how to attach the label to the target (default: "middle-center")
+        :param label_background_color: background color of the label (default: None/transparent)
         :param instances: instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node

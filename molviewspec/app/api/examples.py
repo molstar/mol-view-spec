@@ -2243,6 +2243,28 @@ async def testing_angle_primitive_example() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
+@router.get("/testing/primitive-labels")
+async def testing_primitive_labels_example() -> MVSResponse:
+    """
+    Return a state showing an angle
+    """
+    builder = create_builder()
+    primitives = builder.primitives(
+        label_attachment="top-right",
+        label_show_tether=True,
+        label_tether_length=2,
+        label_background_color="lightblue",
+    )
+    primitives.sphere(
+        center=(10, 10, 10),
+        radius=1,
+        color="red",
+    )
+    primitives.label(position=(10, 10, 10), text="This is a label", label_offset=2)
+
+    return JSONResponse(builder.get_state().to_dict())
+
+
 @router.get("/testing/primitives/from-uri")
 async def primitives_from_uri_example() -> MVSResponse:
     """
