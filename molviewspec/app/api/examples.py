@@ -1036,6 +1036,36 @@ async def volume_map_example() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
+@router.get("/volume/slices")
+async def volume_map_example() -> MVSResponse:
+    """
+    Renders a volume in MAP format
+    """
+
+    builder = create_builder()
+
+    download = builder.download(url="https://www.ebi.ac.uk/pdbe/entry-files/1tqn.ccp4")
+    volume = download.parse(format="map").volume()
+
+    (
+        volume.representation(type="grid-slice", dimension="x", relative_index=0.5, relative_isovalue=1)
+        .color(color="red")
+        .opacity(opacity=0.75)
+    )
+    (
+        volume.representation(type="grid-slice", dimension="y", relative_index=0.5, relative_isovalue=1)
+        .color(color="green")
+        .opacity(opacity=0.75)
+    )
+    (
+        volume.representation(type="grid-slice", dimension="z", relative_index=0.5, relative_isovalue=1)
+        .color(color="blue")
+        .opacity(opacity=0.75)
+    )
+
+    return JSONResponse(builder.get_state().to_dict())
+
+
 @router.get("/volume/volume-server")
 async def volume_server_map_example() -> MVSResponse:
     """

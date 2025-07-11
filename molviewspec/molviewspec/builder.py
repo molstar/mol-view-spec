@@ -1193,6 +1193,32 @@ class Volume(_Base, _FocusMixin):
 
     @overload
     def representation(
+        *,
+        type: Literal["grid-slice"],
+        dimension: Literal["x", "y", "z"],
+        absolute_index: int | None = None,
+        relative_index: float | None = None,
+        relative_isovalue: float | None = None,
+        absolute_isovalue: float | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> VolumeRepresentation:
+        """
+        Add a grid slice representation for this component.
+        :param type: the type of this representation ('grid-slice')
+        :param dimension: the dimension of the slice, one of 'x', 'y', 'z'
+        :param absolute_index: absolute index of the slice in the grid
+        :param relative_index: relative index of the slice in the grid, 0.0: first slice, 1.0: last slice, overrides `absolute_index`
+        :param relative_isovalue: relative isovalue to use for the surface
+        :param absolute_isovalue: absolute isovalue to use for the surface, overrides `relative_isovalue`
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def representation(
         self, *, type: VolumeRepresentationTypeT = "isosurface", custom: CustomT = None, ref: RefT = None, **kwargs: Any
     ) -> VolumeRepresentation:
         """

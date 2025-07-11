@@ -585,7 +585,7 @@ class ComponentExpression(BaseModel):
 
 
 RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate"]
-VolumeRepresentationTypeT = Literal["isosurface"]
+VolumeRepresentationTypeT = Literal["isosurface", "grid-slice"]
 ColorNamesT = Literal[
     "aliceblue",
     "antiquewhite",
@@ -1020,7 +1020,33 @@ class VolumeIsoSurfaceParams(RepresentationParams):
     show_faces: Optional[bool] = Field(None, description="Show mesh faces. Defaults to true.")
 
 
-VolumeRepresentationTypeParams = {get_model_fields(t)["type"].default: t for t in (VolumeIsoSurfaceParams,)}
+class VolumeGridSliceParams(RepresentationParams):
+    """
+    Volume grid-slice representation.
+    """
+
+    type: Literal["grid-slice"] = "grid-slice"
+
+    dimension: Literal["x", "y", "z"] = Field(description="Dimension of the grid slice, i.e. 'x', 'y', or 'z'.")
+    absolute_index: Optional[int] = Field(
+        None,
+        description="Index of the grid slice in the specified dimension. 0-based index, i.e. 0 is the first slice.",
+    )
+    relative_index: Optional[float] = Field(
+        None,
+        description="Relative index of the grid slice in the specified dimension. 0.0 is the first slice, 1.0 is the last slice. Overrides `absolute_index`.",
+    )
+    relative_isovalue: Optional[float] = Field(None, description="Relative isovalue")
+    absolute_isovalue: Optional[float] = Field(None, description="Absolute isovalue. Overrides `relative_isovalue`.")
+
+
+VolumeRepresentationTypeParams = {
+    get_model_fields(t)["type"].default: t
+    for t in (
+        VolumeIsoSurfaceParams,
+        VolumeGridSliceParams,
+    )
+}
 
 
 ClipTypeT = Literal["plane", "sphere", "box"]
