@@ -235,7 +235,7 @@ class _ClipMixin(_BuilderProtocol):
         variant: Literal["object", "pixel"] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
-    ) -> Representation:
+    ) -> Self:
         """
         Add a surface representation for this component.
         :param type: the type of this representation ('plane')
@@ -262,7 +262,7 @@ class _ClipMixin(_BuilderProtocol):
         variant: Literal["object", "pixel"] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
-    ) -> Representation:
+    ) -> Self:
         """
         Add a surface representation for this component.
         :param type: the type of this representation ('plane')
@@ -290,7 +290,7 @@ class _ClipMixin(_BuilderProtocol):
         variant: Literal["object", "pixel"] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
-    ) -> Representation:
+    ) -> Self:
         """
         Add a surface representation for this component.
         :param type: the type of this representation ('plane')
@@ -306,7 +306,7 @@ class _ClipMixin(_BuilderProtocol):
         """
         ...
 
-    def clip(self, *, type: ClipTypeT, custom: CustomT = None, ref: RefT = None, **kwargs: Any) -> Representation:
+    def clip(self, *, type: ClipTypeT, custom: CustomT = None, ref: RefT = None, **kwargs: Any) -> Self:
         """
         Add a clip object for this component.
         :param type: the type of clip object

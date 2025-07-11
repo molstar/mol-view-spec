@@ -124,7 +124,7 @@ Parent: `structure`
 
 Params:
 
-- **`selector: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>>`
+- **`selector: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }>`
 
   Defines what part of the parent structure should be included in this component.
 
@@ -172,6 +172,12 @@ Params:
 
   Default: `"component"`
 
+- **`field_remapping?: `**`{ [K in string]: (string | null) }`
+
+  Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
+
+  Default: `{}`
+
 - **`field_values?: `**`Array<string> | null`
 
   List of component identifiers (i.e. values in the field given by `field_name`) which should be included in this component. If `null`, component identifiers are ignored (all annotation rows are included), and `field_name` field can be dropped from the annotation.
@@ -213,6 +219,12 @@ Params:
   Name of the column in CIF or field name (key) in JSON that contains the component identifier.
 
   Default: `"component"`
+
+- **`field_remapping?: `**`{ [K in string]: (string | null) }`
+
+  Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
+
+  Default: `{}`
 
 - **`field_values?: `**`Array<string> | null`
 
@@ -366,7 +378,7 @@ Params:
 
   Default: `"white"`
 
-- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>>`
+- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }>`
 
   Defines to what part of the representation this color should be applied.
 
@@ -416,6 +428,18 @@ Params:
 
   Default: `"color"`
 
+- **`field_remapping?: `**`{ [K in string]: (string | null) }`
+
+  Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
+
+  Default: `{}`
+
+- **`palette?: `**`{ kind: "categorical", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | ("ElementSymbol" | "ResidueName" | "ResidueProperties" | "SecondaryStructure") | Array<(ColorName | HexColor)> | { [K in string]: (ColorName | HexColor) }), repeat_color_list?: boolean, sort?: ("none" | "lexical" | "numeric"), sort_direction?: ("ascending" | "descending"), case_insensitive?: boolean, missing_color?: (ColorName | HexColor | null) } | { kind: "discrete", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<(ColorName | HexColor)> | Array<[(ColorName | HexColor), number]> | Array<[(ColorName | HexColor | null), (number | null), (number | null)]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)] } | { kind: "continuous", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<(ColorName | HexColor)> | Array<[(ColorName | HexColor), number]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)], underflow_color?: ("auto" | ColorName | HexColor | null), overflow_color?: ("auto" | ColorName | HexColor | null) } | null`
+
+  Customize mapping of annotation values to colors.
+
+  Default: `null`
+
 ## `color_from_source`
 
 This node instructs to apply colors to a visual representation. The colors are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
@@ -451,6 +475,126 @@ Params:
   Name of the column in CIF or field name (key) in JSON that contains the color.
 
   Default: `"color"`
+
+- **`field_remapping?: `**`{ [K in string]: (string | null) }`
+
+  Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
+
+  Default: `{}`
+
+- **`palette?: `**`{ kind: "categorical", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | ("ElementSymbol" | "ResidueName" | "ResidueProperties" | "SecondaryStructure") | Array<(ColorName | HexColor)> | { [K in string]: (ColorName | HexColor) }), repeat_color_list?: boolean, sort?: ("none" | "lexical" | "numeric"), sort_direction?: ("ascending" | "descending"), case_insensitive?: boolean, missing_color?: (ColorName | HexColor | null) } | { kind: "discrete", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<(ColorName | HexColor)> | Array<[(ColorName | HexColor), number]> | Array<[(ColorName | HexColor | null), (number | null), (number | null)]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)] } | { kind: "continuous", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<(ColorName | HexColor)> | Array<[(ColorName | HexColor), number]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)], underflow_color?: ("auto" | ColorName | HexColor | null), overflow_color?: ("auto" | ColorName | HexColor | null) } | null`
+
+  Customize mapping of annotation values to colors.
+
+  Default: `null`
+
+## `clip`
+
+This node instructs to apply clipping to a visual representation.
+
+Parent: `representation` or `volume_representation`
+
+Params:
+
+- **`type: `**`plane | sphere | box`
+
+  Clip type
+
+  [This parameter determines the rest of parameters]
+
+  **Case `type: "plane"`:**
+
+  - **`check_transform?: `**`Array<number> | null`
+
+    Transformation matrix to applied to each point before clipping. For example, can be used to clip volumes in the grid/fractional space. Default is null.
+
+    Default: `null`
+
+  - **`invert?: `**`boolean`
+
+    Inverts the clipping region. Default is false
+
+    Default: `false`
+
+  - **`variant?: `**`"object" | "pixel"`
+
+    Variant of the clip node, either "object" or "pixel"
+
+    Default: `"pixel"`
+
+  - **`normal: `**`[number, number, number]`
+
+    Normal vector of the clipping plane.
+
+  - **`point: `**`[number, number, number]`
+
+    Point on the clipping plane.
+
+  **Case `type: "sphere"`:**
+
+  - **`check_transform?: `**`Array<number> | null`
+
+    Transformation matrix to applied to each point before clipping. For example, can be used to clip volumes in the grid/fractional space. Default is null.
+
+    Default: `null`
+
+  - **`invert?: `**`boolean`
+
+    Inverts the clipping region. Default is false
+
+    Default: `false`
+
+  - **`variant?: `**`"object" | "pixel"`
+
+    Variant of the clip node, either "object" or "pixel"
+
+    Default: `"pixel"`
+
+  - **`center: `**`[number, number, number]`
+
+    Center of the clipping sphere.
+
+  - **`radius?: `**`number`
+
+    Radius of the clipping sphere.
+
+    Default: `1`
+
+  **Case `type: "box"`:**
+
+  - **`check_transform?: `**`Array<number> | null`
+
+    Transformation matrix to applied to each point before clipping. For example, can be used to clip volumes in the grid/fractional space. Default is null.
+
+    Default: `null`
+
+  - **`invert?: `**`boolean`
+
+    Inverts the clipping region. Default is false
+
+    Default: `false`
+
+  - **`variant?: `**`"object" | "pixel"`
+
+    Variant of the clip node, either "object" or "pixel"
+
+    Default: `"pixel"`
+
+  - **`center: `**`[number, number, number]`
+
+    Center of the clipping box.
+
+  - **`size?: `**`[number, number, number]`
+
+    Size of the clipping box.
+
+    Default: `[1, 1, 1]`
+
+  - **`rotation?: `**`Array<number>`
+
+    Rotation matrix (3x3 matrix flattened in column major format (j*3+i indexing), this is equivalent to Fortran-order in numpy). This matrix will multiply the structure coordinates from the left. The default value is the identity matrix (corresponds to no rotation).
+
+    Default: `[1, 0, 0, 0, 1, 0, 0, 0, 1]`
 
 ## `opacity`
 
@@ -520,6 +664,12 @@ Params:
 
   Default: `"label"`
 
+- **`field_remapping?: `**`{ [K in string]: (string | null) }`
+
+  Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
+
+  Default: `{}`
+
 ## `label_from_source`
 
 This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
@@ -555,6 +705,12 @@ Params:
   Name of the column in CIF or field name (key) in JSON that contains the label text.
 
   Default: `"label"`
+
+- **`field_remapping?: `**`{ [K in string]: (string | null) }`
+
+  Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
+
+  Default: `{}`
 
 ## `tooltip`
 
@@ -612,6 +768,12 @@ Params:
 
   Default: `"tooltip"`
 
+- **`field_remapping?: `**`{ [K in string]: (string | null) }`
+
+  Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
+
+  Default: `{}`
+
 ## `tooltip_from_source`
 
 This node instructs to add tooltips to parts of a structure. The tooltips are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
@@ -647,6 +809,12 @@ Params:
   Name of the column in CIF or field name (key) in JSON that contains the tooltip text.
 
   Default: `"tooltip"`
+
+- **`field_remapping?: `**`{ [K in string]: (string | null) }`
+
+  Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
+
+  Default: `{}`
 
 ## `focus`
 
@@ -828,7 +996,7 @@ Params:
 
     Default: `{}`
 
-  - **`color?: `**`(ColorName | HexColor) | null`
+  - **`color?: `**`ColorName | HexColor | null`
 
     Color of the triangles and wireframe. Can be overwritten by `group_colors`. If not specified, uses the parent primitives group `color`.
 
@@ -858,7 +1026,7 @@ Params:
 
     Default: `1`
 
-  - **`wireframe_color?: `**`(ColorName | HexColor) | null`
+  - **`wireframe_color?: `**`ColorName | HexColor | null`
 
     Wireframe color. If not specified, uses `group_colors`.
 
@@ -898,7 +1066,7 @@ Params:
 
     Default: `{}`
 
-  - **`color?: `**`(ColorName | HexColor) | null`
+  - **`color?: `**`ColorName | HexColor | null`
 
     Color of the lines. Can be overwritten by `group_colors`. If not specified, uses the parent primitives group `color`.
 
@@ -918,11 +1086,11 @@ Params:
 
   **Case `kind: "tube"`:**
 
-  - **`start: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Start point of the tube.
 
-  - **`end: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`end: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     End point of the tube.
 
@@ -938,7 +1106,7 @@ Params:
 
     Default: `null`
 
-  - **`color?: `**`(ColorName | HexColor) | null`
+  - **`color?: `**`ColorName | HexColor | null`
 
     Color of the tube. If not specified, uses the parent primitives group `color`.
 
@@ -952,11 +1120,11 @@ Params:
 
   **Case `kind: "arrow"`:**
 
-  - **`start: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Start point of the arrow.
 
-  - **`end?: `**`([number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>) | null`
+  - **`end?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     End point of the arrow.
 
@@ -980,17 +1148,17 @@ Params:
 
     Default: `false`
 
-  - **`start_cap_length?: `**`number`
+  - **`start_cap_length?: `**`number | null`
 
-    Length of the start cap.
+    Length of the start cap. If not provided, will be 2 * start_cap_radius.
 
-    Default: `0.1`
+    Default: `null`
 
-  - **`start_cap_radius?: `**`number`
+  - **`start_cap_radius?: `**`number | null`
 
-    Radius of the start cap.
+    Radius of the start cap. If not provided, will be 2 * tube_radius.
 
-    Default: `0.1`
+    Default: `null`
 
   - **`show_end_cap?: `**`boolean`
 
@@ -998,17 +1166,17 @@ Params:
 
     Default: `false`
 
-  - **`end_cap_length?: `**`number`
+  - **`end_cap_length?: `**`number | null`
 
-    Length of the end cap.
+    Length of the end cap. If not provided, will be 2 * end_cap_radius.
 
-    Default: `0.1`
+    Default: `null`
 
-  - **`end_cap_radius?: `**`number`
+  - **`end_cap_radius?: `**`number | null`
 
-    Radius of the end cap.
+    Radius of the end cap. If not provided, will be 2 * tube_radius.
 
-    Default: `0.1`
+    Default: `null`
 
   - **`show_tube?: `**`boolean`
 
@@ -1028,7 +1196,7 @@ Params:
 
     Default: `null`
 
-  - **`color?: `**`(ColorName | HexColor) | null`
+  - **`color?: `**`ColorName | HexColor | null`
 
     Color of the tube. If not specified, uses the parent primitives group `color`.
 
@@ -1042,11 +1210,11 @@ Params:
 
   **Case `kind: "distance_measurement"`:**
 
-  - **`start: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Start point of the tube.
 
-  - **`end: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`end: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     End point of the tube.
 
@@ -1062,7 +1230,7 @@ Params:
 
     Default: `null`
 
-  - **`color?: `**`(ColorName | HexColor) | null`
+  - **`color?: `**`ColorName | HexColor | null`
 
     Color of the tube. If not specified, uses the parent primitives group `color`.
 
@@ -1092,7 +1260,7 @@ Params:
 
     Default: `0`
 
-  - **`label_color?: `**`(ColorName | HexColor) | null`
+  - **`label_color?: `**`ColorName | HexColor | null`
 
     Color of the label. If not specified, uses the parent primitives group `label_color`.
 
@@ -1100,15 +1268,15 @@ Params:
 
   **Case `kind: "angle_measurement"`:**
 
-  - **`a: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`a: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Point A.
 
-  - **`b: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`b: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Point B.
 
-  - **`c: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`c: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Point C.
 
@@ -1136,7 +1304,7 @@ Params:
 
     Default: `0`
 
-  - **`label_color?: `**`(ColorName | HexColor) | null`
+  - **`label_color?: `**`ColorName | HexColor | null`
 
     Color of the label. If not specified, uses the parent primitives group `label_color`.
 
@@ -1148,11 +1316,17 @@ Params:
 
     Default: `true`
 
-  - **`vector_color?: `**`(ColorName | HexColor) | null`
+  - **`vector_color?: `**`ColorName | HexColor | null`
 
     Color of the vectors.
 
     Default: `null`
+
+  - **`vector_radius?: `**`number`
+
+    Radius of the vectors.
+
+    Default: `0.05`
 
   - **`show_section?: `**`boolean`
 
@@ -1160,7 +1334,7 @@ Params:
 
     Default: `true`
 
-  - **`section_color?: `**`(ColorName | HexColor) | null`
+  - **`section_color?: `**`ColorName | HexColor | null`
 
     Color of the angle section. If not specified, the primitives group color is used.
 
@@ -1180,7 +1354,7 @@ Params:
 
   **Case `kind: "label"`:**
 
-  - **`position: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`position: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     Position of this label.
 
@@ -1194,7 +1368,7 @@ Params:
 
     Default: `1`
 
-  - **`label_color?: `**`(ColorName | HexColor) | null`
+  - **`label_color?: `**`ColorName | HexColor | null`
 
     Color of the label. If not specified, uses the parent primitives group `label_color`.
 
@@ -1208,7 +1382,7 @@ Params:
 
   **Case `kind: "ellipse"`:**
 
-  - **`color?: `**`(ColorName | HexColor) | null`
+  - **`color?: `**`ColorName | HexColor | null`
 
     Color of the ellipse. If not specified, uses the parent primitives group `color`.
 
@@ -1220,7 +1394,7 @@ Params:
 
     Default: `false`
 
-  - **`center: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     The center of the ellipse.
 
@@ -1236,13 +1410,13 @@ Params:
 
     Default: `null`
 
-  - **`major_axis_endpoint?: `**`([number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>) | null`
+  - **`major_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center.
 
     Default: `null`
 
-  - **`minor_axis_endpoint?: `**`([number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>) | null`
+  - **`minor_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center.
 
@@ -1280,13 +1454,13 @@ Params:
 
   **Case `kind: "ellipsoid"`:**
 
-  - **`color?: `**`(ColorName | HexColor) | null`
+  - **`color?: `**`ColorName | HexColor | null`
 
     Color of the ellipsoid. If not specified, uses the parent primitives group `color`.
 
     Default: `null`
 
-  - **`center: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     The center of the ellipsoid.
 
@@ -1302,25 +1476,25 @@ Params:
 
     Default: `null`
 
-  - **`major_axis_endpoint?: `**`([number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>) | null`
+  - **`major_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center.
 
     Default: `null`
 
-  - **`minor_axis_endpoint?: `**`([number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>) | null`
+  - **`minor_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
 
     Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center.
 
     Default: `null`
 
-  - **`radius?: `**`([number, number, number] | number) | null`
+  - **`radius?: `**`[number, number, number] | number | null`
 
     Radii of the ellipsoid along each axis.
 
     Default: `null`
 
-  - **`radius_extent?: `**`([number, number, number] | number) | null`
+  - **`radius_extent?: `**`[number, number, number] | number | null`
 
     Added to the radii of the ellipsoid along each axis.
 
@@ -1334,7 +1508,7 @@ Params:
 
   **Case `kind: "box"`:**
 
-  - **`center: `**`[number, number, number] | Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }> | Array<Partial<{ structure_ref: string, expression_schema: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions: Array<Partial<{ label_entity_id: string, label_asym_id: string, auth_asym_id: string, label_seq_id: Integer, auth_seq_id: Integer, pdbx_PDB_ins_code: string, beg_label_seq_id: Integer, end_label_seq_id: Integer, beg_auth_seq_id: Integer, end_auth_seq_id: Integer, label_atom_id: string, auth_atom_id: string, type_symbol: string, atom_id: Integer, atom_index: Integer }>> }>>`
+  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
 
     The center of the box.
 
@@ -1350,7 +1524,7 @@ Params:
 
     Default: `true`
 
-  - **`face_color?: `**`(ColorName | HexColor) | null`
+  - **`face_color?: `**`ColorName | HexColor | null`
 
     Color of the box faces.
 
@@ -1368,7 +1542,7 @@ Params:
 
     Default: `0.1`
 
-  - **`edge_color?: `**`(ColorName | HexColor) | null`
+  - **`edge_color?: `**`ColorName | HexColor | null`
 
     Color of the edges.
 

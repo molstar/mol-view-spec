@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `field_remapping` param for `*_from_*` nodes
 - Add `palette` param for `color_from_*` nodes
 - Add `clip` node support for structure and volume representations
+- Add `instance_id` field to ComponentExpression and MVS annotations
 - Add `grid-slice` volume representation support
 - Add `label_show_tether`, `label_tether_length`, `label_attachment`, and `label_background_color` to `PrimitivesParams`
 - Add `snapshot_key` to `PrimitivesParams` that enables navigating to a different snapshot on interaction

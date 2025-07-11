@@ -27,6 +27,7 @@ There are three kinds of selectors:
         type_symbol?: str,        // Element symbol like 'H', 'HE', 'LI', 'BE'
         atom_id?: int,            // Unique atom identifier (_atom_site.id)
         atom_index?: int,         // 0-based index of the atom in the source data
+        instance_id?: str         // Instance identifier to distinguish instances of the same chain created by applying different symmetry operators, like 'ASM-X0-1' for assemblies or '1_555' for crystals
     }
     ```
 
@@ -53,12 +54,40 @@ There are three kinds of selectors:
     selector: [{ label_asym_id: 'A', end_label_seq_id: 100 }, { type_symbol: 'MG' }];
     ```
 
+### `instance_id`
+
+The `instance_id` field in component expressions does not refer to any column in mmCIF `atom_site` category, but can be used distinguish instances of the same chain created by applying different symmetry operators. Instance IDs follow these rules:
+
+#### Crystals
+
+Instances created by crystal (spacegroup) symmetry use IDs in the form `n_klm`, in accordance with the [mmCIF dictionary recommendation](https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Items/_struct_conn.ptnr1_symmetry.html). However, to avoid any ambiguities, any translation index (`k`, `l`, `m`) smaller than 0 or greater than 9 is always enclosed in parenthesis. Indices 0–9 never use parentheses.
+
+-   e.g. `1_555`, `2_454`
+-   e.g. `1_(11)15`, `1_1(11)5`, `1_11(15)` (instead of ambiguous `1_1115`)
+-   e.g. `1_(-1)1(-1)`
+
+#### Assemblies
+
+Instances in assemblies use IDs inspired by the [wwPDB recommendation for naming chains in assemblies](https://www.wwpdb.org/news/news?year=2022#62559153c8eabd0c4864f208). Instance IDs are based on data from [pdbx_struct_assembly_gen](https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Categories/pdbx_struct_assembly_gen.html) and [pdbx_struct_oper_list](https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Categories/pdbx_struct_oper_list.html) categories in mmCIF dictionary.
+
+Where only one operator is applied to create the instance, the instance ID is `ASM-` plus the operator identifier ([pdbx_struct_oper_list.id](https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Items/_pdbx_struct_oper_list.id.html)).
+
+-   e.g. `ASM-1`, `ASM-2`, `ASM-3`, `ASM-4` from generator expression `1,2,3,4`
+-   e.g. `ASM-1`, `ASM-2`, `ASM-3`, `ASM-4`, `ASM-5` from generator expression `(1-5)`
+
+Where multiple operators are applied to create the instance, the instance ID is `ASM-` plus a dash-separated list of operator identifiers. The order of the operators is the same as in the [generator expression](https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Items/_pdbx_struct_assembly_gen.oper_expression.html) (i.e. rightmost operator is applied first).
+
+-   e.g. `ASM-X0-1`, `ASM-X0-2`... `ASM-X0-20` from generator expression `(X0)(1-20)`
+-   e.g. `ASM-1-61`, `ASM-1-62`... `ASM-2-61`, `ASM-2-62`... `ASM-60-88` from generator expression `(1-60)(61-88)`
+
+### `ref`
+
 Component expressions can be applied to primitives as well. Furthermore, a `ref` can be provided to make selections with
 a specific node when working e.g. with multiple structures.
 Any MVS node allows you to set an anchor:
 
     builder.download(url=url).parse(format="mmcif").model_structure(ref="X")
-    
+
 This `ref` can then be referenced in the context of a selection:
 
     PrimitiveComponentExpressions(structure_ref="X", expressions=[ComponentExpression(auth_seq_id=508)])
