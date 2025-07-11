@@ -2247,7 +2247,7 @@ async def testing_angle_primitive_example() -> MVSResponse:
 @router.get("/testing/primitives/labels")
 async def testing_primitive_labels_example() -> MVSResponse:
     """
-    Return a state showing an angle
+    Return a state showing a tethered label attached to a sphere
     """
     builder = create_builder()
     primitives = builder.primitives(
@@ -2280,7 +2280,7 @@ async def primitives_from_uri_example() -> MVSResponse:
 @router.get("/testing/primitives/snapshot-key")
 async def testing_primitive_snapshot_key_example() -> MVSResponse:
     """
-    Return a state showing an angle
+    Return a state showing switching states by interacting with primitives
     """
 
     def _ping_pong(key: str, snapshot_key: str, attachment: LabelAttachmentT, text: str):
