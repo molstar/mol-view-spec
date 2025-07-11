@@ -38,6 +38,7 @@ from molviewspec.nodes import (
     EllipsoidParams,
     FocusInlineParams,
     GlobalMetadata,
+    LabelAttachmentT,
     LabelFromSourceParams,
     LabelFromUriParams,
     LabelInlineParams,
@@ -140,6 +141,11 @@ class _PrimitivesMixin(_BuilderProtocol):
         tooltip: str | None = None,
         opacity: float | None = None,
         label_opacity: float | None = None,
+        label_show_tether: bool | None = None,
+        label_tether_length: float | None = None,
+        label_attachment: LabelAttachmentT | None = None,
+        label_background_color: ColorT | None = None,
+        snapshot_key: str | None = None,
         instances: list[Mat4[float]] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
@@ -152,6 +158,11 @@ class _PrimitivesMixin(_BuilderProtocol):
         :param tooltip: default tooltip for primitives in this group (default: no tooltip)
         :param opacity: opacity of primitive geometry in this group (default: 1)
         :param label_opacity: opacity of primitive labels in this group (default: 1)
+        :param label_show_tether: whether to show a tether line between the label and the target (default: False)
+        :param label_tether_length: length of the tether line between the label and the target (default: 1 Angstrom)
+        :param label_attachment: how to attach the label to the target (default: "middle-center")
+        :param label_background_color: background color of the label (default: None/transparent)
+        :param snapshot_key: load snapshot with the provided key when interacting with this primitives group (default: None)
         :param instances: instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
@@ -1185,6 +1196,32 @@ class Volume(_Base, _FocusMixin):
         :param absolute_isovalue: absolute isovalue to use for the surface, overrides `relative_isovalue`
         :param show_wireframe: show wireframe on the surface (default: False)
         :param show_faces: show faces of the surface (default: True)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def representation(
+        *,
+        type: Literal["grid-slice"],
+        dimension: Literal["x", "y", "z"],
+        absolute_index: int | None = None,
+        relative_index: float | None = None,
+        relative_isovalue: float | None = None,
+        absolute_isovalue: float | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> VolumeRepresentation:
+        """
+        Add a grid slice representation for this component.
+        :param type: the type of this representation ('grid-slice')
+        :param dimension: the dimension of the slice, one of 'x', 'y', 'z'
+        :param absolute_index: absolute index of the slice in the grid
+        :param relative_index: relative index of the slice in the grid, 0.0: first slice, 1.0: last slice, overrides `absolute_index`
+        :param relative_isovalue: relative isovalue to use for the surface
+        :param absolute_isovalue: absolute isovalue to use for the surface, overrides `relative_isovalue`
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at representation level
