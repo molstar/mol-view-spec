@@ -1379,6 +1379,10 @@ class PrimitivesParams(BaseModel):
         None,
         description="Background color of the label. Defaults to none/transparent.",
     )
+    snapshot_key: Optional[str] = Field(
+        None,
+        description="Load snapshot with the provided key when interacting with this primitives group.",
+    )
     instances: Optional[list[Mat4[float]]] = Field(
         None,
         description="Instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices",

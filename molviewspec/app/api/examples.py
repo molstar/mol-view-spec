@@ -19,6 +19,7 @@ from molviewspec.nodes import (
     ContinuousPalette,
     DiscretePalette,
     GlobalMetadata,
+    LabelAttachmentT,
     PrimitiveComponentExpressions,
     RepresentationTypeT,
     Snapshot,
@@ -2243,7 +2244,7 @@ async def testing_angle_primitive_example() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
-@router.get("/testing/primitive-labels")
+@router.get("/testing/primitives/labels")
 async def testing_primitive_labels_example() -> MVSResponse:
     """
     Return a state showing an angle
@@ -2274,6 +2275,38 @@ async def primitives_from_uri_example() -> MVSResponse:
     builder.primitives_from_uri(uri="http://localhost:9000/api/v1/examples/data/basic-primitives")
 
     return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/testing/primitives/snapshot-key")
+async def testing_primitive_snapshot_key_example() -> MVSResponse:
+    """
+    Return a state showing an angle
+    """
+
+    def _ping_pong(key: str, snapshot_key: str, attachment: LabelAttachmentT, text: str):
+        builder = create_builder()
+        primitives = builder.primitives(
+            label_attachment=attachment,
+            label_show_tether=True,
+            label_tether_length=2,
+            label_background_color="lightblue",
+            snapshot_key=snapshot_key,
+        )
+        primitives.sphere(
+            center=(10, 10, 10),
+            radius=1,
+            color="red",
+            tooltip="Click to play...",
+        )
+        primitives.label(position=(10, 10, 10), text=text, label_offset=2)
+        return builder.get_snapshot(title=key, key=key)
+
+    snapshots = [
+        _ping_pong("a", "b", "top-right", "Ping"),
+        _ping_pong("b", "a", "bottom-left", "Pong"),
+    ]
+    metadata = GlobalMetadata(description="test")
+    return JSONResponse(States(snapshots=snapshots, metadata=metadata).to_dict())
 
 
 ##############################################################################
