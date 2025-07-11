@@ -2193,6 +2193,117 @@ async def testing_labels_from_source_example() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
+@router.get("/testing/instance_id_inline_selector")
+async def testing_instance_id_inline_selector() -> MVSResponse:
+    """
+    Example for `instance_id` field used in ComponentExpression
+    """
+    builder = create_builder()
+    structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/1m4x.bcif"
+    structure = builder.download(url=structure_url).parse(format="bcif").assembly_structure(assembly_id="1")
+    (
+        structure.component(selector="all")
+        .representation(type="cartoon")
+        .color(color="#dddddd")
+        .color_from_source(
+            schema="all_atomic",
+            category_name="atom_site",
+            field_name="label_asym_id",
+            palette=CategoricalPalette(colors="Pastel2"),
+        )
+        .color(selector=ComponentExpression(instance_id="ASM-54-75"), color="red")
+    )
+    (
+        structure.component(selector=ComponentExpression(instance_id="ASM-54-75"))
+        .focus()
+        .representation(type="surface")
+        .color(color="red")
+        .opacity(opacity=0.5)
+    )
+    for chain in ["A", "B", "C"]:
+        (
+            structure.component(selector=ComponentExpression(instance_id="ASM-54-75", label_asym_id=chain))
+            .label(text=f"Selected {chain}")
+            .tooltip(text=f"The selected instance - Chain {chain}")
+        )
+    (
+        structure.primitives(opacity=0.3)
+        .sphere(center=ComponentExpression(instance_id="ASM-54-75", label_asym_id="A"), color="yellow")
+        .sphere(center=ComponentExpression(instance_id="ASM-25-86", label_asym_id="A"), color="yellow")
+        .tube(
+            start=ComponentExpression(instance_id="ASM-54-75", label_asym_id="A"),
+            end=ComponentExpression(instance_id="ASM-25-86", label_asym_id="A"),
+            radius=2,
+            color="yellow",
+        )
+    )
+    return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/testing/instance_id_annot_selector")
+async def testing_instance_id_annot_selector() -> MVSResponse:
+    """
+    Example for `instance_id` field used in MVS annotations
+    """
+    builder = create_builder()
+    structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn.bcif"
+    annotation_url = (
+        "data:text/plain,"
+        "  data_annotations"
+        "  loop_"
+        "  _annotations.label_asym_id"
+        "  _annotations.beg_label_seq_id"
+        "  _annotations.end_label_seq_id"
+        "  _annotations.instance_id"
+        "  _annotations.color"
+        "  A  20  50 ASM-1 red"
+        "  A  60  90 ASM-2 yellow"
+        "  A 100 130 ASM-3 green"
+        "  A 140 170 ASM-4 blue"
+    )
+    structure = builder.download(url=structure_url).parse(format="bcif").assembly_structure(assembly_id="2")
+    (
+        structure.component(selector="all")
+        .representation(type="cartoon")
+        .color(color="#dddddd")
+        .color_from_uri(
+            uri=annotation_url,
+            format="cif",
+            schema="all_atomic",
+            category_name="annotations",
+            field_name="color",
+        )
+    )
+    (
+        structure.label_from_uri(
+            uri=annotation_url,
+            format="cif",
+            schema="all_atomic",
+            category_name="annotations",
+            field_name="color",
+        ).tooltip_from_uri(
+            uri=annotation_url,
+            format="cif",
+            schema="all_atomic",
+            category_name="annotations",
+            field_name="color",
+        )
+    )
+    (
+        structure.component_from_uri(
+            uri=annotation_url,
+            format="cif",
+            schema="all_atomic",
+            category_name="annotations",
+            field_name="color",
+        )
+        .representation(type="surface")
+        .color(color="#c040c0")
+        .opacity(opacity=0.3)
+    )
+    return JSONResponse(builder.get_state().to_dict())
+
+
 @router.get("/testing/angle-primitive")
 async def testing_angle_primitive_example() -> MVSResponse:
     """
