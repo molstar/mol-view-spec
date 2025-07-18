@@ -32,6 +32,7 @@ KindT = Literal[
     "component_from_uri",
     "download",
     "focus",
+    "instance",
     "label",
     "label_from_source",
     "label_from_uri",
@@ -1304,9 +1305,13 @@ class TransformParams(BaseModel):
 
     rotation: Optional[Mat3[float]] = Field(
         None,
-        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+        description="9d (3x3) vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
     translation: Optional[Vec3[float]] = Field(None, description="3d vector describing the translation")
+    matrix: Optional[Mat4[float]] = Field(
+        None,
+        description="16d (4x4) vector describing the transformation matrix, in a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left. Takes precedence over `rotation` and `translation`.",
+    )
 
 
 class CameraParams(BaseModel):

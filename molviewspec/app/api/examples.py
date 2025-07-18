@@ -2335,6 +2335,71 @@ async def testing_instance_id_annot_selector() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
+@router.get("/testing/structure-instancing")
+async def structure_instancing_example() -> MVSResponse:
+    """
+    Instancing of the same structure
+    """
+    builder = create_builder()
+
+    # instantiate top level structure
+    (
+        builder.download(url=_url_for_mmcif("1tqn"))
+        .parse(format="mmcif")
+        .model_structure()
+        .instance(translation=(-50, 0, 0))
+        .instance(translation=(50, 0, 0))
+        .component()
+        .representation()
+        .color(color="red")
+    )
+
+    # instantiate ligand component
+    (
+        builder.download(url=_url_for_mmcif("1cbs"))
+        .parse(format="mmcif")
+        .model_structure()
+        .component(selector="ligand")
+        .instance(translation=(0, 50, 0))
+        .instance(translation=(0, -50, 0))
+        .representation(type="ball_and_stick")
+        .color(color="blue")
+    )
+
+    return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/testing/volume-transform-and-instancing")
+async def volume_transform_and_instancing_example() -> MVSResponse:
+    """
+    Example for transforming and instancing volumes
+    """
+
+    builder = create_builder()
+
+    download = builder.download(url="https://www.ebi.ac.uk/pdbe/entry-files/1cbs.ccp4")
+    volume = download.parse(format="map").volume()
+    (
+        volume.instance(translation=(100, 0, 50))
+        .instance(translation=(-100, 0, -50))
+        .representation(type="isosurface", relative_isovalue=1, show_wireframe=True)
+        .color(color="red")
+    )
+
+    download = builder.download(url="https://www.ebi.ac.uk/pdbe/entry-files/1tqn.ccp4")
+    volume = download.parse(format="map").volume()
+    (
+        volume.transform(translation=(0, -100, 0))
+        .representation(type="isosurface", relative_isovalue=1, show_wireframe=True)
+        .color(color="blue")
+    )
+
+    volume = download.parse(format="map").volume()
+    (volume.representation(type="isosurface", relative_isovalue=1, show_wireframe=True).color(color="green"))
+
+    return JSONResponse(builder.get_state().to_dict())
+
+
 @router.get("/testing/angle-primitive")
 async def testing_angle_primitive_example() -> MVSResponse:
     """

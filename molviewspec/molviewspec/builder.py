@@ -222,6 +222,91 @@ class _FocusMixin(_BuilderProtocol):
         return self
 
 
+class _TransformMixin(_BuilderProtocol):
+    def transform(
+        self,
+        *,
+        rotation: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        matrix: Sequence[float] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Self:
+        """
+        Transform the object by applying a rotation matrix and/or translation vector OR a full transform matrix.
+        :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
+        :param translation: 3d vector describing the translation (default: (0, 0, 0))
+        :param matrix: 16d (4x4) vector describing the transformation matrix, in column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left. Takes precedence over `rotation` and `translation`.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        if rotation is not None:
+            if len(rotation) != 9:
+                raise ValueError(f"Parameter `rotation` must have length 9")
+            if not self._is_rotation_matrix(rotation):
+                raise ValueError(f"Parameter `rotation` must be a rotation matrix")
+        if translation is not None:
+            if len(translation) != 3:
+                raise ValueError(f"Parameter `translation` must have length 3")
+        if matrix is not None:
+            if len(matrix) != 16:
+                raise ValueError(f"Parameter `matrix` must have length 16")
+            if rotation is not None or translation is not None:
+                raise ValueError("Parameter `matrix` cannot be used together with `rotation` or `translation`")
+
+        params = make_params(TransformParams, locals())
+        node = Node(kind="transform", params=params)
+        self._add_child(node)
+        return self
+
+    def instance(
+        self,
+        *,
+        rotation: Sequence[float] | None = None,
+        translation: Sequence[float] | None = None,
+        matrix: Sequence[float] | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Self:
+        """
+        Instantiate the object by applying a rotation matrix and/or translation vector OR a full transform matrix.
+        :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
+        :param translation: 3d vector describing the translation (default: (0, 0, 0))
+        :param matrix: 16d (4x4) vector describing the transformation matrix, in column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left. Takes precedence over `rotation` and `translation`.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        if rotation is not None:
+            if len(rotation) != 9:
+                raise ValueError(f"Parameter `rotation` must have length 9")
+            if not self._is_rotation_matrix(rotation):
+                raise ValueError(f"Parameter `rotation` must be a rotation matrix")
+        if translation is not None:
+            if len(translation) != 3:
+                raise ValueError(f"Parameter `translation` must have length 3")
+        if matrix is not None:
+            if len(matrix) != 16:
+                raise ValueError(f"Parameter `matrix` must have length 16")
+            if rotation is not None or translation is not None:
+                raise ValueError("Parameter `matrix` cannot be used together with `rotation` or `translation`")
+
+        params = make_params(TransformParams, locals())
+        node = Node(kind="instance", params=params)
+        self._add_child(node)
+        return self
+
+    @staticmethod
+    def _is_rotation_matrix(t: Sequence[float], eps: float = 0.005):
+        a00, a01, a02, a10, a11, a12, a20, a21, a22 = t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
+
+        det3x3 = math.fabs(
+            a00 * (a11 * a22 - a12 * a21) - a01 * (a10 * a22 - a12 * a20) + a02 * (a10 * a21 - a11 * a20)
+        )
+        return math.isclose(det3x3, 1, abs_tol=eps)
+
+
 class _ClipMixin(_BuilderProtocol):
     @overload
     def clip(
@@ -628,7 +713,7 @@ class Parse(_Base):
         return Volume(node=node, root=self._root)
 
 
-class Structure(_Base, _PrimitivesMixin):
+class Structure(_Base, _PrimitivesMixin, _TransformMixin):
     """
     Builder step with operations needed after defining the structure to work with.
     """
@@ -846,47 +931,8 @@ class Structure(_Base, _PrimitivesMixin):
         self._add_child(node)
         return self
 
-    def transform(
-        self,
-        *,
-        rotation: Sequence[float] | None = None,
-        translation: Sequence[float] | None = None,
-        custom: CustomT = None,
-        ref: RefT = None,
-    ) -> Structure:
-        """
-        Transform a structure by applying a rotation matrix and/or translation vector.
-        :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
-        :param translation: 3d vector describing the translation (default: (0, 0, 0))
-        :param custom: optional, custom data to attach to this node
-        :param ref: optional, reference that can be used to access this node
-        :return: this builder
-        """
-        if rotation is not None:
-            if len(rotation) != 9:
-                raise ValueError(f"Parameter `rotation` must have length 9")
-            if not self._is_rotation_matrix(rotation):
-                raise ValueError(f"Parameter `rotation` must be a rotation matrix")
-        if translation is not None:
-            if len(translation) != 3:
-                raise ValueError(f"Parameter `translation` must have length 3")
 
-        params = make_params(TransformParams, locals())
-        node = Node(kind="transform", params=params)
-        self._add_child(node)
-        return self
-
-    @staticmethod
-    def _is_rotation_matrix(t: Sequence[float], eps: float = 0.005):
-        a00, a01, a02, a10, a11, a12, a20, a21, a22 = t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]
-
-        det3x3 = math.fabs(
-            a00 * (a11 * a22 - a12 * a21) - a01 * (a10 * a22 - a12 * a20) + a02 * (a10 * a21 - a11 * a20)
-        )
-        return math.isclose(det3x3, 1, abs_tol=eps)
-
-
-class Component(_Base, _FocusMixin):
+class Component(_Base, _FocusMixin, _TransformMixin):
     """
     Builder step with operations relevant for a particular component.
     """
@@ -1176,7 +1222,7 @@ class Representation(_Base, _ClipMixin):
         return self
 
 
-class Volume(_Base, _FocusMixin):
+class Volume(_Base, _FocusMixin, _TransformMixin):
     @overload
     def representation(
         self,
