@@ -1049,17 +1049,17 @@ async def volume_map_example() -> MVSResponse:
     volume = download.parse(format="map").volume()
 
     (
-        volume.representation(type="grid-slice", dimension="x", relative_index=0.5, relative_isovalue=1)
+        volume.representation(type="grid_slice", dimension="x", relative_index=0.5, relative_isovalue=1)
         .color(color="red")
         .opacity(opacity=0.75)
     )
     (
-        volume.representation(type="grid-slice", dimension="y", relative_index=0.5, relative_isovalue=1)
+        volume.representation(type="grid_slice", dimension="y", relative_index=0.5, relative_isovalue=1)
         .color(color="green")
         .opacity(opacity=0.75)
     )
     (
-        volume.representation(type="grid-slice", dimension="z", relative_index=0.5, relative_isovalue=1)
+        volume.representation(type="grid_slice", dimension="z", relative_index=0.5, relative_isovalue=1)
         .color(color="blue")
         .opacity(opacity=0.75)
     )

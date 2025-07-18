@@ -589,7 +589,7 @@ class ComponentExpression(BaseModel):
 
 
 RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate"]
-VolumeRepresentationTypeT = Literal["isosurface", "grid-slice"]
+VolumeRepresentationTypeT = Literal["isosurface", "grid_slice"]
 ColorNamesT = Literal[
     "aliceblue",
     "antiquewhite",
@@ -1026,10 +1026,10 @@ class VolumeIsoSurfaceParams(RepresentationParams):
 
 class VolumeGridSliceParams(RepresentationParams):
     """
-    Volume grid-slice representation.
+    Volume grid_slice representation.
     """
 
-    type: Literal["grid-slice"] = "grid-slice"
+    type: Literal["grid_slice"] = "grid_slice"
 
     dimension: Literal["x", "y", "z"] = Field(description="Dimension of the grid slice, i.e. 'x', 'y', or 'z'.")
     absolute_index: Optional[int] = Field(

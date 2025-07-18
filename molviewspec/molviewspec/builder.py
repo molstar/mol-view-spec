@@ -1205,7 +1205,7 @@ class Volume(_Base, _FocusMixin):
     @overload
     def representation(
         *,
-        type: Literal["grid-slice"],
+        type: Literal["grid_slice"],
         dimension: Literal["x", "y", "z"],
         absolute_index: int | None = None,
         relative_index: float | None = None,
@@ -1216,7 +1216,7 @@ class Volume(_Base, _FocusMixin):
     ) -> VolumeRepresentation:
         """
         Add a grid slice representation for this component.
-        :param type: the type of this representation ('grid-slice')
+        :param type: the type of this representation ('grid_slice')
         :param dimension: the dimension of the slice, one of 'x', 'y', 'z'
         :param absolute_index: absolute index of the slice in the grid
         :param relative_index: relative index of the slice in the grid, 0.0: first slice, 1.0: last slice, overrides `absolute_index`
