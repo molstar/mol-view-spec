@@ -32,6 +32,7 @@ KindT = Literal[
     "component_from_uri",
     "download",
     "focus",
+    "instance",
     "label",
     "label_from_source",
     "label_from_uri",
@@ -589,7 +590,7 @@ class ComponentExpression(BaseModel):
 
 
 RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate"]
-VolumeRepresentationTypeT = Literal["isosurface"]
+VolumeRepresentationTypeT = Literal["isosurface", "grid_slice"]
 ColorNamesT = Literal[
     "aliceblue",
     "antiquewhite",
@@ -1024,7 +1025,33 @@ class VolumeIsoSurfaceParams(RepresentationParams):
     show_faces: Optional[bool] = Field(None, description="Show mesh faces. Defaults to true.")
 
 
-VolumeRepresentationTypeParams = {get_model_fields(t)["type"].default: t for t in (VolumeIsoSurfaceParams,)}
+class VolumeGridSliceParams(RepresentationParams):
+    """
+    Volume grid_slice representation.
+    """
+
+    type: Literal["grid_slice"] = "grid_slice"
+
+    dimension: Literal["x", "y", "z"] = Field(description="Dimension of the grid slice, i.e. 'x', 'y', or 'z'.")
+    absolute_index: Optional[int] = Field(
+        None,
+        description="Index of the grid slice in the specified dimension. 0-based index, i.e. 0 is the first slice.",
+    )
+    relative_index: Optional[float] = Field(
+        None,
+        description="Relative index of the grid slice in the specified dimension. 0.0 is the first slice, 1.0 is the last slice. Overrides `absolute_index`.",
+    )
+    relative_isovalue: Optional[float] = Field(None, description="Relative isovalue")
+    absolute_isovalue: Optional[float] = Field(None, description="Absolute isovalue. Overrides `relative_isovalue`.")
+
+
+VolumeRepresentationTypeParams = {
+    get_model_fields(t)["type"].default: t
+    for t in (
+        VolumeIsoSurfaceParams,
+        VolumeGridSliceParams,
+    )
+}
 
 
 ClipTypeT = Literal["plane", "sphere", "box"]
@@ -1278,9 +1305,13 @@ class TransformParams(BaseModel):
 
     rotation: Optional[Mat3[float]] = Field(
         None,
-        description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+        description="9d (3x3) vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
     translation: Optional[Vec3[float]] = Field(None, description="3d vector describing the translation")
+    matrix: Optional[Mat4[float]] = Field(
+        None,
+        description="16d (4x4) vector describing the transformation matrix, in a column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left. Takes precedence over `rotation` and `translation`.",
+    )
 
 
 class CameraParams(BaseModel):
@@ -1322,6 +1353,18 @@ Positions of primitives can be defined by 3D vector, by providing a selection ex
 a list of expressions within a specific structure.
 """
 
+LabelAttachmentT = Literal[
+    "bottom-left",
+    "bottom-center",
+    "bottom-right",
+    "middle-left",
+    "middle-center",
+    "middle-right",
+    "top-left",
+    "top-center",
+    "top-right",
+]
+
 
 class PrimitivesParams(BaseModel):
     color: Optional[ColorT] = Field(None, description="Default color for primitives in this group")
@@ -1329,6 +1372,26 @@ class PrimitivesParams(BaseModel):
     tooltip: Optional[str] = Field(None, description="Default tooltip for primitives in this group")
     opacity: Optional[float] = Field(None, description="Opacity of primitive geometry in this group")
     label_opacity: Optional[float] = Field(None, description="Opacity of primitive labels in this group")
+    label_show_tether: Optional[bool] = Field(
+        None,
+        description="Whether to show a tether line between the label and the target. Defaults to false.",
+    )
+    label_tether_length: Optional[float] = Field(
+        None,
+        description="Length of the tether line between the label and the target. Defaults to 1 (Angstrom).",
+    )
+    label_attachment: Optional[LabelAttachmentT] = Field(
+        None,
+        description="How to attach the label to the target. Defaults to 'middle-center'.",
+    )
+    label_background_color: Optional[ColorT] = Field(
+        None,
+        description="Background color of the label. Defaults to none/transparent.",
+    )
+    snapshot_key: Optional[str] = Field(
+        None,
+        description="Load snapshot with the provided key when interacting with this primitives group.",
+    )
     instances: Optional[list[Mat4[float]]] = Field(
         None,
         description="Instances of this primitive group defined as 4x4 column major (j * 4 + i indexing) transformation matrices",
