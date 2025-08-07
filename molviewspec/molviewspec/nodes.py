@@ -961,13 +961,13 @@ class CartoonParams(RepresentationParams):
 
 class BallAndStickParams(RepresentationParams):
     type: Literal["ball_and_stick"] = "ball_and_stick"
-    ignore_hydrogens: Optional[bool] = Field(None, descripton="Controls whether hydrogen atoms are drawn.")
+    ignore_hydrogens: Optional[bool] = Field(None, description="Controls whether hydrogen atoms are drawn.")
     size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 
 class SpacefillParams(RepresentationParams):
     type: Literal["spacefill"] = "spacefill"
-    ignore_hydrogens: Optional[bool] = Field(None, descripton="Controls whether hydrogen atoms are drawn.")
+    ignore_hydrogens: Optional[bool] = Field(None, description="Controls whether hydrogen atoms are drawn.")
     size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 
@@ -976,9 +976,16 @@ class CarbohydrateParams(RepresentationParams):
     size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 
+SurfaceTypeT = Literal["molecular", "gaussian"]
+
+
 class SurfaceParams(RepresentationParams):
     type: Literal["surface"] = "surface"
-    ignore_hydrogens: Optional[bool] = Field(None, descripton="Controls whether hydrogen atoms are drawn.")
+    surface_type: SurfaceTypeT = Field(
+        "molecular",
+        description="Type of surface representation. (Default is 'molecular')",
+    )
+    ignore_hydrogens: Optional[bool] = Field(None, description="Controls whether hydrogen atoms are drawn.")
     size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 

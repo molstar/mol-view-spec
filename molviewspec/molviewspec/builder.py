@@ -65,6 +65,7 @@ from molviewspec.nodes import (
     SnapshotMetadata,
     State,
     StructureParams,
+    SurfaceTypeT,
     TooltipFromSourceParams,
     TooltipFromUriParams,
     TooltipInlineParams,
@@ -1024,6 +1025,7 @@ class Component(_Base, _FocusMixin, _TransformMixin):
         self,
         *,
         type: Literal["surface"],
+        surface_type: SurfaceTypeT | None = None,
         ignore_hydrogens: bool | None = None,
         size_factor: float | None = None,
         custom: CustomT = None,
@@ -1032,6 +1034,7 @@ class Component(_Base, _FocusMixin, _TransformMixin):
         """
         Add a surface representation for this component.
         :param type: the type of this representation ('surface')
+        :param surface_type: the specific surface type to use (default is 'molecular')
         :param ignore_hydrogens: draw hydrogen atoms?
         :param size_factor: adjust the scale of the visuals (relative to 1.0)
         :param custom: optional, custom data to attach to this node
