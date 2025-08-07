@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `snapshot_key` to `PrimitivesParams` that enables navigating to a different snapshot on interaction
 - Add `matrix` field support to `TransformParams`
 - Add `instance` node type
+- Add `surface_type` (`molecular` / `gaussian`) to the surface representation
 - Support transforms and instancing on structures, components, and volumes
 
 ## [v1.6.0] - 2025-04-22
