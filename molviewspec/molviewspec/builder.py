@@ -15,6 +15,8 @@ from typing_extensions import Self
 
 from molviewspec.nodes import (
     AngleMeasurementParams,
+    AnimationNode,
+    AnimationParams,
     ArrowParams,
     BoxParams,
     CameraParams,
@@ -30,14 +32,19 @@ from molviewspec.nodes import (
     ComponentFromUriParams,
     ComponentInlineParams,
     ComponentSelectorT,
+    ContinuousPalette,
     CustomT,
     DescriptionFormatT,
+    DiscretePalette,
     DistanceMeasurementParams,
     DownloadParams,
+    EasingKindT,
     EllipseParams,
     EllipsoidParams,
     FocusInlineParams,
     GlobalMetadata,
+    InterpolationKindParams,
+    InterpolationKindT,
     LabelAttachmentT,
     LabelFromSourceParams,
     LabelFromUriParams,
@@ -459,7 +466,8 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
             linger_duration_ms=linger_duration_ms,
             transition_duration_ms=transition_duration_ms,
         )
-        return Snapshot(root=self._node, metadata=metadata)  # TODO create deep copy of node
+        animation = self._animation.node if self._animation else None
+        return Snapshot(root=self._node, metadata=metadata, animation=animation)  # TODO create deep copy of node
 
     def get_state(
         self,
@@ -467,14 +475,12 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
-        indent: int | None = 2,
     ) -> State:
         """
         Return single-state MVSJ State object. Can be enriched with metadata.
         :param title: optional title of the scene
         :param description: optional detailed description of the scene
         :param description_format: format of the description
-        :param indent: control format by specifying if and how to indent attributes
         :return: JSON string that resembles that whole state
         """
         metadata = GlobalMetadata(
@@ -576,6 +582,36 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         node = Node(kind="download", params=params)
         self._add_child(node)
         return Download(node=node, root=self._root)
+
+    _animation: Animation | None = PrivateAttr(None)
+
+    def animation(
+        self,
+        *,
+        frame_time_ms: float | None = None,
+        autoplay: bool | None = None,
+        loop: bool | None = None,
+        include_camera: bool | None = None,
+        include_canvas: bool | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Animation:
+        """
+        Create an animation node.
+        :param frame_time_ms: Duration of each animation frame in milliseconds (default 1000/60)
+        :param autoplay: Whether the animation should start playing automatically (default True)
+        :param loop: Whether the animation should loop (default False)
+        :param include_camera: Whether to include camera movements in the animation (default False)
+        :param include_canvas: Whether to include canvas changes in the animation (default False)
+        :param custom: Optional custom data to attach to this node.
+        :param ref: Optional reference that can be used to access this node.
+        """
+        if self._animation is not None:
+            return self._animation
+
+        params = make_params(AnimationParams, locals())
+        self._animation = Animation(params=params)
+        return self._animation
 
 
 class Download(_Base):
@@ -1801,5 +1837,213 @@ class Primitives(_Base, _FocusMixin):
         """
         params = make_params(BoxParams, {"kind": "box", **locals()})
         node = Node(kind="primitive", params=params)
+        self._add_child(node)
+        return self
+
+
+class Animation:
+    def __init__(self, params: AnimationParams) -> None:
+        self.node = AnimationNode(kind="animation", params=params)
+
+    def _add_child(self, node: Node) -> None:
+        if self.node.children is None:
+            self.node.children = []
+        self.node.children.append(node)
+
+    @overload
+    def interpolate(
+        self,
+        *,
+        kind: Literal["scalar"],
+        target_ref: str,
+        property: str | list[str | int],
+        start_ms: float | None = None,
+        duration_ms: float,
+        easing: EasingKindT | None = None,
+        noise_magnitude: float | None = None,
+        start: float | None = None,
+        end: float | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Animation:
+        """
+        Scalar interpolation
+        :param kind: the kind of interpolation to use
+        :param target_ref: reference to the node that should be animated.
+        :param property: value accessor.
+        :param start_ms: start time of the transition in milliseconds (default: 0)
+        :param duration_ms: end time of the transition in milliseconds.
+        :param easing: easing function to use for the transition (default: linear)
+        :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
+        :param start: start value of the interpolation (default: parent state value)
+        :param end: end value of the interpolation
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        ...
+
+    @overload
+    def interpolate(
+        self,
+        *,
+        kind: Literal["vec3"],
+        target_ref: str,
+        property: str | list[str | int],
+        start_ms: float | None = None,
+        duration_ms: float,
+        easing: EasingKindT | None = None,
+        noise_magnitude: float | None = None,
+        start: Sequence[float] | None = None,
+        end: Sequence[float] | None = None,
+        spherical: bool | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Animation:
+        """
+        Vector3 interpolation
+        :param kind: the kind of interpolation to use
+        :param target_ref: reference to the node that should be animated.
+        :param property: value accessor.
+        :param start_ms: start time of the transition in milliseconds (default: 0)
+        :param duration_ms: end time of the transition in milliseconds.
+        :param easing: easing function to use for the transition (default: linear)
+        :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
+        :param start: start value of the interpolation (default: parent state value)
+        :param end: end value of the interpolation
+        :param spherical: whether to use spherical interpolation (default: False)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        ...
+
+    @overload
+    def interpolate(
+        self,
+        *,
+        kind: Literal["rotation_matrix"],
+        target_ref: str,
+        property: str | list[str | int],
+        start_ms: float | None = None,
+        duration_ms: float,
+        easing: EasingKindT | None = None,
+        noise_magnitude: float | None = None,
+        start: Sequence[float] | None = None,
+        end: Sequence[float] | None = None,
+        spherical: bool | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Animation:
+        """
+        Vector3 interpolation
+        :param kind: the kind of interpolation to use
+        :param target_ref: reference to the node that should be animated.
+        :param property: value accessor.
+        :param start_ms: start time of the transition in milliseconds (default: 0)
+        :param duration_ms: end time of the transition in milliseconds.
+        :param easing: easing function to use for the transition (default: linear)
+        :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
+        :param start: start value of the interpolation (default: parent state value)
+        :param end: end value of the interpolation
+        :param spherical: whether to use spherical interpolation (default: False)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        ...
+
+    @overload
+    def interpolate(
+        self,
+        *,
+        kind: Literal["transform_matrix"],
+        target_ref: str,
+        property: str | list[str | int],
+        start_ms: float | None = None,
+        duration_ms: float,
+        pivot: Vec3 | None = None,
+        rotation_start: Mat3 | None = None,
+        rotation_end: Mat3 | None = None,
+        rotation_noise_magnitude: float | None = None,
+        rotation_easing: EasingKindT | None = None,
+        translation_start: Vec3 | None = None,
+        translation_end: Vec3 | None = None,
+        translation_noise_magnitude: float | None = None,
+        translation_easing: EasingKindT | None = None,
+        scale_start: Vec3 | None = None,
+        scale_end: Vec3 | None = None,
+        scale_noise_magnitude: float | None = None,
+        scale_easing: EasingKindT | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Animation:
+        """
+        Vector3 interpolation
+        :param kind: the kind of interpolation to use
+        :param target_ref: reference to the node that should be animated.
+        :param property: value accessor.
+        :param start_ms: start time of the transition in milliseconds (default: 0)
+        :param duration_ms: end time of the transition in milliseconds.
+        :param pivot: optional, pivot point for the rotation and scale transformation
+        :param rotation_start: optional, starting rotation matrix
+        :param rotation_end: optional, ending rotation matrix
+        :param rotation_noise_magnitude: optional, magnitude of the noise to apply to the rotation
+        :param rotation_easing: optional, easing function to use for the rotation
+        :param translation_start: optional, starting translation vector
+        :param translation_end: optional, ending translation vector
+        :param translation_noise_magnitude: optional, magnitude of the noise to apply to the translation
+        :param translation_easing: optional, easing function to use for the translation
+        :param scale_start: optional, starting scale vector
+        :param scale_end: optional, ending scale vector
+        :param scale_noise_magnitude: optional, magnitude of the noise to apply to the scale
+        :param scale_easing: optional, easing function to use for the scale
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        ...
+
+    @overload
+    def interpolate(
+        self,
+        *,
+        kind: Literal["color"],
+        target_ref: str,
+        property: str | list[str | int],
+        start_ms: float | None = None,
+        duration_ms: float,
+        palette: ContinuousPalette | DiscretePalette,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Animation:
+        """
+        Color interpolation
+        :param kind: the kind of interpolation to use
+        :param target_ref: reference to the node that should be animated.
+        :param property: value accessor.
+        :param start_ms: start time of the transition in milliseconds (default: 0)
+        :param duration_ms: end time of the transition in milliseconds.
+        :param palette: color palette to use for the interpolation
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        ...
+
+    def interpolate(
+        self, *, kind: InterpolationKindT, custom: CustomT = None, ref: RefT = None, **kwargs: Any
+    ) -> Animation:
+        """
+        Add a representation for this component.
+        :param kind: the kind of interpolation to use
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :param kwargs: optional, node-specific params
+        :return: this builder
+        """
+        params_class = InterpolationKindParams.get(kind)
+        params = make_params(params_class, locals(), **kwargs)  # type: ignore
+        node = AnimationNode(kind="interpolate", params=params)
         self._add_child(node)
         return self

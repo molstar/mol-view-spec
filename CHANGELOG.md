@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+- Add snapshot animation support
 - Add `load/s` to `MVSJ` object
 - Add `find_ref` to `State` and `MVSJ` objects
 - Add `ref/custom` props to builder methods where previously missing

@@ -53,6 +53,8 @@ KindT = Literal[
     "volume_representation",
 ]
 
+AnimationKindT = Literal["animation", "interpolate"]
+
 
 CustomT = Optional[Mapping[str, Any]]
 RefT = Optional[str]
@@ -98,6 +100,14 @@ class Node(BaseModel):
             data["ref"] = params.pop("ref")
 
         super().__init__(**data)
+
+
+class AnimationNode(Node):
+    """
+    Base impl of animation state tree nodes.
+    """
+
+    kind: AnimationKindT = Field(description="The type of this node.")
 
 
 DescriptionFormatT = Literal["markdown", "plaintext"]
@@ -298,6 +308,7 @@ class Snapshot(BaseModel):
 
     root: Node = Field(description="Root of the node tree.")
     metadata: SnapshotMetadata = Field(description="Associated metadata.")
+    animation: AnimationNode | None = Field(None, description="Animation node associated with the snapshot.")
 
 
 class States(BaseModel, MolstarWidgetsMixin):
@@ -1308,6 +1319,7 @@ class FocusInlineParams(BaseModel):
 class TransformParams(BaseModel):
     """
     Define a transformation.
+    If matrix is not defined, this is applied as: (translation . rotation . translate_from_centroid . local_rotation . translate_to_centroid)
     """
 
     rotation: Optional[Mat3[float]] = Field(
@@ -1342,7 +1354,9 @@ class CanvasParams(BaseModel):
     Controls global canvas properties.
     """
 
-    background_color: Optional[ColorT] = Field(None, description="Background color using SVG color names or RGB hex code")
+    background_color: Optional[ColorT] = Field(
+        None, description="Background color using SVG color names or RGB hex code"
+    )
 
 
 class PrimitiveComponentExpressions(BaseModel):
@@ -1672,6 +1686,133 @@ class PrimitivesFromUriParams(BaseModel):
     uri: str = Field(description="Location of the resource")
     format: Literal["mvs-node-json"] = Field(description="Format of the data")
     references: Optional[list[str]] = Field(None, description="List of nodes the data are referencing")
+
+
+class AnimationParams(BaseModel):
+    frame_time_ms: float = Field(default=1000 / 60, description="Frame time in milliseconds.")
+    autoplay: bool = Field(
+        default=True, description="Determines whether the animation should autoplay when a snapshot is loaded."
+    )
+    loop: bool = Field(
+        default=False, description="Determines whether the animation should loop when it reaches the end."
+    )
+    include_camera: bool = Field(
+        default=False, description="Determines whether the camera state should be included in the animation."
+    )
+    include_canvas: bool = Field(
+        default=False, description="Determines whether the canvas state should be included in the animation."
+    )
+
+
+EasingKindT = Literal[
+    "linear",
+    "bounce-in",
+    "bounce-out",
+    "bounce-in-out",
+    "circle-in",
+    "circle-out",
+    "circle-in-out",
+    "cubic-in",
+    "cubic-out",
+    "cubic-in-out",
+    "exp-in",
+    "exp-out",
+    "exp-in-out",
+    "quad-in",
+    "quad-out",
+    "quad-in-out",
+    "sin-in",
+    "sin-out",
+    "sin-in-out",
+]
+
+
+class _InterpolationNoiseMixin(BaseModel):
+    noise_magnitude: float = Field(default=0.0, description="Magnitude of the noise to apply to the interpolated value")
+
+
+class _CommonInterpolationParamsMixin(BaseModel):
+    target_ref: str = Field(..., description="Reference to the node.")
+    property: str | list[str | int] = Field(..., description="Value accessor.")
+    start_ms: Optional[float] = Field(0, description="Start time of the transition in milliseconds.")
+    duration_ms: float = Field(..., description="End time of the transition in milliseconds.")
+    easing: EasingKindT = Field("linear", description="Easing function to use for the transition.")
+
+
+InterpolationKindT = Literal["scalar", "vec3", "rotation_matrix"]
+
+
+class InterpolationParams(BaseModel):
+    """
+    Representation node, describing how to represent a component.
+    """
+
+    kind: InterpolationKindT = Field(description="Interpolation kind, i.e. scalar, vec3, etc.")
+
+
+class ScalarInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin):
+    kind: Literal["scalar"] = "scalar"
+    start: Optional[float] = Field(None, description="Start value. If unset, parent state value is used.")
+    end: float = Field(..., description="End value.")
+
+
+class Vec3InterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin):
+    kind: Literal["vec3"] = "vec3"
+    start: Optional[list[float]] = Field(
+        None, description="Start value. If unset, parent state value is used. Value must have 3N length."
+    )
+    end: list[float] = Field(..., description="End value. Value must have 3N length.")
+    spherical: bool = Field(False, description="Whether to use spherical interpolation.")
+
+
+class RotationMatrixInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin):
+    kind: Literal["rotation_matrix"] = "rotation_matrix"
+    start: Optional[Mat3] = Field(None, description="Start value. If unset, parent state value is used.")
+    end: Mat3 = Field(..., description="End value.")
+
+
+class TransformationMatrixInterpolationParams(
+    InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin
+):
+    kind: Literal["transform_matrix"] = "transform_matrix"
+    target_ref: str = Field(..., description="Reference to the node.")
+    property: str | list[str | int] = Field(..., description="Value accessor.")
+    start_ms: Optional[float] = Field(0, description="Start time of the transition in milliseconds.")
+    duration_ms: float = Field(..., description="End time of the transition in milliseconds.")
+    pivot: Optional[Vec3] = Field(None, description="Pivot point for rotation and scale.")
+    rotation_start: Optional[Mat3] = Field(
+        None, description="Start rotation value. If unset, parent state value is used."
+    )
+    rotation_end: Optional[Mat3] = Field(None, description="End rotation value.")
+    rotation_noise_magnitude: float = Field(0, description="Magnitude of the noise to apply to the rotation.")
+    rotation_easing: EasingKindT = Field("linear", description="Easing function to use for the rotation.")
+    translation_start: Optional[Vec3] = Field(
+        None, description="Start translation value. If unset, parent state value is used."
+    )
+    translation_end: Optional[Vec3] = Field(None, description="End translation value.")
+    translation_noise_magnitude: float = Field(0, description="Magnitude of the noise to apply to the translation.")
+    translation_easing: EasingKindT = Field("linear", description="Easing function to use for the translation.")
+    scale_start: Optional[Vec3] = Field(None, description="Start scale value. If unset, parent state value is used.")
+    scale_end: Optional[Vec3] = Field(None, description="End scale value.")
+    scale_noise_magnitude: float = Field(0, description="Magnitude of the noise to apply to the scale.")
+    scale_easing: EasingKindT = Field("linear", description="Easing function to use for the scale.")
+
+
+class ColorInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin):
+    kind: Literal["color"] = "color"
+    palette: DiscretePalette | ContinuousPalette = Field(..., description="Palette to sample colors from.")
+
+
+InterpolationKindParams = {
+    get_model_fields(cast(Type[InterpolationParams], t))["kind"].default: t
+    for t in (
+        ScalarInterpolationParams,
+        Vec3InterpolationParams,
+        RotationMatrixInterpolationParams,
+        TransformationMatrixInterpolationParams,
+        ColorInterpolationParams,
+    )
+}
 
 
 def validate_state_tree(json: str) -> None:
