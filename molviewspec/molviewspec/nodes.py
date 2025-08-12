@@ -1314,6 +1314,10 @@ class TransformParams(BaseModel):
         None,
         description="9d (3x3) vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
+    local_rotation: Optional[Mat3[float]] = Field(
+        None,
+        description="9d (3x3) vector describing a local rotation around the object's centroid, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+    )
     translation: Optional[Vec3[float]] = Field(None, description="3d vector describing the translation")
     matrix: Optional[Mat4[float]] = Field(
         None,

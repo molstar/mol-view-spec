@@ -228,6 +228,7 @@ class _TransformMixin(_BuilderProtocol):
         self,
         *,
         rotation: Sequence[float] | None = None,
+        local_rotation: Sequence[float] | None = None,
         translation: Sequence[float] | None = None,
         matrix: Sequence[float] | None = None,
         custom: CustomT = None,
@@ -236,6 +237,7 @@ class _TransformMixin(_BuilderProtocol):
         """
         Transform the object by applying a rotation matrix and/or translation vector OR a full transform matrix.
         :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
+        :param local_rotation: 9d vector describing a local rotation around the object's centroid, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
         :param translation: 3d vector describing the translation (default: (0, 0, 0))
         :param matrix: 16d (4x4) vector describing the transformation matrix, in column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left. Takes precedence over `rotation` and `translation`.
         :param custom: optional, custom data to attach to this node
@@ -247,6 +249,11 @@ class _TransformMixin(_BuilderProtocol):
                 raise ValueError(f"Parameter `rotation` must have length 9")
             if not self._is_rotation_matrix(rotation):
                 raise ValueError(f"Parameter `rotation` must be a rotation matrix")
+        if local_rotation is not None:
+            if len(local_rotation) != 9:
+                raise ValueError(f"Parameter `local_rotation` must have length 9")
+            if not self._is_rotation_matrix(local_rotation):
+                raise ValueError(f"Parameter `local_rotation` must be a rotation matrix")
         if translation is not None:
             if len(translation) != 3:
                 raise ValueError(f"Parameter `translation` must have length 3")
@@ -265,6 +272,7 @@ class _TransformMixin(_BuilderProtocol):
         self,
         *,
         rotation: Sequence[float] | None = None,
+        local_rotation: Sequence[float] | None = None,
         translation: Sequence[float] | None = None,
         matrix: Sequence[float] | None = None,
         custom: CustomT = None,
@@ -273,6 +281,7 @@ class _TransformMixin(_BuilderProtocol):
         """
         Instantiate the object by applying a rotation matrix and/or translation vector OR a full transform matrix.
         :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
+        :param local_rotation: 9d vector describing a local rotation around the object's centroid, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
         :param translation: 3d vector describing the translation (default: (0, 0, 0))
         :param matrix: 16d (4x4) vector describing the transformation matrix, in column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left. Takes precedence over `rotation` and `translation`.
         :param custom: optional, custom data to attach to this node
@@ -284,6 +293,11 @@ class _TransformMixin(_BuilderProtocol):
                 raise ValueError(f"Parameter `rotation` must have length 9")
             if not self._is_rotation_matrix(rotation):
                 raise ValueError(f"Parameter `rotation` must be a rotation matrix")
+        if local_rotation is not None:
+            if len(local_rotation) != 9:
+                raise ValueError(f"Parameter `local_rotation` must have length 9")
+            if not self._is_rotation_matrix(local_rotation):
+                raise ValueError(f"Parameter `local_rotation` must be a rotation matrix")
         if translation is not None:
             if len(translation) != 3:
                 raise ValueError(f"Parameter `translation` must have length 3")

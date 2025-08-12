@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `matrix` field support to `TransformParams`
 - Add `instance` node type
 - Add `surface_type` (`molecular` / `gaussian`) to the surface representation
+- Add `transform.local_rotation` to support rotating objects around their centroids
 - Support transforms and instancing on structures, components, and volumes
 - Make `canvas.background_color` optional
 
