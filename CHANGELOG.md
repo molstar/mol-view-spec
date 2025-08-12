@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `instance` node type
 - Add `surface_type` (`molecular` / `gaussian`) to the surface representation
 - Support transforms and instancing on structures, components, and volumes
+- Make `canvas.background_color` optional
 
 ## [v1.6.0] - 2025-04-22
 

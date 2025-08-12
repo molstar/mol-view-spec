@@ -1338,7 +1338,7 @@ class CanvasParams(BaseModel):
     Controls global canvas properties.
     """
 
-    background_color: ColorT = Field(description="Background color using SVG color names or RGB hex code")
+    background_color: Optional[ColorT] = Field(None, description="Background color using SVG color names or RGB hex code")
 
 
 class PrimitiveComponentExpressions(BaseModel):

@@ -528,7 +528,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
     def canvas(
         self,
         *,
-        background_color: ColorT,
+        background_color: ColorT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Root:
