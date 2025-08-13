@@ -37,3 +37,25 @@ states = States(snapshots=[snapshot1, snapshot2], metadata=GlobalMetadata(descri
 The output is valid MolViewSpec JSON that can be opened in Mol*. Mol* will interpolate between individual substates and 
 add smooth transitions by default. You can further customize this behavior using the `transition_duration_ms` and 
 `linger_duration_ms` properties. 
+
+## Animating Snapshots
+
+Properties within a single snapshots can be animated. For example:
+
+```python
+builder = create_builder()
+structure = builder.download(url="https://files.wwpdb.org/download/1cbs.cif").parse(format="mmcif").model_structure()
+structure.component(selector="polymer").representation(type="cartoon").clip(
+    ref="clip", type="plane", point=[22, 13, 0], normal=[0, 0, 1]
+)
+
+anim = builder.animation()
+anim.interpolate(
+    kind="scalar",
+    target_ref="clip",
+    duration_ms=2000,
+    property=["point", 2],
+    end=55,
+    easing="sin-in",
+)
+```

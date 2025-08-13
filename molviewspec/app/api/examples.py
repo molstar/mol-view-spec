@@ -2492,11 +2492,7 @@ async def animation_testing_example() -> MVSResponse:
     """
 
     builder = create_builder()
-
-    builder = create_builder()
-
     structure = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure()
-
     structure.component(selector="polymer").representation(type="cartoon").clip(
         ref="clip", type="plane", point=[22, 13, 0], normal=[0, 0, 1]
     )
