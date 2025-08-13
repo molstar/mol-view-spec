@@ -1741,7 +1741,13 @@ class _CommonInterpolationParamsMixin(BaseModel):
     property: str | list[str | int] = Field(..., description="Value accessor.")
     start_ms: Optional[float] = Field(0, description="Start time of the transition in milliseconds.")
     duration_ms: float = Field(..., description="End time of the transition in milliseconds.")
+
+
+class _InterpolationEasingParamsMixin(BaseModel):
     easing: EasingKindT = Field("linear", description="Easing function to use for the transition.")
+
+
+class _InterpolationFrequencyParamsMixin(BaseModel):
     frequency: Optional[int] = Field(
         1, description="Determines how many times the interpolation loops. Current T = frequency * t mod 1."
     )
@@ -1761,13 +1767,22 @@ class InterpolationParams(BaseModel):
     kind: InterpolationKindT = Field(description="Interpolation kind, i.e. scalar, vec3, etc.")
 
 
-class ScalarInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin):
+class _CommonInterpolationBase(
+    InterpolationParams,
+    _CommonInterpolationParamsMixin,
+    _InterpolationEasingParamsMixin,
+    _InterpolationFrequencyParamsMixin,
+):
+    pass
+
+
+class ScalarInterpolationParams(_CommonInterpolationBase, _InterpolationNoiseMixin):
     kind: Literal["scalar"] = "scalar"
     start: Optional[float] = Field(None, description="Start value. If unset, parent state value is used.")
     end: Optional[float] = Field(None, description="End value. If unset, only noise is applied.")
 
 
-class Vec3InterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin):
+class Vec3InterpolationParams(_CommonInterpolationBase, _InterpolationNoiseMixin):
     kind: Literal["vec3"] = "vec3"
     start: Optional[list[float]] = Field(
         None, description="Start value. If unset, parent state value is used. Value must have 3N length."
@@ -1778,15 +1793,18 @@ class Vec3InterpolationParams(InterpolationParams, _CommonInterpolationParamsMix
     spherical: bool = Field(False, description="Whether to use spherical interpolation.")
 
 
-class RotationMatrixInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin):
+class RotationMatrixInterpolationParams(_CommonInterpolationBase, _InterpolationNoiseMixin):
     kind: Literal["rotation_matrix"] = "rotation_matrix"
     start: Optional[Mat3] = Field(None, description="Start value. If unset, parent state value is used.")
     end: Optional[Mat3] = Field(None, description="End value. If unset, only noise is applied.")
 
 
-class TransformationMatrixInterpolationParams(
-    InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin
-):
+class ColorInterpolationParams(_CommonInterpolationBase):
+    kind: Literal["color"] = "color"
+    palette: DiscretePalette | ContinuousPalette = Field(..., description="Palette to sample colors from.")
+
+
+class TransformationMatrixInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin):
     kind: Literal["transform_matrix"] = "transform_matrix"
     target_ref: str = Field(..., description="Reference to the node.")
     property: str | list[str | int] = Field(..., description="Value accessor.")
@@ -1831,11 +1849,6 @@ class TransformationMatrixInterpolationParams(
     scale_alternate_direction: Optional[bool] = Field(
         False, description="Whether to alternate the direction of the interpolation for frequency > 1."
     )
-
-
-class ColorInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin):
-    kind: Literal["color"] = "color"
-    palette: DiscretePalette | ContinuousPalette = Field(..., description="Palette to sample colors from.")
 
 
 InterpolationKindParams = {

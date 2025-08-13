@@ -1872,7 +1872,7 @@ class Animation:
         :param target_ref: reference to the node that should be animated.
         :param property: value accessor.
         :param start_ms: start time of the transition in milliseconds (default: 0)
-        :param duration_ms: end time of the transition in milliseconds.
+        :param duration_ms: duration of the transition in milliseconds.
         :param easing: easing function to use for the transition (default: linear)
         :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
         :param start: start value of the interpolation (default: parent state value)
@@ -1910,7 +1910,7 @@ class Animation:
         :param target_ref: reference to the node that should be animated.
         :param property: value accessor.
         :param start_ms: start time of the transition in milliseconds (default: 0)
-        :param duration_ms: end time of the transition in milliseconds.
+        :param duration_ms: duration of the transition in milliseconds.
         :param easing: easing function to use for the transition (default: linear)
         :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
         :param start: start value of the interpolation (default: parent state value)
@@ -1948,7 +1948,7 @@ class Animation:
         :param target_ref: reference to the node that should be animated.
         :param property: value accessor.
         :param start_ms: start time of the transition in milliseconds (default: 0)
-        :param duration_ms: end time of the transition in milliseconds.
+        :param duration_ms: duration of the transition in milliseconds.
         :param easing: easing function to use for the transition (default: linear)
         :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
         :param start: start value of the interpolation (default: parent state value)
@@ -1998,7 +1998,7 @@ class Animation:
         :param target_ref: reference to the node that should be animated.
         :param property: value accessor.
         :param start_ms: start time of the transition in milliseconds (default: 0)
-        :param duration_ms: end time of the transition in milliseconds.
+        :param duration_ms: duration of the transition in milliseconds.
         :param pivot: optional, pivot point for the rotation and scale transformation
         :param rotation_start: optional, starting rotation matrix
         :param rotation_end: optional, ending rotation matrix, if unset, only noise is applied.
@@ -2045,7 +2045,7 @@ class Animation:
         :param target_ref: reference to the node that should be animated.
         :param property: value accessor.
         :param start_ms: start time of the transition in milliseconds (default: 0)
-        :param duration_ms: end time of the transition in milliseconds.
+        :param duration_ms: duration of the transition in milliseconds.
         :param palette: color palette to use for the interpolation
         :param frequency: determines how many times the interpolation loops. Current T = frequency * t mod 1.
         :param alternate_direction: whether to alternate the direction of the interpolation for frequency > 1.
