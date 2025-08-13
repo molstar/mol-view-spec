@@ -1355,7 +1355,7 @@ class CanvasParams(BaseModel):
     """
 
     background_color: Optional[ColorT] = Field(
-        None, description="Background color using SVG color names or RGB hex code"
+        "white", description="Background color using SVG color names or RGB hex code. Defaults to 'white'."
     )
 
 
