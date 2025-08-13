@@ -71,6 +71,7 @@ from molviewspec.nodes import (
     Snapshot,
     SnapshotMetadata,
     State,
+    States,
     StructureParams,
     SurfaceTypeT,
     TooltipFromSourceParams,
@@ -479,6 +480,11 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
             description_format=description_format,
             # `version` and `timestamp` added by the constructor
         )
+
+        if self._animation is not None:
+            snapshot = self.get_snapshot(title=title, description=description, description_format=description_format)
+            return States(snapshots=[snapshot], metadata=metadata)
+
         return State(root=self._node, metadata=metadata)
 
     def save_state(

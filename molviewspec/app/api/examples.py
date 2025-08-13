@@ -2599,9 +2599,7 @@ async def animation_testing_example() -> MVSResponse:
         duration_ms=1000,
     )
 
-    states = States(snapshots=[builder.get_snapshot()], metadata=GlobalMetadata(description="Test animations"))
-
-    return JSONResponse(states.to_dict())
+    return JSONResponse(builder.get_state().to_dict())
 
 
 ##############################################################################
