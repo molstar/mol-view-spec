@@ -2033,7 +2033,9 @@ class Animation:
         property: str | list[str | int],
         start_ms: float | None = None,
         duration_ms: float,
-        palette: ContinuousPalette | DiscretePalette,
+        start: ColorT | None = None,
+        end: ColorT | None = None,
+        palette: ContinuousPalette | DiscretePalette | None = None,
         frequency: int | None = None,
         alternate_direction: bool | None = None,
         custom: CustomT = None,
@@ -2046,7 +2048,9 @@ class Animation:
         :param property: value accessor.
         :param start_ms: start time of the transition in milliseconds (default: 0)
         :param duration_ms: duration of the transition in milliseconds.
-        :param palette: color palette to use for the interpolation
+        :param start: starting color (default: parent state value)
+        :param end: ending color
+        :param palette: color palette to use for the interpolation, if set overrides start and end colors.
         :param frequency: determines how many times the interpolation loops. Current T = frequency * t mod 1.
         :param alternate_direction: whether to alternate the direction of the interpolation for frequency > 1.
         :param custom: optional, custom data to attach to this node

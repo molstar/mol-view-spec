@@ -2495,7 +2495,7 @@ async def animation_testing_example() -> MVSResponse:
     structure = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").clip(
         ref="clip", type="plane", point=[22, 13, 0], normal=[0, 0, 1]
-    )
+    ).color(ref="polymer-color", color="white")
 
     (
         structure.component(selector="ligand")
@@ -2506,7 +2506,7 @@ async def animation_testing_example() -> MVSResponse:
             rotation_center="centroid",
         )
         .representation(type="ball_and_stick")
-        .color(ref="color", color="red")
+        .color(ref="ligand-color", color="blue")
     )
 
     primitives1 = builder.primitives(
@@ -2597,10 +2597,19 @@ async def animation_testing_example() -> MVSResponse:
 
     anim.interpolate(
         kind="color",
-        target_ref="color",
+        target_ref="ligand-color",
         property="color",
         duration_ms=2000,
-        palette={"kind": "continuous", "colors": ["blue", "red"]},
+        end="red",
+    )
+
+    anim.interpolate(
+        kind="color",
+        target_ref="polymer-color",
+        property="color",
+        duration_ms=2000,
+        frequency=3,
+        palette={"kind": "continuous", "colors": ["white", "purple", "white"]},
     )
 
     anim.interpolate(

@@ -1807,7 +1807,11 @@ class RotationMatrixInterpolationParams(_CommonInterpolationBase, _Interpolation
 
 class ColorInterpolationParams(_CommonInterpolationBase):
     kind: Literal["color"] = "color"
-    palette: DiscretePalette | ContinuousPalette = Field(..., description="Palette to sample colors from.")
+    start: Optional[ColorT] = Field(None, description="Start color. If unset, parent state value is used.")
+    end: Optional[ColorT] = Field(None, description="End color.")
+    palette: Optional[DiscretePalette | ContinuousPalette] = Field(
+        None, description="Palette to sample colors from. If set, overrides start and end colors."
+    )
 
 
 class TransformationMatrixInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin):
