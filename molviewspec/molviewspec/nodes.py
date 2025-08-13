@@ -1099,8 +1099,8 @@ class ClipPlaneParams(ClipParamsBase):
 
     type: Literal["plane"] = "plane"
 
-    normal: Vec3 = Field(description="Normal vector of the clipping plane. Points towards the clipped region.")
-    point: Vec3 = Field(description="Point on the clipping plane.")
+    normal: Vec3[float] = Field(description="Normal vector of the clipping plane. Points towards the clipped region.")
+    point: Vec3[float] = Field(description="Point on the clipping plane.")
 
 
 class ClipSphereParams(ClipParamsBase):
@@ -1110,7 +1110,7 @@ class ClipSphereParams(ClipParamsBase):
 
     type: Literal["sphere"] = "sphere"
 
-    center: Vec3 = Field(description="Center of the clipping sphere.")
+    center: Vec3[float] = Field(description="Center of the clipping sphere.")
     radius: Optional[float] = Field(description="Radius of the clipping sphere. Defaults to 1.0.")
 
 
@@ -1121,8 +1121,8 @@ class ClipBoxParams(BaseModel):
 
     type: Literal["box"] = "box"
 
-    center: Vec3 = Field(description="Position of the center of the unit box.")
-    size: Optional[Vec3] = Field(None, description="Size of the box in each dimension. Defaults to (1, 1, 1).")
+    center: Vec3[float] = Field(description="Position of the center of the unit box.")
+    size: Optional[Vec3[float]] = Field(None, description="Size of the box in each dimension. Defaults to (1, 1, 1).")
     rotation: Optional[Mat3[float]] = Field(
         None,
         description="9d vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
@@ -1326,9 +1326,9 @@ class TransformParams(BaseModel):
         None,
         description="9d (3x3) vector describing the rotation, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
     )
-    local_rotation: Optional[Mat3[float]] = Field(
+    rotation_center: Optional[Vec3[float] | Literal["centroid"]] = Field(
         None,
-        description="9d (3x3) vector describing a local rotation around the object's centroid, in a column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left",
+        description="Point to rotate the object around. Can be either a 3D vector or dynamically computed object centroid.",
     )
     translation: Optional[Vec3[float]] = Field(None, description="3d vector describing the translation")
     matrix: Optional[Mat4[float]] = Field(
@@ -1503,7 +1503,9 @@ class ArrowParams(BaseModel):
     start: PrimitivePositionT = Field(description="Start of this arrow.")
     end: Optional[PrimitivePositionT] = Field(None, description="End of this arrow.")
 
-    direction: Optional[Vec3] = Field(None, description="If specified, the endpoint is computed as start + direction.")
+    direction: Optional[Vec3[float]] = Field(
+        None, description="If specified, the endpoint is computed as start + direction."
+    )
     length: Optional[float] = Field(
         None, description="Length of the arrow. If unset, the distance between start and end is used."
     )
@@ -1594,8 +1596,8 @@ class EllipseParams(BaseModel):
     center: PrimitivePositionT = Field(description="The center of the ellipse.")
     as_circle: Optional[bool] = Field(None, description="If true, ignores radius_minor/magnitude of the minor axis.")
 
-    major_axis: Optional[Vec3] = Field(None, description="Major axis of this ellipse.")
-    minor_axis: Optional[Vec3] = Field(None, description="Minor axis of this ellipse.")
+    major_axis: Optional[Vec3[float]] = Field(None, description="Major axis of this ellipse.")
+    minor_axis: Optional[Vec3[float]] = Field(None, description="Minor axis of this ellipse.")
 
     major_axis_endpoint: Optional[PrimitivePositionT] = Field(
         None, description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
@@ -1624,8 +1626,8 @@ class EllipsoidParams(BaseModel):
 
     center: PrimitivePositionT = Field(description="The center of the ellipsoid.")
 
-    major_axis: Optional[Vec3] = Field(None, description="Major axis of this ellipsoid. Defaults to (1, 0, 0).")
-    minor_axis: Optional[Vec3] = Field(None, description="Minor axis of this ellipsoid. Defaults to (0, 1, 0).")
+    major_axis: Optional[Vec3[float]] = Field(None, description="Major axis of this ellipsoid. Defaults to (1, 0, 0).")
+    minor_axis: Optional[Vec3[float]] = Field(None, description="Minor axis of this ellipsoid. Defaults to (0, 1, 0).")
 
     major_axis_endpoint: Optional[PrimitivePositionT] = Field(
         None, description="Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center."
@@ -1634,8 +1636,8 @@ class EllipsoidParams(BaseModel):
         None, description="Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center."
     )
 
-    radius: Optional[Vec3 | float] = Field(None, description="Radii of the ellipsoid along each axis.")
-    radius_extent: Optional[Vec3 | float] = Field(
+    radius: Optional[Vec3[float] | float] = Field(None, description="Radii of the ellipsoid along each axis.")
+    radius_extent: Optional[Vec3[float] | float] = Field(
         None, description="Added to the radii of the ellipsoid along each axis."
     )
 
@@ -1648,7 +1650,7 @@ class BoxParams(BaseModel):
     kind: Literal["box"] = "box"
 
     center: PrimitivePositionT = Field(description="The center of the box.")
-    extent: Optional[Vec3] = Field(
+    extent: Optional[Vec3[float]] = Field(
         None,
         description="The width, the height, and the depth of the box. Added to the bounding box determined by the center.",
     )
@@ -1690,6 +1692,9 @@ class PrimitivesFromUriParams(BaseModel):
 
 class AnimationParams(BaseModel):
     frame_time_ms: float = Field(default=1000 / 60, description="Frame time in milliseconds.")
+    duration_ms: Optional[float] = Field(
+        None, description="Total duration of the animation. If not specified, computed as maximum of all transitions."
+    )
     autoplay: bool = Field(
         default=True, description="Determines whether the animation should autoplay when a snapshot is loaded."
     )
@@ -1737,6 +1742,12 @@ class _CommonInterpolationParamsMixin(BaseModel):
     start_ms: Optional[float] = Field(0, description="Start time of the transition in milliseconds.")
     duration_ms: float = Field(..., description="End time of the transition in milliseconds.")
     easing: EasingKindT = Field("linear", description="Easing function to use for the transition.")
+    frequency: Optional[int] = Field(
+        1, description="Determines how many times the interpolation loops. Current T = frequency * t mod 1."
+    )
+    alternate_direction: Optional[bool] = Field(
+        False, description="Whether to alternate the direction of the interpolation for frequency > 1."
+    )
 
 
 InterpolationKindT = Literal["scalar", "vec3", "rotation_matrix"]
@@ -1753,7 +1764,7 @@ class InterpolationParams(BaseModel):
 class ScalarInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin):
     kind: Literal["scalar"] = "scalar"
     start: Optional[float] = Field(None, description="Start value. If unset, parent state value is used.")
-    end: float = Field(..., description="End value.")
+    end: Optional[float] = Field(None, description="End value. If unset, only noise is applied.")
 
 
 class Vec3InterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin):
@@ -1761,14 +1772,16 @@ class Vec3InterpolationParams(InterpolationParams, _CommonInterpolationParamsMix
     start: Optional[list[float]] = Field(
         None, description="Start value. If unset, parent state value is used. Value must have 3N length."
     )
-    end: list[float] = Field(..., description="End value. Value must have 3N length.")
+    end: Optional[list[float]] = Field(
+        None, description="End value. Value must have 3N length. If unset, only noise is applied."
+    )
     spherical: bool = Field(False, description="Whether to use spherical interpolation.")
 
 
 class RotationMatrixInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin, _InterpolationNoiseMixin):
     kind: Literal["rotation_matrix"] = "rotation_matrix"
     start: Optional[Mat3] = Field(None, description="Start value. If unset, parent state value is used.")
-    end: Mat3 = Field(..., description="End value.")
+    end: Optional[Mat3] = Field(None, description="End value. If unset, only noise is applied.")
 
 
 class TransformationMatrixInterpolationParams(
@@ -1779,23 +1792,45 @@ class TransformationMatrixInterpolationParams(
     property: str | list[str | int] = Field(..., description="Value accessor.")
     start_ms: Optional[float] = Field(0, description="Start time of the transition in milliseconds.")
     duration_ms: float = Field(..., description="End time of the transition in milliseconds.")
-    pivot: Optional[Vec3] = Field(None, description="Pivot point for rotation and scale.")
+    pivot: Optional[Vec3[float]] = Field(None, description="Pivot point for rotation and scale.")
     rotation_start: Optional[Mat3] = Field(
         None, description="Start rotation value. If unset, parent state value is used."
     )
-    rotation_end: Optional[Mat3] = Field(None, description="End rotation value.")
+    rotation_end: Optional[Mat3] = Field(None, description="End rotation value. If unset, only noise is applied.")
     rotation_noise_magnitude: float = Field(0, description="Magnitude of the noise to apply to the rotation.")
     rotation_easing: EasingKindT = Field("linear", description="Easing function to use for the rotation.")
-    translation_start: Optional[Vec3] = Field(
+    rotation_frequency: Optional[int] = Field(
+        1, description="Determines how many times the interpolation loops. Current T = frequency * t mod 1."
+    )
+    rotation_alternate_direction: Optional[bool] = Field(
+        False, description="Whether to alternate the direction of the interpolation for frequency > 1."
+    )
+    translation_start: Optional[Vec3[float]] = Field(
         None, description="Start translation value. If unset, parent state value is used."
     )
-    translation_end: Optional[Vec3] = Field(None, description="End translation value.")
+    translation_end: Optional[Vec3[float]] = Field(
+        None, description="End translation value. If unset, only noise is applied."
+    )
     translation_noise_magnitude: float = Field(0, description="Magnitude of the noise to apply to the translation.")
     translation_easing: EasingKindT = Field("linear", description="Easing function to use for the translation.")
-    scale_start: Optional[Vec3] = Field(None, description="Start scale value. If unset, parent state value is used.")
-    scale_end: Optional[Vec3] = Field(None, description="End scale value.")
+    translation_frequency: Optional[int] = Field(
+        1, description="Determines how many times the interpolation loops. Current T = frequency * t mod 1."
+    )
+    translation_alternate_direction: Optional[bool] = Field(
+        False, description="Whether to alternate the direction of the interpolation for frequency > 1."
+    )
+    scale_start: Optional[Vec3[float]] = Field(
+        None, description="Start scale value. If unset, parent state value is used."
+    )
+    scale_end: Optional[Vec3[float]] = Field(None, description="End scale value. If unset, only noise is applied.")
     scale_noise_magnitude: float = Field(0, description="Magnitude of the noise to apply to the scale.")
     scale_easing: EasingKindT = Field("linear", description="Easing function to use for the scale.")
+    scale_frequency: Optional[int] = Field(
+        1, description="Determines how many times the interpolation loops. Current T = frequency * t mod 1."
+    )
+    scale_alternate_direction: Optional[bool] = Field(
+        False, description="Whether to alternate the direction of the interpolation for frequency > 1."
+    )
 
 
 class ColorInterpolationParams(InterpolationParams, _CommonInterpolationParamsMixin):

@@ -2506,7 +2506,8 @@ async def animation_testing_example() -> MVSResponse:
         .transform(
             ref="xform",
             translation=[5, 20, -20],
-            local_rotation=[1, 0, 0, 0, 1, 0, 0, 0, 1],
+            rotation=[1, 0, 0, 0, 1, 0, 0, 0, 1],
+            rotation_center="centroid",
         )
         .representation(type="ball_and_stick")
         .color(ref="color", color="red")
@@ -2546,7 +2547,7 @@ async def animation_testing_example() -> MVSResponse:
         width=2,
     )
 
-    anim = builder.animation(loop=True)
+    anim = builder.animation(loop=True, duration_ms=2500)
 
     anim.interpolate(
         kind="scalar",
@@ -2578,8 +2579,7 @@ async def animation_testing_example() -> MVSResponse:
         kind="rotation_matrix",
         target_ref="xform",
         duration_ms=2000,
-        property="local_rotation",
-        end=[1, 0, 0, 0, 1, 0, 0, 0, 1],
+        property="rotation",
         noise_magnitude=0.2,
     )
 

@@ -235,7 +235,7 @@ class _TransformMixin(_BuilderProtocol):
         self,
         *,
         rotation: Sequence[float] | None = None,
-        local_rotation: Sequence[float] | None = None,
+        rotation_center: Vec3[float] | Literal["centroid"] | None = None,
         translation: Sequence[float] | None = None,
         matrix: Sequence[float] | None = None,
         custom: CustomT = None,
@@ -244,7 +244,7 @@ class _TransformMixin(_BuilderProtocol):
         """
         Transform the object by applying a rotation matrix and/or translation vector OR a full transform matrix.
         :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
-        :param local_rotation: 9d vector describing a local rotation around the object's centroid, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
+        :param rotation_center: 3d vector (or centroid reference) describing the center of rotation (default: (0, 0, 0))
         :param translation: 3d vector describing the translation (default: (0, 0, 0))
         :param matrix: 16d (4x4) vector describing the transformation matrix, in column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left. Takes precedence over `rotation` and `translation`.
         :param custom: optional, custom data to attach to this node
@@ -256,11 +256,6 @@ class _TransformMixin(_BuilderProtocol):
                 raise ValueError(f"Parameter `rotation` must have length 9")
             if not self._is_rotation_matrix(rotation):
                 raise ValueError(f"Parameter `rotation` must be a rotation matrix")
-        if local_rotation is not None:
-            if len(local_rotation) != 9:
-                raise ValueError(f"Parameter `local_rotation` must have length 9")
-            if not self._is_rotation_matrix(local_rotation):
-                raise ValueError(f"Parameter `local_rotation` must be a rotation matrix")
         if translation is not None:
             if len(translation) != 3:
                 raise ValueError(f"Parameter `translation` must have length 3")
@@ -279,7 +274,7 @@ class _TransformMixin(_BuilderProtocol):
         self,
         *,
         rotation: Sequence[float] | None = None,
-        local_rotation: Sequence[float] | None = None,
+        rotation_center: Vec3[float] | Literal["centroid"] | None = None,
         translation: Sequence[float] | None = None,
         matrix: Sequence[float] | None = None,
         custom: CustomT = None,
@@ -288,7 +283,7 @@ class _TransformMixin(_BuilderProtocol):
         """
         Instantiate the object by applying a rotation matrix and/or translation vector OR a full transform matrix.
         :param rotation: 9d vector describing the rotation, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
-        :param local_rotation: 9d vector describing a local rotation around the object's centroid, in column major (j * 3 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left (default: identity matrix)
+        :param rotation_center: 3d vector (or centroid reference) describing the center of rotation (default: (0, 0, 0))
         :param translation: 3d vector describing the translation (default: (0, 0, 0))
         :param matrix: 16d (4x4) vector describing the transformation matrix, in column major (j * 4 + i indexing) format, this is equivalent to Fortran-order in numpy, to be multiplied from the left. Takes precedence over `rotation` and `translation`.
         :param custom: optional, custom data to attach to this node
@@ -300,11 +295,6 @@ class _TransformMixin(_BuilderProtocol):
                 raise ValueError(f"Parameter `rotation` must have length 9")
             if not self._is_rotation_matrix(rotation):
                 raise ValueError(f"Parameter `rotation` must be a rotation matrix")
-        if local_rotation is not None:
-            if len(local_rotation) != 9:
-                raise ValueError(f"Parameter `local_rotation` must have length 9")
-            if not self._is_rotation_matrix(local_rotation):
-                raise ValueError(f"Parameter `local_rotation` must be a rotation matrix")
         if translation is not None:
             if len(translation) != 3:
                 raise ValueError(f"Parameter `translation` must have length 3")
@@ -589,6 +579,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         self,
         *,
         frame_time_ms: float | None = None,
+        duration_ms: float | None = None,
         autoplay: bool | None = None,
         loop: bool | None = None,
         include_camera: bool | None = None,
@@ -599,6 +590,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         """
         Create an animation node.
         :param frame_time_ms: Duration of each animation frame in milliseconds (default 1000/60)
+        :param duration_ms: Total duration of the animation in milliseconds, if not specified, computed as maximum of all transitions
         :param autoplay: Whether the animation should start playing automatically (default True)
         :param loop: Whether the animation should loop (default False)
         :param include_camera: Whether to include camera movements in the animation (default False)
@@ -1538,7 +1530,7 @@ class Primitives(_Base, _FocusMixin):
         *,
         start: PrimitivePositionT,
         end: PrimitivePositionT | None = None,
-        direction: Vec3 | None = None,
+        direction: Vec3[float] | None = None,
         length: float | None = None,
         show_start_cap: bool | None = None,
         start_cap_length: float | None = None,
@@ -1698,8 +1690,8 @@ class Primitives(_Base, _FocusMixin):
         *,
         center: PrimitivePositionT,
         as_circle: bool | None = None,
-        major_axis: Vec3 | None = None,
-        minor_axis: Vec3 | None = None,
+        major_axis: Vec3[float] | None = None,
+        minor_axis: Vec3[float] | None = None,
         major_axis_endpoint: PrimitivePositionT | None = None,
         minor_axis_endpoint: PrimitivePositionT | None = None,
         radius_major: float | None = None,
@@ -1743,12 +1735,12 @@ class Primitives(_Base, _FocusMixin):
         self,
         *,
         center: PrimitivePositionT,
-        major_axis: Vec3 | None = None,
-        minor_axis: Vec3 | None = None,
+        major_axis: Vec3[float] | None = None,
+        minor_axis: Vec3[float] | None = None,
         major_axis_endpoint: PrimitivePositionT | None = None,
         minor_axis_endpoint: PrimitivePositionT | None = None,
-        radius: Vec3 | float | None = None,
-        radius_extent: Vec3 | float | None = None,
+        radius: Vec3[float] | float | None = None,
+        radius_extent: Vec3[float] | float | None = None,
         color: ColorT | None = None,
         tooltip: str | None = None,
         custom: CustomT = None,
@@ -1805,7 +1797,7 @@ class Primitives(_Base, _FocusMixin):
         self,
         *,
         center: PrimitivePositionT,
-        extent: Vec3 | None = None,
+        extent: Vec3[float] | None = None,
         show_faces: bool = True,
         face_color: ColorT | None = None,
         show_edges: bool = False,
@@ -1863,6 +1855,8 @@ class Animation:
         noise_magnitude: float | None = None,
         start: float | None = None,
         end: float | None = None,
+        frequency: int | None = None,
+        alternate_direction: bool | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Animation:
@@ -1876,7 +1870,9 @@ class Animation:
         :param easing: easing function to use for the transition (default: linear)
         :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
         :param start: start value of the interpolation (default: parent state value)
-        :param end: end value of the interpolation
+        :param end: end value of the interpolation, if unset, only noise is applied.
+        :param frequency: determines how many times the interpolation loops. Current T = frequency * t mod 1.
+        :param alternate_direction: whether to alternate the direction of the interpolation for frequency > 1.
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -1897,6 +1893,8 @@ class Animation:
         start: Sequence[float] | None = None,
         end: Sequence[float] | None = None,
         spherical: bool | None = None,
+        frequency: int | None = None,
+        alternate_direction: bool | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Animation:
@@ -1910,8 +1908,10 @@ class Animation:
         :param easing: easing function to use for the transition (default: linear)
         :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
         :param start: start value of the interpolation (default: parent state value)
-        :param end: end value of the interpolation
+        :param end: end value of the interpolation, if unset, only noise is applied.
         :param spherical: whether to use spherical interpolation (default: False)
+        :param frequency: determines how many times the interpolation loops. Current T = frequency * t mod 1.
+        :param alternate_direction: whether to alternate the direction of the interpolation for frequency > 1.
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -1931,7 +1931,8 @@ class Animation:
         noise_magnitude: float | None = None,
         start: Sequence[float] | None = None,
         end: Sequence[float] | None = None,
-        spherical: bool | None = None,
+        frequency: int | None = None,
+        alternate_direction: bool | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Animation:
@@ -1945,8 +1946,9 @@ class Animation:
         :param easing: easing function to use for the transition (default: linear)
         :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
         :param start: start value of the interpolation (default: parent state value)
-        :param end: end value of the interpolation
-        :param spherical: whether to use spherical interpolation (default: False)
+        :param end: end value of the interpolation, if unset, only noise is applied.
+        :param frequency: determines how many times the interpolation loops. Current T = frequency * t mod 1.
+        :param alternate_direction: whether to alternate the direction of the interpolation for frequency > 1.
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -1962,19 +1964,25 @@ class Animation:
         property: str | list[str | int],
         start_ms: float | None = None,
         duration_ms: float,
-        pivot: Vec3 | None = None,
+        pivot: Vec3[float] | None = None,
         rotation_start: Mat3 | None = None,
         rotation_end: Mat3 | None = None,
         rotation_noise_magnitude: float | None = None,
         rotation_easing: EasingKindT | None = None,
-        translation_start: Vec3 | None = None,
-        translation_end: Vec3 | None = None,
+        rotation_frequency: int | None = None,
+        rotation_alternate_direction: bool | None = None,
+        translation_start: Vec3[float] | None = None,
+        translation_end: Vec3[float] | None = None,
         translation_noise_magnitude: float | None = None,
         translation_easing: EasingKindT | None = None,
-        scale_start: Vec3 | None = None,
-        scale_end: Vec3 | None = None,
+        translation_frequency: int | None = None,
+        translation_alternate_direction: bool | None = None,
+        scale_start: Vec3[float] | None = None,
+        scale_end: Vec3[float] | None = None,
         scale_noise_magnitude: float | None = None,
         scale_easing: EasingKindT | None = None,
+        scale_frequency: int | None = None,
+        scale_alternate_direction: bool | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Animation:
@@ -1987,17 +1995,23 @@ class Animation:
         :param duration_ms: end time of the transition in milliseconds.
         :param pivot: optional, pivot point for the rotation and scale transformation
         :param rotation_start: optional, starting rotation matrix
-        :param rotation_end: optional, ending rotation matrix
+        :param rotation_end: optional, ending rotation matrix, if unset, only noise is applied.
         :param rotation_noise_magnitude: optional, magnitude of the noise to apply to the rotation
         :param rotation_easing: optional, easing function to use for the rotation
+        :param rotation_frequency: optional, frequency of the rotation animation
+        :param rotation_alternate_direction: optional, whether to alternate the direction of the rotation animation
         :param translation_start: optional, starting translation vector
-        :param translation_end: optional, ending translation vector
+        :param translation_end: optional, ending translation vector, if unset, only noise is applied.
         :param translation_noise_magnitude: optional, magnitude of the noise to apply to the translation
         :param translation_easing: optional, easing function to use for the translation
+        :param translation_frequency: optional, frequency of the translation animation
+        :param translation_alternate_direction: optional, whether to alternate the direction of the translation animation
         :param scale_start: optional, starting scale vector
-        :param scale_end: optional, ending scale vector
+        :param scale_end: optional, ending scale vector, if unset, only noise is applied.
         :param scale_noise_magnitude: optional, magnitude of the noise to apply to the scale
         :param scale_easing: optional, easing function to use for the scale
+        :param scale_frequency: optional, frequency of the scale animation
+        :param scale_alternate_direction: optional, whether to alternate the direction of the scale animation
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -2014,6 +2028,8 @@ class Animation:
         start_ms: float | None = None,
         duration_ms: float,
         palette: ContinuousPalette | DiscretePalette,
+        frequency: int | None = None,
+        alternate_direction: bool | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Animation:
@@ -2025,6 +2041,8 @@ class Animation:
         :param start_ms: start time of the transition in milliseconds (default: 0)
         :param duration_ms: end time of the transition in milliseconds.
         :param palette: color palette to use for the interpolation
+        :param frequency: determines how many times the interpolation loops. Current T = frequency * t mod 1.
+        :param alternate_direction: whether to alternate the direction of the interpolation for frequency > 1.
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
