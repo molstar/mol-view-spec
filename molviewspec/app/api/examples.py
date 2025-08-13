@@ -2485,6 +2485,148 @@ async def testing_primitive_snapshot_key_example() -> MVSResponse:
     return JSONResponse(States(snapshots=snapshots, metadata=metadata).to_dict())
 
 
+@router.get("/testing/animation")
+async def animation_testing_example() -> MVSResponse:
+    """
+    Example that tests all animations
+    """
+
+    builder = create_builder()
+    structure = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure()
+    structure.component(selector="polymer").representation(type="cartoon").clip(
+        ref="clip", type="plane", point=[22, 13, 0], normal=[0, 0, 1]
+    ).color(ref="polymer-color", color="white")
+
+    (
+        structure.component(selector="ligand")
+        .transform(
+            ref="xform",
+            translation=[5, 20, -20],
+            rotation=[1, 0, 0, 0, 1, 0, 0, 0, 1],
+            rotation_center="centroid",
+        )
+        .representation(type="ball_and_stick")
+        .color(ref="ligand-color", color="blue")
+    )
+
+    primitives1 = builder.primitives(
+        ref="primitives-xform",
+        instances=[
+            [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+            ]
+        ],
+    )
+
+    primitives1.ellipsoid(center=[0, 0, 0], radius=[2, 3, 2.5], color="red")
+
+    builder.primitives().lines(
+        ref="lines1",
+        vertices=[22, 13, 0, 22, 13, 0],
+        indices=[0, 1],
+        color="purple",
+        width=2,
+    )
+    builder.primitives().lines(
+        ref="lines2",
+        vertices=[23, 13, 0, 23, 13, 0],
+        indices=[0, 1],
+        color="green",
+        width=2,
+    )
+
+    anim = builder.animation(loop=True, duration_ms=2500)
+
+    anim.interpolate(
+        kind="scalar",
+        target_ref="clip",
+        duration_ms=2000,
+        property=["point", 2],
+        end=55,
+        easing="sin-in",
+    )
+
+    anim.interpolate(
+        kind="vec3",
+        target_ref="xform",
+        duration_ms=2000,
+        property="translation",
+        end=[0, 0, 0],
+        noise_magnitude=1,
+    )
+
+    anim.interpolate(
+        kind="vec3",
+        target_ref="lines1",
+        duration_ms=2000,
+        property="vertices",
+        end=[22, 13, 0, 22, 13, 50],
+        noise_magnitude=0.5,
+    )
+
+    anim.interpolate(
+        kind="scalar",
+        target_ref="lines2",
+        duration_ms=2000,
+        property="vertices",
+        end=[23, 13, 0, 23, 13, 50],
+    )
+
+    anim.interpolate(
+        kind="rotation_matrix",
+        target_ref="xform",
+        duration_ms=2000,
+        property="rotation",
+        noise_magnitude=0.2,
+    )
+
+    anim.interpolate(
+        kind="color",
+        target_ref="ligand-color",
+        property="color",
+        duration_ms=2000,
+        end="red",
+    )
+
+    anim.interpolate(
+        kind="color",
+        target_ref="polymer-color",
+        property="color",
+        duration_ms=2000,
+        frequency=3,
+        palette={"kind": "continuous", "colors": ["white", "purple", "white"]},
+    )
+
+    anim.interpolate(
+        kind="transform_matrix",
+        target_ref="primitives-xform",
+        property=["instances", 0],
+        translation_start=[20.24, 29.64, 14.85],
+        translation_end=[21.84, 21.71, 27.04],
+        pivot=[0, 0, 0],
+        rotation_noise_magnitude=0.2,
+        scale_end=[0.01, 0.01, 0.01],
+        duration_ms=1000,
+    )
+
+    return JSONResponse(builder.get_state().to_dict())
+
+
 ##############################################################################
 # MVS specification of existing visualizations
 
