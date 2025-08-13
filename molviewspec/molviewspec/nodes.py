@@ -1778,8 +1778,14 @@ class _CommonInterpolationBase(
 
 class ScalarInterpolationParams(_CommonInterpolationBase, _InterpolationNoiseMixin):
     kind: Literal["scalar"] = "scalar"
-    start: Optional[float] = Field(None, description="Start value. If unset, parent state value is used.")
-    end: Optional[float] = Field(None, description="End value. If unset, only noise is applied.")
+    start: Optional[float | list[float]] = Field(
+        None,
+        description="Start value. If a list of values is provided, each element will be interpolated separately. If unset, parent state value is used.",
+    )
+    end: Optional[float | list[float]] = Field(
+        None,
+        description="End value. If a list of values is provided, each element will be interpolated separately. If unset, only noise is applied.",
+    )
 
 
 class Vec3InterpolationParams(_CommonInterpolationBase, _InterpolationNoiseMixin):

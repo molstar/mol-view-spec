@@ -2536,10 +2536,17 @@ async def animation_testing_example() -> MVSResponse:
     primitives1.ellipsoid(center=[0, 0, 0], radius=[2, 3, 2.5], color="red")
 
     builder.primitives().lines(
-        ref="lines",
+        ref="lines1",
         vertices=[22, 13, 0, 22, 13, 0],
         indices=[0, 1],
         color="purple",
+        width=2,
+    )
+    builder.primitives().lines(
+        ref="lines2",
+        vertices=[23, 13, 0, 23, 13, 0],
+        indices=[0, 1],
+        color="green",
         width=2,
     )
 
@@ -2565,10 +2572,19 @@ async def animation_testing_example() -> MVSResponse:
 
     anim.interpolate(
         kind="vec3",
-        target_ref="lines",
+        target_ref="lines1",
         duration_ms=2000,
         property="vertices",
         end=[22, 13, 0, 22, 13, 50],
+        noise_magnitude=0.5,
+    )
+
+    anim.interpolate(
+        kind="scalar",
+        target_ref="lines2",
+        duration_ms=2000,
+        property="vertices",
+        end=[23, 13, 0, 23, 13, 50],
     )
 
     anim.interpolate(

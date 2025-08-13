@@ -1859,8 +1859,8 @@ class Animation:
         duration_ms: float,
         easing: EasingKindT | None = None,
         noise_magnitude: float | None = None,
-        start: float | None = None,
-        end: float | None = None,
+        start: float | Sequence[float] | None = None,
+        end: float | Sequence[float] | None = None,
         frequency: int | None = None,
         alternate_direction: bool | None = None,
         custom: CustomT = None,
@@ -1875,8 +1875,8 @@ class Animation:
         :param duration_ms: duration of the transition in milliseconds.
         :param easing: easing function to use for the transition (default: linear)
         :param noise_magnitude: amount of noise to add to the interpolation (default: 0)
-        :param start: start value of the interpolation (default: parent state value)
-        :param end: end value of the interpolation, if unset, only noise is applied.
+        :param start: start value of the interpolation, if a list of values is provided, each element will be interpolated separately, (default: parent state value)
+        :param end: end value of the interpolation, if a list of values is provided, each element will be interpolated separately, if unset, only noise is applied.
         :param frequency: determines how many times the interpolation loops. Current T = frequency * t mod 1.
         :param alternate_direction: whether to alternate the direction of the interpolation for frequency > 1.
         :param custom: optional, custom data to attach to this node
