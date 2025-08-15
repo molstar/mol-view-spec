@@ -495,6 +495,7 @@ ParseFormatT = Literal[
     "mol",
     "sdf",
     "mol2",
+    "lammpstrj",  # +coordinates
     # coordinates
     "xtc",
     # volumes
