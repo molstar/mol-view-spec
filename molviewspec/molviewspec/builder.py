@@ -33,6 +33,7 @@ from molviewspec.nodes import (
     ComponentInlineParams,
     ComponentSelectorT,
     ContinuousPalette,
+    CoordinatesParams,
     CustomT,
     DescriptionFormatT,
     DiscretePalette,
@@ -648,6 +649,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        coordinates_ref: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -656,6 +658,7 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
         :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
+        :param coordinates_ref: Optional reference to a specific set of coordinates
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
@@ -672,6 +675,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        coordinates_ref: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -681,6 +685,7 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
         :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
+        :param coordinates_ref: Optional reference to a specific set of coordinates
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
@@ -698,6 +703,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        coordinates_ref: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -708,6 +714,7 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
         :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
+        :param coordinates_ref: Optional reference to a specific set of coordinates
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
@@ -724,6 +731,7 @@ class Parse(_Base):
         model_index: int | None = None,
         block_index: int | None = None,
         block_header: str | None = None,
+        coordinates_ref: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -733,6 +741,7 @@ class Parse(_Base):
         :param model_index: 0-based model index in case multiple NMR frames are present (default: 0)
         :param block_index: 0-based block index in case multiple mmCIF or SDF data blocks are present (default: 0)
         :param block_header: Reference a specific mmCIF or SDF data block by its block header (overrides `block_index`)
+        :param coordinates_ref: Optional reference to a specific set of coordinates
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at structure level
@@ -760,6 +769,23 @@ class Parse(_Base):
         node = Node(kind="volume", params=params)
         self._add_child(node)
         return Volume(node=node, root=self._root)
+
+    def coordinates(
+        self,
+        *,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Parse:
+        """
+        Indicate that the parsed data are coordinates.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(CoordinatesParams, locals())
+        node = Node(kind="coordinates", params=params)
+        self._add_child(node)
+        return self
 
 
 class Structure(_Base, _PrimitivesMixin, _TransformMixin):

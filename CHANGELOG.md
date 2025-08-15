@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file, following t
 - Add `instance` node type
 - Add `surface_type` (`molecular` / `gaussian`) to the surface representation
 - Add `transform.rotation_center` to support rotating objects around their centroids or defined points
+- Add `coordinates` node to support loading coords from separate files
+- Add support for additional file formats (`pdbqt`, `gro`, `xyz`, `mol`, `sdf`, `mol2`, `xtc`)
 - Support transforms and instancing on structures, components, and volumes
 - Make `canvas.background_color` optional
 

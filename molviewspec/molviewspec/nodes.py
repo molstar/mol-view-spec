@@ -30,6 +30,7 @@ KindT = Literal[
     "component",
     "component_from_source",
     "component_from_uri",
+    "coordinates",
     "download",
     "focus",
     "instance",
@@ -483,7 +484,22 @@ class DownloadParams(BaseModel):
     url: str = Field(description="URL from which to pull structure data.")
 
 
-ParseFormatT = Literal["mmcif", "bcif", "pdb", "map"]
+ParseFormatT = Literal[
+    # trajectory
+    "mmcif",
+    "bcif",  # +volumes
+    "pdb",
+    "pdbqt",
+    "gro",
+    "xyz",
+    "mol",
+    "sdf",
+    "mol2",
+    # coordinates
+    "xtc",
+    # volumes
+    "map",
+]
 
 
 class ParseParams(BaseModel):
@@ -492,6 +508,12 @@ class ParseParams(BaseModel):
     """
 
     format: ParseFormatT = Field(description="The format of the structure data.")
+
+
+class CoordinatesParams(BaseModel):
+    """
+    Coordinates node, describing standalone coordinate data.
+    """
 
 
 StructureTypeT = Literal["model", "assembly", "symmetry", "symmetry_mates"]
@@ -538,6 +560,7 @@ class StructureParams(BaseModel):
     radius: Optional[float] = Field(None, description="Radius around model coordinates when loading symmetry mates")
     ijk_min: Optional[Vec3[int]] = Field(None, description="Bottom-left Miller indices")
     ijk_max: Optional[Vec3[int]] = Field(None, description="Top-right Miller indices")
+    coordinates_ref: Optional[str] = Field(None, description="Reference to a specific set of coordinates")
 
 
 class VolumeParams(BaseModel):

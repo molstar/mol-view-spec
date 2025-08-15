@@ -2627,6 +2627,39 @@ async def animation_testing_example() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
+@router.get("/testing/trajectory-coordinates")
+async def trajectory_coordinates_testing_example() -> MVSResponse:
+    """
+    Example that loading coordinates from separate file
+    """
+
+    # Please use your own data for this
+
+    builder = create_builder()
+    structure = builder.download(url="/tmp/C2H6.xtc").parse(format="xtc").coordinates(ref="coords")
+
+    (
+        builder.download(url="/tmp/C2H6.xyz")
+        .parse(format="xyz")
+        .model_structure(coordinates_ref="coords", ref="model")
+        .component(selector="all")
+        .representation(type="ball_and_stick")
+    )
+
+    anim = builder.animation(loop=True)
+
+    anim.interpolate(
+        kind="scalar",
+        target_ref="model",
+        duration_ms=1000,
+        property="model_index",
+        start=0,
+        end=7,
+    )
+
+    return JSONResponse(builder.get_state().to_dict())
+
+
 ##############################################################################
 # MVS specification of existing visualizations
 
