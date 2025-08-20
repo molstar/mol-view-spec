@@ -994,8 +994,19 @@ class CartoonParams(RepresentationParams):
     # TODO support for variable size, e.g. based on b-factors?
 
 
+class BackboneParams(RepresentationParams):
+    type: Literal["backbone"] = "backbone"
+    size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
+
+
 class BallAndStickParams(RepresentationParams):
     type: Literal["ball_and_stick"] = "ball_and_stick"
+    ignore_hydrogens: Optional[bool] = Field(None, description="Controls whether hydrogen atoms are drawn.")
+    size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
+
+
+class LineRepresenatationParams(RepresentationParams):
+    type: Literal["line"] = "line"
     ignore_hydrogens: Optional[bool] = Field(None, description="Controls whether hydrogen atoms are drawn.")
     size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
@@ -1026,7 +1037,15 @@ class SurfaceParams(RepresentationParams):
 
 RepresentationTypeParams = {
     get_model_fields(cast(Type[RepresentationParams], t))["type"].default: t
-    for t in (CartoonParams, BallAndStickParams, SpacefillParams, CarbohydrateParams, SurfaceParams)
+    for t in (
+        CartoonParams,
+        BackboneParams,
+        BallAndStickParams,
+        LineRepresenatationParams,
+        SpacefillParams,
+        CarbohydrateParams,
+        SurfaceParams,
+    )
 }
 
 

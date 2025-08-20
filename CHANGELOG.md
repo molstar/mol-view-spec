@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file, following t
 - Add `matrix` field support to `TransformParams`
 - Add `instance` node type
 - Add `surface_type` (`molecular` / `gaussian`) to the surface representation
+- Add `backbone` and `line` representation types
 - Add `transform.rotation_center` to support rotating objects around their centroids or defined points
 - Add `coordinates` node to support loading coords from separate files
 - Add support for additional file formats (`pdbqt`, `gro`, `xyz`, `mol`, `sdf`, `mol2`, `xtc`, `lammpstrj`)
