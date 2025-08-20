@@ -996,7 +996,6 @@ class CartoonParams(RepresentationParams):
 
 class BackboneParams(RepresentationParams):
     type: Literal["backbone"] = "backbone"
-    ignore_hydrogens: Optional[bool] = Field(None, description="Controls whether hydrogen atoms are drawn.")
     size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 

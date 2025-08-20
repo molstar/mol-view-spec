@@ -1038,7 +1038,6 @@ class Component(_Base, _FocusMixin, _TransformMixin):
         self,
         *,
         type: Literal["backbone"],
-        ignore_hydrogens: bool | None = None,
         size_factor: float | None = None,
         custom: CustomT = None,
         ref: RefT = None,
@@ -1046,7 +1045,6 @@ class Component(_Base, _FocusMixin, _TransformMixin):
         """
         Add a backbone representation for this component.
         :param type: the type of this representation ('backbone')
-        :param ignore_hydrogens: draw hydrogen atoms?
         :param size_factor: adjust the scale of the visuals (relative to 1.0)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
