@@ -1829,6 +1829,7 @@ class ScalarInterpolationParams(_CommonInterpolationBase, _InterpolationNoiseMix
         None,
         description="End value. If a list of values is provided, each element will be interpolated separately. If unset, only noise is applied.",
     )
+    discrete: Optional[bool] = Field(False, description="Whether to round the values to the closest integer. Useful for example for trajectory animation.")
 
 
 class Vec3InterpolationParams(_CommonInterpolationBase, _InterpolationNoiseMixin):

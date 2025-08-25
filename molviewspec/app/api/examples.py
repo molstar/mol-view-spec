@@ -2656,6 +2656,7 @@ async def trajectory_coordinates_testing_example() -> MVSResponse:
         property="model_index",
         start=0,
         end=7,
+        discrete=True,
     )
 
     return JSONResponse(builder.get_state().to_dict())
