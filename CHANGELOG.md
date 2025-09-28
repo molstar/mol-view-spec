@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+## [v1.7.0] - 2025-04-22
+
+NOTE: Most of these features require Mol* 5.0 to work
+
 - Add snapshot animation support
 - Add `load/s` to `MVSJ` object
 - Add `find_ref` to `State` and `MVSJ` objects
