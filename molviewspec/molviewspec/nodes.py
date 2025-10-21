@@ -500,6 +500,8 @@ ParseFormatT = Literal[
     "xtc",
     # volumes
     "map",
+    "dx",
+    "dxbin",
 ]
 
 

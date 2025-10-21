@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+- Add support for `dx` volume format
+
 ## [v1.7.0] - 2025-04-22
 
 NOTE: Most of these features require Mol* 5.0 to work
