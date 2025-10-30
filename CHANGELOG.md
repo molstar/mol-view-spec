@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file, following t
 ## [Unreleased]
 
 - Add support for `dx` volume format
+- Use `viewportShowToggleFullscreen` instead of `viewportShowExpand` to support fullscreen in Jupyter and Streamlit
 
 ## [v1.7.0] - 2025-04-22
 
