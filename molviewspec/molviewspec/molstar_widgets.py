@@ -176,7 +176,12 @@ VIEWER_TEMPLATE = """<!DOCTYPE html>
         <script>
             var mvsData = {{state}};
             molstar.Viewer
-                .create('viewer1', { layoutIsExpanded: false, layoutShowControls: false })
+                .create('viewer1', { 
+                    layoutIsExpanded: false,
+                    layoutShowControls: false,
+                    viewportShowToggleFullscreen: true,
+                    viewportShowExpand: false
+                })
                 .then(viewer => viewer.loadMvsData(mvsData, '{{format}}'));
         </script>
     </body>
