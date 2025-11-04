@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file, following t
 ## [Unreleased]
 
 - Add support for `dx` volume format
+- Add support for `top`, `prmtop`, and `psf` topology formats
 - Add support for clipping of primitives
 - Add support for `near` in `CameraParams`
 
