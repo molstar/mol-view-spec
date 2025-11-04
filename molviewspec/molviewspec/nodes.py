@@ -498,6 +498,9 @@ ParseFormatT = Literal[
     "lammpstrj",  # +coordinates
     # coordinates
     "xtc",
+    "nctraj",
+    "dcd",
+    "trr",
     # topology
     "psf",
     "prmtop",
