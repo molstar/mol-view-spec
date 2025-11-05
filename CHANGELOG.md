@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+## [v1.8.0] - 2025-11-05
+
 - Add support for `dx` volume format
 - Add support for `top`, `prmtop`, and `psf` topology formats
 - Add support for `nctraj`, `dcd`, and `trr` coordinate formats
@@ -10,7 +12,7 @@ All notable changes to this project will be documented in this file, following t
 - Add support for `near` in `CameraParams`
 - Use `viewportShowToggleFullscreen` instead of `viewportShowExpand` to support fullscreen in Jupyter and Streamlit
 
-## [v1.7.0] - 2025-04-22
+## [v1.7.0] - 2025-09-28
 
 NOTE: Most of these features require Mol* 5.0 to work
 

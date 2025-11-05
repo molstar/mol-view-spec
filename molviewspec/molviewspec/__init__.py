@@ -1,6 +1,6 @@
 """MolViewSpec"""
 
-__version__ = "1.7.0"
+__version__ = "1.8.0"
 
 from molviewspec.builder import create_builder
 from molviewspec.molstar_widgets import molstar_html, molstar_notebook, molstar_streamlit
