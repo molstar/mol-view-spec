@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file, following t
 - Add support for `nctraj`, `dcd`, and `trr` coordinate formats
 - Add support for clipping of primitives
 - Add support for `near` in `CameraParams`
+- Use `viewportShowToggleFullscreen` instead of `viewportShowExpand` to support fullscreen in Jupyter and Streamlit
 
 ## [v1.7.0] - 2025-04-22
 
