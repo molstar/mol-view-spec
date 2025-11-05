@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file, following t
 ## [Unreleased]
 
 - Add support for `dx` volume format
+- Add support for `top`, `prmtop`, and `psf` topology formats
+- Add support for `nctraj`, `dcd`, and `trr` coordinate formats
+- Add support for clipping of primitives
+- Add support for `near` in `CameraParams`
 - Use `viewportShowToggleFullscreen` instead of `viewportShowExpand` to support fullscreen in Jupyter and Streamlit
 
 ## [v1.7.0] - 2025-04-22

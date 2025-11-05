@@ -498,6 +498,13 @@ ParseFormatT = Literal[
     "lammpstrj",  # +coordinates
     # coordinates
     "xtc",
+    "nctraj",
+    "dcd",
+    "trr",
+    # topology
+    "psf",
+    "prmtop",
+    "top",
     # volumes
     "map",
     "dx",
@@ -1392,6 +1399,7 @@ class CameraParams(BaseModel):
     up: Vec3[float] = Field(
         description="Controls the rotation around the vector between target and position", required=True
     )
+    near: Optional[float] = Field(None, description="Near clipping plane distance from the position")
 
 
 class CanvasParams(BaseModel):

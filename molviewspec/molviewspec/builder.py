@@ -1463,13 +1463,13 @@ class VolumeRepresentation(_Base, _FocusMixin, _ClipMixin):
         return self
 
 
-class PrimitivesFromUri(_Base, _FocusMixin):
+class PrimitivesFromUri(_Base, _FocusMixin, _ClipMixin):
     """
     A collection of primitives (such as spheres, lines, ...) that will be loaded from provided resource.
     """
 
 
-class Primitives(_Base, _FocusMixin):
+class Primitives(_Base, _FocusMixin, _ClipMixin):
     """
     A collection of primitives (such as spheres, lines, ...) that will be grouped together and can be customized using
     options.
