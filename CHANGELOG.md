@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+- Reduced file size of converted mvsx file
+
 ## [v1.8.0] - 2025-11-05
 
 - Add support for `dx` volume format

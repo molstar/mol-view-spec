@@ -253,11 +253,11 @@ def mvsj_to_mvsx(
 
         # Create the MVSX archive
         try:
-            with zipfile.ZipFile(output_path, mode="w") as z:
+            with zipfile.ZipFile(output_path, mode="w", compression=zipfile.ZIP_DEFLATED) as z:
                 # Add the modified MVSJ as index.mvsj
                 index_mvsj_path = os.path.join(temp_dir, "index.mvsj")
                 with open(index_mvsj_path, "w", encoding="utf-8") as f:
-                    json.dump(mvsj_data, f, ensure_ascii=False, indent=2)
+                    json.dump(mvsj_data, f, ensure_ascii=False, separators=(",", ":"))
 
                 z.write(index_mvsj_path, arcname="index.mvsj")
 
