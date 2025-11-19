@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
-- Reduced file size of converted mvsx file
+- Fix compression not being applied to mvsj_to_mvsx function, MVSX node, and molstar widget
 
 ## [v1.8.0] - 2025-11-05
 
