@@ -55,7 +55,7 @@ def molstar_html(
 
     if data is not None:
         zip_data = BytesIO()
-        with zipfile.ZipFile(zip_data, "w") as zipf:
+        with zipfile.ZipFile(zip_data, "w", compression=zipfile.ZIP_DEFLATED) as zipf:
             zipf.writestr("index.mvsj", state)
             for path, file_contents in data.items():
                 zipf.writestr(path, file_contents)

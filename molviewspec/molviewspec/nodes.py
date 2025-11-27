@@ -416,6 +416,12 @@ class MVSX(BaseModel, MolstarWidgetsMixin):
         {},
         description="Assets to be serialized with the data. Can be a file path, URL, or raw bytes. Files and URLs will be automatically synchronouly copied into the archive during serialization.",
     )
+    compresslevel: int | None = Field(
+        default=None,
+        description="Integers 0 through 9 specifying the compression level. Defaults to None.",
+        ge=0,
+        le=9,
+    )
 
     def _serialize(self, z: zipfile.ZipFile) -> None:
         """
@@ -459,7 +465,12 @@ class MVSX(BaseModel, MolstarWidgetsMixin):
         """
 
         with open(filename, "wb") as f:
-            with zipfile.ZipFile(f, "w") as z:
+            with zipfile.ZipFile(
+                file=f,
+                mode="w",
+                compression=zipfile.ZIP_DEFLATED,
+                compresslevel=self.compresslevel,
+            ) as z:
                 self._serialize(z)
 
     def dumps(self) -> bytes:
@@ -468,7 +479,12 @@ class MVSX(BaseModel, MolstarWidgetsMixin):
         """
 
         with io.BytesIO() as f:
-            with zipfile.ZipFile(f, "w") as z:
+            with zipfile.ZipFile(
+                file=f,
+                mode="w",
+                compression=zipfile.ZIP_DEFLATED,
+                compresslevel=self.compresslevel,
+            ) as z:
                 self._serialize(z)
             f.flush()
             ret = f.getvalue()
