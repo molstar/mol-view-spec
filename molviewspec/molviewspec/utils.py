@@ -39,8 +39,9 @@ def make_params(params_type: Type[TParams], values=None, /, **more_values: objec
         # must use alias here to properly resolve goodies like `schema_`
         key = field.alias or field_name
 
-        if more_values.get(key) is not None:
-            result[key] = more_values[key]
+        if key in more_values:
+            if more_values[key] is not None:
+                result[key] = more_values[key]
             consumed_more_values.add(key)
         elif values.get(key) is not None:
             result[key] = values[key]
