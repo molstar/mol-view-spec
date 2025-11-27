@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file, following t
 ## [Unreleased]
 
 - Fix compression not being applied to mvsj_to_mvsx function, MVSX node, and molstar widget
+- Fixed passing None value to optional node params
 
 ## [v1.8.0] - 2025-11-05
 
