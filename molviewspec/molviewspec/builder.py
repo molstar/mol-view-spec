@@ -1242,6 +1242,7 @@ class Representation(_Base, _ClipMixin):
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
         palette: PaletteT | None = None,
+        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -1254,6 +1255,7 @@ class Representation(_Base, _ClipMixin):
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
         :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
         :param palette: customize mapping of annotation values to colors (default: annotation values are color strings directly)
+        :param selector: defines to what part of the representation this coloring should be applied (default: whole representation)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -1275,6 +1277,7 @@ class Representation(_Base, _ClipMixin):
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
         palette: PaletteT | None = None,
+        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -1289,6 +1292,7 @@ class Representation(_Base, _ClipMixin):
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the color (default: "color")
         :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
         :param palette: customize mapping of annotation values to colors (default: annotation values are color strings directly)
+        :param selector: defines to what part of the representation this coloring should be applied (default: whole representation)
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
