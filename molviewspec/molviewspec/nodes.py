@@ -1310,6 +1310,9 @@ class ColorFromUriParams(_DataFromUriParams):
     """
 
     palette: Optional[PaletteT] = Field(None, description="Customize mapping of annotation values to colors.")
+    selector: Optional[ComponentSelectorT | ComponentExpression | list[ComponentExpression]] = Field(
+        None, description="Defines to what part of the representation this coloring should be applied."
+    )
 
 
 class ColorFromSourceParams(_DataFromSourceParams):
@@ -1318,6 +1321,9 @@ class ColorFromSourceParams(_DataFromSourceParams):
     """
 
     palette: Optional[PaletteT] = Field(None, description="Customize mapping of annotation values to colors.")
+    selector: Optional[ComponentSelectorT | ComponentExpression | list[ComponentExpression]] = Field(
+        None, description="Defines to what part of the representation this coloring should be applied."
+    )
 
 
 class OpacityInlineParams(ComponentInlineParams):
