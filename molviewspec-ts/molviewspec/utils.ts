@@ -2,7 +2,7 @@
  * Utility functions for MolViewSpec
  */
 
-export const VERSION = "1.8";
+export const VERSION = "1.8.1";
 
 /**
  * Generate a UUID v4.

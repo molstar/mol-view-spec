@@ -362,7 +362,9 @@ export interface ColorFromUriParams {
   field_name?: string;
   block_header?: string;
   block_index?: number;
+  field_remapping?: Record<string, string | null>;
   palette?: Palette;
+  selector?: ComponentSelectorT | ComponentExpression | ComponentExpression[];
 }
 
 /**
@@ -370,11 +372,13 @@ export interface ColorFromUriParams {
  */
 export interface ColorFromSourceParams {
   category_name: string;
-  field_name: string;
+  field_name?: string;
   block_header?: string;
   block_index?: number;
   schema?: SchemaT;
+  field_remapping?: Record<string, string | null>;
   palette?: Palette;
+  selector?: ComponentSelectorT | ComponentExpression | ComponentExpression[];
 }
 
 /**
