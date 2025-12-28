@@ -1,0 +1,31 @@
+# Deno
+.deno/
+deno.lock
+
+# Output files
+*.mvsj
+*.mvsx
+
+# Test outputs
+tests/*.mvsj
+tests/*.mvsx
+examples/*.mvsj
+examples/*.mvsx
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
