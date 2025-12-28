@@ -9,8 +9,8 @@ import { excludeNone } from "./utils.ts";
 let JSZip: any = null;
 async function getJSZip() {
   if (JSZip === null) {
-    const module = await import("https://deno.land/x/jszip@0.11.0/mod.ts");
-    JSZip = module.JSZip;
+    const module = await import("npm:jszip@3.10.1");
+    JSZip = module.default;
   }
   return JSZip;
 }

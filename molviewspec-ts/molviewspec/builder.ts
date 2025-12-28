@@ -3,6 +3,22 @@
  */
 
 import type {
+  ColorT,
+  ComponentSelectorT,
+  CustomT,
+  DescriptionFormatT,
+  EasingKindT,
+  Mat3,
+  Mat4,
+  ParseFormatT,
+  PrimitivePositionT,
+  RefT,
+  RepresentationTypeT,
+  SchemaFormatT,
+  SchemaT,
+  Vec3,
+} from "./types.ts";
+import type {
   AnimationNode,
   BoxParams,
   CameraParams,
@@ -13,40 +29,26 @@ import type {
   ColorFromSourceParams,
   ColorFromUriParams,
   ColorInlineParams,
-  ColorT,
   ComponentExpression,
   ComponentFromSourceParams,
   ComponentFromUriParams,
   ComponentInlineParams,
-  ComponentSelectorT,
   CoordinatesParams,
-  CustomT,
-  DescriptionFormatT,
   DistanceMeasurementParams,
   DownloadParams,
-  EasingKindT,
   FocusInlineParams,
   GlobalMetadata,
-  InterpolationKindT,
   LabelFromSourceParams,
   LabelFromUriParams,
   LabelInlineParams,
-  Mat3,
-  Mat4,
   MeshParams,
   Node,
   OpacityInlineParams,
   Palette,
-  ParseFormatT,
   ParseParams,
   PrimitiveLabelParams,
-  PrimitivePositionT,
   PrimitivesFromUriParams,
   PrimitivesParams,
-  RefT,
-  RepresentationTypeT,
-  SchemaFormatT,
-  SchemaT,
   Snapshot,
   SnapshotMetadata,
   State,
@@ -57,9 +59,7 @@ import type {
   TooltipInlineParams,
   TransformParams,
   TubeParams,
-  Vec3,
   VolumeParams,
-  VolumeRepresentationTypeT,
 } from "./nodes.ts";
 import { createGlobalMetadata, createSnapshotMetadata } from "./nodes.ts";
 import { excludeNone, makeParams } from "./utils.ts";
@@ -228,7 +228,11 @@ export class Root {
   /**
    * Add primitives node.
    */
-  primitives(params?: PrimitivesParams, custom?: CustomT, ref?: RefT): Primitives {
+  primitives(
+    params?: PrimitivesParams,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Primitives {
     const node: Node = {
       kind: "primitives",
       params: makeParams(params),
@@ -280,7 +284,11 @@ export class Parse extends Base {
   /**
    * Add a model structure node.
    */
-  modelStructure(params?: Partial<StructureParams>, custom?: CustomT, ref?: RefT): Structure {
+  modelStructure(
+    params?: Partial<StructureParams>,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Structure {
     const node: Node = {
       kind: "structure",
       params: makeParams<StructureParams>({ ...params, type: "model" }),
@@ -294,7 +302,11 @@ export class Parse extends Base {
   /**
    * Add an assembly structure node.
    */
-  assemblyStructure(params?: Partial<StructureParams>, custom?: CustomT, ref?: RefT): Structure {
+  assemblyStructure(
+    params?: Partial<StructureParams>,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Structure {
     const node: Node = {
       kind: "structure",
       params: makeParams<StructureParams>({ ...params, type: "assembly" }),
@@ -308,7 +320,11 @@ export class Parse extends Base {
   /**
    * Add a symmetry structure node.
    */
-  symmetryStructure(params?: Partial<StructureParams>, custom?: CustomT, ref?: RefT): Structure {
+  symmetryStructure(
+    params?: Partial<StructureParams>,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Structure {
     const node: Node = {
       kind: "structure",
       params: makeParams<StructureParams>({ ...params, type: "symmetry" }),
@@ -322,10 +338,17 @@ export class Parse extends Base {
   /**
    * Add a symmetry mates structure node.
    */
-  symmetryMatesStructure(params?: Partial<StructureParams>, custom?: CustomT, ref?: RefT): Structure {
+  symmetryMatesStructure(
+    params?: Partial<StructureParams>,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Structure {
     const node: Node = {
       kind: "structure",
-      params: makeParams<StructureParams>({ ...params, type: "symmetry_mates" }),
+      params: makeParams<StructureParams>({
+        ...params,
+        type: "symmetry_mates",
+      }),
       custom,
       ref,
     };
@@ -350,7 +373,11 @@ export class Parse extends Base {
   /**
    * Add a coordinates node.
    */
-  coordinates(params?: CoordinatesParams, custom?: CustomT, ref?: RefT): Structure {
+  coordinates(
+    params?: CoordinatesParams,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Structure {
     const node: Node = {
       kind: "coordinates",
       params: makeParams(params),
@@ -387,7 +414,11 @@ export class Structure extends Base {
   /**
    * Add a component from URI node.
    */
-  componentFromUri(params: ComponentFromUriParams, custom?: CustomT, ref?: RefT): Component {
+  componentFromUri(
+    params: ComponentFromUriParams,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Component {
     const node: Node = {
       kind: "component_from_uri",
       params: makeParams(params),
@@ -401,7 +432,11 @@ export class Structure extends Base {
   /**
    * Add a component from source node.
    */
-  componentFromSource(params: ComponentFromSourceParams, custom?: CustomT, ref?: RefT): Component {
+  componentFromSource(
+    params: ComponentFromSourceParams,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Component {
     const node: Node = {
       kind: "component_from_source",
       params: makeParams(params),
@@ -448,7 +483,12 @@ export class Component extends Base {
   /**
    * Add a representation node.
    */
-  representation(type: RepresentationTypeT, params?: Record<string, unknown>, custom?: CustomT, ref?: RefT): Representation {
+  representation(
+    type: RepresentationTypeT,
+    params?: Record<string, unknown>,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Representation {
     const node: Node = {
       kind: "representation",
       params: makeParams({ type, ...params }),
@@ -523,7 +563,12 @@ export class Representation extends Base {
   /**
    * Add a color node.
    */
-  color(color: ColorT, palette?: Palette, custom?: CustomT, ref?: RefT): Representation {
+  color(
+    color: ColorT,
+    palette?: Palette,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Representation {
     const node: Node = {
       kind: "color",
       params: makeParams<ColorInlineParams>({ color, palette }),
@@ -537,7 +582,11 @@ export class Representation extends Base {
   /**
    * Add a color from URI node.
    */
-  colorFromUri(params: ColorFromUriParams, custom?: CustomT, ref?: RefT): Representation {
+  colorFromUri(
+    params: ColorFromUriParams,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Representation {
     const node: Node = {
       kind: "color_from_uri",
       params: makeParams(params),
@@ -551,7 +600,11 @@ export class Representation extends Base {
   /**
    * Add a color from source node.
    */
-  colorFromSource(params: ColorFromSourceParams, custom?: CustomT, ref?: RefT): Representation {
+  colorFromSource(
+    params: ColorFromSourceParams,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Representation {
     const node: Node = {
       kind: "color_from_source",
       params: makeParams(params),
@@ -584,7 +637,12 @@ export class Volume extends Base {
   /**
    * Add a volume representation node.
    */
-  representation(type: VolumeRepresentationTypeT, params?: Record<string, unknown>, custom?: CustomT, ref?: RefT): VolumeRepresentation {
+  representation(
+    type: VolumeRepresentationTypeT,
+    params?: Record<string, unknown>,
+    custom?: CustomT,
+    ref?: RefT,
+  ): VolumeRepresentation {
     const node: Node = {
       kind: "volume_representation",
       params: makeParams({ type, ...params }),
@@ -664,7 +722,12 @@ export class Primitives extends Base {
   /**
    * Add a sphere primitive.
    */
-  sphere(center: PrimitivePositionT, radius: number, custom?: CustomT, ref?: RefT): Primitives {
+  sphere(
+    center: PrimitivePositionT,
+    radius: number,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Primitives {
     const node: Node = {
       kind: "primitive",
       params: makeParams({ center, radius, primitive_type: "sphere" }),
@@ -692,7 +755,11 @@ export class Primitives extends Base {
   /**
    * Add a distance measurement primitive.
    */
-  distance(params: DistanceMeasurementParams, custom?: CustomT, ref?: RefT): Primitives {
+  distance(
+    params: DistanceMeasurementParams,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Primitives {
     const node: Node = {
       kind: "primitive",
       params: makeParams({ ...params, primitive_type: "distance" }),
@@ -706,7 +773,11 @@ export class Primitives extends Base {
   /**
    * Add a label primitive.
    */
-  label(params: PrimitiveLabelParams, custom?: CustomT, ref?: RefT): Primitives {
+  label(
+    params: PrimitiveLabelParams,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Primitives {
     const node: Node = {
       kind: "primitive",
       params: makeParams({ ...params, primitive_type: "label" }),

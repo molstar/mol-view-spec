@@ -4,7 +4,8 @@
  */
 
 import type { MVSData, State, States } from "./nodes.ts";
-import { MVSJ, MVSX } from "./mod.ts";
+import { MVSJ } from "./mvsj.ts";
+import { MVSX } from "./mvsx.ts";
 
 export type SupportedStates =
   | string
@@ -77,7 +78,9 @@ export function molstarHtml(
  * Helper to create a Jupyter display object with HTML MIME type.
  * This is what Deno Jupyter recognizes for rendering HTML.
  */
-export function displayHTML(html: string) {
+export function displayHTML(html: string): {
+  [Symbol.for("Jupyter.display")](): { "text/html": string };
+} {
   return {
     [Symbol.for("Jupyter.display")]() {
       return {

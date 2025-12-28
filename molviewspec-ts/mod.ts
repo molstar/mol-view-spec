@@ -36,7 +36,7 @@ export type {
   SurfaceTypeT,
   Vec3,
   VolumeRepresentationTypeT,
-} from "./types.ts";
+} from "./molviewspec/types.ts";
 
 // Export node types and interfaces
 export type {
@@ -111,7 +111,7 @@ export type {
   VolumeIsoSurfaceParams,
   VolumeParams,
   VolumeRepresentationParams,
-} from "./nodes.ts";
+} from "./molviewspec/nodes.ts";
 
 // Export node functions
 export {
@@ -119,7 +119,7 @@ export {
   createSnapshotMetadata,
   findRef,
   validateStateTree,
-} from "./nodes.ts";
+} from "./molviewspec/nodes.ts";
 
 // Export builder classes and functions
 export {
@@ -133,13 +133,13 @@ export {
   Structure,
   Volume,
   VolumeRepresentation,
-} from "./builder.ts";
+} from "./molviewspec/builder.ts";
 
 // Export MVSJ
-export { MVSJ, stateToMVSJ, statesToMVSJ } from "./mvsj.ts";
+export { MVSJ, stateToMVSJ, statesToMVSJ } from "./molviewspec/mvsj.ts";
 
 // Export MVSX
-export { mvsjToMvsx, MVSX } from "./mvsx.ts";
+export { mvsjToMvsx, MVSX } from "./molviewspec/mvsx.ts";
 
 // Export utilities
 export {
@@ -149,7 +149,7 @@ export {
   getTimestamp,
   makeParams,
   VERSION,
-} from "./utils.ts";
+} from "./molviewspec/utils.ts";
 
 // Export display utilities
 export {
@@ -158,4 +158,4 @@ export {
   molstarNotebook,
   saveMolstarHtml,
   type SupportedStates,
-} from "./display.ts";
+} from "./molviewspec/display.ts";

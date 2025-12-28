@@ -2,11 +2,15 @@
   "name": "@molstar/molviewspec",
   "version": "1.8.0",
   "exports": "./mod.ts",
+  "publish": {
+    "exclude": ["examples/", "tests/", "*.mvsj", "*.mvsx", ".vscode/", ".idea/"]
+  },
   "tasks": {
     "test": "deno test --allow-read --allow-write",
     "fmt": "deno fmt",
     "lint": "deno lint",
-    "check": "deno check mod.ts"
+    "check": "deno check mod.ts",
+    "publish:dry": "deno publish --dry-run"
   },
   "fmt": {
     "useTabs": false,
