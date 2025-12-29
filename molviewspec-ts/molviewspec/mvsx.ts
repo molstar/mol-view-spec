@@ -70,7 +70,7 @@ export class MVSX {
     // Add the main index.mvsj file
     const cleaned = excludeNone(this.data);
     const jsonContent = JSON.stringify(cleaned, null, 2);
-    zip.addFile("index.mvsj", new TextEncoder().encode(jsonContent));
+    zip.file("index.mvsj", new TextEncoder().encode(jsonContent));
 
     // Add all assets
     for (const [assetName, assetData] of this.assets) {
@@ -86,7 +86,7 @@ export class MVSX {
             await this.addAssetFromUrl(assetName, assetData);
             const data = this.assets.get(assetName);
             if (data && data instanceof Uint8Array) {
-              zip.addFile(assetName, data);
+              zip.file(assetName, data);
             }
             continue;
           }
@@ -97,15 +97,15 @@ export class MVSX {
         // Try as file path
         try {
           const fileData = await Deno.readFile(assetData);
-          zip.addFile(assetName, fileData);
+          zip.file(assetName, fileData);
           continue;
         } catch {
           // If it fails, treat it as raw string content
-          zip.addFile(assetName, new TextEncoder().encode(assetData));
+          zip.file(assetName, new TextEncoder().encode(assetData));
         }
       } else {
         // Already Uint8Array
-        zip.addFile(assetName, assetData);
+        zip.file(assetName, assetData);
       }
     }
 
