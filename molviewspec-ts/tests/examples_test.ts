@@ -4,7 +4,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { createBuilder } from "../molviewspec/builder.ts";
-import type { MVSData, State } from "../molviewspec/nodes.ts";
+import type { MVSData, State, States } from "../molviewspec/nodes.ts";
 
 /**
  * Helper to load and parse MVSJ files from test-data/colab_examples
@@ -18,14 +18,22 @@ async function loadExampleMVSJ(filename: string): Promise<MVSData> {
 /**
  * Helper to recursively find all nodes of a specific kind
  */
-function findNodesByKind(node: any, kind: string): any[] {
-  const results: any[] = [];
+function findNodesByKind(
+  node: { kind?: string; children?: unknown[] },
+  kind: string,
+): unknown[] {
+  const results: unknown[] = [];
   if (node.kind === kind) {
     results.push(node);
   }
   if (node.children) {
     for (const child of node.children) {
-      results.push(...findNodesByKind(child, kind));
+      results.push(
+        ...findNodesByKind(
+          child as { kind?: string; children?: unknown[] },
+          kind,
+        ),
+      );
     }
   }
   return results;
@@ -150,7 +158,9 @@ Deno.test("examples - components.mvsj focus node", async () => {
   assertEquals(focusNodes.length > 0, true);
 
   // Check that focus has a selector array
-  const focusWithArray = focusNodes.find((node) => Array.isArray(node.params.target));
+  const focusWithArray = focusNodes.find((node) =>
+    Array.isArray(node.params.target),
+  );
   if (focusWithArray) {
     assertEquals(Array.isArray(focusWithArray.params.target), true);
   }
@@ -193,7 +203,7 @@ Deno.test("examples - volumetric.mvsj volume nodes", async () => {
 
   // volumetric.mvsj is a multi-state file
   if (data.kind === "multiple") {
-    const states = data as any;
+    const states = data as States;
     // Check for volume nodes in first snapshot
     const volumeNodes = findNodesByKind(states.snapshots[0].root, "volume");
     assertEquals(volumeNodes.length > 0, true);
@@ -293,7 +303,7 @@ Deno.test("examples - all examples are valid JSON", async () => {
   }
 });
 
-Deno.test("examples - builder can recreate minimal example", async () => {
+Deno.test("examples - builder can recreate minimal example", () => {
   // This tests the full roundtrip: example -> builder pattern
   const builder = createBuilder();
 
@@ -338,9 +348,12 @@ Deno.test("examples - builder can create complex selectors", () => {
   const componentNodes = findNodesByKind(state.root, "component");
 
   assertExists(componentNodes[0]);
-  assertEquals(typeof componentNodes[0].params.selector, "object");
-  assertEquals((componentNodes[0].params.selector as any).label_asym_id, "B");
-  assertEquals((componentNodes[0].params.selector as any).label_seq_id, 217);
+  const firstNode = componentNodes[0] as {
+    params: { selector: { label_asym_id?: string; label_seq_id?: number } };
+  };
+  assertEquals(typeof firstNode.params.selector, "object");
+  assertEquals(firstNode.params.selector.label_asym_id, "B");
+  assertEquals(firstNode.params.selector.label_seq_id, 217);
 });
 
 Deno.test("examples - builder can create array selectors", () => {
@@ -361,6 +374,7 @@ Deno.test("examples - builder can create array selectors", () => {
   const componentNodes = findNodesByKind(state.root, "component");
 
   assertExists(componentNodes[0]);
-  assertEquals(Array.isArray(componentNodes[0].params.selector), true);
-  assertEquals((componentNodes[0].params.selector as any[]).length, 3);
+  const firstNode = componentNodes[0] as { params: { selector: unknown[] } };
+  assertEquals(Array.isArray(firstNode.params.selector), true);
+  assertEquals(firstNode.params.selector.length, 3);
 });

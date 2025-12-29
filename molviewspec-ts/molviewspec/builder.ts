@@ -2,22 +2,16 @@
  * Fluent builder API for creating MolViewSpec state trees.
  */
 
+// deno-lint-ignore-file no-unused-vars
 import type {
-  ClipTypeT,
   ColorT,
   ComponentSelectorT,
   CustomT,
   DescriptionFormatT,
-  EasingKindT,
-  Mat3,
-  Mat4,
   ParseFormatT,
   PrimitivePositionT,
   RefT,
   RepresentationTypeT,
-  SchemaFormatT,
-  SchemaT,
-  Vec3,
   VolumeRepresentationTypeT,
 } from "./types.ts";
 import type {
@@ -64,7 +58,7 @@ import type {
   VolumeParams,
 } from "./nodes.ts";
 import { createGlobalMetadata, createSnapshotMetadata } from "./nodes.ts";
-import { excludeNone, makeParams } from "./utils.ts";
+import { makeParams } from "./utils.ts";
 
 /**
  * Entry point to create a new builder instance.

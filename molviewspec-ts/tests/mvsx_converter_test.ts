@@ -9,7 +9,6 @@ import {
   extractMvsx,
   findUriReferences,
   mvsjToMvsx,
-  MVSXDownloadError,
   MVSXValidationError,
   updateUriReferences,
 } from "../molviewspec/mvsx_converter.ts";
@@ -21,7 +20,11 @@ async function createTempDir(): Promise<string> {
   return await Deno.makeTempDir({ prefix: "mvsx_test_" });
 }
 
-async function createTestMvsj(dir: string, filename: string, content: unknown): Promise<string> {
+async function createTestMvsj(
+  dir: string,
+  filename: string,
+  content: unknown,
+): Promise<string> {
   const path = join(dir, filename);
   await Deno.writeTextFile(path, JSON.stringify(content, null, 2));
   return path;
@@ -69,31 +72,34 @@ Deno.test("mvsx_converter - update URI references", () => {
   assertEquals(state.root.children![0].params?.url, "new.cif");
 });
 
-Deno.test("mvsx_converter - create simple MVSX from colab example", async () => {
-  const tempDir = await createTempDir();
+Deno.test(
+  "mvsx_converter - create simple MVSX from colab example",
+  async () => {
+    const tempDir = await createTempDir();
 
-  try {
-    // Use the minimal.mvsj from colab_examples
-    const inputPath = "../test-data/colab_examples/minimal.mvsj";
-    const outputPath = join(tempDir, "minimal.mvsx");
+    try {
+      // Use the minimal.mvsj from colab_examples
+      const inputPath = "../test-data/colab_examples/minimal.mvsj";
+      const outputPath = join(tempDir, "minimal.mvsx");
 
-    // Create MVSX (without downloading external files for this test)
-    const result = await mvsjToMvsx({
-      inputMvsjPath: inputPath,
-      outputMvsxPath: outputPath,
-      downloadExternal: false, // Don't download to avoid network dependency
-    });
+      // Create MVSX (without downloading external files for this test)
+      const result = await mvsjToMvsx({
+        inputMvsjPath: inputPath,
+        outputMvsxPath: outputPath,
+        downloadExternal: false, // Don't download to avoid network dependency
+      });
 
-    assertEquals(result, true);
+      assertEquals(result, true);
 
-    // Verify the file was created
-    const fileInfo = await Deno.stat(outputPath);
-    assert(fileInfo.isFile);
-    assert(fileInfo.size > 0);
-  } finally {
-    await Deno.remove(tempDir, { recursive: true });
-  }
-});
+      // Verify the file was created
+      const fileInfo = await Deno.stat(outputPath);
+      assert(fileInfo.isFile);
+      assert(fileInfo.size > 0);
+    } finally {
+      await Deno.remove(tempDir, { recursive: true });
+    }
+  },
+);
 
 Deno.test("mvsx_converter - create and extract MVSX", async () => {
   const tempDir = await createTempDir();
@@ -246,59 +252,68 @@ Deno.test("mvsx_converter - validate missing root node", async () => {
   }
 });
 
-Deno.test("mvsx_converter - test with all colab examples (no download)", async () => {
-  const exampleFiles = [
-    "minimal.mvsj",
-    "components.mvsj",
-    "geometrical.mvsj",
-    "labels.mvsj",
-    "volumetric.mvsj",
-    "superimpose.mvsj",
-  ];
+Deno.test(
+  "mvsx_converter - test with all colab examples (no download)",
+  async () => {
+    const exampleFiles = [
+      "minimal.mvsj",
+      "components.mvsj",
+      "geometrical.mvsj",
+      "labels.mvsj",
+      "volumetric.mvsj",
+      "superimpose.mvsj",
+    ];
 
-  const tempDir = await createTempDir();
+    const tempDir = await createTempDir();
 
-  try {
-    for (const filename of exampleFiles) {
-      console.log(`Testing MVSX conversion for ${filename}`);
+    try {
+      for (const filename of exampleFiles) {
+        console.log(`Testing MVSX conversion for ${filename}`);
 
-      const inputPath = `../test-data/colab_examples/${filename}`;
-      const outputPath = join(tempDir, filename.replace(".mvsj", ".mvsx"));
+        const inputPath = `../test-data/colab_examples/${filename}`;
+        const outputPath = join(tempDir, filename.replace(".mvsj", ".mvsx"));
 
-      // Create MVSX (without downloading external files)
-      const result = await mvsjToMvsx({
-        inputMvsjPath: inputPath,
-        outputMvsxPath: outputPath,
-        downloadExternal: false,
-      });
+        // Create MVSX (without downloading external files)
+        const result = await mvsjToMvsx({
+          inputMvsjPath: inputPath,
+          outputMvsxPath: outputPath,
+          downloadExternal: false,
+        });
 
-      assertEquals(result, true, `Failed to create MVSX for ${filename}`);
+        assertEquals(result, true, `Failed to create MVSX for ${filename}`);
 
-      // Verify the MVSX file was created
-      const fileInfo = await Deno.stat(outputPath);
-      assert(fileInfo.isFile, `MVSX file not created for ${filename}`);
-      assert(fileInfo.size > 0, `MVSX file is empty for ${filename}`);
+        // Verify the MVSX file was created
+        const fileInfo = await Deno.stat(outputPath);
+        assert(fileInfo.isFile, `MVSX file not created for ${filename}`);
+        assert(fileInfo.size > 0, `MVSX file is empty for ${filename}`);
 
-      // Extract and verify
-      const extractDir = join(tempDir, filename.replace(".mvsj", "_extracted"));
-      const indexPath = await extractMvsx({
-        mvsxPath: outputPath,
-        outputDir: extractDir,
-      });
+        // Extract and verify
+        const extractDir = join(
+          tempDir,
+          filename.replace(".mvsj", "_extracted"),
+        );
+        const indexPath = await extractMvsx({
+          mvsxPath: outputPath,
+          outputDir: extractDir,
+        });
 
-      assertExists(indexPath, `index.mvsj not found for ${filename}`);
+        assertExists(indexPath, `index.mvsj not found for ${filename}`);
 
-      // Verify extracted content is valid JSON
-      const extractedContent = await Deno.readTextFile(indexPath);
-      const extractedData = JSON.parse(extractedContent);
-      assertExists(extractedData.metadata, `Metadata missing in extracted ${filename}`);
+        // Verify extracted content is valid JSON
+        const extractedContent = await Deno.readTextFile(indexPath);
+        const extractedData = JSON.parse(extractedContent);
+        assertExists(
+          extractedData.metadata,
+          `Metadata missing in extracted ${filename}`,
+        );
 
-      console.log(`✓ Successfully processed ${filename}`);
+        console.log(`✓ Successfully processed ${filename}`);
+      }
+    } finally {
+      await Deno.remove(tempDir, { recursive: true });
     }
-  } finally {
-    await Deno.remove(tempDir, { recursive: true });
-  }
-});
+  },
+);
 
 Deno.test("mvsx_converter - URI mapping preserves structure", async () => {
   const tempDir = await createTempDir();
@@ -311,11 +326,11 @@ Deno.test("mvsx_converter - URI mapping preserves structure", async () => {
     const state = builder.getState();
 
     // Count nodes before
-    const countNodes = (node: any): number => {
+    const countNodes = (node: { children?: unknown[] }): number => {
       let count = 1;
       if (node.children) {
         for (const child of node.children) {
-          count += countNodes(child);
+          count += countNodes(child as { children?: unknown[] });
         }
       }
       return count;
@@ -364,7 +379,11 @@ Deno.test("mvsx_converter - roundtrip preserves data", async () => {
     const originalState = builder.getState({ title: "Roundtrip Test" });
 
     // Save to MVSJ
-    const mvsjPath = await createTestMvsj(tempDir, "roundtrip.mvsj", originalState);
+    const mvsjPath = await createTestMvsj(
+      tempDir,
+      "roundtrip.mvsj",
+      originalState,
+    );
     const mvsxPath = join(tempDir, "roundtrip.mvsx");
 
     // Convert to MVSX
@@ -388,7 +407,10 @@ Deno.test("mvsx_converter - roundtrip preserves data", async () => {
     // Verify key properties are preserved
     assertEquals(extractedState.kind, originalState.kind);
     assertEquals(extractedState.metadata.title, originalState.metadata.title);
-    assertEquals(extractedState.metadata.version, originalState.metadata.version);
+    assertEquals(
+      extractedState.metadata.version,
+      originalState.metadata.version,
+    );
     assertEquals(extractedState.root.kind, originalState.root.kind);
 
     // Verify we have the same number of top-level children

@@ -3,7 +3,7 @@
  * Provides molstar_notebook() functionality similar to Python implementation.
  */
 
-import type { MVSData, State, States } from "./nodes.ts";
+import type { MVSData } from "./nodes.ts";
 import { MVSJ } from "./mvsj.ts";
 import { MVSX } from "./mvsx.ts";
 

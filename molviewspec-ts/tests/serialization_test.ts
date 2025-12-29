@@ -10,7 +10,7 @@ Deno.test("serialization - box primitive", () => {
   builder.primitives().box({
     corner_a: [0.5, 0.5, 1.0],
     corner_b: [0.5, 0.5, 2.0],
-  } as any);
+  });
 
   const state = builder.getState();
   const stateJson = JSON.stringify(state);
@@ -22,7 +22,7 @@ Deno.test("serialization - box primitive", () => {
   assertExists(state.root.children![0].children);
   assertEquals(state.root.children![0].children![0].kind, "primitive");
   assertEquals(
-    (state.root.children![0].children![0].params as any).primitive_type,
+    state.root.children![0].children![0].params?.primitive_type,
     "box",
   );
 
@@ -68,17 +68,14 @@ Deno.test("serialization - sphere primitive", () => {
   assertExists(state.root.children![0].children);
   assertEquals(state.root.children![0].children![0].kind, "primitive");
   assertEquals(
-    (state.root.children![0].children![0].params as any).primitive_type,
+    state.root.children![0].children![0].params?.primitive_type,
     "sphere",
   );
   assertEquals(
-    (state.root.children![0].children![0].params as any).center,
+    state.root.children![0].children![0].params?.center,
     [1.0, 2.0, 3.0],
   );
-  assertEquals(
-    (state.root.children![0].children![0].params as any).radius,
-    5.0,
-  );
+  assertEquals(state.root.children![0].children![0].params?.radius, 5.0);
 });
 
 Deno.test("serialization - tube primitive", () => {
@@ -96,7 +93,7 @@ Deno.test("serialization - tube primitive", () => {
   assertExists(state.root.children![0].children);
   assertEquals(state.root.children![0].children![0].kind, "primitive");
   assertEquals(
-    (state.root.children![0].children![0].params as any).primitive_type,
+    state.root.children![0].children![0].params?.primitive_type,
     "tube",
   );
 });
@@ -131,7 +128,7 @@ Deno.test("serialization - distance measurement primitive", () => {
   assertExists(state.root.children![0].children);
   assertEquals(state.root.children![0].children![0].kind, "primitive");
   assertEquals(
-    (state.root.children![0].children![0].params as any).primitive_type,
+    state.root.children![0].children![0].params?.primitive_type,
     "distance",
   );
 });
@@ -210,7 +207,7 @@ Deno.test("serialization - multi-state snapshots", () => {
 
 Deno.test("serialization - canvas and camera", () => {
   const builder = createBuilder();
-  builder.canvas({ background_color: "#ffffff" as any });
+  builder.canvas({ background_color: "#ffffff" });
   builder.camera({
     target: [0, 0, 0],
     position: [10, 10, 10],

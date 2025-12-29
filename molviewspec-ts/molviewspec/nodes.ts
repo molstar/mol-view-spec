@@ -4,7 +4,6 @@
 
 import type {
   AnimationKindT,
-  ClipTypeT,
   ColorT,
   ComponentSelectorT,
   CustomT,
@@ -15,7 +14,6 @@ import type {
   LabelAttachmentT,
   Mat3,
   Mat4,
-  PaletteT,
   ParseFormatT,
   PrimitivePositionT,
   RefT,

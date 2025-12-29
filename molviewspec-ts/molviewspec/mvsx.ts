@@ -6,6 +6,7 @@ import type { MVSData } from "./nodes.ts";
 import { excludeNone } from "./utils.ts";
 
 // Lazy load JSZip to avoid environment permission issues on import
+// deno-lint-ignore no-explicit-any
 let JSZip: any = null;
 async function getJSZip() {
   if (JSZip === null) {
@@ -112,7 +113,8 @@ export class MVSX {
     return await zip.generateAsync({
       type: "uint8array",
       compression: "DEFLATE",
-      compressionOptions: this.compresslevel !== null ? { level: this.compresslevel } : undefined,
+      compressionOptions:
+        this.compresslevel !== null ? { level: this.compresslevel } : undefined,
     });
   }
 

@@ -5,7 +5,7 @@
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { createBuilder } from "../molviewspec/builder.ts";
-import type { MVSData, Node, State, States } from "../molviewspec/nodes.ts";
+import type { Node, State } from "../molviewspec/nodes.ts";
 import { validateStateTree } from "../molviewspec/nodes.ts";
 
 /**
@@ -269,7 +269,7 @@ Deno.test("mvsj_validation - invalid state tree (missing root)", () => {
       version: "1.8.1",
       timestamp: "2024-01-01T00:00:00Z",
     },
-  } as any;
+  } as State;
 
   // Should be invalid
   assertEquals(validateStateTree(invalidState), false);
@@ -400,7 +400,10 @@ Deno.test("mvsj_validation - snapshot metadata fields", () => {
 
   assertExists(states.snapshots[0].metadata);
   assertEquals(states.snapshots[0].metadata.title, "Snapshot");
-  assertEquals(states.snapshots[0].metadata.description, "Snapshot description");
+  assertEquals(
+    states.snapshots[0].metadata.description,
+    "Snapshot description",
+  );
   assertEquals(states.snapshots[0].metadata.linger_duration_ms, 1000);
   assertEquals(states.snapshots[0].metadata.transition_duration_ms, 500);
   assertExists(states.snapshots[0].metadata.key);
