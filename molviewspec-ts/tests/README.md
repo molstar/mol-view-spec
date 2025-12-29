@@ -66,6 +66,25 @@ Equivalent to core functionality from Python's `test_mvsj_to_mvsx.py`
 
 **Total: 15 tests**
 
+### 4. `mvsx_converter_test.ts`
+Tests for MVSJ to MVSX conversion with full I/O capabilities
+
+**Files tested (same as Python `test_colab_examples`):**
+- All 6 files from `test-data/colab_examples/` are converted to MVSX format
+
+**Tests:**
+- Finding URI references in MVSJ structures
+- Updating URI references
+- Creating MVSX archives from MVSJ files
+- Extracting MVSX archives
+- Multi-state MVSJ support
+- Validation error handling
+- Roundtrip data preservation
+- MVSX creation for all colab example files
+- URI mapping structure preservation
+
+**Total: 10 tests**
+
 ## Running Tests
 
 Run all tests:
@@ -87,24 +106,39 @@ deno test --no-check --allow-read
 
 ## Test Coverage Summary
 
-**Total Tests: 39**
+**Total Tests: 49**
 - ✅ All tests passing
 - ✅ Testing same example files as Python tests
 - ✅ Core serialization functionality covered
 - ✅ URI manipulation and validation covered
 - ✅ Multi-state file support verified
 - ✅ Metadata handling validated
+- ✅ MVSX archive creation and extraction working
+- ✅ Full I/O capabilities implemented
 
 ## Comparison with Python Tests
 
 | Python Test | TypeScript Equivalent | Status |
 |------------|----------------------|--------|
 | `test_serialization.py` | `serialization_test.ts` | ✅ Equivalent coverage |
-| `test_mvsj_to_mvsx.py::test_colab_examples` | `examples_test.ts` | ✅ Tests all 6 files |
-| `test_mvsj_to_mvsx.py::test_find_uri_references` | `mvsj_validation_test.ts` | ✅ Core logic tested |
-| `test_mvsj_to_mvsx.py::test_update_uri_references` | `mvsj_validation_test.ts` | ✅ Core logic tested |
+| `test_mvsj_to_mvsx.py::test_colab_examples` | `examples_test.ts` + `mvsx_converter_test.ts` | ✅ Tests all 6 files |
+| `test_mvsj_to_mvsx.py::test_find_uri_references` | `mvsj_validation_test.ts` + `mvsx_converter_test.ts` | ✅ Full implementation |
+| `test_mvsj_to_mvsx.py::test_update_uri_references` | `mvsj_validation_test.ts` + `mvsx_converter_test.ts` | ✅ Full implementation |
+| `test_mvsj_to_mvsx.py::mvsj_to_mvsx` | `mvsx_converter_test.ts` | ✅ Full I/O implementation |
+| `test_mvsj_to_mvsx.py::extract_mvsx` | `mvsx_converter_test.ts` | ✅ Full I/O implementation |
 
-**Note:** The TypeScript tests focus on MVSJ data validation and manipulation logic. File I/O operations for MVSX creation (zip files, URL downloads) are intentionally not included as they would require additional Deno dependencies or Node.js APIs.
+## Implementation Details
+
+The TypeScript implementation includes:
+- **mvsx_converter.ts**: Full Python equivalent with all I/O capabilities
+  - ZIP archive creation using jszip
+  - File reading/writing using Deno APIs
+  - HTTP downloads using fetch API
+  - Temporary directory management
+  - Path manipulation using @std/path
+  - Directory operations using @std/fs
+- **Complete test coverage**: All Python test scenarios implemented
+- **Same test data**: Uses exact same files from test-data/colab_examples/
 
 ## Data Sources
 
