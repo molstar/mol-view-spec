@@ -4,6 +4,8 @@
 
 import type {
   AnimationKindT,
+  ColorDictNameT,
+  ColorListNameT,
   ColorT,
   ComponentSelectorT,
   CustomT,
@@ -209,7 +211,7 @@ export interface ComponentFromSourceParams {
  */
 export interface CategoricalPalette {
   kind: "categorical";
-  colors: ColorT[];
+  colors?: ColorListNameT | ColorDictNameT | ColorT[] | Record<string, ColorT>;
 }
 
 /**

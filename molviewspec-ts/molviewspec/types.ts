@@ -94,7 +94,11 @@ export type ParseFormatT =
   | "dxbin";
 
 // Structure Types
-export type StructureTypeT = "model" | "assembly" | "symmetry" | "symmetry_mates";
+export type StructureTypeT =
+  | "model"
+  | "assembly"
+  | "symmetry"
+  | "symmetry_mates";
 
 // Component Selector Types
 export type ComponentSelectorT =
@@ -273,9 +277,64 @@ export type ColorNamesT =
 
 export type ColorT = ColorNamesT | number;
 
+// Named color palette types (for categorical palettes)
+export type ColorListNameT =
+  // Sequential single-hue
+  | "Reds"
+  | "Oranges"
+  | "Greens"
+  | "Blues"
+  | "Purples"
+  | "Greys"
+  // Sequential multi-hue
+  | "OrRd"
+  | "PuBu"
+  | "BuPu"
+  | "BuGn"
+  | "YlOrBr"
+  | "YlOrRd"
+  | "YlGn"
+  | "YlGnBu"
+  | "RdPu"
+  | "PuRd"
+  | "GnBu"
+  | "PuBuGn"
+  // Diverging
+  | "Spectral"
+  | "RdYlGn"
+  | "RdYlBu"
+  | "RdGy"
+  | "RdBu"
+  | "PiYG"
+  | "PRGn"
+  | "PuOr"
+  | "BrBG"
+  // Qualitative/Categorical
+  | "Set1"
+  | "Set2"
+  | "Set3"
+  | "Pastel1"
+  | "Pastel2"
+  | "Dark2"
+  | "Paired"
+  | "Accent"
+  // Additional lists commonly used for structures
+  | "Chainbow";
+
+export type ColorDictNameT =
+  | "ElementSymbol"
+  | "ResidueName"
+  | "ResidueProperties"
+  | "SecondaryStructure";
+
 // Schema Types
 export type SchemaFormatT = "json" | "cif" | "bcif";
-export type SchemaT = "whole_structure" | "residues" | "chains" | "atoms" | "entity";
+export type SchemaT =
+  | "whole_structure"
+  | "residues"
+  | "chains"
+  | "atoms"
+  | "entity";
 
 // Surface Types
 export type SurfaceTypeT = "molecular-surface" | "gaussian-surface";
@@ -336,4 +395,9 @@ export type EasingKindT =
   | "bounce-in-out";
 
 // Interpolation Types
-export type InterpolationKindT = "scalar" | "vec3" | "rotation_matrix" | "color" | "transformation_matrix";
+export type InterpolationKindT =
+  | "scalar"
+  | "vec3"
+  | "rotation_matrix"
+  | "color"
+  | "transformation_matrix";
