@@ -1,149 +1,210 @@
-# MolViewSpec TypeScript Examples
+# MolViewSpec TypeScript Jupyter Notebooks
 
-This directory contains interactive examples demonstrating the MolViewSpec TypeScript/Deno library.
+This directory contains TypeScript/Deno Jupyter notebooks demonstrating the MolViewSpec API.
+These notebooks are TypeScript equivalents of the Python notebooks in `test-data/notebooks/`.
 
-## 📓 Interactive Notebooks
+## Prerequisites
 
-### Full Examples: `notebook_with_display.ipynb`
-A comprehensive Jupyter notebook showcasing all features of the library with interactive 3D molecular viewers embedded directly in the notebook.
+- [Deno](https://deno.land/) installed
+- [Jupyter](https://jupyter.org/) with Deno kernel installed
 
-### Example 2: `example2_protein_ligand.ipynb`
-A focused notebook demonstrating protein-ligand complex visualization (HIV-1 protease with inhibitor). Perfect for learning the basics!
+### Installing Deno Jupyter Kernel
 
-### Examples Included
-
-1. **Basic Protein Structure** - Simple cartoon representation of 1CBS
-2. **Protein-Ligand Complex** - HIV-1 protease (1TQN) with different representations for protein, ligand, and water
-3. **Multi-Chain Structure** - Hemoglobin (4HHB) with individual chain coloring
-4. **Active Site Highlighting** - Transparent structure with highlighted residue range
-5. **Surface Representation** - Cartoon combined with molecular surface
-6. **Geometric Annotations** - Using primitives (spheres, tubes, labels, distances)
-7. **Multi-Snapshot Story** - Narrative visualization with multiple views
-
-### Running the Notebook
-
-1. Install the Deno Jupyter kernel:
 ```bash
 deno jupyter --install
 ```
 
-2. Start Jupyter:
-```bash
-jupyter notebook
-# or
-jupyter lab
+## Notebooks
+
+### 01_kras_structure_visualization.ipynb
+Demonstrates basic structure visualization using PDB structure 6vjj (KRAS-RAF1 complex):
+- Basic structure loading and coloring
+- Component selection by chain and residue
+- Multiple representation types (cartoon, ball_and_stick)
+- Custom color schemes
+
+### 02_mvsx_mvsj_stories_ui.ipynb
+Shows how to work with MVSX and MVSJ formats:
+- **MVSX**: Single state with embedded assets
+- **MVSJ**: Multiple snapshots for stories/slideshows
+- Asset management and references
+- Creating multi-state visualizations
+
+### 03_mvsj_templates.ipynb
+Demonstrates template-based workflow:
+- Creating reusable templates with placeholders
+- Finding and modifying nodes by reference
+- Filling templates with different data
+- Batch generation of visualizations
+
+### 04_color_themes.ipynb
+Covers different color palette types:
+- **Categorical palettes**: For discrete categories (chains, residues)
+- **Discrete palettes**: Stepped gradients with thresholds (pLDDT)
+- **Continuous palettes**: Smooth gradients (B-factor)
+- Named color palettes (Set1, viridis, etc.)
+
+### 05_markdown_commands.ipynb
+Shows markdown command extensions:
+- Interactive highlight and focus commands
+- Color swatches and palette visualizations
+- Camera controls
+- Image embedding from assets
+- Creating interactive documentation
+
+### 06_animations.ipynb
+Introduction to animation capabilities:
+- Color interpolation
+- Opacity animation
+- Camera movements
+- Multiple simultaneous animations
+- **Note**: Animation API is currently being implemented in TypeScript
+
+## Running the Notebooks
+
+1. Start Jupyter with Deno kernel:
+   ```bash
+   jupyter notebook
+   ```
+
+2. Open any notebook and select the "Deno" kernel
+
+3. Run cells sequentially to see the examples
+
+## Key Differences from Python Version
+
+### Import Statement
+TypeScript notebooks use ES6 imports:
+```typescript
+import { createBuilder } from "../../molviewspec-ts/molviewspec/builder.ts";
 ```
 
-3. Open `notebook_with_display.ipynb`
-
-4. Run all cells to see interactive 3D molecular visualizations!
-
-### Updating the Notebook
-
-All cells in the notebook have been executed with outputs. If you need to re-execute the notebook:
-
-```bash
-# Execute all cells and update outputs
-python3 execute_notebook.py
-
-# Or clear all outputs first
-python3 execute_notebook.py --clear
+Instead of Python's:
+```python
+import molviewspec as mvs
 ```
 
-## 🧪 Test Script
-
-**`test_all_examples.ts`** - Standalone test script that executes all examples from the notebook and generates output files.
-
-Run it with:
-```bash
-deno run --allow-read --allow-write --allow-net ../test_all_examples.ts
+### Type Annotations
+TypeScript provides strong typing:
+```typescript
+const builder: Root = createBuilder();
+const state: State = builder.getState();
 ```
 
-This will:
-- Execute all 7 examples
-- Generate HTML files for each example
-- Generate MVSJ files for sharing
-- Verify all examples work correctly
-
-## 📁 Generated Files
-
-The notebook and test script generate these files:
-
-### HTML Files (Standalone Viewers)
-- `example1_basic.html` - 1CBS basic structure
-- `example2_complex.html` - 1TQN protein-ligand complex
-- `example3_hemoglobin.html` - 4HHB multi-chain structure
-- `example4_active_site.html` - Active site highlighting
-- `example5_surface.html` - Surface representation
-- `example6_annotated.html` - Annotated structure with primitives
-- `example7_story.html` - Multi-snapshot story (Stories UI)
-- `1tqn_protein_ligand_complex.html` - From Example 2 notebook
-
-Open any HTML file in a web browser to view the interactive 3D structure!
-
-### MVSJ Files (MolViewSpec JSON)
-- `example_basic.mvsj`
-- `example_complex.mvsj`
-- `example1_basic.mvsj`
-- `example2_complex.mvsj`
-- `example3_hemoglobin.mvsj`
-- `1tqn_protein_ligand_complex.mvsj` - From Example 2 notebook
-
-Upload these to [Mol* Viewer](https://molstar.org/viewer/) to visualize.
-
-## 🎯 What's New
-
-**December 21, 2024**: All notebook examples have been fully executed with outputs!
-
-- ✅ All 11 code cells in main notebook executed successfully
-- ✅ All 8 examples display interactive 3D viewers
-- ✅ **NEW:** Created `example2_protein_ligand.ipynb` - focused notebook for beginners
-- ✅ **FIXED:** Double JSON stringification bug - structures now load correctly!
-- ✅ Template bug fixed ({{version}} replacement now works globally)
-- ✅ All standalone HTML files regenerated with correct CDN links
-
-### Bug Fix: Mol* Viewer Loading Issue
-Previously, the Mol* viewer displayed but didn't load molecular data due to double JSON stringification in `display.ts`. This has been fixed - all viewers now properly load and display structures!
-
-Previously, only the first few examples had outputs (cells 2, 4, 6, 8, 10). Now **all examples** in the notebook display properly when opened in Jupyter, including:
-- Example 5: Surface Representation (cell 12)
-- Example 6: Geometric Annotations (cell 14)  
-- File saving operations (cells 16, 18)
-- Customization options demo (cell 20)
-- Example 7: Multi-Snapshot Story (cell 22)
-
-## 🔧 Troubleshooting
-
-### Notebook displays are not showing
-
-If you open the notebook and the molecular viewers don't appear:
-
-1. Make sure you're running in Jupyter (not VS Code or other editors)
-2. Try re-executing the cells
-3. Check that JavaScript is enabled in your browser
-4. Look for errors in the browser console
-
-### Re-executing cells
-
-To re-execute all cells programmatically:
-
-```bash
-cd examples
-python3 execute_notebook.py
+### Method Chaining
+The builder API works the same way:
+```typescript
+builder
+  .download('https://files.wwpdb.org/download/1cbs.cif')
+  .parse('mmcif')
+  .modelStructure()
+  .component('polymer')
+  .representation()
+  .color('blue');
 ```
 
-This ensures all outputs are regenerated with the latest code.
+### Output Format
+TypeScript notebooks output JSON directly:
+```typescript
+console.log(JSON.stringify(state, null, 2));
+```
 
-## 📚 Additional Resources
+## API Reference
 
-- [Main Documentation](../README.md)
-- [Display Guide](../DISPLAY_GUIDE.md)
-- [Jupyter Guide](../JUPYTER_GUIDE.md)
-- [Quick Start](../QUICKSTART.md)
-- [Example 2 Details](../EXAMPLE2_NOTEBOOK.md)
-- [Notebook Update Notes](../NOTEBOOK_UPDATE.md)
-- [MolViewSpec Docs](https://molstar.org/mol-view-spec-docs/)
+The TypeScript API mirrors the Python API:
 
-## 🎉 Happy Molecular Visualization!
+- `createBuilder()` - Create a new builder instance
+- `.download(url)` - Download structure from URL
+- `.parse(format)` - Parse structure (mmcif, bcif, etc.)
+- `.modelStructure()` - Create model structure
+- `.component(selector)` - Select component
+- `.representation(type)` - Add representation
+- `.color(color)` - Set color
+- `.getState()` - Get current state
+- `.getSnapshot(options)` - Get snapshot with metadata
 
-All examples are ready to explore. Open the notebook and start visualizing molecular structures in 3D!
+## Examples
+
+### Basic Structure Visualization
+```typescript
+const builder = createBuilder();
+
+builder
+  .download('https://files.wwpdb.org/download/1cbs.cif')
+  .parse('mmcif')
+  .modelStructure()
+  .component('polymer')
+  .representation()
+  .color('blue');
+
+const state = builder.getState();
+```
+
+### Using References
+```typescript
+// Add reference to a component
+structure
+  .component({ label_asym_id: 'A' })
+  .representation('cartoon', undefined, undefined, 'chain_a')
+  .color('red');
+
+// Later, find and modify
+const node = findRef(state.root, 'chain_a');
+if (node && node.params) {
+  // Modify node properties
+}
+```
+
+### Creating Snapshots
+```typescript
+const snapshot = builder.getSnapshot({
+  title: "My Structure",
+  description: "A detailed view",
+  linger_duration_ms: 3000,
+  transition_duration_ms: 1000,
+});
+```
+
+## Saving Output
+
+### Save State to File
+```typescript
+const state = builder.getState();
+await Deno.writeTextFile("./output.mvsj", JSON.stringify(state, null, 2));
+```
+
+### Read from File
+```typescript
+const data = await Deno.readTextFile("./output.mvsj");
+const state: State = JSON.parse(data);
+```
+
+## Troubleshooting
+
+### Deno Permissions
+If you encounter permission errors, run Jupyter with appropriate flags:
+```bash
+deno jupyter --allow-read --allow-write --allow-net
+```
+
+### Module Resolution
+Ensure the import paths are correct relative to the notebook location:
+```typescript
+import { createBuilder } from "../../molviewspec-ts/molviewspec/builder.ts";
+```
+
+## Contributing
+
+When adding new notebooks:
+1. Follow the naming convention: `##_descriptive_name.ipynb`
+2. Use the Deno kernel
+3. Include markdown cells explaining concepts
+4. Add working code examples
+5. Test all cells before committing
+
+## Resources
+
+- [MolViewSpec Documentation](https://molstar.org/mol-view-spec/)
+- [Deno Documentation](https://deno.land/manual)
+- [Jupyter Documentation](https://jupyter.org/documentation)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
