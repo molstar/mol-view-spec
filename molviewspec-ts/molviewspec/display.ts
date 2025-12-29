@@ -18,14 +18,14 @@ export type SupportedStates =
 /**
  * Generate HTML string to display a Mol* viewer with the given state.
  */
-export function molstarHtml(
+export async function molstarHtml(
   state: SupportedStates,
   options: {
     data?: Record<string, Uint8Array>;
     ui?: "viewer" | "stories";
     molstarVersion?: string;
   } = {},
-): string {
+): Promise<string> {
   const { data, ui = "viewer", molstarVersion = "latest" } = options;
 
   let format = "mvsj";
@@ -40,8 +40,8 @@ export function molstarHtml(
     if (data) {
       console.warn("Warning: data is ignored when state is MVSX");
     }
-    // MVSX needs to be base64 encoded
-    const bytes = new TextEncoder().encode(JSON.stringify(state.data));
+    // MVSX needs to be serialized to ZIP and base64 encoded
+    const bytes = await state.dumps();
     stateData = "base64," + btoa(String.fromCharCode(...bytes));
     format = "mvsx";
   } else if (state instanceof Uint8Array) {
@@ -129,7 +129,7 @@ export function displayHTML(html: string): {
  * });
  * ```
  */
-export function molstarNotebook(
+export async function molstarNotebook(
   state: SupportedStates,
   options: {
     data?: Record<string, Uint8Array>;
@@ -139,7 +139,7 @@ export function molstarNotebook(
     ui?: "viewer" | "stories";
     molstarVersion?: string;
   } = {},
-): { [Symbol.for("Deno.customInspect")](): string } {
+): Promise<{ [Symbol.for("Deno.customInspect")](): string }> {
   const {
     data,
     width = 950,
@@ -149,7 +149,7 @@ export function molstarNotebook(
     molstarVersion = "latest",
   } = options;
 
-  const iframeHtml = molstarHtml(state, { data, ui, molstarVersion });
+  const iframeHtml = await molstarHtml(state, { data, ui, molstarVersion });
   const wrapperId = `molstar_${crypto.randomUUID().replace(/-/g, "")}`;
 
   const w = typeof width === "string" ? width : `${width}px`;
