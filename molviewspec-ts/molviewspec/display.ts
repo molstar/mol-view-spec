@@ -83,7 +83,7 @@ export async function molstarHtml(
   return template
     .replace(/\{\{version\}\}/g, molstarVersion)
     .replace("{{format}}", format)
-    .replace("{{state}}", stateData);
+    .replace("{{state}}", JSON.stringify(stateData));
 }
 
 /**
