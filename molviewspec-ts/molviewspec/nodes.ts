@@ -321,24 +321,37 @@ export interface VolumeGridSliceParams {
  * Clip plane parameters.
  */
 export interface ClipPlaneParams {
-  position: Vec3<number>;
+  type: "plane";
+  point: Vec3<number>;
   normal: Vec3<number>;
+  check_transform?: Mat4<number> | null;
+  invert?: boolean;
+  variant?: "object" | "pixel";
 }
 
 /**
  * Clip sphere parameters.
  */
 export interface ClipSphereParams {
-  position: Vec3<number>;
-  radius: number;
+  type: "sphere";
+  center: Vec3<number>;
+  radius?: number;
+  check_transform?: Mat4<number> | null;
+  invert?: boolean;
+  variant?: "object" | "pixel";
 }
 
 /**
  * Clip box parameters.
  */
 export interface ClipBoxParams {
-  min: Vec3<number>;
-  max: Vec3<number>;
+  type: "box";
+  center: Vec3<number>;
+  size?: Vec3<number>;
+  rotation?: Mat3<number>;
+  check_transform?: Mat4<number> | null;
+  invert?: boolean;
+  variant?: "object" | "pixel";
 }
 
 export type ClipTypeParams = ClipPlaneParams | ClipSphereParams | ClipBoxParams;

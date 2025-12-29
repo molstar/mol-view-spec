@@ -3,6 +3,7 @@
  */
 
 import type {
+  ClipTypeT,
   ColorT,
   ComponentSelectorT,
   CustomT,
@@ -17,6 +18,7 @@ import type {
   SchemaFormatT,
   SchemaT,
   Vec3,
+  VolumeRepresentationTypeT,
 } from "./types.ts";
 import type {
   AnimationNode,
@@ -622,6 +624,24 @@ export class Representation extends Base {
     const node: Node = {
       kind: "opacity",
       params: makeParams<OpacityInlineParams>({ opacity }),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return this;
+  }
+
+  /**
+   * Add a clip node.
+   */
+  clip(
+    params: ClipPlaneParams | ClipSphereParams | ClipBoxParams,
+    custom?: CustomT,
+    ref?: RefT,
+  ): Representation {
+    const node: Node = {
+      kind: "clip",
+      params: makeParams(params),
       custom,
       ref,
     };
