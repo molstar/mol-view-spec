@@ -3,6 +3,27 @@
 A TypeScript implementation of [MolViewSpec](https://molstar.org/mol-view-spec/)..
 
 
+## Modification Guidelines
+
+This TS library aims to for closely replicate the code structure and functionality of a the
+molviewspec python library features with a few differences that reflect the language differences.
+
+1. camelCase vs snake_case
+2. no named args in TS
+3. no default args (can be addressed in future release)
+
+We also use the same test structure, test data, and notebooks. So when we update a component form upstream we should:
+
+1. update the source code ( python and TS ).
+2. update any test data ( common )
+3. update tests (python and TS )
+4. update Jupyter notebook examples ( notebooks vs. notebooks-ts)
+5. bump the version and publish to pypi / JSR:
+  - pypi done
+  - TS: todo in a future PR.
+
+
+
 ## Quickstart
 
 ```sh
@@ -12,17 +33,8 @@ uvx --from jupyter-core jupyter lab test-data/notebooks-ts/01_kras_structure_vis
 ```
 
 
-## Philosophy
-
-We are aiming for a 1:1 parity with the python library features with a few differences that refeclt eh language differences.
-
-1. camelCase vs snake_case
-2. no named args in TS
-3. no default args (can be addressed in future release)
-
 
 ## Development
-
 
 ```bash
 deno task test
@@ -30,6 +42,7 @@ deno task fmt
 deno task lint
 deno task check
 ```
+
 
 ## Citation
 
