@@ -42,13 +42,25 @@ export async function molstarHtml(
     }
     // MVSX needs to be serialized to ZIP and base64 encoded
     const bytes = await state.dumps();
-    stateData = "base64," + btoa(String.fromCharCode(...bytes));
+    // Use chunked encoding to avoid stack overflow on large files
+    let binary = "";
+    const chunkSize = 8192;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.slice(i, i + chunkSize));
+    }
+    stateData = "base64," + btoa(binary);
     format = "mvsx";
   } else if (state instanceof Uint8Array) {
     if (data) {
       console.warn("Warning: data is ignored when state is MVSX bytes");
     }
-    stateData = "base64," + btoa(String.fromCharCode(...state));
+    // Use chunked encoding to avoid stack overflow on large files
+    let binary = "";
+    const chunkSize = 8192;
+    for (let i = 0; i < state.length; i += chunkSize) {
+      binary += String.fromCharCode(...state.slice(i, i + chunkSize));
+    }
+    stateData = "base64," + btoa(binary);
     format = "mvsx";
   } else if ("root" in state || "snapshots" in state) {
     // It's MVSData (State or States)
