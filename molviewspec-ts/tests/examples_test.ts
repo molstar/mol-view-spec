@@ -150,9 +150,7 @@ Deno.test("examples - components.mvsj focus node", async () => {
   assertEquals(focusNodes.length > 0, true);
 
   // Check that focus has a selector array
-  const focusWithArray = focusNodes.find((node) =>
-    Array.isArray(node.params.target),
-  );
+  const focusWithArray = focusNodes.find((node) => Array.isArray(node.params.target));
   if (focusWithArray) {
     assertEquals(Array.isArray(focusWithArray.params.target), true);
   }

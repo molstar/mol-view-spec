@@ -114,12 +114,7 @@ export type {
 } from "./molviewspec/nodes.ts";
 
 // Export node functions
-export {
-  createGlobalMetadata,
-  createSnapshotMetadata,
-  findRef,
-  validateStateTree,
-} from "./molviewspec/nodes.ts";
+export { createGlobalMetadata, createSnapshotMetadata, findRef, validateStateTree } from "./molviewspec/nodes.ts";
 
 // Export builder classes and functions
 export {
@@ -136,7 +131,7 @@ export {
 } from "./molviewspec/builder.ts";
 
 // Export MVSJ
-export { MVSJ, stateToMVSJ, statesToMVSJ } from "./molviewspec/mvsj.ts";
+export { MVSJ, statesToMVSJ, stateToMVSJ } from "./molviewspec/mvsj.ts";
 
 // Export MVSX
 export { mvsjToMvsx, MVSX } from "./molviewspec/mvsx.ts";

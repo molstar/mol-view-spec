@@ -6,7 +6,7 @@
  */
 
 import type { MVSData, Node, State, States } from "./nodes.ts";
-import { dirname, join, basename } from "@std/path";
+import { basename, dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 
 /**
@@ -268,12 +268,8 @@ export async function mvsjToMvsx(options: MvsjToMvsxOptions): Promise<boolean> {
           let localPath = join(tempDir, filename);
           let counter = 1;
           while (await Deno.stat(localPath).catch(() => null)) {
-            const ext = filename.includes(".")
-              ? filename.substring(filename.lastIndexOf("."))
-              : "";
-            const name = filename.includes(".")
-              ? filename.substring(0, filename.lastIndexOf("."))
-              : filename;
+            const ext = filename.includes(".") ? filename.substring(filename.lastIndexOf(".")) : "";
+            const name = filename.includes(".") ? filename.substring(0, filename.lastIndexOf(".")) : filename;
             filename = `${name}_${counter}${ext}`;
             localPath = join(tempDir, filename);
             counter++;

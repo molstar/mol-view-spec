@@ -3,15 +3,15 @@
  * Tests the conversion between MVSJ and MVSX formats using same test data as Python.
  */
 
-import { assertEquals, assertExists, assert } from "@std/assert";
+import { assert, assertEquals, assertExists } from "@std/assert";
 import { join } from "@std/path";
 import {
-  mvsjToMvsx,
   extractMvsx,
   findUriReferences,
-  updateUriReferences,
-  MVSXValidationError,
+  mvsjToMvsx,
   MVSXDownloadError,
+  MVSXValidationError,
+  updateUriReferences,
 } from "../molviewspec/mvsx_converter.ts";
 import { createBuilder } from "../molviewspec/builder.ts";
 import type { State, States } from "../molviewspec/nodes.ts";

@@ -281,8 +281,16 @@ export type SchemaT = "whole_structure" | "residues" | "chains" | "atoms" | "ent
 export type SurfaceTypeT = "molecular-surface" | "gaussian-surface";
 
 // Label Types
-export type LabelAttachmentT = "bottom-left" | "bottom-center" | "bottom-right" | "middle-left" | "middle-center" |
-  "middle-right" | "top-left" | "top-center" | "top-right";
+export type LabelAttachmentT =
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right"
+  | "middle-left"
+  | "middle-center"
+  | "middle-right"
+  | "top-left"
+  | "top-center"
+  | "top-right";
 
 // Primitive Types
 export type PrimitivePositionT = [number, number, number];

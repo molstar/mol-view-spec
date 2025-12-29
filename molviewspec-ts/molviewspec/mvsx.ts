@@ -112,8 +112,7 @@ export class MVSX {
     return await zip.generateAsync({
       type: "uint8array",
       compression: "DEFLATE",
-      compressionOptions:
-        this.compresslevel !== null ? { level: this.compresslevel } : undefined,
+      compressionOptions: this.compresslevel !== null ? { level: this.compresslevel } : undefined,
     });
   }
 

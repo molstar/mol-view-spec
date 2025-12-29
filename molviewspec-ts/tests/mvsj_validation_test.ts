@@ -3,9 +3,9 @@
  * These tests cover the core functionality that would be needed for MVSJ to MVSX conversion.
  */
 
-import { assertEquals, assertExists, assert } from "@std/assert";
+import { assert, assertEquals, assertExists } from "@std/assert";
 import { createBuilder } from "../molviewspec/builder.ts";
-import type { Node, State, States, MVSData } from "../molviewspec/nodes.ts";
+import type { MVSData, Node, State, States } from "../molviewspec/nodes.ts";
 import { validateStateTree } from "../molviewspec/nodes.ts";
 
 /**

@@ -147,12 +147,12 @@ The library uses a fluent builder pattern where methods can be chained:
 
 ```typescript
 builder
-  .download(url)      // Download structure data
-  .parse(format)      // Parse the data
-  .modelStructure()   // Create structure
+  .download(url) // Download structure data
+  .parse(format) // Parse the data
+  .modelStructure() // Create structure
   .component(selector) // Select components
   .representation(type) // Add representation
-  .color(color);      // Apply coloring
+  .color(color); // Apply coloring
 ```
 
 ### Main Classes
@@ -196,6 +196,7 @@ builder
 ## Component Selectors
 
 Built-in selectors:
+
 - `all` - All atoms
 - `polymer` - Polymer chains
 - `protein` - Protein chains
@@ -205,6 +206,7 @@ Built-in selectors:
 - `water` - Water molecules
 
 Custom selections using `ComponentExpression`:
+
 ```typescript
 {
   label_asym_id: "A",
@@ -216,7 +218,9 @@ Custom selections using `ComponentExpression`:
 ## File Formats
 
 ### MVSJ (JSON)
+
 Human-readable JSON format:
+
 ```typescript
 const mvsj = new MVSJ(state);
 await mvsj.dump("file.mvsj");
@@ -224,7 +228,9 @@ const loaded = await MVSJ.load("file.mvsj");
 ```
 
 ### MVSX (ZIP Archive)
+
 Compressed archive containing MVSJ + assets:
+
 ```typescript
 const mvsx = new MVSX(state, assets);
 await mvsx.dump("file.mvsx");
@@ -234,6 +240,7 @@ const loaded = await MVSX.load("file.mvsx");
 ## Examples
 
 Check the `examples/` directory for more examples:
+
 - Basic structure visualization
 - Multiple representations
 - Custom coloring
@@ -243,21 +250,25 @@ Check the `examples/` directory for more examples:
 ## Development
 
 ### Running Tests
+
 ```bash
 deno task test
 ```
 
 ### Formatting Code
+
 ```bash
 deno task fmt
 ```
 
 ### Linting
+
 ```bash
 deno task lint
 ```
 
 ### Type Checking
+
 ```bash
 deno task check
 ```
