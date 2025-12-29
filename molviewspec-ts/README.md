@@ -12,7 +12,7 @@ molviewspec python library features with a few differences that reflect the lang
 2. no named args in TS
 3. no default args (can be addressed in future release)
 
-We also use the same test structure, test data, and notebooks. So when we update a component form upstream we should:
+We also use the same test structure, test data, and notebooks. So when we update this repo we should:
 
 1. update the source code ( python and TS ).
 2. update any test data ( common )
