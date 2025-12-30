@@ -61,11 +61,11 @@ export class MVSJ {
       parsed = data;
     }
 
-    if (!validateStateTree(parsed as MVSData)) {
+    if (!validateStateTree(parsed as unknown as MVSData)) {
       throw new Error("Invalid state tree structure");
     }
 
-    return new MVSJ(parsed as MVSData);
+    return new MVSJ(parsed as unknown as MVSData);
   }
 
   /**

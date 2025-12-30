@@ -32,6 +32,8 @@ import { generateUUID, getTimestamp, VERSION } from "./utils.ts";
 
 /**
  * Base implementation of all state tree nodes.
+ * Note: params is Record<string, unknown> for structural compatibility,
+ * but the builder enforces type safety through NodeParams union type.
  */
 export interface Node {
   kind: KindT;
@@ -463,7 +465,19 @@ export interface FocusInlineParams {
  */
 export interface TransformParams {
   rotation?: Mat3<number>;
+  rotation_center?: Vec3<number> | "centroid";
   translation?: Vec3<number>;
+  matrix?: Mat4<number>;
+}
+
+/**
+ * Instance parameters (for transform/instance node).
+ */
+export interface InstanceParams {
+  rotation?: Mat3<number>;
+  rotation_center?: Vec3<number> | "centroid";
+  translation?: Vec3<number>;
+  matrix?: Mat4<number>;
 }
 
 /**
@@ -473,6 +487,7 @@ export interface CameraParams {
   target?: Vec3<number>;
   position?: Vec3<number>;
   up?: Vec3<number>;
+  near?: number;
 }
 
 /**
@@ -515,9 +530,15 @@ export interface MeshParams {
  * Lines parameters.
  */
 export interface LinesParams {
-  positions: number[][];
-  indices?: number[][];
-  colors?: number[][];
+  vertices: number[];
+  indices: number[];
+  line_groups?: number[];
+  group_colors?: Record<number, ColorT>;
+  group_tooltips?: Record<number, string>;
+  group_widths?: Record<number, number>;
+  tooltip?: string;
+  width?: number;
+  color?: ColorT;
   [key: string]: unknown;
 }
 
@@ -537,11 +558,20 @@ export interface TubeParams {
  */
 export interface ArrowParams {
   start: PrimitivePositionT;
-  end: PrimitivePositionT;
-  radius?: number;
-  shaft_radius_scale?: number;
-  head_length_scale?: number;
-  expressions?: PrimitiveComponentExpressions;
+  end?: PrimitivePositionT;
+  direction?: Vec3<number>;
+  length?: number;
+  show_start_cap?: boolean;
+  start_cap_length?: number;
+  start_cap_radius?: number;
+  show_end_cap?: boolean;
+  end_cap_length?: number;
+  end_cap_radius?: number;
+  show_tube?: boolean;
+  tube_radius?: number;
+  tube_dash_length?: number;
+  color?: ColorT;
+  tooltip?: string;
   [key: string]: unknown;
 }
 
@@ -585,13 +615,17 @@ export interface PrimitiveLabelParams {
  */
 export interface EllipseParams {
   center: PrimitivePositionT;
-  major_axis: PrimitivePositionT;
-  minor_axis: PrimitivePositionT;
-  expressions?: {
-    center?: ComponentExpression;
-    major_axis?: ComponentExpression;
-    minor_axis?: ComponentExpression;
-  };
+  as_circle?: boolean;
+  major_axis?: Vec3<number>;
+  minor_axis?: Vec3<number>;
+  major_axis_endpoint?: PrimitivePositionT;
+  minor_axis_endpoint?: PrimitivePositionT;
+  radius_major?: number;
+  radius_minor?: number;
+  theta_start?: number;
+  theta_end?: number;
+  color?: ColorT;
+  tooltip?: string;
   [key: string]: unknown;
 }
 
@@ -600,13 +634,14 @@ export interface EllipseParams {
  */
 export interface EllipsoidParams {
   center: PrimitivePositionT;
-  major_axis: PrimitivePositionT;
-  minor_axis: PrimitivePositionT;
-  expressions?: {
-    center?: ComponentExpression;
-    major_axis?: ComponentExpression;
-    minor_axis?: ComponentExpression;
-  };
+  major_axis?: Vec3<number>;
+  minor_axis?: Vec3<number>;
+  major_axis_endpoint?: PrimitivePositionT;
+  minor_axis_endpoint?: PrimitivePositionT;
+  radius?: Vec3<number> | number;
+  radius_extent?: Vec3<number> | number;
+  color?: ColorT;
+  tooltip?: string;
   [key: string]: unknown;
 }
 
@@ -634,7 +669,12 @@ export interface PrimitivesFromUriParams {
  * Animation parameters.
  */
 export interface AnimationParams {
-  key?: string;
+  frame_time_ms?: number;
+  duration_ms?: number;
+  autoplay?: boolean;
+  loop?: boolean;
+  include_camera?: boolean;
+  include_canvas?: boolean;
   [key: string]: unknown;
 }
 
@@ -702,6 +742,68 @@ export interface TransformationMatrixInterpolationParams {
   easing?: EasingKindT;
   [key: string]: unknown;
 }
+
+/**
+ * Union type of all possible node parameter types.
+ * This provides strong typing while maintaining compatibility with Record<string, unknown>.
+ */
+export type NodeParams =
+  | DownloadParams
+  | ParseParams
+  | CoordinatesParams
+  | StructureParams
+  | VolumeParams
+  | ComponentInlineParams
+  | ComponentFromUriParams
+  | ComponentFromSourceParams
+  | RepresentationParams
+  | CartoonParams
+  | BackboneParams
+  | BallAndStickParams
+  | LineRepresentationParams
+  | SpacefillParams
+  | CarbohydrateParams
+  | SurfaceParams
+  | VolumeRepresentationParams
+  | VolumeIsoSurfaceParams
+  | VolumeGridSliceParams
+  | ClipPlaneParams
+  | ClipSphereParams
+  | ClipBoxParams
+  | ColorInlineParams
+  | ColorFromUriParams
+  | ColorFromSourceParams
+  | OpacityInlineParams
+  | LabelInlineParams
+  | LabelFromUriParams
+  | LabelFromSourceParams
+  | TooltipInlineParams
+  | TooltipFromUriParams
+  | TooltipFromSourceParams
+  | FocusInlineParams
+  | TransformParams
+  | InstanceParams
+  | CameraParams
+  | CanvasParams
+  | PrimitivesParams
+  | MeshParams
+  | LinesParams
+  | TubeParams
+  | ArrowParams
+  | DistanceMeasurementParams
+  | AngleMeasurementParams
+  | PrimitiveLabelParams
+  | EllipseParams
+  | EllipsoidParams
+  | BoxParams
+  | PrimitivesFromUriParams
+  | AnimationParams
+  | InterpolationParams
+  | ScalarInterpolationParams
+  | Vec3InterpolationParams
+  | RotationMatrixInterpolationParams
+  | ColorInterpolationParams
+  | TransformationMatrixInterpolationParams;
 
 export type InterpolationKindParams =
   | ScalarInterpolationParams

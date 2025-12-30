@@ -4,7 +4,7 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { createBuilder } from "../molviewspec/builder.ts";
-import type { MVSData, State, States } from "../molviewspec/nodes.ts";
+import type { MVSData, Node, State, States } from "../molviewspec/nodes.ts";
 
 /**
  * Helper to load and parse MVSJ files from test-data/colab_examples
@@ -18,22 +18,14 @@ async function loadExampleMVSJ(filename: string): Promise<MVSData> {
 /**
  * Helper to recursively find all nodes of a specific kind
  */
-function findNodesByKind(
-  node: { kind?: string; children?: unknown[] },
-  kind: string,
-): unknown[] {
-  const results: unknown[] = [];
+function findNodesByKind(node: Node, kind: string): Node[] {
+  const results: Node[] = [];
   if (node.kind === kind) {
     results.push(node);
   }
   if (node.children) {
     for (const child of node.children) {
-      results.push(
-        ...findNodesByKind(
-          child as { kind?: string; children?: unknown[] },
-          kind,
-        ),
-      );
+      results.push(...findNodesByKind(child, kind));
     }
   }
   return results;
@@ -52,29 +44,29 @@ Deno.test("examples - minimal.mvsj structure", async () => {
   const downloadNodes = findNodesByKind(data.root, "download");
   assertEquals(downloadNodes.length, 1);
   assertEquals(
-    downloadNodes[0].params.url,
+    (downloadNodes[0].params as any)?.url,
     "https://files.wwpdb.org/download/1cbs.cif",
   );
 
   const parseNodes = findNodesByKind(data.root, "parse");
   assertEquals(parseNodes.length, 1);
-  assertEquals(parseNodes[0].params.format, "mmcif");
+  assertEquals((parseNodes[0].params as any)?.format, "mmcif");
 
   const structureNodes = findNodesByKind(data.root, "structure");
   assertEquals(structureNodes.length, 1);
-  assertEquals(structureNodes[0].params.type, "model");
+  assertEquals((structureNodes[0].params as any)?.type, "model");
 
   const componentNodes = findNodesByKind(data.root, "component");
   assertEquals(componentNodes.length, 1);
-  assertEquals(componentNodes[0].params.selector, "all");
+  assertEquals((componentNodes[0].params as any)?.selector, "all");
 
   const representationNodes = findNodesByKind(data.root, "representation");
   assertEquals(representationNodes.length, 1);
-  assertEquals(representationNodes[0].params.type, "cartoon");
+  assertEquals((representationNodes[0].params as any)?.type, "cartoon");
 
   const colorNodes = findNodesByKind(data.root, "color");
   assertEquals(colorNodes.length, 1);
-  assertEquals(colorNodes[0].params.color, "blue");
+  assertEquals((colorNodes[0].params as any)?.color, "blue");
 });
 
 Deno.test("examples - minimal.mvsj builder recreation", async () => {
@@ -83,12 +75,12 @@ Deno.test("examples - minimal.mvsj builder recreation", async () => {
   // Recreate using builder
   const builder = createBuilder();
   builder
-    .download("https://files.wwpdb.org/download/1cbs.cif")
-    .parse("mmcif")
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
     .modelStructure()
-    .component("all")
-    .representation("cartoon")
-    .color("blue");
+    .component({ selector: "all" })
+    .representation({ type: "cartoon" })
+    .color({ color: "blue" });
 
   const recreated = builder.getState();
 
@@ -98,7 +90,10 @@ Deno.test("examples - minimal.mvsj builder recreation", async () => {
 
   const originalDownload = findNodesByKind(data.root, "download")[0];
   const recreatedDownload = findNodesByKind(recreated.root, "download")[0];
-  assertEquals(recreatedDownload.params.url, originalDownload.params.url);
+  assertEquals(
+    (recreatedDownload.params as any)?.url,
+    (originalDownload.params as any)?.url,
+  );
 });
 
 Deno.test("examples - components.mvsj structure", async () => {
@@ -113,13 +108,13 @@ Deno.test("examples - components.mvsj structure", async () => {
 
   // Check for protein selector
   const proteinComponent = componentNodes.find(
-    (node) => node.params.selector === "protein",
+    (node) => (node.params as any)?.selector === "protein",
   );
   assertExists(proteinComponent);
 
   // Check for nucleic selector
   const nucleicComponent = componentNodes.find(
-    (node) => node.params.selector === "nucleic",
+    (node) => (node.params as any)?.selector === "nucleic",
   );
   assertExists(nucleicComponent);
 
@@ -136,17 +131,17 @@ Deno.test("examples - components.mvsj selectors", async () => {
   // Check for component with object selector
   const objectSelectorComponent = componentNodes.find(
     (node) =>
-      typeof node.params.selector === "object" &&
-      node.params.selector.label_asym_id === "E",
+      typeof (node.params as any)?.selector === "object" &&
+      (node.params as any)?.selector.label_asym_id === "E",
   );
   assertExists(objectSelectorComponent);
 
   // Check for component with complex selector
   const complexSelectorComponent = componentNodes.find(
     (node) =>
-      typeof node.params.selector === "object" &&
-      node.params.selector.label_asym_id === "B" &&
-      node.params.selector.label_seq_id === 217,
+      typeof (node.params as any)?.selector === "object" &&
+      (node.params as any)?.selector.label_asym_id === "B" &&
+      (node.params as any)?.selector.label_seq_id === 217,
   );
   assertExists(complexSelectorComponent);
 });
@@ -158,11 +153,9 @@ Deno.test("examples - components.mvsj focus node", async () => {
   assertEquals(focusNodes.length > 0, true);
 
   // Check that focus has a selector array
-  const focusWithArray = focusNodes.find((node) =>
-    Array.isArray(node.params.target),
-  );
+  const focusWithArray = focusNodes.find((node) => Array.isArray((node.params as any)?.target));
   if (focusWithArray) {
-    assertEquals(Array.isArray(focusWithArray.params.target), true);
+    assertEquals(Array.isArray((focusWithArray.params as any)?.target), true);
   }
 });
 
@@ -179,7 +172,7 @@ Deno.test("examples - geometrical.mvsj primitives", async () => {
 
   // Check for different primitive types
   const primitiveTypes = primitiveNodes.map(
-    (node) => node.params.primitive_type,
+    (node) => (node.params as any)?.primitive_type,
   );
   assertEquals(primitiveTypes.length > 0, true);
 });
@@ -193,8 +186,8 @@ Deno.test("examples - labels.mvsj label nodes", async () => {
 
   // Check that labels have text
   for (const labelNode of labelNodes) {
-    assertExists(labelNode.params.text);
-    assertEquals(typeof labelNode.params.text, "string");
+    assertExists((labelNode.params as any)?.text);
+    assertEquals(typeof (labelNode.params as any)?.text, "string");
   }
 });
 
@@ -308,12 +301,12 @@ Deno.test("examples - builder can recreate minimal example", () => {
   const builder = createBuilder();
 
   builder
-    .download("https://files.wwpdb.org/download/1cbs.cif")
-    .parse("mmcif")
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
     .modelStructure()
-    .component("all")
-    .representation("cartoon")
-    .color("blue");
+    .component({ selector: "all" })
+    .representation({ type: "cartoon" })
+    .color({ color: "blue" });
 
   const state = builder.getState();
 
@@ -337,44 +330,44 @@ Deno.test("examples - builder can create complex selectors", () => {
   const builder = createBuilder();
 
   builder
-    .download("https://files.wwpdb.org/download/1c0a.cif")
-    .parse("mmcif")
+    .download({ url: "https://files.wwpdb.org/download/1c0a.cif" })
+    .parse({ format: "mmcif" })
     .assemblyStructure()
-    .component({ label_asym_id: "B", label_seq_id: 217 })
-    .representation("ball_and_stick")
-    .color("#ff0000");
+    .component({ selector: { label_asym_id: "B", label_seq_id: 217 } })
+    .representation({ type: "ball_and_stick" })
+    .color({ color: "#ff0000" });
 
   const state = builder.getState();
   const componentNodes = findNodesByKind(state.root, "component");
 
   assertExists(componentNodes[0]);
-  const firstNode = componentNodes[0] as {
-    params: { selector: { label_asym_id?: string; label_seq_id?: number } };
-  };
-  assertEquals(typeof firstNode.params.selector, "object");
-  assertEquals(firstNode.params.selector.label_asym_id, "B");
-  assertEquals(firstNode.params.selector.label_seq_id, 217);
+  const firstNode = componentNodes[0];
+  assertEquals(typeof (firstNode.params as any)?.selector, "object");
+  assertEquals((firstNode.params as any)?.selector?.label_asym_id, "B");
+  assertEquals((firstNode.params as any)?.selector?.label_seq_id, 217);
 });
 
 Deno.test("examples - builder can create array selectors", () => {
   const builder = createBuilder();
 
   builder
-    .download("https://files.wwpdb.org/download/1c0a.cif")
-    .parse("mmcif")
+    .download({ url: "https://files.wwpdb.org/download/1c0a.cif" })
+    .parse({ format: "mmcif" })
     .assemblyStructure()
-    .component([
-      { label_asym_id: "E" },
-      { label_asym_id: "B", label_seq_id: 217 },
-      { label_asym_id: "B", label_seq_id: 537 },
-    ])
+    .component({
+      selector: [
+        { label_asym_id: "E" },
+        { label_asym_id: "B", label_seq_id: 217 },
+        { label_asym_id: "B", label_seq_id: 537 },
+      ],
+    })
     .focus({});
 
   const state = builder.getState();
   const componentNodes = findNodesByKind(state.root, "component");
 
   assertExists(componentNodes[0]);
-  const firstNode = componentNodes[0] as { params: { selector: unknown[] } };
-  assertEquals(Array.isArray(firstNode.params.selector), true);
-  assertEquals(firstNode.params.selector.length, 3);
+  const firstNode = componentNodes[0];
+  assertEquals(Array.isArray((firstNode.params as any)?.selector), true);
+  assertEquals((firstNode.params as any)?.selector?.length, 3);
 });

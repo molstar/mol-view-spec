@@ -90,11 +90,13 @@ export async function molstarHtml(
  * Helper to create a Jupyter display object with HTML MIME type.
  * This is what Deno Jupyter recognizes for rendering HTML.
  */
+const jupyterDisplaySymbol = Symbol.for("Jupyter.display");
+
 export function displayHTML(html: string): {
-  [Symbol.for("Jupyter.display")](): { "text/html": string };
+  [key: symbol]: () => { "text/html": string };
 } {
   return {
-    [Symbol.for("Jupyter.display")]() {
+    [jupyterDisplaySymbol]() {
       return {
         "text/html": html,
       };
@@ -151,7 +153,7 @@ export async function molstarNotebook(
     ui?: "viewer" | "stories";
     molstarVersion?: string;
   } = {},
-): Promise<{ [Symbol.for("Deno.customInspect")](): string }> {
+): Promise<{ [key: symbol]: () => { "text/html": string } }> {
   const {
     data,
     width = 950,
@@ -244,7 +246,7 @@ export async function saveMolstarHtml(
     molstarVersion?: string;
   } = {},
 ): Promise<void> {
-  const html = molstarHtml(state, options);
+  const html = await molstarHtml(state, options);
   await Deno.writeTextFile(filename, html);
 }
 
