@@ -1,4 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/molviewspec.svg)](https://badge.fury.io/py/molviewspec)
+[![JSR version](https://jsr.io/badges/@molstar/molviewspec)](https://jsr.io/@molstar/molviewspec)
 [![Changelog](https://img.shields.io/badge/changelog--lightgrey.svg?style=flat)](https://github.com/molstar/mol-view-spec/blob/master/CHANGELOG.md)
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1O2TldXlS01s-YgkD9gy87vWsfCBTYuz9)
 [![Jupyter](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/molstar/mol-view-spec/master?labpath=test-data%2Fnotebooks%2F01_kras_structure_visualization.ipynb)
@@ -300,6 +301,8 @@ make mypy
 - Set version (in https://github.com/molstar/mol-view-spec/blob/master/molviewspec/molviewspec/__init__.py)
 - Create a GitHub release
 - Tag will automatically publish to PyPI
+
+
 
 
 ## Mol* Extension 
