@@ -2,7 +2,6 @@
 
 A TypeScript implementation of [MolViewSpec](https://molstar.org/mol-view-spec/)..
 
-
 ## Modification Guidelines
 
 This TS library aims to for closely replicate the code structure and functionality of a the
@@ -19,10 +18,9 @@ We also use the same test structure, test data, and notebooks. So when we update
 3. update tests (python and TS )
 4. update Jupyter notebook examples ( notebooks vs. notebooks-ts)
 5. bump the version and publish to pypi / JSR:
-  - pypi done
-  - TS: todo in a future PR.
 
-
+- pypi done
+- TS: todo in a future PR.
 
 ## Quickstart
 
@@ -32,8 +30,6 @@ deno jupyter --install
 uvx --from jupyter-core jupyter lab test-data/notebooks-ts/01_kras_structure_visualization.ipynb
 ```
 
-
-
 ## Development
 
 ```bash
@@ -42,7 +38,6 @@ deno task fmt
 deno task lint
 deno task check
 ```
-
 
 ## Citation
 

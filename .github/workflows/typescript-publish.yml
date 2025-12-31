@@ -1,0 +1,38 @@
+name: Publish to JSR
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run tests
+        run: deno task test
+        working-directory: molviewspec-ts
+
+      - name: Run linter
+        run: deno task lint
+        working-directory: molviewspec-ts
+
+      - name: Check types
+        run: deno task check
+        working-directory: molviewspec-ts
+
+      - name: Publish to JSR
+        run: deno publish
+        working-directory: molviewspec-ts

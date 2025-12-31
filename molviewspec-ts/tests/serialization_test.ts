@@ -136,12 +136,12 @@ Deno.test("serialization - distance measurement primitive", () => {
 Deno.test("serialization - complete structure with component", () => {
   const builder = createBuilder();
   builder
-    .download("https://files.wwpdb.org/download/1cbs.cif")
-    .parse("mmcif")
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
     .modelStructure()
-    .component("all")
-    .representation("cartoon")
-    .color("blue");
+    .component({ selector: "all" })
+    .representation({ type: "cartoon" })
+    .color({ color: "blue" });
 
   const state = builder.getState();
   const stateJson = JSON.stringify(state);

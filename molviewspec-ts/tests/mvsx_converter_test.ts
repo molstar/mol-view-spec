@@ -32,7 +32,7 @@ async function createTestMvsj(
 
 Deno.test("mvsx_converter - find URI references in simple MVSJ", () => {
   const builder = createBuilder();
-  builder.download("local_file.cif").parse("mmcif");
+  builder.download({ url: "local_file.cif" }).parse({ format: "mmcif" });
 
   const state = builder.getState();
   const uris = new Set<string>();
@@ -44,10 +44,13 @@ Deno.test("mvsx_converter - find URI references in simple MVSJ", () => {
 
 Deno.test("mvsx_converter - find URI references in complex MVSJ", () => {
   const builder = createBuilder();
-  builder.download("local.cif").parse("mmcif").modelStructure();
   builder
-    .download("https://files.wwpdb.org/download/1cbs.cif")
-    .parse("mmcif")
+    .download({ url: "local.cif" })
+    .parse({ format: "mmcif" })
+    .modelStructure();
+  builder
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
     .modelStructure();
 
   const state = builder.getState();
@@ -61,7 +64,7 @@ Deno.test("mvsx_converter - find URI references in complex MVSJ", () => {
 
 Deno.test("mvsx_converter - update URI references", () => {
   const builder = createBuilder();
-  builder.download("old.cif").parse("mmcif");
+  builder.download({ url: "old.cif" }).parse({ format: "mmcif" });
 
   const state = builder.getState();
   const uriMapping = new Map<string, string>();
@@ -320,8 +323,14 @@ Deno.test("mvsx_converter - URI mapping preserves structure", async () => {
 
   try {
     const builder = createBuilder();
-    builder.download("file1.cif").parse("mmcif").modelStructure();
-    builder.download("file2.cif").parse("mmcif").modelStructure();
+    builder
+      .download({ url: "file1.cif" })
+      .parse({ format: "mmcif" })
+      .modelStructure();
+    builder
+      .download({ url: "file2.cif" })
+      .parse({ format: "mmcif" })
+      .modelStructure();
 
     const state = builder.getState();
 
@@ -364,12 +373,12 @@ Deno.test("mvsx_converter - roundtrip preserves data", async () => {
   try {
     const builder = createBuilder();
     builder
-      .download("https://example.com/test.cif")
-      .parse("mmcif")
+      .download({ url: "https://example.com/test.cif" })
+      .parse({ format: "mmcif" })
       .modelStructure()
-      .component("all")
-      .representation("cartoon")
-      .color("blue");
+      .component({ selector: "all" })
+      .representation({ type: "cartoon" })
+      .color({ color: "blue" });
 
     builder.camera({
       target: [0, 0, 0],

@@ -53,11 +53,13 @@ export function excludeNone(obj: unknown): unknown {
 
 /**
  * Make params object by merging values and ensuring only valid fields are included.
+ * Accepts any object type and returns Record<string, unknown> for compatibility with Node.params.
  */
-export function makeParams<T extends Record<string, unknown>>(
-  values?: Record<string, unknown>,
+// deno-lint-ignore no-explicit-any
+export function makeParams(
+  values?: any,
   moreValues?: Record<string, unknown>,
-): T {
+): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   // Propagate custom properties
@@ -86,5 +88,5 @@ export function makeParams<T extends Record<string, unknown>>(
     }
   }
 
-  return result as T;
+  return result;
 }

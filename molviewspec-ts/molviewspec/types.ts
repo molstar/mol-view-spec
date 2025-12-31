@@ -27,6 +27,7 @@ export type Mat4<T extends number = number> = [
 // Node Kind Types
 export type KindT =
   | "root"
+  | "animation"
   | "camera"
   | "canvas"
   | "clip"
@@ -275,7 +276,9 @@ export type ColorNamesT =
   | "yellow"
   | "yellowgreen";
 
-export type ColorT = ColorNamesT | number;
+// HexColorT represents hex color codes like '#f0f0f0'
+export type HexColorT = string;
+export type ColorT = ColorNamesT | HexColorT;
 
 // Named color palette types (for categorical palettes)
 export type ColorListNameT =
@@ -331,13 +334,19 @@ export type ColorDictNameT =
 export type SchemaFormatT = "json" | "cif" | "bcif";
 export type SchemaT =
   | "whole_structure"
-  | "residues"
-  | "chains"
-  | "atoms"
-  | "entity";
+  | "entity"
+  | "chain"
+  | "auth_chain"
+  | "residue"
+  | "auth_residue"
+  | "residue_range"
+  | "auth_residue_range"
+  | "atom"
+  | "auth_atom"
+  | "all_atomic";
 
 // Surface Types
-export type SurfaceTypeT = "molecular-surface" | "gaussian-surface";
+export type SurfaceTypeT = "molecular" | "gaussian";
 
 // Label Types
 export type LabelAttachmentT =

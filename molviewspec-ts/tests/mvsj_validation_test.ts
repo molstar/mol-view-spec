@@ -84,7 +84,7 @@ function isRemoteUrl(uri: string): boolean {
 
 Deno.test("mvsj_validation - find URI references in simple tree", () => {
   const builder = createBuilder();
-  builder.download("local_file.cif").parse("mmcif");
+  builder.download({ url: "local_file.cif" }).parse({ format: "mmcif" });
 
   const state = builder.getState();
   const uris = new Set<string>();
@@ -98,12 +98,15 @@ Deno.test("mvsj_validation - find URI references in complex tree", () => {
   const builder = createBuilder();
 
   // Add local file download
-  builder.download("local_file.cif").parse("mmcif").modelStructure();
+  builder
+    .download({ url: "local_file.cif" })
+    .parse({ format: "mmcif" })
+    .modelStructure();
 
   // Add remote file download
   builder
-    .download("https://files.wwpdb.org/download/1cbs.cif")
-    .parse("mmcif")
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
     .modelStructure();
 
   const state = builder.getState();
@@ -118,11 +121,11 @@ Deno.test("mvsj_validation - find URI references in complex tree", () => {
 Deno.test("mvsj_validation - find URI references with color_from_uri", () => {
   const builder = createBuilder();
   builder
-    .download("structure.cif")
-    .parse("mmcif")
+    .download({ url: "structure.cif" })
+    .parse({ format: "mmcif" })
     .modelStructure()
-    .component("all")
-    .representation("cartoon")
+    .component()
+    .representation()
     .colorFromUri({
       uri: "colors.cif",
       schema: "residue_range",
@@ -141,14 +144,16 @@ Deno.test("mvsj_validation - find URI references in multi-state", () => {
   const builder = createBuilder();
 
   // First snapshot
-  builder.download("file1.cif").parse("mmcif");
+  builder.download({ url: "file1.cif" }).parse({ format: "mmcif" });
   builder.saveState({
     title: "State 1",
     linger_duration_ms: 1000,
   });
 
   // Second snapshot
-  builder.download("https://example.com/file2.cif").parse("mmcif");
+  builder
+    .download({ url: "https://example.com/file2.cif" })
+    .parse({ format: "mmcif" });
   builder.saveState({
     title: "State 2",
     linger_duration_ms: 1000,
@@ -169,7 +174,7 @@ Deno.test("mvsj_validation - find URI references in multi-state", () => {
 
 Deno.test("mvsj_validation - update URI references", () => {
   const builder = createBuilder();
-  builder.download("local_file.cif").parse("mmcif");
+  builder.download({ url: "local_file.cif" }).parse({ format: "mmcif" });
 
   const state = builder.getState();
 
@@ -187,10 +192,13 @@ Deno.test("mvsj_validation - update URI references", () => {
 
 Deno.test("mvsj_validation - update multiple URI references", () => {
   const builder = createBuilder();
-  builder.download("local.cif").parse("mmcif").modelStructure();
   builder
-    .download("https://files.wwpdb.org/download/1cbs.cif")
-    .parse("mmcif")
+    .download({ url: "local.cif" })
+    .parse({ format: "mmcif" })
+    .modelStructure();
+  builder
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
     .modelStructure();
 
   const state = builder.getState();
@@ -232,7 +240,7 @@ Deno.test("mvsj_validation - distinguish remote vs local URIs", () => {
 
 Deno.test("mvsj_validation - validate state tree structure", () => {
   const builder = createBuilder();
-  builder.download("test.cif").parse("mmcif");
+  builder.download({ url: "test.cif" }).parse({ format: "mmcif" });
 
   const state = builder.getState();
 
@@ -243,13 +251,13 @@ Deno.test("mvsj_validation - validate state tree structure", () => {
 Deno.test("mvsj_validation - validate multi-state structure", () => {
   const builder = createBuilder();
 
-  builder.download("file1.cif").parse("mmcif");
+  builder.download({ url: "file1.cif" }).parse({ format: "mmcif" });
   builder.saveState({
     title: "State 1",
     linger_duration_ms: 1000,
   });
 
-  builder.download("file2.cif").parse("mmcif");
+  builder.download({ url: "file2.cif" }).parse({ format: "mmcif" });
   builder.saveState({
     title: "State 2",
     linger_duration_ms: 1000,
@@ -278,12 +286,12 @@ Deno.test("mvsj_validation - invalid state tree (missing root)", () => {
 Deno.test("mvsj_validation - serialize and deserialize state", () => {
   const builder = createBuilder();
   builder
-    .download("https://files.wwpdb.org/download/1cbs.cif")
-    .parse("mmcif")
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
     .modelStructure()
-    .component("all")
-    .representation("cartoon")
-    .color("blue");
+    .component({ selector: "all" })
+    .representation({ type: "cartoon" })
+    .color({ color: "blue" });
 
   const state = builder.getState({ title: "Test State" });
 
@@ -315,8 +323,11 @@ Deno.test("mvsj_validation - handle URI references in all node types", () => {
   const builder = createBuilder();
 
   // Test various URI-containing nodes
-  builder.download("structure.cif").parse("mmcif").modelStructure();
-  builder.primitivesFromUri("primitives.json");
+  builder
+    .download({ url: "structure.cif" })
+    .parse({ format: "mmcif" })
+    .modelStructure();
+  builder.primitivesFromUri({ uri: "primitives.json" });
 
   const state = builder.getState();
   const uris = new Set<string>();
@@ -330,11 +341,11 @@ Deno.test("mvsj_validation - handle URI references in all node types", () => {
 Deno.test("mvsj_validation - update preserves tree structure", () => {
   const builder = createBuilder();
   builder
-    .download("old.cif")
-    .parse("mmcif")
+    .download({ url: "old.cif" })
+    .parse({ format: "mmcif" })
     .modelStructure()
-    .component("all")
-    .representation("cartoon");
+    .component({ selector: "all" })
+    .representation({ type: "cartoon" });
 
   const state = builder.getState();
 

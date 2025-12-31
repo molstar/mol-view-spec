@@ -113,8 +113,7 @@ export class MVSX {
     return await zip.generateAsync({
       type: "uint8array",
       compression: "DEFLATE",
-      compressionOptions:
-        this.compresslevel !== null ? { level: this.compresslevel } : undefined,
+      compressionOptions: this.compresslevel !== null ? { level: this.compresslevel } : undefined,
     });
   }
 
@@ -160,9 +159,12 @@ export class MVSX {
 
     // Read all other files as assets
     const assets: Record<string, Uint8Array> = {};
+    // deno-lint-ignore no-explicit-any
     for (const [filename, file] of Object.entries(zip.files)) {
-      if (filename !== "index.mvsj" && !file.dir) {
-        const content = await file.async("uint8array");
+      // deno-lint-ignore no-explicit-any
+      if (filename !== "index.mvsj" && !(file as any).dir) {
+        // deno-lint-ignore no-explicit-any
+        const content = await (file as any).async("uint8array");
         assets[filename] = content;
       }
     }
