@@ -800,9 +800,15 @@ Params:
 
 - **`text_format?: `**`string`
 
-  Formatting template for the label text.
+  Formatting template for the label text. Supports simplified f-string syntax.
 
   Default: `"{}"`
+
+- **`group_by_fields?: `**`Array<string> | null`
+
+  Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.
+
+  Default: `null`
 
 ## `label_from_source`
 
@@ -848,9 +854,15 @@ Params:
 
 - **`text_format?: `**`string`
 
-  Formatting template for the label text.
+  Formatting template for the label text. Supports simplified f-string syntax.
 
   Default: `"{}"`
+
+- **`group_by_fields?: `**`Array<string> | null`
+
+  Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.
+
+  Default: `null`
 
 ## `tooltip`
 
@@ -916,7 +928,7 @@ Params:
 
 - **`text_format?: `**`string`
 
-  Formatting template for the tooltip text.
+  Formatting template for the tooltip text. Supports simplified f-string syntax.
 
   Default: `"{}"`
 
@@ -964,7 +976,7 @@ Params:
 
 - **`text_format?: `**`string`
 
-  Formatting template for the tooltip text.
+  Formatting template for the tooltip text. Supports simplified f-string syntax.
 
   Default: `"{}"`
 
