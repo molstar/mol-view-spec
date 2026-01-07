@@ -798,6 +798,12 @@ Params:
 
   Default: `{}`
 
+- **`text_format?: `**`string`
+
+  Formatting template for the label text.
+
+  Default: `"{}"`
+
 ## `label_from_source`
 
 This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
@@ -839,6 +845,12 @@ Params:
   Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
 
   Default: `{}`
+
+- **`text_format?: `**`string`
+
+  Formatting template for the label text.
+
+  Default: `"{}"`
 
 ## `tooltip`
 
@@ -902,6 +914,12 @@ Params:
 
   Default: `{}`
 
+- **`text_format?: `**`string`
+
+  Formatting template for the tooltip text.
+
+  Default: `"{}"`
+
 ## `tooltip_from_source`
 
 This node instructs to add tooltips to parts of a structure. The tooltips are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
@@ -943,6 +961,12 @@ Params:
   Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
 
   Default: `{}`
+
+- **`text_format?: `**`string`
+
+  Formatting template for the tooltip text.
+
+  Default: `"{}"`
 
 ## `focus`
 
