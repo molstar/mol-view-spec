@@ -893,6 +893,8 @@ class Structure(_Base, _PrimitivesMixin, _TransformMixin):
         category_name: str | None = None,
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
+        text_format: str | None = None,
+        group_by_fields: list[str] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -906,6 +908,8 @@ class Structure(_Base, _PrimitivesMixin, _TransformMixin):
         :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the label text (default: "label")
         :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
+        :param text_format: formatting template for the label text. Supports simplified f-string syntax. (default: use field value directly (equivalent to '{}'))
+        :param group_by_fields: set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance. (default: group by field 'group_id')
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -924,6 +928,8 @@ class Structure(_Base, _PrimitivesMixin, _TransformMixin):
         category_name: str,
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
+        text_format: str | None = None,
+        group_by_fields: list[str] | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -935,6 +941,8 @@ class Structure(_Base, _PrimitivesMixin, _TransformMixin):
         :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the label text (default: "label")
         :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
+        :param text_format: formatting template for the label text. Supports simplified f-string syntax. (default: use field value directly (equivalent to '{}'))
+        :param group_by_fields: set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance. (default: group by field 'group_id')
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -955,6 +963,7 @@ class Structure(_Base, _PrimitivesMixin, _TransformMixin):
         category_name: str | None = None,
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
+        text_format: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -968,6 +977,7 @@ class Structure(_Base, _PrimitivesMixin, _TransformMixin):
         :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the tooltip text (default: "tooltip")
         :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
+        :param text_format: formatting template for the tooltip text. Supports simplified f-string syntax. (default: use field value directly (equivalent to '{}'))
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
@@ -986,6 +996,7 @@ class Structure(_Base, _PrimitivesMixin, _TransformMixin):
         category_name: str,
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
+        text_format: str | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Structure:
@@ -997,6 +1008,7 @@ class Structure(_Base, _PrimitivesMixin, _TransformMixin):
         :param category_name: name of the CIF category to read annotation from (only applies when `format` is `"cif"` or `"bcif"`) (default: the first category in the block is used)
         :param field_name: name of the column in CIF or field name (key) in JSON that contains the tooltip text (default: "tooltip")
         :param field_remapping: optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ 'label_asym_id': 'X' }` to load actual field 'X' as 'label_asym_id'. Use `{ 'label_asym_id': None }` to ignore actual field 'label_asym_id'. Fields not mentioned here are mapped implicitely (i.e. actual name = standard name). (default: all fields are mapped implicitely)
+        :param text_format: formatting template for the tooltip text. Supports simplified f-string syntax. (default: use field value directly (equivalent to '{}'))
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder
