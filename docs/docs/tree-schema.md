@@ -798,6 +798,18 @@ Params:
 
   Default: `{}`
 
+- **`text_format?: `**`string`
+
+  Formatting template for the label text. Supports simplified f-string syntax.
+
+  Default: `"{}"`
+
+- **`group_by_fields?: `**`Array<string> | null`
+
+  Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.
+
+  Default: `null`
+
 ## `label_from_source`
 
 This node instructs to add labels (textual visual representations) to parts of a structure. The labels are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
@@ -839,6 +851,18 @@ Params:
   Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
 
   Default: `{}`
+
+- **`text_format?: `**`string`
+
+  Formatting template for the label text. Supports simplified f-string syntax.
+
+  Default: `"{}"`
+
+- **`group_by_fields?: `**`Array<string> | null`
+
+  Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.
+
+  Default: `null`
 
 ## `tooltip`
 
@@ -902,6 +926,12 @@ Params:
 
   Default: `{}`
 
+- **`text_format?: `**`string`
+
+  Formatting template for the tooltip text. Supports simplified f-string syntax.
+
+  Default: `"{}"`
+
 ## `tooltip_from_source`
 
 This node instructs to add tooltips to parts of a structure. The tooltips are defined by an annotation resource included in the same file this structure was loaded from. Only applicable if the structure was loaded from an mmCIF or BinaryCIF file.
@@ -943,6 +973,12 @@ Params:
   Optional remapping of annotation field names `{ standardName1: actualName1, ... }`. Use `{ "label_asym_id": "X" }` to load actual field "X" as "label_asym_id". Use `{ "label_asym_id": null }` to ignore actual field "label_asym_id". Fields not mentioned here are mapped implicitely (i.e. actual name = standard name).
 
   Default: `{}`
+
+- **`text_format?: `**`string`
+
+  Formatting template for the tooltip text. Supports simplified f-string syntax.
+
+  Default: `"{}"`
 
 ## `focus`
 

@@ -2224,6 +2224,54 @@ async def testing_labels_from_source_example() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
+@router.get("/testing/labels_formatted")
+async def testing_labels_formatted_example() -> MVSResponse:
+    """
+    Labels and tooltip from the same CIF as structure, example of using `text_format` and `group_by_fields`
+    """
+    builder = create_builder()
+    structure_url = f"https://www.ebi.ac.uk/pdbe/entry-files/download/1hda.bcif"
+    structure = builder.download(url=structure_url).parse(format="bcif").model_structure()
+    repr = structure.component(selector="polymer").representation(type="cartoon")
+    structure.label_from_source(
+        schema="all_atomic",
+        category_name="atom_site",
+        text_format="{label_asym_id} {label_comp_id} {label_seq_id}",
+        group_by_fields=['label_asym_id', 'label_seq_id'],
+    )
+    structure.label_from_source(
+        schema="all_atomic",
+        category_name="pdbx_sifts_unp_segments",
+        group_by_fields=["asym_id", "unp_acc"],
+        field_remapping={
+            "label_asym_id": "asym_id",
+            "beg_label_seq_id": "seq_id_start",
+            "end_label_seq_id": "seq_id_end",
+            "instance_id": None,
+        },
+        text_format="{{ {unp_acc} }}",
+    )
+    repr.color_from_source(
+        schema="all_atomic",
+        category_name="pdbx_sifts_unp_segments",
+        field_remapping={
+            "label_asym_id": "asym_id",
+            "beg_label_seq_id": "seq_id_start",
+            "end_label_seq_id": "seq_id_end",
+            "instance_id": None,
+        },
+        field_name="unp_acc",
+        palette=CategoricalPalette(),
+    )
+    structure.tooltip_from_source(
+        schema="all_atomic",
+        category_name="atom_site",
+        text_format="<hr><code>{label_asym_id} {label_comp_id:\xa0<3} {label_seq_id:\xa0>3} B-factor: {B_iso_or_equiv:\xa0>8.1f}</code>",
+        # \xa0 = non-breaking space
+    )
+    return JSONResponse(builder.get_state().to_dict())
+
+
 @router.get("/testing/instance_id_inline_selector")
 async def testing_instance_id_inline_selector() -> MVSResponse:
     """

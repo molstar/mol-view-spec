@@ -1347,12 +1347,16 @@ class LabelFromUriParams(_DataFromUriParams):
     """
     Label based on another resource.
     """
+    text_format: Optional[str] = Field(None, description="Formatting template for the label text. Supports simplified f-string syntax.")
+    group_by_fields: Optional[list[str]] = Field(None, description="Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.")
 
 
 class LabelFromSourceParams(_DataFromSourceParams):
     """
     Label based on a category in the source file.
     """
+    text_format: Optional[str] = Field(None, description="Formatting template for the label text. Supports simplified f-string syntax.")
+    group_by_fields: Optional[list[str]] = Field(None, description="Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.")
 
 
 class TooltipInlineParams(BaseModel):
@@ -1361,11 +1365,11 @@ class TooltipInlineParams(BaseModel):
 
 
 class TooltipFromUriParams(_DataFromUriParams):
-    pass
+    text_format: Optional[str] = Field(None, description="Formatting template for the tooltip text. Supports simplified f-string syntax.")
 
 
 class TooltipFromSourceParams(_DataFromSourceParams):
-    pass
+    text_format: Optional[str] = Field(None, description="Formatting template for the tooltip text. Supports simplified f-string syntax.")
 
 
 class FocusInlineParams(BaseModel):
