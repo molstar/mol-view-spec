@@ -1,13 +1,34 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mol View Spec</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Mol View Spec</title>
+        <!-- Molstar CSS and JS from CDN -->
+        <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.css"
+        />
+        <script
+            type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.js"
+        ></script>
+    </head>
+    <body>
+        <div id="root"></div>
+        <!-- Configure Monaco Environment before app loads -->
+        <script>
+            window.MonacoEnvironment = {
+                getWorkerUrl: function (moduleId, label) {
+                    if (label === "typescript" || label === "javascript") {
+                        return "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/esm/vs/language/typescript/ts.worker.js";
+                    }
+                    return "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/esm/vs/editor/editor.worker.js";
+                },
+            };
+        </script>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
 </html>
