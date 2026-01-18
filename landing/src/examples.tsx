@@ -1,5 +1,8 @@
 import { ReactNode, useState } from "react";
-import { EditorWithViewer } from "@zachcp/molstar-components";
+import { EditorWithViewer as EditorWithViewerPreact } from "@molstar/molstar-components";
+
+// Type cast to work around Preact/React type incompatibility
+const EditorWithViewer = EditorWithViewerPreact as any;
 
 export interface ExampleSpec {
   header: string;

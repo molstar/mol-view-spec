@@ -7,10 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build --base=/mol-view-spec/",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview:build": "vite preview --base=/mol-view-spec/"
   },
   "dependencies": {
-    "@zachcp/molstar-components": "npm:@jsr/zachcp__molstar-components@^0.4.14",
+    "@molstar/molstar-components": "npm:@jsr/molstar__molstar-components@^0.5.0",
     "react": "^18.2.0",
     "react-code-blocks": "^0.1.4",
     "react-dom": "^18.2.0"
