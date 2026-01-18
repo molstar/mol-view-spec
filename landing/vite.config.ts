@@ -29,7 +29,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
-      "@zachcp/molstar-components",
+      "@molstar/molstar-components",
       "monaco-editor",
       "preact",
       "preact/hooks",
