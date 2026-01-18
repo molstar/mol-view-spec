@@ -983,3 +983,95 @@ a {
 .header-links a:last-child {
   border-radius: 0 4px 4px 0;
 }
+/* Override EditorWithViewer inline styles for better appearance */
+/* Target the control panel with inline background-color */
+div[style*="background-color: #2a2a2a"][style*="border-top: 1px solid #333"] {
+    background-color: #f8f9fa !important;
+    border-top: 1px solid #dee2e6 !important;
+    padding: 10px 16px !important;
+}
+
+/* Improve checkbox label styling */
+div[style*="background-color: #2a2a2a"] label {
+    color: #495057 !important;
+    font-weight: 500;
+}
+
+/* Error display styling */
+div[style*="background-color: #ff000020"] {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+    border: 1px solid #ffc107 !important;
+    border-radius: 4px;
+    padding: 12px !important;
+    margin-top: 8px !important;
+}
+
+/* Log panel details styling */
+details[style*="border: 1px solid #333"] {
+    border: 1px solid #dee2e6 !important;
+    background-color: #ffffff !important;
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
+details[style*="border: 1px solid #333"] summary {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    font-weight: 500;
+}
+
+/* Log content area */
+div[style*="background-color: #0a0a0a"] {
+    background-color: #f8f9fa !important;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Individual log entries */
+div[style*="border-bottom: 1px solid #333"] {
+    border-bottom: 1px solid #e9ecef !important;
+    color: #212529 !important;
+}
+
+/* Log entry colors */
+div[style*="color: #ff6b6b"] {
+    color: #dc3545 !important;
+}
+
+div[style*="color: #51cf66"] {
+    color: #28a745 !important;
+}
+
+div[style*="color: #ccc"] {
+    color: #6c757d !important;
+}
+
+/* Hide Molstar viewer controls for cleaner appearance */
+.msp-plugin .msp-layout-top,
+.msp-plugin .msp-layout-controls,
+.msp-plugin .msp-viewport-controls,
+.msp-plugin .msp-viewport-controls-buttons,
+.msp-plugin .msp-btn-row-group,
+.msp-plugin-content .msp-layout-controls,
+.msp-plugin-content .msp-layout-top {
+    display: none !important;
+}
+
+/* Hide any floating control panels */
+.msp-plugin .msp-sequence-wrapper,
+.msp-plugin .msp-left-panel,
+.msp-plugin .msp-right-panel,
+.msp-viewport-top-left-controls {
+    display: none !important;
+}
+
+/* Make viewport take full space */
+.msp-plugin .msp-layout-main {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.msp-viewport {
+    width: 100% !important;
+    height: 100% !important;
+}

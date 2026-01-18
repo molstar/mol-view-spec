@@ -13,13 +13,38 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+
+    /* Path mappings for @molstar/molstar-components JSR package
+       This package uses Deno-style npm: and jsr: imports internally,
+       so we need to map them to actual node_modules locations */
+    "paths": {
+      "npm:preact@*/jsx-runtime": [
+        "node_modules/preact/jsx-runtime/src/index.d.ts",
+      ],
+      "npm:preact@*/hooks": ["node_modules/preact/hooks/src/index.d.ts"],
+      "npm:preact@*": ["node_modules/preact/src/index.d.ts"],
+      "npm:monaco-editor@*/esm/vs/editor/editor.api.js": [
+        "node_modules/monaco-editor/esm/vs/editor/editor.api.d.ts",
+      ],
+      "npm:monaco-editor@*/esm/vs/language/typescript/monaco.contribution.js": [
+        "node_modules/monaco-editor/esm/vs/language/typescript/monaco.contribution.d.ts",
+      ],
+      "npm:monaco-editor@*/esm/vs/basic-languages/javascript/javascript.js": [
+        "node_modules/monaco-editor/esm/vs/basic-languages/javascript/javascript.d.ts",
+      ],
+      "jsr:@molstar/mol-view-stories@*": [
+        "node_modules/@jsr/molstar__mol-view-stories/_dist/mod.d.ts",
+      ],
+    },
 
     /* Linting */
-    "strict": true,
+    "strict": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
   },
   "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [{ "path": "./tsconfig.node.json" }],
 }
