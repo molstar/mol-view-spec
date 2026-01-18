@@ -6,7 +6,7 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
-    /* Bundler mode - this tells TS to trust the bundler (Vite) for resolution */
+    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
@@ -15,30 +15,36 @@
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    
-    /* Map Deno-style npm: and jsr: imports to actual node_modules */
+
+    /* Path mappings for @molstar/molstar-components JSR package
+       This package uses Deno-style npm: and jsr: imports internally,
+       so we need to map them to actual node_modules locations */
     "paths": {
-      /* Preact mappings - order matters, most specific first */
-      "npm:preact@*/jsx-runtime": ["node_modules/preact/jsx-runtime/src/index.d.ts"],
+      "npm:preact@*/jsx-runtime": [
+        "node_modules/preact/jsx-runtime/src/index.d.ts",
+      ],
       "npm:preact@*/hooks": ["node_modules/preact/hooks/src/index.d.ts"],
       "npm:preact@*": ["node_modules/preact/src/index.d.ts"],
-      
-      /* Monaco editor mappings */
-      "npm:monaco-editor@*/esm/vs/editor/editor.api.js": ["node_modules/monaco-editor/esm/vs/editor/editor.api.d.ts"],
-      "npm:monaco-editor@*/esm/vs/language/typescript/monaco.contribution.js": ["node_modules/monaco-editor/esm/vs/language/typescript/monaco.contribution.d.ts"],
-      "npm:monaco-editor@*/esm/vs/basic-languages/javascript/javascript.js": ["node_modules/monaco-editor/esm/vs/basic-languages/javascript/javascript.d.ts"],
-      
-      /* JSR mappings */
-      "jsr:@molstar/mol-view-stories@*": ["node_modules/@jsr/molstar__mol-view-stories/_dist/mod.d.ts"]
+      "npm:monaco-editor@*/esm/vs/editor/editor.api.js": [
+        "node_modules/monaco-editor/esm/vs/editor/editor.api.d.ts",
+      ],
+      "npm:monaco-editor@*/esm/vs/language/typescript/monaco.contribution.js": [
+        "node_modules/monaco-editor/esm/vs/language/typescript/monaco.contribution.d.ts",
+      ],
+      "npm:monaco-editor@*/esm/vs/basic-languages/javascript/javascript.js": [
+        "node_modules/monaco-editor/esm/vs/basic-languages/javascript/javascript.d.ts",
+      ],
+      "jsr:@molstar/mol-view-stories@*": [
+        "node_modules/@jsr/molstar__mol-view-stories/_dist/mod.d.ts",
+      ],
     },
 
     /* Linting */
     "strict": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [{ "path": "./tsconfig.node.json" }],
 }
