@@ -506,6 +506,7 @@ ParseFormatT = Literal[
     "bcif",  # +volumes
     "pdb",
     "pdbqt",
+    "pqr",
     "gro",
     "xyz",
     "mol",

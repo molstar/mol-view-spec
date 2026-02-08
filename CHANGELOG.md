@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file, following t
 - `color_from_uri` and `color_from_source` take `selector` parameter
 - `label_from_*` and `tooltip_from_*` take `text_format` parameter
 - `label_from_*` take `group_by_fields` parameter
+- add PQR file format support
 
 ## [v1.8.1] - 2025-12-22
 
