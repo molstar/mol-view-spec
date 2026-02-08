@@ -77,6 +77,7 @@ export type ParseFormatT =
   | "bcif"
   | "pdb"
   | "pdbqt"
+  | "pqr"
   | "gro"
   | "xyz"
   | "mol"
