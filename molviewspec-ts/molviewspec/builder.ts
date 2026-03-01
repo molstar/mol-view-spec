@@ -60,6 +60,7 @@ import type {
   PrimitiveLabelParams,
   PrimitivesFromUriParams,
   PrimitivesParams,
+  PuttyParams,
   RepresentationParams,
   Snapshot,
   SnapshotMetadata,
@@ -1109,6 +1110,23 @@ export class Component extends Base {
    *   type: "ball_and_stick",
    *   alpha: 0.8,
    *   size_factor: 1.5
+   * })
+   * ```
+   *
+   * @example Putty with constant (uniform) tube radius
+   * ```typescript
+   * component.representation({
+   *   type: "putty",
+   *   size_theme: "uniform",
+   *   size_factor: 0.5
+   * })
+   * ```
+   *
+   * @example Putty with B-factor/RMSF-driven tube radius
+   * ```typescript
+   * component.representation({
+   *   type: "putty",
+   *   size_theme: "uncertainty"
    * })
    * ```
    *

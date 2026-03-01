@@ -205,6 +205,105 @@ Deno.test("serialization - multi-state snapshots", () => {
   assertEquals(states.snapshots[1].metadata.transition_duration_ms, 500);
 });
 
+Deno.test("serialization - putty representation default", () => {
+  const builder = createBuilder();
+  builder
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
+    .modelStructure()
+    .component({ selector: "polymer" })
+    .representation({ type: "putty" });
+
+  const state = builder.getState();
+  const stateJson = JSON.stringify(state);
+
+  assertEquals(stateJson.includes("putty"), true);
+  assertEquals(stateJson.includes("representation"), true);
+});
+
+Deno.test("serialization - putty representation uniform size theme", () => {
+  const builder = createBuilder();
+  builder
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
+    .modelStructure()
+    .component({ selector: "polymer" })
+    .representation({ type: "putty", size_theme: "uniform", size_factor: 0.5 });
+
+  const state = builder.getState();
+  const stateJson = JSON.stringify(state);
+
+  assertEquals(stateJson.includes("putty"), true);
+  assertEquals(stateJson.includes("uniform"), true);
+  assertEquals(stateJson.includes("0.5"), true);
+});
+
+Deno.test("serialization - putty representation uncertainty size theme", () => {
+  const builder = createBuilder();
+  builder
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
+    .modelStructure()
+    .component({ selector: "polymer" })
+    .representation({ type: "putty", size_theme: "uncertainty" });
+
+  const state = builder.getState();
+  const stateJson = JSON.stringify(state);
+
+  assertEquals(stateJson.includes("putty"), true);
+  assertEquals(stateJson.includes("uncertainty"), true);
+});
+
+Deno.test("serialization - putty uncertainty with size_factor", () => {
+  const builder = createBuilder();
+  builder
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
+    .modelStructure()
+    .component({ selector: "polymer" })
+    .representation({
+      type: "putty",
+      size_theme: "uncertainty",
+      size_factor: 2.0,
+    });
+
+  const state = builder.getState();
+  const stateJson = JSON.stringify(state);
+
+  assertEquals(stateJson.includes("putty"), true);
+  assertEquals(stateJson.includes("uncertainty"), true);
+  assertEquals(stateJson.includes("2"), true);
+});
+
+Deno.test("serialization - putty node structure", () => {
+  const builder = createBuilder();
+  builder
+    .download({ url: "https://files.wwpdb.org/download/1cbs.cif" })
+    .parse({ format: "mmcif" })
+    .modelStructure()
+    .component({ selector: "polymer" })
+    .representation({ type: "putty", size_theme: "uniform", size_factor: 1.5 });
+
+  const state = builder.getState();
+
+  // Walk to the representation node
+  assertExists(state.root.children);
+  const download = state.root.children[0];
+  assertExists(download.children);
+  const parse = download.children[0];
+  assertExists(parse.children);
+  const structure = parse.children[0];
+  assertExists(structure.children);
+  const component = structure.children[0];
+  assertExists(component.children);
+  const representation = component.children[0];
+
+  assertEquals(representation.kind, "representation");
+  assertEquals((representation.params as any)?.type, "putty");
+  assertEquals((representation.params as any)?.size_theme, "uniform");
+  assertEquals((representation.params as any)?.size_factor, 1.5);
+});
+
 Deno.test("serialization - canvas and camera", () => {
   const builder = createBuilder();
   builder.canvas({ background_color: "#ffffff" });

@@ -24,6 +24,7 @@ import type {
   SchemaT,
   StateTreeT,
   StructureTypeT,
+  PuttySizeThemeT,
   SurfaceTypeT,
   Vec3,
   VolumeRepresentationTypeT,
@@ -283,6 +284,17 @@ export interface SpacefillParams {
  * Carbohydrate parameters.
  */
 export interface CarbohydrateParams {
+  [key: string]: unknown;
+}
+
+/**
+ * Putty parameters.
+ * The tube radius can be driven by a constant size_factor ("uniform") or
+ * per-residue B-factor/RMSF values ("uncertainty").
+ */
+export interface PuttyParams {
+  size_factor?: number;
+  size_theme?: PuttySizeThemeT;
   [key: string]: unknown;
 }
 
@@ -763,6 +775,7 @@ export type NodeParams =
   | LineRepresentationParams
   | SpacefillParams
   | CarbohydrateParams
+  | PuttyParams
   | SurfaceParams
   | VolumeRepresentationParams
   | VolumeIsoSurfaceParams

@@ -65,6 +65,8 @@ from molviewspec.nodes import (
     PrimitivesFromUriParams,
     PrimitivesParams,
     RefT,
+    PuttyParams,
+    PuttySizeThemeT,
     RepresentationTypeParams,
     RepresentationTypeT,
     SchemaFormatT,
@@ -1140,6 +1142,29 @@ class Component(_Base, _FocusMixin, _TransformMixin):
         Add a carbohydrate representation for this component.
         :param type: the type of this representation ('carbohydrate')
         :param size_factor: adjust the scale of the visuals (relative to 1.0)
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at representation level
+        """
+        ...
+
+    @overload
+    def representation(
+        self,
+        *,
+        type: Literal["putty"],
+        size_factor: float | None = None,
+        size_theme: PuttySizeThemeT | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Representation:
+        """
+        Add a putty representation for this component.
+        :param type: the type of this representation ('putty')
+        :param size_factor: adjust the scale of the visuals (relative to 1.0)
+        :param size_theme: controls how the tube radius is determined.
+            'uniform' uses a constant radius scaled by size_factor (default).
+            'uncertainty' drives the radius from per-residue B-factor/RMSF values.
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: a builder that handles operations at representation level
