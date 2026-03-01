@@ -558,8 +558,10 @@ async def refs_example() -> MVSResponse:
 @router.get("/repr-params")
 async def repr_params_example() -> MVSResponse:
     """
-    Individual representations (cartoon, ball-and-stick, surface) can be further customized. The corresponding builder
-    function exposes additional method arguments depending on the chosen representation type.
+    Individual representations (cartoon, ball-and-stick, surface, putty) can be further customized. The corresponding
+    builder function exposes additional method arguments depending on the chosen representation type.
+    Putty supports two size themes: 'uniform' (constant radius scaled by size_factor) and
+    'uncertainty' (per-residue radius driven by B-factor/RMSF values).
     """
     builder = create_builder()
     component = (
@@ -567,6 +569,8 @@ async def repr_params_example() -> MVSResponse:
     )
     component.representation(type="cartoon", size_factor=1.5, tubular_helices=True)
     component.representation(type="surface", ignore_hydrogens=True).opacity(opacity=0.8)
+    component.representation(type="putty", size_theme="uniform", size_factor=0.5)
+    component.representation(type="putty", size_theme="uncertainty")
     return JSONResponse(builder.get_state().to_dict())
 
 
@@ -2950,14 +2954,14 @@ async def portfolio_modres() -> MVSResponse:
 async def portfolio_bfactor() -> MVSResponse:
     """
     Entry structure colored by B-factor, as created by PDBImages.
-    (We are missing putty representation and size theme!)
+    Uses putty representation with size_theme='uncertainty' so the tube radius also encodes B-factor/RMSF.
     """
     ID = "1tqn"
     builder = create_builder()
     structure_url = _url_for_mmcif(ID)
     annotation_url = f"http://0.0.0.0:9000/api/v1/examples/data/file/{ID}/bfactor.cif"
     struct = builder.download(url=structure_url).parse(format="mmcif").model_structure()
-    struct.component(selector="polymer").representation(type="cartoon").color_from_uri(
+    struct.component(selector="polymer").representation(type="putty", size_theme="uncertainty").color_from_uri(
         uri=annotation_url, format="cif", schema="all_atomic", category_name=f"bfactor"
     )
     struct.component(selector="ligand").representation(type="ball_and_stick").color_from_uri(
@@ -3068,7 +3072,6 @@ async def portfolio_pdbekb_segment_superpose(
 ) -> MVSResponse:
     """
     "PDBe-KB segment superpose view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
-    (We are missing putty representation!)
     """
     builder = create_builder()
     structure_url1 = _url_for_mmcif(id1)  # TODO use model server, only retrieve the chain
@@ -3102,7 +3105,7 @@ async def portfolio_pdbekb_segment_superpose(
         )
         .component(selector=ComponentExpression(label_asym_id=chain2))
         .tooltip(text=f"{id2}, chain {chain2}")
-        .representation(type="cartoon")  # should be putty
+        .representation(type="putty", size_theme="uniform")
         .color(color="#cc5a03")
     )
     builder.canvas(background_color="#ffffff")
@@ -3113,7 +3116,6 @@ async def portfolio_pdbekb_segment_superpose(
 async def portfolio_pdbekb_ligand_superpose(chains: str = "1tqn:A,2nnj:A") -> MVSResponse:
     """
     "PDBe-KB ligand superpose view" from https://docs.google.com/spreadsheets/d/1sUSWmBLfKMmPLW2yqVnxWQTQoVk6SmQppdCfItyO1m0/edit#gid=0
-    (We are missing putty representation!)
     """
     builder = create_builder()
     for i, id_chain in enumerate(chains.split(",")):
@@ -3141,9 +3143,9 @@ async def portfolio_pdbekb_ligand_superpose(chains: str = "1tqn:A,2nnj:A") -> MV
                 ),
             )
         if i == 0:
-            struct.component(selector=ComponentExpression(label_asym_id=chain)).representation(type="cartoon").color(
-                color="#1d9873"
-            )  # should be putty
+            struct.component(selector=ComponentExpression(label_asym_id=chain)).representation(
+                type="putty", size_theme="uniform"
+            ).color(color="#1d9873")
         struct.component(selector="ligand").representation(type="ball_and_stick").color(color="#f602f7")
         struct.component(selector="ion").representation(type="ball_and_stick").color(color="#f602f7")
     builder.canvas(background_color="#ffffff")
