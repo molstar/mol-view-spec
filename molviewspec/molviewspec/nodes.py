@@ -650,7 +650,7 @@ class ComponentExpression(BaseModel):
     )
 
 
-RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate"]
+RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate", "putty"]
 VolumeRepresentationTypeT = Literal["isosurface", "grid_slice"]
 ColorNamesT = Literal[
     "aliceblue",
@@ -1048,6 +1048,23 @@ class CarbohydrateParams(RepresentationParams):
     size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
 
 
+PuttySizeThemeT = Literal["uniform", "uncertainty"]
+
+
+class PuttyParams(RepresentationParams):
+    type: Literal["putty"] = "putty"
+    size_factor: Optional[float] = Field(None, description="Scales the corresponding visuals.")
+    size_theme: Optional[PuttySizeThemeT] = Field(
+        None,
+        description=(
+            "Controls how the tube radius is determined. "
+            "'uniform' uses a constant radius scaled by size_factor. "
+            "'uncertainty' drives the radius from per-residue B-factor/RMSF values. "
+            "Default: 'uniform'."
+        ),
+    )
+
+
 SurfaceTypeT = Literal["molecular", "gaussian"]
 
 
@@ -1070,6 +1087,7 @@ RepresentationTypeParams = {
         LineRepresenatationParams,
         SpacefillParams,
         CarbohydrateParams,
+        PuttyParams,
         SurfaceParams,
     )
 }

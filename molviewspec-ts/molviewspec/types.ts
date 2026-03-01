@@ -123,7 +123,15 @@ export type RepresentationTypeT =
   | "isosurface"
   | "carbohydrate"
   | "backbone"
-  | "line";
+  | "line"
+  | "putty";
+
+/**
+ * Size theme for putty representation.
+ * - "uniform": constant tube radius, scaled by size_factor (default)
+ * - "uncertainty": per-residue radius driven by B-factor/RMSF values
+ */
+export type PuttySizeThemeT = "uniform" | "uncertainty";
 
 export type VolumeRepresentationTypeT = "isosurface" | "grid_slice";
 

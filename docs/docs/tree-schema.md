@@ -298,7 +298,7 @@ Parent: `component` or `component_from_uri` or `component_from_source`
 
 Params:
 
-- **`type: `**`cartoon | backbone | ball_and_stick | line | spacefill | carbohydrate | surface`
+- **`type: `**`cartoon | backbone | ball_and_stick | line | spacefill | carbohydrate | surface | putty`
 
   Representation type
 
@@ -375,6 +375,22 @@ Params:
     Scales the corresponding visuals.
 
     Default: `1`
+
+  **Case `type: "putty"`:**
+
+  - **`size_factor?: `**`number`
+
+    Scales the corresponding visuals.
+
+    Default: `1`
+
+  - **`size_theme?: `**`"uniform" | "uncertainty"`
+
+    Controls how the tube radius is determined.
+    `"uniform"` uses a constant radius scaled by `size_factor`.
+    `"uncertainty"` drives the radius from per-residue B-factor/RMSF values.
+
+    Default: `"uniform"`
 
   **Case `type: "surface"`:**
 
