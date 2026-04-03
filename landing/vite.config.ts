@@ -16,10 +16,10 @@ export default defineConfig({
 
       // Map Deno-style npm: imports to actual node_modules packages
       // These are used by @molstar/molstar-components (JSR package) internally
-      "npm:preact@10.28.1": "preact",
-      "npm:preact@10.28.1/hooks": "preact/hooks",
-      "npm:preact@10.28.1/jsx-runtime": "preact/jsx-runtime",
-      "npm:preact@10.28.1/jsx-dev-runtime": "preact/jsx-dev-runtime",
+      "npm:preact@10.29.1": "preact",
+      "npm:preact@10.29.1/hooks": "preact/hooks",
+      "npm:preact@10.29.1/jsx-runtime": "preact/jsx-runtime",
+      "npm:preact@10.29.1/jsx-dev-runtime": "preact/jsx-dev-runtime",
 
       // Monaco editor mappings for @molstar/molstar-components
       "npm:monaco-editor@0.55.1/esm/vs/editor/editor.api.js": "monaco-editor",
@@ -31,7 +31,7 @@ export default defineConfig({
         "monaco-editor/esm/vs/language/typescript/monaco.contribution.js",
 
       // Map JSR imports to npm equivalents
-      "jsr:@molstar/mol-view-stories@1.0.4": "@jsr/molstar__mol-view-stories",
+      "jsr:@molstar/mol-view-stories@1.1.0": "@jsr/molstar__mol-view-stories",
     },
   },
   optimizeDeps: {
