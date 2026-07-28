@@ -20,7 +20,7 @@ from molviewspec.nodes import (
     ArrowParams,
     BoxParams,
     CameraParams,
-    CameraTransitionShapeT,
+    CameraTransitionTrajectoryT,
     CanvasParams,
     ClipTypeParams,
     ClipTypeT,
@@ -575,7 +575,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         self,
         *,
         duration_ms: float | None = None,
-        shape: CameraTransitionShapeT | None = None,
+        trajectory: CameraTransitionTrajectoryT | None = None,
         easing: EasingKindT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
@@ -584,7 +584,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         Customize camera transition when entering this MVS snapshot.
 
         :param duration_ms: Duration of the transition from the previous snapshot to this snapshot, in milliseconds. This overrides the deprecated `transition_duration_ms` in the snapshot metadata (which applies to the transition from this snapshot to the next snapshot). Defaults to 0.
-        :param shape: Camera transition trajectory shape. 'linear': interpolates along a straight line with constant absolute speed; 'linear-relative': like 'linear' but moves relatively slower when zoomed-in more; 'leap': zooms out during the transition to capture both the initial and the final camera target (becomes linear if the targets are near); 'leap-relative': like 'leap' but moves relatively slower when zoomed-in more. Defaults to 'linear'.
+        :param trajectory: Camera transition trajectory shape. 'linear': interpolates along a straight line with constant absolute speed; 'linear-relative': like 'linear' but moves relatively slower when zoomed-in more; 'leap': zooms out during the transition to capture both the initial and the final camera target (becomes linear if the targets are near); 'leap-relative': like 'leap' but moves relatively slower when zoomed-in more. Defaults to 'linear'.
         :param easing: Transition easing function. Adjusts transition speed near the beginning and end of the transition to create smoother camera motion. Defaults to 'linear'.
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node

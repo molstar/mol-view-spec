@@ -518,7 +518,7 @@ def make_snapshot(
 @router.get("/multiple-states-camera-transitions")
 async def multiple_states_camera_transitions() -> MVSResponse:
     """Example of multi-state with customized camera transitions"""
-    def make_focused(title: str, focus_res: int | list[int] | None, shape: str, easing: str):
+    def make_focused(title: str, focus_res: int | list[int] | None, trajectory: str, easing: str):
         builder = create_builder()
         snapshot_duration = 1250
         transition_duration = 1000
@@ -557,19 +557,19 @@ async def multiple_states_camera_transitions() -> MVSResponse:
             component = struct.component(selector=ComponentExpression(label_seq_id=focus_res))
             component.focus(**focus_params)
 
-        builder.transition(duration_ms=transition_duration, shape=shape, easing=easing)
+        builder.transition(duration_ms=transition_duration, trajectory=trajectory, easing=easing)
 
         zoom_desc = f"Residues {focus_res[0]}-{focus_res[1]}" if isinstance(focus_res, list) else f"Residue {focus_res}" if isinstance(focus_res, int) else "Whole structure"
-        description = f"### *{shape}* transition with *{easing}* easing \n\n{zoom_desc}"
+        description = f"### *{trajectory}* transition with *{easing}* easing \n\n{zoom_desc}"
         return builder.get_snapshot(key=title, title=title, description=description, duration_ms=snapshot_duration)
 
     snapshots: list[Snapshot] = []
-    for shape in ["linear", "linear-relative", "leap", "leap-relative"]:
-        snapshots.append(make_focused(f"{shape} All", None, shape, "linear"))
-        snapshots.append(make_focused(f"{shape} Blue", 7, shape, "linear"))
-        snapshots.append(make_focused(f"{shape} Green", 275, shape, "linear"))
-        snapshots.append(make_focused(f"{shape} Red", 145, shape, "linear"))
-        snapshots.append(make_focused(f"{shape} Pink", [125, 145], shape, "linear"))
+    for trajectory in ["linear", "linear-relative", "leap", "leap-relative"]:
+        snapshots.append(make_focused(f"{trajectory} All", None, trajectory, "linear"))
+        snapshots.append(make_focused(f"{trajectory} Blue", 7, trajectory, "linear"))
+        snapshots.append(make_focused(f"{trajectory} Green", 275, trajectory, "linear"))
+        snapshots.append(make_focused(f"{trajectory} Red", 145, trajectory, "linear"))
+        snapshots.append(make_focused(f"{trajectory} Pink", [125, 145], trajectory, "linear"))
 
     for ease in ["linear", "sin-in-out", "quad-in-out", "cubic-in-out"]:
         snapshots.append(make_focused(f"Easing {ease} All", None, "linear", ease))

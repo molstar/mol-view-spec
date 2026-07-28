@@ -1459,7 +1459,7 @@ class CanvasParams(BaseModel):
     )
 
 
-CameraTransitionShapeT = Literal[
+CameraTransitionTrajectoryT = Literal[
     "linear",
     "linear-relative",
     "leap",
@@ -1473,7 +1473,7 @@ class TransitionParams(BaseModel):
     """
     duration_ms: Optional[float] = Field(
         None, description="Duration of the transition from the previous snapshot to this snapshot, in milliseconds. This overrides the deprecated `transition_duration_ms` in the snapshot metadata (which applies to the transition from this snapshot to the next snapshot). Defaults to 0.")
-    shape: Optional[CameraTransitionShapeT] = Field(
+    trajectory: Optional[CameraTransitionTrajectoryT] = Field(
         None, description="Camera transition trajectory shape. 'linear': interpolates along a straight line with constant absolute speed; 'linear-relative': like 'linear' but moves relatively slower when zoomed-in more; 'leap': zooms out during the transition to capture both the initial and the final camera target (becomes linear if the targets are near); 'leap-relative': like 'leap' but moves relatively slower when zoomed-in more. Defaults to 'linear'.")
     easing: Optional[EasingKindT] = Field(
         None, description="Transition easing function. Adjusts transition speed near the beginning and end of the transition to create smoother camera motion. Defaults to 'linear'.")
