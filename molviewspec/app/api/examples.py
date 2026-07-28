@@ -269,23 +269,22 @@ async def multiple_states_alignment() -> MVSResponse:
             description="### We have these two proteins...",
             align=False,
             duration=3000,
-            transition_duration=1000,
             camera=camera2,
         ),
         make_snapshot(
             key="B",
             description="### What if we superpose them?",
+            transition_duration=1000,
             duration=3000,
-            transition_duration=1500,
             camera=camera1,
         ),
         make_snapshot(
-            key="C", description="### Look, a ligand!", duration=500, transition_duration=3000, camera=camera_ligand1
+            key="C", description="### Look, a ligand!", transition_duration=1500, duration=500, camera=camera_ligand1
         ),
         make_snapshot(
-            key="D", description="### ... a nice one...", duration=1000, transition_duration=1000, camera=camera_ligand2
+            key="D", description="### ... a nice one...", transition_duration=3000, duration=1000, camera=camera_ligand2
         ),
-        make_snapshot(key="E", description="", duration=2000, camera=camera1),
+        make_snapshot(key="E", description="", transition_duration=1000, duration=2000, camera=camera1),
         make_snapshot(key="F", description="# Party!!!", duration=250, camera=camera1, show=["protein2", "ligand2"]),
         make_snapshot(key="G", description="# Party!!!", duration=250, camera=camera1, show=["protein1", "ligand2"]),
         make_snapshot(key="F", description="# Party!!!", duration=250, camera=camera1, show=["protein2", "ligand2"]),
@@ -312,9 +311,9 @@ async def multiple_states_alignment() -> MVSResponse:
         make_snapshot(key="G", description="# Party!!!", duration=250, camera=camera1, show=["protein1", "ligand2"]),
         make_snapshot(key="F", description="# Party!!!", duration=250, camera=camera1, show=["protein2", "ligand2"]),
         make_snapshot(key="G", description="# Party!!!", duration=250, camera=camera1, show=["protein1", "ligand2"]),
-        make_snapshot(key="H", description="", duration=500, transition_duration=10_000, camera=camera1),
+        make_snapshot(key="H", description="", duration=500, camera=camera1),
         make_snapshot(
-            key="I", description="### Thanks for watching", duration=10_000, transition_duration=1000, camera=camera_far
+            key="I", description="### Thanks for watching", transition_duration=10_000, duration=10_000, camera=camera_far
         ),
     ]
     metadata = GlobalMetadata(description="test")
@@ -337,35 +336,34 @@ async def multiple_states_alignment_focus() -> MVSResponse:
             description=f"### We have these two proteins...{index}",
             align=False,
             duration=3000,
-            transition_duration=1000,
             focus="protein",
             orient=orient1,
         ),
         make_snapshot(
             key="B",
             description=f"### What if we superpose them? {index}",
+            transition_duration=1000,
             duration=3000,
-            transition_duration=1500,
             focus="root",
             orient=orient1,
         ),
         make_snapshot(
             key="C",
             description=f"### Look, a ligand! {index}",
+            transition_duration=1500,
             duration=500,
-            transition_duration=3000,
             focus="ligand",
             orient=orient1,
         ),
         make_snapshot(
             key="D",
             description=f"### ... a nice one... {index}",
+            transition_duration=3000,
             duration=1000,
-            transition_duration=1000,
             focus="ligand",
             orient=orient2,
         ),
-        make_snapshot(key="E", description=f"### What now? {index}", duration=2000, focus="protein", orient=orient1),
+        make_snapshot(key="E", description=f"### What now? {index}", transition_duration=1000, duration=2000, focus="protein", orient=orient1),
         *itertools.chain(
             *[
                 [
@@ -393,15 +391,14 @@ async def multiple_states_alignment_focus() -> MVSResponse:
             key="H",
             description=f"### Almost there... {index}",
             duration=500,
-            transition_duration=10_000,
             focus="protein",
             orient=orient1,
         ),
         make_snapshot(
             key="I",
             description="### Thanks for watching\n[Go to start](#A)",
+            transition_duration=10_000,
             duration=10_000,
-            transition_duration=1000,
             camera=camera_far,
         ),
     ]
@@ -449,8 +446,8 @@ def make_snapshot(
     key: str,
     description: str | None = None,
     align: bool = True,
-    duration: int,
     transition_duration: int | None = None,
+    duration: int,
     color1: str = "#dddddd",
     color2: str = "#4fc64f",
     camera=None,
@@ -507,12 +504,14 @@ def make_snapshot(
     if camera is not None:
         builder.camera(**camera)
 
+    if transition_duration is not None:
+        builder.transition(duration_ms=transition_duration)
+
     return builder.get_snapshot(
         key=key,
         title=f"State {key}",
         description=description,
-        linger_duration_ms=duration,
-        transition_duration_ms=transition_duration,
+        duration_ms=duration,
     )
 
 

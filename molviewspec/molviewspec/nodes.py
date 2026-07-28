@@ -50,6 +50,7 @@ KindT = Literal[
     "tooltip_from_source",
     "tooltip_from_uri",
     "transform",
+    "transition",
     "volume",
     "volume_representation",
 ]
@@ -157,9 +158,10 @@ class SnapshotMetadata(BaseModel):
         default_factory=generate_uuid,  # TODO remove this, it's probably superfluous
         description="Unique identifier of this state, useful when working with collections of states.",
     )
-    linger_duration_ms: int = Field(description="Timespan for snapshot.")
+    duration_ms: Optional[int] = Field(None, description="Timespan for snapshot, in milliseconds. Does not include time of the camera transition.")
+    linger_duration_ms: Optional[int] = Field(None, description="DEPRECATED. Use `duration_ms` instead.")
     transition_duration_ms: Optional[int] = Field(
-        None, description="Timespan for the animation to the next snapshot. Leave empty to skip animations."
+        None, description="Timespan for the animation to the next snapshot. Leave empty to skip animations. This parameter is DEPRECATED. The preferred way of setting transition duration is to add a `transition` node with `duration_ms` parameter on the root of the snapshot's tree. Note: `transition_duration_ms` here refers to the transition from the CURRENT to the NEXT snapshot. `duration_ms` in the `transition` node refers to the transition from the PREVIOUS to the CURRENT snapshot."
     )
 
     def __init__(self, **data):
@@ -1455,6 +1457,26 @@ class CanvasParams(BaseModel):
     background_color: Optional[ColorT] = Field(
         "white", description="Background color using SVG color names or RGB hex code. Defaults to 'white'."
     )
+
+
+CameraTransitionShapeT = Literal[
+    "linear",
+    "linear-relative",
+    "leap",
+    "leap-relative",
+]
+
+
+class TransitionParams(BaseModel):
+    """
+    Controls camera transition properties when entering this MVS snapshot.
+    """
+    duration_ms: Optional[float] = Field(
+        None, description="Duration of the transition from the previous snapshot to this snapshot, in milliseconds. This overrides the deprecated `transition_duration_ms` in the snapshot metadata (which applies to the transition from this snapshot to the next snapshot). Defaults to 0.")
+    shape: Optional[CameraTransitionShapeT] = Field(
+        None, description="Camera transition trajectory shape. 'linear': interpolates along a straight line with constant absolute speed; 'linear-relative': like 'linear' but moves relatively slower when zoomed-in more; 'leap': zooms out during the transition to capture both the initial and the final camera target (becomes linear if the targets are near); 'leap-relative': like 'leap' but moves relatively slower when zoomed-in more. Defaults to 'linear'.")
+    easing: Optional[EasingKindT] = Field(
+        None, description="Transition easing function. Adjusts transition speed near the beginning and end of the transition to create smoother camera motion. Defaults to 'linear'.")
 
 
 class PrimitiveComponentExpressions(BaseModel):
