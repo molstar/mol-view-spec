@@ -515,6 +515,73 @@ def make_snapshot(
     )
 
 
+@router.get("/multiple-states-camera-transitions")
+async def multiple_states_camera_transitions() -> MVSResponse:
+    """Example of multi-state with customized camera transitions"""
+    def make_focused(title: str, focus_res: int | list[int] | None, shape: str, easing: str):
+        builder = create_builder()
+        snapshot_duration = 1250
+        transition_duration = 1000
+
+        struct = (
+            builder
+            .download(url="https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif")
+            .parse(format="mmcif")
+            .model_structure()
+        )
+
+        (
+            struct
+            .component()
+            .representation()
+            .color(color="#ffffff", ref="color")
+            .color(selector=ComponentExpression(label_seq_id=7), color="#3050F8")
+            .color(selector=ComponentExpression(beg_label_seq_id=125, end_label_seq_id=145), color="#FFCCCC")
+            .color(selector=ComponentExpression(label_seq_id=145), color="#FF0D0D")
+            .color(selector=ComponentExpression(label_seq_id=275), color="#00AA0D")
+        )
+
+        if isinstance(focus_res, list):
+            struct.component(
+                selector=ComponentExpression(beg_label_seq_id=focus_res[0], end_label_seq_id=focus_res[1])
+            ).focus()
+        elif isinstance(focus_res, int):
+            focus_params = {}
+            if focus_res == 7:
+                focus_params = {"direction": [0, -1, -0.1], "up": [-0.1, 1, 0]}
+            elif focus_res == 275:
+                focus_params = {"direction": [0, 0, -1], "up": [-0.3, 1, 0]}
+            elif focus_res == 145:
+                focus_params = {"direction": [0, 1, -0.1], "up": [0.1, 1, 0]}
+
+            component = struct.component(selector=ComponentExpression(label_seq_id=focus_res))
+            component.focus(**focus_params)
+
+        builder.transition(duration_ms=transition_duration, shape=shape, easing=easing)
+
+        zoom_desc = f"Residues {focus_res[0]}-{focus_res[1]}" if isinstance(focus_res, list) else f"Residue {focus_res}" if isinstance(focus_res, int) else "Whole structure"
+        description = f"### *{shape}* transition with *{easing}* easing \n\n{zoom_desc}"
+        return builder.get_snapshot(key=title, title=title, description=description, duration_ms=snapshot_duration)
+
+    snapshots: list[Snapshot] = []
+    for shape in ["linear", "linear-relative", "leap", "leap-relative"]:
+        snapshots.append(make_focused(f"{shape} All", None, shape, "linear"))
+        snapshots.append(make_focused(f"{shape} Blue", 7, shape, "linear"))
+        snapshots.append(make_focused(f"{shape} Green", 275, shape, "linear"))
+        snapshots.append(make_focused(f"{shape} Red", 145, shape, "linear"))
+        snapshots.append(make_focused(f"{shape} Pink", [125, 145], shape, "linear"))
+
+    for ease in ["linear", "sin-in-out", "quad-in-out", "cubic-in-out"]:
+        snapshots.append(make_focused(f"Easing {ease} All", None, "linear", ease))
+        snapshots.append(make_focused(f"Easing {ease} Blue", 7, "linear", ease))
+        snapshots.append(make_focused(f"Easing {ease} Green", 275, "linear", ease))
+        snapshots.append(make_focused(f"Easing {ease} Red", 145, "linear", ease))
+        snapshots.append(make_focused(f"Easing {ease} Pink", [125, 145], "linear", ease))
+
+    metadata = GlobalMetadata(description="test")
+    return PlainTextResponse(States(snapshots=snapshots, metadata=metadata).dumps(indent=2))
+
+
 @router.get("/custom-properties")
 async def custom_properties_example() -> MVSResponse:
     """
