@@ -376,22 +376,6 @@ Params:
 
     Default: `1`
 
-  **Case `type: "putty"`:**
-
-  - **`size_factor?: `**`number`
-
-    Scales the corresponding visuals.
-
-    Default: `1`
-
-  - **`size_theme?: `**`"uniform" | "uncertainty"`
-
-    Controls how the tube radius is determined.
-    `"uniform"` uses a constant radius scaled by `size_factor`.
-    `"uncertainty"` drives the radius from per-residue B-factor/RMSF values.
-
-    Default: `"uniform"`
-
   **Case `type: "surface"`:**
 
   - **`surface_type?: `**`"molecular" | "gaussian"`
@@ -411,6 +395,20 @@ Params:
     Controls whether hydrogen atoms are drawn.
 
     Default: `false`
+
+  **Case `type: "putty"`:**
+
+  - **`size_factor?: `**`number`
+
+    Scales the corresponding visuals.
+
+    Default: `1`
+
+  - **`size_theme?: `**`"uniform" | "uncertainty"`
+
+    Controls how the tube radius is determined. 'uniform' uses a constant radius scaled by size_factor. 'uncertainty' drives the radius from per-residue B-factor/RMSF values.
+
+    Default: `"uniform"`
 
 ## `volume`
 
@@ -1033,48 +1031,6 @@ Params:
   Addition to the radius of the focused sphere, if computed from the radius of parent component (default: 0). Focused radius = component_radius * radius_factor + radius_extent.
 
   Default: `0`
-
-## `camera`
-
-This node instructs to set the camera position and orientation.
-
-Parent: `root`
-
-Params:
-
-- **`target: `**`[number, number, number]`
-
-  Coordinates of the point in space at which the camera is pointing.
-
-- **`position: `**`[number, number, number]`
-
-  Coordinates of the camera.
-
-- **`up?: `**`[number, number, number]`
-
-  Vector which will be aligned with the screen Y axis.
-
-  Default: `[0, 1, 0]`
-
-- **`near?: `**`number | null`
-
-  Near clipping plane distance from the position.
-
-  Default: `null`
-
-## `canvas`
-
-This node sets canvas properties.
-
-Parent: `root`
-
-Params:
-
-- **`background_color?: `**`ColorName | HexColor`
-
-  Color of the canvas background. Can be either an X11 color name (e.g. `"red"`) or a hexadecimal code (e.g. `"#FF0011"`). Defaults to white.
-
-  Default: `"white"`
 
 ## `primitives`
 
@@ -1771,3 +1727,71 @@ Params:
     Tooltip to show when hovering over the tube. If not specified, uses the parent primitives group `tooltip`.
 
     Default: `null`
+
+## `camera`
+
+This node instructs to set the camera position and orientation.
+
+Parent: `root`
+
+Params:
+
+- **`target: `**`[number, number, number]`
+
+  Coordinates of the point in space at which the camera is pointing.
+
+- **`position: `**`[number, number, number]`
+
+  Coordinates of the camera.
+
+- **`up?: `**`[number, number, number]`
+
+  Vector which will be aligned with the screen Y axis.
+
+  Default: `[0, 1, 0]`
+
+- **`near?: `**`number | null`
+
+  Near clipping plane distance from the position.
+
+  Default: `null`
+
+## `canvas`
+
+This node sets canvas properties.
+
+Parent: `root`
+
+Params:
+
+- **`background_color?: `**`ColorName | HexColor`
+
+  Color of the canvas background. Can be either an X11 color name (e.g. `"red"`) or a hexadecimal code (e.g. `"#FF0011"`). Defaults to white.
+
+  Default: `"white"`
+
+## `transition`
+
+This node specifies camera transition when entering this MVS snapshot.
+
+Parent: `root`
+
+Params:
+
+- **`duration_ms?: `**`number`
+
+  Duration of the transition from the previous snapshot to this snapshot, in milliseconds. This overrides the deprecated `transition_duration_ms` in the snapshot metadata (which applies to the transition from this snapshot to the next snapshot). Defaults to 0.
+
+  Default: `0`
+
+- **`trajectory?: `**`"linear" | "linear-relative" | "leap" | "leap-relative"`
+
+  Camera transition trajectory shape. "linear": interpolates along a straight line with constant absolute speed; "linear-relative": like "linear" but moves relatively slower when zoomed-in more; "leap": zooms out during the transition to capture both the initial and the final camera target (becomes linear if the targets are near); "leap-relative": like "leap" but moves relatively slower when zoomed-in more. Defaults to "linear".
+
+  Default: `"linear"`
+
+- **`easing?: `**`"linear" | "bounce-in" | "bounce-out" | "bounce-in-out" | "circle-in" | "circle-out" | "circle-in-out" | "cubic-in" | "cubic-out" | "cubic-in-out" | "exp-in" | "exp-out" | "exp-in-out" | "quad-in" | "quad-out" | "quad-in-out" | "sin-in" | "sin-out" | "sin-in-out"`
+
+  Transition easing function. Adjusts transition speed near the beginning and end of the transition to create smoother camera motion. Defaults to "linear".
+
+  Default: `"linear"`
