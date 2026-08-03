@@ -28,6 +28,7 @@ import type {
   SurfaceTypeT,
   Vec3,
   VolumeRepresentationTypeT,
+  CameraTransitionTrajectoryT,
 } from "./types.ts";
 import { generateUUID, getTimestamp, VERSION } from "./utils.ts";
 
@@ -507,6 +508,15 @@ export interface CameraParams {
  */
 export interface CanvasParams {
   background_color?: ColorT;
+}
+
+/**
+ * Transition parameters.
+ */
+export interface TransitionParams {
+  duration_ms?: number;
+  trajectory?: CameraTransitionTrajectoryT;
+  easing?: EasingKindT;
 }
 
 /**

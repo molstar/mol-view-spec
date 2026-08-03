@@ -57,6 +57,7 @@ export type KindT =
   | "tooltip_from_source"
   | "tooltip_from_uri"
   | "transform"
+  | "transition"
   | "volume"
   | "volume_representation";
 
@@ -419,3 +420,10 @@ export type InterpolationKindT =
   | "rotation_matrix"
   | "color"
   | "transformation_matrix";
+
+// Camera trajectory Types
+export type CameraTransitionTrajectoryT =
+  | "linear"
+  | "linear-relative"
+  | "leap"
+  | "leap-relative";

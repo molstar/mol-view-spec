@@ -71,6 +71,7 @@ import type {
   TooltipFromUriParams,
   TooltipInlineParams,
   TransformParams,
+  TransitionParams,
   TubeParams,
   VolumeParams,
 } from "./nodes.ts";
@@ -301,6 +302,20 @@ export class Root {
   canvas(params: CanvasParams, custom?: CustomT, ref?: RefT): Root {
     const node: Node = {
       kind: "canvas",
+      params: makeParams(params as NodeParams),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return this;
+  }
+
+  /**
+   * Add a transition node.
+   */
+  transition(params: TransitionParams, custom?: CustomT, ref?: RefT): Root {
+    const node: Node = {
+      kind: "transition",
       params: makeParams(params as NodeParams),
       custom,
       ref,
