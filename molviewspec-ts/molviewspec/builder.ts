@@ -228,7 +228,8 @@ export class Root {
     title?: string;
     description?: string;
     description_format?: DescriptionFormatT;
-    linger_duration_ms: number;
+    duration_ms?: number;
+    linger_duration_ms?: number;
     transition_duration_ms?: number;
   }): Snapshot {
     return {
@@ -259,7 +260,8 @@ export class Root {
     title?: string;
     description?: string;
     description_format?: DescriptionFormatT;
-    linger_duration_ms: number;
+    duration_ms?: number;
+    linger_duration_ms?: number;
     transition_duration_ms?: number;
   }): Root {
     this.snapshots.push(this.getSnapshot(options));
