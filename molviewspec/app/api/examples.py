@@ -269,23 +269,22 @@ async def multiple_states_alignment() -> MVSResponse:
             description="### We have these two proteins...",
             align=False,
             duration=3000,
-            transition_duration=1000,
             camera=camera2,
         ),
         make_snapshot(
             key="B",
             description="### What if we superpose them?",
+            transition_duration=1000,
             duration=3000,
-            transition_duration=1500,
             camera=camera1,
         ),
         make_snapshot(
-            key="C", description="### Look, a ligand!", duration=500, transition_duration=3000, camera=camera_ligand1
+            key="C", description="### Look, a ligand!", transition_duration=1500, duration=500, camera=camera_ligand1
         ),
         make_snapshot(
-            key="D", description="### ... a nice one...", duration=1000, transition_duration=1000, camera=camera_ligand2
+            key="D", description="### ... a nice one...", transition_duration=3000, duration=1000, camera=camera_ligand2
         ),
-        make_snapshot(key="E", description="", duration=2000, camera=camera1),
+        make_snapshot(key="E", description="", transition_duration=1000, duration=2000, camera=camera1),
         make_snapshot(key="F", description="# Party!!!", duration=250, camera=camera1, show=["protein2", "ligand2"]),
         make_snapshot(key="G", description="# Party!!!", duration=250, camera=camera1, show=["protein1", "ligand2"]),
         make_snapshot(key="F", description="# Party!!!", duration=250, camera=camera1, show=["protein2", "ligand2"]),
@@ -312,9 +311,9 @@ async def multiple_states_alignment() -> MVSResponse:
         make_snapshot(key="G", description="# Party!!!", duration=250, camera=camera1, show=["protein1", "ligand2"]),
         make_snapshot(key="F", description="# Party!!!", duration=250, camera=camera1, show=["protein2", "ligand2"]),
         make_snapshot(key="G", description="# Party!!!", duration=250, camera=camera1, show=["protein1", "ligand2"]),
-        make_snapshot(key="H", description="", duration=500, transition_duration=10_000, camera=camera1),
+        make_snapshot(key="H", description="", duration=500, camera=camera1),
         make_snapshot(
-            key="I", description="### Thanks for watching", duration=10_000, transition_duration=1000, camera=camera_far
+            key="I", description="### Thanks for watching", transition_duration=10_000, duration=10_000, camera=camera_far
         ),
     ]
     metadata = GlobalMetadata(description="test")
@@ -337,35 +336,34 @@ async def multiple_states_alignment_focus() -> MVSResponse:
             description=f"### We have these two proteins...{index}",
             align=False,
             duration=3000,
-            transition_duration=1000,
             focus="protein",
             orient=orient1,
         ),
         make_snapshot(
             key="B",
             description=f"### What if we superpose them? {index}",
+            transition_duration=1000,
             duration=3000,
-            transition_duration=1500,
             focus="root",
             orient=orient1,
         ),
         make_snapshot(
             key="C",
             description=f"### Look, a ligand! {index}",
+            transition_duration=1500,
             duration=500,
-            transition_duration=3000,
             focus="ligand",
             orient=orient1,
         ),
         make_snapshot(
             key="D",
             description=f"### ... a nice one... {index}",
+            transition_duration=3000,
             duration=1000,
-            transition_duration=1000,
             focus="ligand",
             orient=orient2,
         ),
-        make_snapshot(key="E", description=f"### What now? {index}", duration=2000, focus="protein", orient=orient1),
+        make_snapshot(key="E", description=f"### What now? {index}", transition_duration=1000, duration=2000, focus="protein", orient=orient1),
         *itertools.chain(
             *[
                 [
@@ -393,15 +391,14 @@ async def multiple_states_alignment_focus() -> MVSResponse:
             key="H",
             description=f"### Almost there... {index}",
             duration=500,
-            transition_duration=10_000,
             focus="protein",
             orient=orient1,
         ),
         make_snapshot(
             key="I",
             description="### Thanks for watching\n[Go to start](#A)",
+            transition_duration=10_000,
             duration=10_000,
-            transition_duration=1000,
             camera=camera_far,
         ),
     ]
@@ -449,8 +446,8 @@ def make_snapshot(
     key: str,
     description: str | None = None,
     align: bool = True,
-    duration: int,
     transition_duration: int | None = None,
+    duration: int,
     color1: str = "#dddddd",
     color2: str = "#4fc64f",
     camera=None,
@@ -507,13 +504,82 @@ def make_snapshot(
     if camera is not None:
         builder.camera(**camera)
 
+    if transition_duration is not None:
+        builder.transition(duration_ms=transition_duration)
+
     return builder.get_snapshot(
         key=key,
         title=f"State {key}",
         description=description,
-        linger_duration_ms=duration,
-        transition_duration_ms=transition_duration,
+        duration_ms=duration,
     )
+
+
+@router.get("/multiple-states-camera-transitions")
+async def multiple_states_camera_transitions() -> MVSResponse:
+    """Example of multi-state with customized camera transitions"""
+    def make_focused(title: str, focus_res: int | list[int] | None, trajectory: str, easing: str):
+        builder = create_builder()
+        snapshot_duration = 1250
+        transition_duration = 1000
+
+        struct = (
+            builder
+            .download(url="https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif")
+            .parse(format="mmcif")
+            .model_structure()
+        )
+
+        (
+            struct
+            .component()
+            .representation()
+            .color(color="#ffffff", ref="color")
+            .color(selector=ComponentExpression(label_seq_id=7), color="#3050F8")
+            .color(selector=ComponentExpression(beg_label_seq_id=125, end_label_seq_id=145), color="#FFCCCC")
+            .color(selector=ComponentExpression(label_seq_id=145), color="#FF0D0D")
+            .color(selector=ComponentExpression(label_seq_id=275), color="#00AA0D")
+        )
+
+        if isinstance(focus_res, list):
+            struct.component(
+                selector=ComponentExpression(beg_label_seq_id=focus_res[0], end_label_seq_id=focus_res[1])
+            ).focus()
+        elif isinstance(focus_res, int):
+            focus_params = {}
+            if focus_res == 7:
+                focus_params = {"direction": [0, -1, -0.1], "up": [-0.1, 1, 0]}
+            elif focus_res == 275:
+                focus_params = {"direction": [0, 0, -1], "up": [-0.3, 1, 0]}
+            elif focus_res == 145:
+                focus_params = {"direction": [0, 1, -0.1], "up": [0.1, 1, 0]}
+
+            component = struct.component(selector=ComponentExpression(label_seq_id=focus_res))
+            component.focus(**focus_params)
+
+        builder.transition(duration_ms=transition_duration, trajectory=trajectory, easing=easing)
+
+        zoom_desc = f"Residues {focus_res[0]}-{focus_res[1]}" if isinstance(focus_res, list) else f"Residue {focus_res}" if isinstance(focus_res, int) else "Whole structure"
+        description = f"### *{trajectory}* transition with *{easing}* easing \n\n{zoom_desc}"
+        return builder.get_snapshot(key=title, title=title, description=description, duration_ms=snapshot_duration)
+
+    snapshots: list[Snapshot] = []
+    for trajectory in ["linear", "linear-relative", "leap", "leap-relative"]:
+        snapshots.append(make_focused(f"{trajectory} All", None, trajectory, "linear"))
+        snapshots.append(make_focused(f"{trajectory} Blue", 7, trajectory, "linear"))
+        snapshots.append(make_focused(f"{trajectory} Green", 275, trajectory, "linear"))
+        snapshots.append(make_focused(f"{trajectory} Red", 145, trajectory, "linear"))
+        snapshots.append(make_focused(f"{trajectory} Pink", [125, 145], trajectory, "linear"))
+
+    for ease in ["linear", "sin-in-out", "quad-in-out", "cubic-in-out"]:
+        snapshots.append(make_focused(f"Easing {ease} All", None, "linear", ease))
+        snapshots.append(make_focused(f"Easing {ease} Blue", 7, "linear", ease))
+        snapshots.append(make_focused(f"Easing {ease} Green", 275, "linear", ease))
+        snapshots.append(make_focused(f"Easing {ease} Red", 145, "linear", ease))
+        snapshots.append(make_focused(f"Easing {ease} Pink", [125, 145], "linear", ease))
+
+    metadata = GlobalMetadata(description="test")
+    return PlainTextResponse(States(snapshots=snapshots, metadata=metadata).dumps(indent=2))
 
 
 @router.get("/custom-properties")

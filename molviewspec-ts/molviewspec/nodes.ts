@@ -28,6 +28,7 @@ import type {
   SurfaceTypeT,
   Vec3,
   VolumeRepresentationTypeT,
+  CameraTransitionTrajectoryT,
 } from "./types.ts";
 import { generateUUID, getTimestamp, VERSION } from "./utils.ts";
 
@@ -74,7 +75,10 @@ export interface SnapshotMetadata {
   description?: string;
   description_format?: DescriptionFormatT;
   key?: string;
-  linger_duration_ms: number;
+  duration_ms?: number;
+  /** @deprecated use `duration_ms` instead */
+  linger_duration_ms?: number;
+  /** @deprecated use `transition` node instead */
   transition_duration_ms?: number;
 }
 
@@ -510,6 +514,15 @@ export interface CanvasParams {
 }
 
 /**
+ * Transition parameters.
+ */
+export interface TransitionParams {
+  duration_ms?: number;
+  trajectory?: CameraTransitionTrajectoryT;
+  easing?: EasingKindT;
+}
+
+/**
  * Primitive component expressions.
  */
 export interface PrimitiveComponentExpressions {
@@ -872,7 +885,8 @@ export function createSnapshotMetadata(options: {
   description?: string;
   description_format?: DescriptionFormatT;
   key?: string;
-  linger_duration_ms: number;
+  duration_ms?: number;
+  linger_duration_ms?: number;
   transition_duration_ms?: number;
 }): SnapshotMetadata {
   return {
@@ -880,6 +894,7 @@ export function createSnapshotMetadata(options: {
     description: options.description,
     description_format: options.description_format,
     key: options.key || generateUUID(),
+    duration_ms: options.duration_ms,
     linger_duration_ms: options.linger_duration_ms,
     transition_duration_ms: options.transition_duration_ms,
   };

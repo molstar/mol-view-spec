@@ -18,6 +18,7 @@ snapshot1 = builder.get_snapshot(
 - FO-FC (positive) at 3σ, green
 - FO-FC (negative) at -3σ, red
 """,
+    duration_ms: 2000,
 )
 ```
 
@@ -34,9 +35,10 @@ states = States(snapshots=[snapshot1, snapshot2], metadata=GlobalMetadata(descri
 )
 ```
 
-The output is valid MolViewSpec JSON that can be opened in Mol*. Mol* will interpolate between individual substates and 
-add smooth transitions by default. You can further customize this behavior using the `transition_duration_ms` and 
-`linger_duration_ms` properties. 
+The output is valid MolViewSpec JSON that can be opened in Mol*. 
+Mol* will interpolate between individual substates and add smooth transitions by default. 
+You can set the duration of the snapshot using the `duration_ms` property in the snapshot metadata. 
+(Setting transition duration via `transition_duration_ms` property is deprecated and a `transition` node should be used instead (see [Camera transitions](#camera-transitions)).)
 
 ## Animating Snapshots
 
@@ -59,3 +61,31 @@ anim.interpolate(
     easing="sin-in",
 )
 ```
+
+## Camera transitions
+
+Use `builder.transition()` to customize how the camera moves when transitioning from the previous snapshot to the current snapshot. 
+This is the preferred API for camera motion between states and lets you control the transition duration, trajectory, and easing profile.
+
+```python
+builder = create_builder()
+builder.camera(target=[0, 0, 0], position=[20, 20, 20])
+builder.transition(
+    duration_ms=1500,
+    trajectory="leap",
+    easing="sin-in-out",
+)
+snapshot = builder.get_snapshot(title="Overview")
+```
+
+The available options are:
+
+- `duration_ms`: total duration of the camera transition in milliseconds
+- `trajectory`: path used for the move. Common choices are `"linear"`, `"linear-relative"`, `"leap"`, and
+  `"leap-relative"`
+- `easing`: motion curve used to accelerate and decelerate the camera. Examples include `"linear"`, `"sin-in"`,
+  `"sin-out"`, and `"sin-in-out"`
+
+This overrides the older snapshot metadata-based `transition_duration_ms` setting for the transition into the current
+snapshot. For simple camera moves, `duration_ms` is often enough; for more cinematic motion, combine a `trajectory` and
+an `easing` function to shape the movement.

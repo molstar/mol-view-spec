@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file, following t
 - `label_from_*` and `tooltip_from_*` take `text_format` parameter
 - `label_from_*` take `group_by_fields` parameter
 - add PQR file format support
+- Added `transition` node with params `duration_ms`, `trajectory`, `easing`
+- Snapshot metadata: `linger_duration_ms` renamed to `duration_ms`, deprecated `transition_duration_ms`
 
 ## [v1.8.1] - 2025-12-22
 

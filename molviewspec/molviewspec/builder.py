@@ -20,6 +20,7 @@ from molviewspec.nodes import (
     ArrowParams,
     BoxParams,
     CameraParams,
+    CameraTransitionTrajectoryT,
     CanvasParams,
     ClipTypeParams,
     ClipTypeT,
@@ -81,6 +82,7 @@ from molviewspec.nodes import (
     TooltipFromUriParams,
     TooltipInlineParams,
     TransformParams,
+    TransitionParams,
     TubeParams,
     Vec3,
     VolumeParams,
@@ -442,14 +444,19 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
         key: str | None = None,
-        linger_duration_ms: int = 1000,
+        duration_ms: int | None = None,
+        linger_duration_ms: int | None = None,
         transition_duration_ms: int | None = None,
     ) -> Snapshot:
         """
         Return a snapshot of the current state, which can be used to build multi-state views.
+        
         :param title: optional title of the scene
         :param description: optional detailed description of the scene
         :param description_format: format of the description
+        :param duration_ms: Timespan for snapshot, in milliseconds. Does not include time of the camera transition.
+        :param linger_duration_ms: DEPRECATED. Use `duration_ms` instead.
+        :param transition_duration_ms: Timespan for the animation to the next snapshot. Leave empty to skip animations. This parameter is DEPRECATED. The preferred way of setting transition duration is to add a `transition` node with `duration_ms` parameter on the root of the snapshot's tree. Note: `transition_duration_ms` here refers to the transition from the CURRENT to the NEXT snapshot. `duration_ms` in the `transition` node refers to the transition from the PREVIOUS to the CURRENT snapshot.
         :return: object holding snapshot state tree and metadata
         """
         metadata = SnapshotMetadata(
@@ -457,6 +464,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
             description=description,
             description_format=description_format,
             key=key,
+            duration_ms=duration_ms,
             linger_duration_ms=linger_duration_ms,
             transition_duration_ms=transition_duration_ms,
         )
@@ -560,6 +568,30 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         """
         params = make_params(CanvasParams, locals())
         node = Node(kind="canvas", params=params)
+        self._add_child(node)
+        return self
+
+    def transition(
+        self,
+        *,
+        duration_ms: float | None = None,
+        trajectory: CameraTransitionTrajectoryT | None = None,
+        easing: EasingKindT | None = None,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Root:
+        """
+        Customize camera transition when entering this MVS snapshot.
+
+        :param duration_ms: Duration of the transition from the previous snapshot to this snapshot, in milliseconds. This overrides the deprecated `transition_duration_ms` in the snapshot metadata (which applies to the transition from this snapshot to the next snapshot). Defaults to 0.
+        :param trajectory: Camera transition trajectory shape. 'linear': interpolates along a straight line with constant absolute speed; 'linear-relative': like 'linear' but moves relatively slower when zoomed-in more; 'leap': zooms out during the transition to capture both the initial and the final camera target (becomes linear if the targets are near); 'leap-relative': like 'leap' but moves relatively slower when zoomed-in more. Defaults to 'linear'.
+        :param easing: Transition easing function. Adjusts transition speed near the beginning and end of the transition to create smoother camera motion. Defaults to 'linear'.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(TransitionParams, locals())
+        node = Node(kind="transition", params=params)
         self._add_child(node)
         return self
 

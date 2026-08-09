@@ -322,3 +322,18 @@ Deno.test("serialization - canvas and camera", () => {
   assertEquals(state.root.children![1].kind, "camera");
   assertEquals(stateJson.includes("#ffffff"), true);
 });
+
+Deno.test("serialization - transition", () => {
+  const builder = createBuilder();
+  builder.transition({ duration_ms: 2000, trajectory: "leap-relative", easing: "sine-in-out" });
+
+  const state = builder.getState();
+  const stateJson = JSON.stringify(state);
+
+  assertExists(state.root.children);
+  assertEquals(state.root.children!.length, 1);
+  assertEquals(state.root.children![0].kind, "transition");
+  assertEquals(stateJson.includes("2000"), true);
+  assertEquals(stateJson.includes("leap-relative"), true);
+  assertEquals(stateJson.includes("sine-in-out"), true);
+});

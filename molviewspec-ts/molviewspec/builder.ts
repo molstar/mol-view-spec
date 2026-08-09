@@ -71,6 +71,7 @@ import type {
   TooltipFromUriParams,
   TooltipInlineParams,
   TransformParams,
+  TransitionParams,
   TubeParams,
   VolumeParams,
 } from "./nodes.ts";
@@ -227,7 +228,8 @@ export class Root {
     title?: string;
     description?: string;
     description_format?: DescriptionFormatT;
-    linger_duration_ms: number;
+    duration_ms?: number;
+    linger_duration_ms?: number;
     transition_duration_ms?: number;
   }): Snapshot {
     return {
@@ -258,7 +260,8 @@ export class Root {
     title?: string;
     description?: string;
     description_format?: DescriptionFormatT;
-    linger_duration_ms: number;
+    duration_ms?: number;
+    linger_duration_ms?: number;
     transition_duration_ms?: number;
   }): Root {
     this.snapshots.push(this.getSnapshot(options));
@@ -301,6 +304,20 @@ export class Root {
   canvas(params: CanvasParams, custom?: CustomT, ref?: RefT): Root {
     const node: Node = {
       kind: "canvas",
+      params: makeParams(params as NodeParams),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return this;
+  }
+
+  /**
+   * Add a transition node.
+   */
+  transition(params: TransitionParams, custom?: CustomT, ref?: RefT): Root {
+    const node: Node = {
+      kind: "transition",
       params: makeParams(params as NodeParams),
       custom,
       ref,
