@@ -529,7 +529,7 @@ ParseFormatT = Literal[
     "map",
     "dx",
     "dxbin",
-    # geometry
+    # shape
     "vtp",
     "ply",
     "obj",
