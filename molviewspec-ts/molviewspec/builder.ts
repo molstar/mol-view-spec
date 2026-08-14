@@ -62,6 +62,7 @@ import type {
   PrimitivesParams,
   PuttyParams,
   RepresentationParams,
+  ShapeParams,
   Snapshot,
   SnapshotMetadata,
   State,
@@ -668,6 +669,22 @@ export class Parse extends Base {
     };
     this.addChild(node);
     return new Volume(this.root, node);
+  }
+
+  /**
+   * Add a shape node, rendering a mesh from the parsed 3D geometry resource.
+   * Apply color with `.color(...)`. Format-specific options go in `custom`, prefixed by format,
+   * e.g. `{ vtp_attribute: "tile_id", vtp_attribute_source: "cell" }`.
+   */
+  shape(params?: ShapeParams, custom?: CustomT, ref?: RefT): Shape {
+    const node: Node = {
+      kind: "shape",
+      params: makeParams(params as NodeParams),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return new Shape(this.root, node);
   }
 
   /**
@@ -1894,6 +1911,104 @@ export class Volume extends Base {
       ref?: RefT;
     },
   ): Volume {
+    const { custom, ref, ...rest } = params;
+    const node: Node = {
+      kind: "clip",
+      params: makeParams(rest as NodeParams),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return this;
+  }
+}
+
+/**
+ * Shape builder class.
+ *
+ * Unlike `Volume`, a shape has exactly one representation (a mesh), so color and opacity
+ * attach directly to it rather than to a separate representation node.
+ */
+export class Shape extends Base {
+  /**
+   * Add a color node.
+   */
+  color(params: ColorInlineParams, custom?: CustomT, ref?: RefT): Shape {
+    const node: Node = {
+      kind: "color",
+      params: makeParams(params as NodeParams),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return this;
+  }
+
+  /**
+   * Add a transform node.
+   */
+  transform(params: TransformParams, custom?: CustomT, ref?: RefT): Shape {
+    const node: Node = {
+      kind: "transform",
+      params: makeParams(params as NodeParams),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return this;
+  }
+
+  /**
+   * Add an instance node.
+   */
+  instance(params: TransformParams, custom?: CustomT, ref?: RefT): Shape {
+    const node: Node = {
+      kind: "instance",
+      params: makeParams(params as NodeParams),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return this;
+  }
+
+  /**
+   * Add a focus node.
+   */
+  focus(params: FocusInlineParams, custom?: CustomT, ref?: RefT): Shape {
+    const node: Node = {
+      kind: "focus",
+      params: makeParams(params as NodeParams),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return this;
+  }
+
+  /**
+   * Add an opacity node.
+   */
+  opacity(opacity: number, custom?: CustomT, ref?: RefT): Shape {
+    const node: Node = {
+      kind: "opacity",
+      params: makeParams({ opacity } as NodeParams),
+      custom,
+      ref,
+    };
+    this.addChild(node);
+    return this;
+  }
+
+  /**
+   * Add a clip node.
+   */
+  clip(
+    params: (ClipPlaneParams | ClipSphereParams | ClipBoxParams) & {
+      custom?: CustomT;
+      ref?: RefT;
+    },
+  ): Shape {
     const { custom, ref, ...rest } = params;
     const node: Node = {
       kind: "clip",

@@ -45,6 +45,7 @@ KindT = Literal[
     "primitives_from_uri",
     "primitive",
     "representation",
+    "shape",
     "structure",
     "tooltip",
     "tooltip_from_source",
@@ -528,6 +529,10 @@ ParseFormatT = Literal[
     "map",
     "dx",
     "dxbin",
+    # geometry
+    "vtp",
+    "ply",
+    "obj",
 ]
 
 
@@ -1005,6 +1010,14 @@ class ContinuousPalette(BaseModel):
 
 
 PaletteT = CategoricalPalette | DiscretePalette | ContinuousPalette
+
+
+class ShapeParams(BaseModel):
+    """
+    Shape node, describing how to load and render a 3D geometry resource (VTP, PLY, or OBJ).
+    Color is applied via child `color` nodes; format-specific options (e.g. coloring a VTP by one
+    of its data arrays) are carried as prefixed custom properties, e.g. `vtp_attribute`.
+    """
 
 
 class RepresentationParams(BaseModel):

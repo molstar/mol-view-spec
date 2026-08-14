@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file, following t
 - add PQR file format support
 - Added `transition` node with params `duration_ms`, `trajectory`, `easing`
 - Snapshot metadata: `linger_duration_ms` renamed to `duration_ms`, deprecated `transition_duration_ms`
+- Add `shape` node for rendering meshes from `vtp`, `ply` and `obj` resources
 
 ## [v1.8.1] - 2025-12-22
 

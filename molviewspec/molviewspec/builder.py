@@ -71,6 +71,7 @@ from molviewspec.nodes import (
     RepresentationTypeParams,
     RepresentationTypeT,
     SchemaFormatT,
+    ShapeParams,
     SchemaT,
     Snapshot,
     SnapshotMetadata,
@@ -804,6 +805,25 @@ class Parse(_Base):
         self._add_child(node)
         return Volume(node=node, root=self._root)
 
+    def shape(
+        self,
+        *,
+        custom: CustomT = None,
+        ref: RefT = None,
+    ) -> Shape:
+        """
+        Create a shape node, rendering a mesh from the parsed 3D geometry resource.
+        Apply color with `.color(...)`. Format-specific options go in `custom`, prefixed by
+        format, e.g. `custom={"vtp_attribute": "tile_id", "vtp_attribute_source": "cell"}`.
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: a builder that handles operations at shape level
+        """
+        params = make_params(ShapeParams, locals())
+        node = Node(kind="shape", params=params)
+        self._add_child(node)
+        return Shape(node=node, root=self._root)
+
     def coordinates(
         self,
         *,
@@ -1402,6 +1422,41 @@ class Representation(_Base, _ClipMixin):
         """
         Customize the opacity/transparency of this representation.
         :param opacity: float describing how opaque this representation should be, 0.0: fully transparent, 1.0: fully opaque
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(OpacityInlineParams, locals())
+        node = Node(kind="opacity", params=params)
+        self._add_child(node)
+        return self
+
+
+class Shape(_Base, _FocusMixin, _TransformMixin, _ClipMixin):
+    """
+    Builder step with operations available after defining a shape.
+
+    Unlike `Volume`, a shape has exactly one representation (a mesh), so color and opacity
+    attach directly to it rather than to a separate representation node.
+    """
+
+    def color(self, *, color: ColorT, custom: CustomT = None, ref: RefT = None) -> Shape:
+        """
+        Apply a uniform color to this shape.
+        :param color: color using SVG color names or RGB hex code
+        :param custom: optional, custom data to attach to this node
+        :param ref: optional, reference that can be used to access this node
+        :return: this builder
+        """
+        params = make_params(ColorInlineParams, locals())
+        node = Node(kind="color", params=params)
+        self._add_child(node)
+        return self
+
+    def opacity(self, *, opacity: float, custom: CustomT = None, ref: RefT = None) -> Shape:
+        """
+        Customize the opacity/transparency of this shape.
+        :param opacity: float describing how opaque this shape should be, 0.0: fully transparent, 1.0: fully opaque
         :param custom: optional, custom data to attach to this node
         :param ref: optional, reference that can be used to access this node
         :return: this builder

@@ -156,6 +156,15 @@ export interface VolumeParams {
 }
 
 /**
+ * Shape node parameters. A shape renders a mesh loaded from a 3D geometry resource.
+ * Color is applied via child `color` nodes; format-specific options (e.g. coloring a VTP by one
+ * of its data arrays) are carried as prefixed custom properties, e.g. `vtp_attribute`.
+ */
+export interface ShapeParams {
+  [key: string]: unknown;
+}
+
+/**
  * Component expressions are used to make selections.
  */
 export interface ComponentExpression {
@@ -231,12 +240,22 @@ export interface DiscretePalette {
 }
 
 /**
- * Continuous palette.
+ * Continuous palette. Maps numeric values onto a color gradient.
+ *
+ * `colors` is either a named color list, a plain list of colors (checkpoints distributed
+ * uniformly over [0, 1]), or a list of [color, checkpoint] pairs. Checkpoints refer to values
+ * normalized to [0, 1] when `mode` is "normalized" (default), or to the values directly when
+ * `mode` is "absolute". `value_domain` defines `[x_min, x_max]` for that normalization; either
+ * bound may be null, meaning the minimum/maximum of the actual values is used.
  */
 export interface ContinuousPalette {
   kind: "continuous";
-  domain: [number, number];
-  colors: ColorT[];
+  colors?: ColorListNameT | ColorT[] | [ColorT, number][];
+  reverse?: boolean;
+  mode?: "normalized" | "absolute";
+  value_domain?: [number | null, number | null];
+  underflow_color?: "auto" | ColorT;
+  overflow_color?: "auto" | ColorT;
 }
 
 export type Palette = CategoricalPalette | DiscretePalette | ContinuousPalette;
@@ -778,6 +797,7 @@ export type NodeParams =
   | CoordinatesParams
   | StructureParams
   | VolumeParams
+  | ShapeParams
   | ComponentInlineParams
   | ComponentFromUriParams
   | ComponentFromSourceParams

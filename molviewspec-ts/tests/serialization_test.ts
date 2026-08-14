@@ -337,3 +337,57 @@ Deno.test("serialization - transition", () => {
   assertEquals(stateJson.includes("leap-relative"), true);
   assertEquals(stateJson.includes("sine-in-out"), true);
 });
+
+Deno.test("serialization - shape with color child", () => {
+  const builder = createBuilder();
+  builder
+    .download({ url: "octahedron.vtp" })
+    .parse({ format: "vtp" })
+    .shape()
+    .color({ color: "#3b82f6" });
+
+  const state = builder.getState();
+  const parse = state.root.children![0].children![0];
+  assertEquals(parse.kind, "parse");
+  const shape = parse.children![0];
+  assertEquals(shape.kind, "shape");
+  assertEquals(shape.children![0].kind, "color");
+  assertEquals(shape.children![0].params?.color, "#3b82f6");
+});
+
+Deno.test("serialization - shape vtp options travel as custom props", () => {
+  const builder = createBuilder();
+  builder
+    .download({ url: "capsid.vtp" })
+    .parse({ format: "vtp" })
+    .shape({}, {
+      vtp_attribute: "tile_id",
+      vtp_attribute_source: "cell",
+      vtp_palette: "turbo",
+    });
+
+  const state = builder.getState();
+  const shape = state.root.children![0].children![0].children![0];
+  assertEquals(shape.custom?.vtp_attribute, "tile_id");
+  assertEquals(shape.custom?.vtp_attribute_source, "cell");
+  assertEquals(shape.custom?.vtp_palette, "turbo");
+  assertEquals(shape.params, {});
+});
+
+Deno.test("serialization - all three shape formats", () => {
+  for (const format of ["vtp", "ply", "obj"] as const) {
+    const builder = createBuilder();
+    builder.download({ url: `mesh.${format}` }).parse({ format }).shape();
+    const parse = builder.getState().root.children![0].children![0];
+    assertEquals(parse.params?.format, format);
+    assertEquals(parse.children![0].kind, "shape");
+  }
+});
+
+Deno.test("serialization - opacity attaches to shape", () => {
+  const builder = createBuilder();
+  builder.download({ url: "surface.vtp" }).parse({ format: "vtp" }).shape().opacity(0.4);
+  const shape = builder.getState().root.children![0].children![0].children![0];
+  assertEquals(shape.children![0].kind, "opacity");
+  assertEquals(shape.children![0].params?.opacity, 0.4);
+});
