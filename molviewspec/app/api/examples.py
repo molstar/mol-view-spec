@@ -1089,7 +1089,7 @@ async def ihm_basic_restraints_example() -> MVSResponse:
 
 
 # TODO: replace with a stable public URL before merging.
-SHAPE_VTP_URL = "https://raw.githubusercontent.com/molstar/mol-view-spec/master/test-data/shapes/capsid_tiling.vtp"
+SHAPE_VTP_URL = "https://example.com/test.vtp"
 
 
 @router.get("/shape/vtp")
