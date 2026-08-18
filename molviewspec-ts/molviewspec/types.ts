@@ -52,6 +52,7 @@ export type KindT =
   | "primitives_from_uri"
   | "primitive"
   | "representation"
+  | "shape"
   | "structure"
   | "tooltip"
   | "tooltip_from_source"
@@ -94,7 +95,10 @@ export type ParseFormatT =
   | "top"
   | "map"
   | "dx"
-  | "dxbin";
+  | "dxbin"
+  | "vtp"
+  | "ply"
+  | "obj";
 
 // Structure Types
 export type StructureTypeT =

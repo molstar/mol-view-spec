@@ -1088,6 +1088,50 @@ async def ihm_basic_restraints_example() -> MVSResponse:
     return JSONResponse(builder.get_state().to_dict())
 
 
+# TODO: replace with a stable public URL before merging.
+SHAPE_VTP_URL = "https://example.com/test.vtp"
+
+
+@router.get("/shape/vtp")
+async def shape_vtp_example() -> MVSResponse:
+    """
+    Renders a mesh from a VTK PolyData (VTP) file with a uniform color.
+    """
+
+    builder = create_builder()
+
+    builder.download(url=SHAPE_VTP_URL).parse(format="vtp").shape().color(color="#3b82f6")
+
+    return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/shape/vtp-attribute")
+async def shape_vtp_attribute_example() -> MVSResponse:
+    """
+    Renders a VTP mesh colored by one of the data arrays it carries.
+
+    Format-specific options travel as custom properties prefixed by the format they apply to,
+    rather than as parameters of the `shape` node itself.
+    """
+
+    builder = create_builder()
+
+    (
+        builder.download(url=SHAPE_VTP_URL)
+        .parse(format="vtp")
+        .shape(
+            custom={
+                "vtp_attribute": "tile_id",
+                "vtp_attribute_source": "cell",
+                "vtp_palette": "turbo",
+            }
+        )
+        .opacity(opacity=0.9)
+    )
+
+    return JSONResponse(builder.get_state().to_dict())
+
+
 @router.get("/volume/map")
 async def volume_map_example() -> MVSResponse:
     """

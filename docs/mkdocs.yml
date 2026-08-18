@@ -34,6 +34,7 @@ nav:
   - Camera Settings: 'camera-settings.md'
   - Primitives: 'primitives.md'
   - Volumetric Data: 'volumes.md'
+  - Shapes: 'shapes.md'
   - Animations: 'animations.md'
   - Mol* MVS Extension:
     - Overview: 'mvs-molstar-extension/index.md'
