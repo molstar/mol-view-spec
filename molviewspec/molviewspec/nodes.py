@@ -161,10 +161,13 @@ class SnapshotMetadata(BaseModel):
         default_factory=generate_uuid,  # TODO remove this, it's probably superfluous
         description="Unique identifier of this state, useful when working with collections of states.",
     )
-    duration_ms: Optional[int] = Field(None, description="Timespan for snapshot, in milliseconds. Does not include time of the camera transition.")
+    duration_ms: Optional[int] = Field(
+        None, description="Timespan for snapshot, in milliseconds. Does not include time of the camera transition."
+    )
     linger_duration_ms: Optional[int] = Field(None, description="DEPRECATED. Use `duration_ms` instead.")
     transition_duration_ms: Optional[int] = Field(
-        None, description="Timespan for the animation to the next snapshot. Leave empty to skip animations. This parameter is DEPRECATED. The preferred way of setting transition duration is to add a `transition` node with `duration_ms` parameter on the root of the snapshot's tree. Note: `transition_duration_ms` here refers to the transition from the CURRENT to the NEXT snapshot. `duration_ms` in the `transition` node refers to the transition from the PREVIOUS to the CURRENT snapshot."
+        None,
+        description="Timespan for the animation to the next snapshot. Leave empty to skip animations. This parameter is DEPRECATED. The preferred way of setting transition duration is to add a `transition` node with `duration_ms` parameter on the root of the snapshot's tree. Note: `transition_duration_ms` here refers to the transition from the CURRENT to the NEXT snapshot. `duration_ms` in the `transition` node refers to the transition from the PREVIOUS to the CURRENT snapshot.",
     )
 
     def __init__(self, **data):
@@ -680,7 +683,9 @@ class ComponentExpression(BaseModel):
 SelectorT = ComponentSelectorT | MolQLExpression | ComponentExpression | list[ComponentExpression]
 
 
-RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate", "putty"]
+RepresentationTypeT = Literal[
+    "ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate", "putty"
+]
 VolumeRepresentationTypeT = Literal["isosurface", "grid_slice"]
 ColorNamesT = Literal[
     "aliceblue",
@@ -1404,16 +1409,28 @@ class LabelFromUriParams(_DataFromUriParams):
     """
     Label based on another resource.
     """
-    text_format: Optional[str] = Field(None, description="Formatting template for the label text. Supports simplified f-string syntax.")
-    group_by_fields: Optional[list[str]] = Field(None, description="Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.")
+
+    text_format: Optional[str] = Field(
+        None, description="Formatting template for the label text. Supports simplified f-string syntax."
+    )
+    group_by_fields: Optional[list[str]] = Field(
+        None,
+        description="Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.",
+    )
 
 
 class LabelFromSourceParams(_DataFromSourceParams):
     """
     Label based on a category in the source file.
     """
-    text_format: Optional[str] = Field(None, description="Formatting template for the label text. Supports simplified f-string syntax.")
-    group_by_fields: Optional[list[str]] = Field(None, description="Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.")
+
+    text_format: Optional[str] = Field(
+        None, description="Formatting template for the label text. Supports simplified f-string syntax."
+    )
+    group_by_fields: Optional[list[str]] = Field(
+        None,
+        description="Set of annotation fields for grouping annotation rows into label instances (i.e. annotation rows with the same values in all group-by fields will yield one label instance). Annotation row with undefined value in any group-by field is considered a separate label instance.",
+    )
 
 
 class TooltipInlineParams(BaseModel):
@@ -1422,11 +1439,15 @@ class TooltipInlineParams(BaseModel):
 
 
 class TooltipFromUriParams(_DataFromUriParams):
-    text_format: Optional[str] = Field(None, description="Formatting template for the tooltip text. Supports simplified f-string syntax.")
+    text_format: Optional[str] = Field(
+        None, description="Formatting template for the tooltip text. Supports simplified f-string syntax."
+    )
 
 
 class TooltipFromSourceParams(_DataFromSourceParams):
-    text_format: Optional[str] = Field(None, description="Formatting template for the tooltip text. Supports simplified f-string syntax.")
+    text_format: Optional[str] = Field(
+        None, description="Formatting template for the tooltip text. Supports simplified f-string syntax."
+    )
 
 
 class FocusInlineParams(BaseModel):
@@ -1507,12 +1528,19 @@ class TransitionParams(BaseModel):
     """
     Controls camera transition properties when entering this MVS snapshot.
     """
+
     duration_ms: Optional[float] = Field(
-        None, description="Duration of the transition from the previous snapshot to this snapshot, in milliseconds. This overrides the deprecated `transition_duration_ms` in the snapshot metadata (which applies to the transition from this snapshot to the next snapshot). Defaults to 0.")
+        None,
+        description="Duration of the transition from the previous snapshot to this snapshot, in milliseconds. This overrides the deprecated `transition_duration_ms` in the snapshot metadata (which applies to the transition from this snapshot to the next snapshot). Defaults to 0.",
+    )
     trajectory: Optional[CameraTransitionTrajectoryT] = Field(
-        None, description="Camera transition trajectory shape. 'linear': interpolates along a straight line with constant absolute speed; 'linear-relative': like 'linear' but moves relatively slower when zoomed-in more; 'leap': zooms out during the transition to capture both the initial and the final camera target (becomes linear if the targets are near); 'leap-relative': like 'leap' but moves relatively slower when zoomed-in more. Defaults to 'linear'.")
+        None,
+        description="Camera transition trajectory shape. 'linear': interpolates along a straight line with constant absolute speed; 'linear-relative': like 'linear' but moves relatively slower when zoomed-in more; 'leap': zooms out during the transition to capture both the initial and the final camera target (becomes linear if the targets are near); 'leap-relative': like 'leap' but moves relatively slower when zoomed-in more. Defaults to 'linear'.",
+    )
     easing: Optional[EasingKindT] = Field(
-        None, description="Transition easing function. Adjusts transition speed near the beginning and end of the transition to create smoother camera motion. Defaults to 'linear'.")
+        None,
+        description="Transition easing function. Adjusts transition speed near the beginning and end of the transition to create smoother camera motion. Defaults to 'linear'.",
+    )
 
 
 class PrimitiveComponentExpressions(BaseModel):
@@ -1951,7 +1979,10 @@ class ScalarInterpolationParams(_CommonInterpolationBase, _InterpolationNoiseMix
         None,
         description="End value. If a list of values is provided, each element will be interpolated separately. If unset, only noise is applied.",
     )
-    discrete: Optional[bool] = Field(False, description="Whether to round the values to the closest integer. Useful for example for trajectory animation.")
+    discrete: Optional[bool] = Field(
+        False,
+        description="Whether to round the values to the closest integer. Useful for example for trajectory animation.",
+    )
 
 
 class Vec3InterpolationParams(_CommonInterpolationBase, _InterpolationNoiseMixin):

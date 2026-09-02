@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import keyword
 import re
-from typing import Any, Generic, TypeVar, TypedDict, cast
+from typing import Any, Generic, TypedDict, TypeVar, cast
 
 from molviewspec.molql.expression import MolQLArgumentsT, MolQLExpressionT, apply, symbol
 
@@ -92,13 +92,45 @@ core = Namespace(
     logic=Namespace(**_symbols("core.logic", ["not", "and", "or"])),
     ctrl=Namespace(**_symbols("core.ctrl", ["eval", "fn", "if", "assoc"])),
     rel=Namespace(**_symbols("core.rel", ["eq", "neq", "lt", "lte", "gr", "gre", ("inRange", "in-range")])),
-    math=Namespace(**_symbols("core.math", [
-        "add", "sub", "mult", "div", "pow", "mod", "min", "max",
-        ("cantorPairing", "cantor-pairing"), ("sortedCantorPairing", "sorted-cantor-pairing"),
-        ("invertCantorPairing", "invert-cantor-pairing"), "floor", "ceil", ("roundInt", "round-int"),
-        "trunc", "abs", "sign", "sqrt", "cbrt", "sin", "cos", "tan", "asin", "acos", "atan",
-        "sinh", "cosh", "tanh", "exp", "log", "log10", "atan2",
-    ])),
+    math=Namespace(
+        **_symbols(
+            "core.math",
+            [
+                "add",
+                "sub",
+                "mult",
+                "div",
+                "pow",
+                "mod",
+                "min",
+                "max",
+                ("cantorPairing", "cantor-pairing"),
+                ("sortedCantorPairing", "sorted-cantor-pairing"),
+                ("invertCantorPairing", "invert-cantor-pairing"),
+                "floor",
+                "ceil",
+                ("roundInt", "round-int"),
+                "trunc",
+                "abs",
+                "sign",
+                "sqrt",
+                "cbrt",
+                "sin",
+                "cos",
+                "tan",
+                "asin",
+                "acos",
+                "atan",
+                "sinh",
+                "cosh",
+                "tanh",
+                "exp",
+                "log",
+                "log10",
+                "atan2",
+            ],
+        )
+    ),
     str=Namespace(**_symbols("core.str", ["concat", "match"])),
     list=Namespace(**_symbols("core.list", [("getAt", "get-at"), "equal"])),
     set=Namespace(**_symbols("core.set", ["has", ("isSubset", "is-subset")])),
@@ -106,72 +138,165 @@ core = Namespace(
 )
 
 _atom_groups_args = frozenset({"entity-test", "chain-test", "residue-test", "atom-test", "group-by"})
-_generator_symbols = _symbols("structure-query.generator", [
-    "all", ("bondedAtomicPairs", "bonded-atomic-pairs"), "rings",
-    ("queryInSelection", "query-in-selection"), "empty",
-])
+_generator_symbols = _symbols(
+    "structure-query.generator",
+    [
+        "all",
+        ("bondedAtomicPairs", "bonded-atomic-pairs"),
+        "rings",
+        ("queryInSelection", "query-in-selection"),
+        "empty",
+    ],
+)
 _generator_symbols["atom_groups"] = MolQLSymbol[AtomGroupsArgsT](
     "structure-query.generator.atom-groups", _atom_groups_args
 )
 
 struct = StructureQueryNamespace(
-    type=Namespace(**_symbols("structure-query.type", [
-        ("elementSymbol", "element-symbol"), ("atomName", "atom-name"), ("entityType", "entity-type"),
-        ("bondFlags", "bond-flags"), ("ringFingerprint", "ring-fingerprint"),
-        ("secondaryStructureFlags", "secondary-structure-flags"), ("authResidueId", "auth-residue-id"),
-        ("labelResidueId", "label-residue-id"),
-    ])),
+    type=Namespace(
+        **_symbols(
+            "structure-query.type",
+            [
+                ("elementSymbol", "element-symbol"),
+                ("atomName", "atom-name"),
+                ("entityType", "entity-type"),
+                ("bondFlags", "bond-flags"),
+                ("ringFingerprint", "ring-fingerprint"),
+                ("secondaryStructureFlags", "secondary-structure-flags"),
+                ("authResidueId", "auth-residue-id"),
+                ("labelResidueId", "label-residue-id"),
+            ],
+        )
+    ),
     slot=Namespace(**_symbols("structure-query.slot", ["element", ("elementSetReduce", "element-set-reduce")])),
     generator=GeneratorNamespace(**_generator_symbols),
-    modifier=Namespace(**_symbols("structure-query.modifier", [
-        ("queryEach", "query-each"), ("intersectBy", "intersect-by"), ("exceptBy", "except-by"),
-        ("unionBy", "union-by"), "union", "cluster", ("includeSurroundings", "include-surroundings"),
-        ("surroundingLigands", "surrounding-ligands"), ("includeConnected", "include-connected"),
-        ("wholeResidues", "whole-residues"), ("expandProperty", "expand-property"),
-    ])),
-    filter=Namespace(**_symbols("structure-query.filter", [
-        "pick", "first", ("withSameAtomProperties", "with-same-atom-properties"),
-        ("intersectedBy", "intersected-by"), "within", ("isConnectedTo", "is-connected-to"),
-    ])),
+    modifier=Namespace(
+        **_symbols(
+            "structure-query.modifier",
+            [
+                ("queryEach", "query-each"),
+                ("intersectBy", "intersect-by"),
+                ("exceptBy", "except-by"),
+                ("unionBy", "union-by"),
+                "union",
+                "cluster",
+                ("includeSurroundings", "include-surroundings"),
+                ("surroundingLigands", "surrounding-ligands"),
+                ("includeConnected", "include-connected"),
+                ("wholeResidues", "whole-residues"),
+                ("expandProperty", "expand-property"),
+            ],
+        )
+    ),
+    filter=Namespace(
+        **_symbols(
+            "structure-query.filter",
+            [
+                "pick",
+                "first",
+                ("withSameAtomProperties", "with-same-atom-properties"),
+                ("intersectedBy", "intersected-by"),
+                "within",
+                ("isConnectedTo", "is-connected-to"),
+            ],
+        )
+    ),
     combinator=Namespace(
         **_symbols(
             "structure-query.combinator",
             ["intersect", "merge", ("distanceCluster", "distance-cluster")],
         )
     ),
-    atom_set=Namespace(**_symbols("structure-query.atom-set", [
-        ("atomCount", "atom-count"), ("countQuery", "count-query"), "reduce", ("propertySet", "property-set"),
-    ])),
+    atom_set=Namespace(
+        **_symbols(
+            "structure-query.atom-set",
+            [
+                ("atomCount", "atom-count"),
+                ("countQuery", "count-query"),
+                "reduce",
+                ("propertySet", "property-set"),
+            ],
+        )
+    ),
     atom_property=Namespace(
-        core=Namespace(**_symbols("structure-query.atom-property.core", [
-            ("elementSymbol", "element-symbol"), "vdw", "mass", ("atomicNumber", "atomic-number"),
-            "x", "y", "z", ("atomKey", "atom-key"), ("bondCount", "bond-count"),
-            ("sourceIndex", "source-index"), ("operatorName", "operator-name"), ("instanceId", "instance-id"),
-            ("operatorKey", "operator-key"), ("modelIndex", "model-index"), ("modelLabel", "model-label"),
-            ("modelEntryId", "model-entry-id"),
-        ])),
+        core=Namespace(
+            **_symbols(
+                "structure-query.atom-property.core",
+                [
+                    ("elementSymbol", "element-symbol"),
+                    "vdw",
+                    "mass",
+                    ("atomicNumber", "atomic-number"),
+                    "x",
+                    "y",
+                    "z",
+                    ("atomKey", "atom-key"),
+                    ("bondCount", "bond-count"),
+                    ("sourceIndex", "source-index"),
+                    ("operatorName", "operator-name"),
+                    ("instanceId", "instance-id"),
+                    ("operatorKey", "operator-key"),
+                    ("modelIndex", "model-index"),
+                    ("modelLabel", "model-label"),
+                    ("modelEntryId", "model-entry-id"),
+                ],
+            )
+        ),
         topology=Namespace(
             **_symbols(
                 "structure-query.atom-property.topology",
                 [("connectedComponentKey", "connected-component-key")],
             )
         ),
-        macromolecular=Namespace(**_symbols("structure-query.atom-property.macromolecular", [
-            ("authResidueId", "auth-residue-id"), ("labelResidueId", "label-residue-id"),
-            ("residueKey", "residue-key"), ("chainKey", "chain-key"), ("entityKey", "entity-key"),
-            ("isHet", "is-het"), "id", "label_atom_id", "label_alt_id", "label_comp_id", "label_asym_id",
-            "label_entity_id", "label_seq_id", "auth_atom_id", "auth_comp_id", "auth_asym_id", "auth_seq_id",
-            ("residueSourceIndex", "residue-source-index"), "pdbx_PDB_ins_code", "pdbx_formal_charge",
-            "occupancy", "B_iso_or_equiv", ("entityType", "entity-type"), ("entitySubtype", "entity-subtype"),
-            ("entityPrdId", "entity-prd-id"), ("entityDescription", "entity-description"),
-            ("objectPrimitive", "object-primitive"), ("secondaryStructureKey", "secondary-structure-key"),
-            ("secondaryStructureFlags", "secondary-structure-flags"), ("isModified", "is-modified"),
-            ("modifiedParentName", "modified-parent-name"), ("isNonStandard", "is-non-standard"),
-            ("chemCompType", "chem-comp-type"),
-        ])),
-        ihm=Namespace(**_symbols("structure-query.atom-property.ihm", [
-            ("hasSeqId", "has-seq-id"), ("overlapsSeqIdRange", "overlaps-seq-id-range"),
-        ])),
+        macromolecular=Namespace(
+            **_symbols(
+                "structure-query.atom-property.macromolecular",
+                [
+                    ("authResidueId", "auth-residue-id"),
+                    ("labelResidueId", "label-residue-id"),
+                    ("residueKey", "residue-key"),
+                    ("chainKey", "chain-key"),
+                    ("entityKey", "entity-key"),
+                    ("isHet", "is-het"),
+                    "id",
+                    "label_atom_id",
+                    "label_alt_id",
+                    "label_comp_id",
+                    "label_asym_id",
+                    "label_entity_id",
+                    "label_seq_id",
+                    "auth_atom_id",
+                    "auth_comp_id",
+                    "auth_asym_id",
+                    "auth_seq_id",
+                    ("residueSourceIndex", "residue-source-index"),
+                    "pdbx_PDB_ins_code",
+                    "pdbx_formal_charge",
+                    "occupancy",
+                    "B_iso_or_equiv",
+                    ("entityType", "entity-type"),
+                    ("entitySubtype", "entity-subtype"),
+                    ("entityPrdId", "entity-prd-id"),
+                    ("entityDescription", "entity-description"),
+                    ("objectPrimitive", "object-primitive"),
+                    ("secondaryStructureKey", "secondary-structure-key"),
+                    ("secondaryStructureFlags", "secondary-structure-flags"),
+                    ("isModified", "is-modified"),
+                    ("modifiedParentName", "modified-parent-name"),
+                    ("isNonStandard", "is-non-standard"),
+                    ("chemCompType", "chem-comp-type"),
+                ],
+            )
+        ),
+        ihm=Namespace(
+            **_symbols(
+                "structure-query.atom-property.ihm",
+                [
+                    ("hasSeqId", "has-seq-id"),
+                    ("overlapsSeqIdRange", "overlaps-seq-id-range"),
+                ],
+            )
+        ),
     ),
     bond_property=Namespace(
         **_symbols(

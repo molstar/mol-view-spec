@@ -51,11 +51,13 @@ def _test_expr(property_: MolQLExpressionT, value: Any) -> MolQLExpressionT:
 
 
 def _invert(selection: MolQLExpressionT) -> MolQLExpressionT:
-    return B.struct.generator.query_in_selection({
-        "0": selection,
-        "query": B.struct.generator.all(),
-        "in-complement": True,
-    })
+    return B.struct.generator.query_in_selection(
+        {
+            "0": selection,
+            "query": B.struct.generator.all(),
+            "in-complement": True,
+        }
+    )
 
 
 def _as_atoms(selection: MolQLExpressionT) -> MolQLExpressionT:
@@ -151,27 +153,71 @@ _PROPERTY_NAMES = sorted(
 
 _NUCLEIC = ["A", "C", "T", "G", "U", "DA", "DC", "DT", "DG", "DU"]
 _PROTEIN = [
-    "ALA", "ARG", "ASN", "ASP", "CYS", "CYX", "GLN", "GLU", "GLY", "HIS", "HID", "HIE", "HIP",
-    "ILE", "LEU", "LYS", "MET", "MSE", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL",
+    "ALA",
+    "ARG",
+    "ASN",
+    "ASP",
+    "CYS",
+    "CYX",
+    "GLN",
+    "GLU",
+    "GLY",
+    "HIS",
+    "HID",
+    "HIE",
+    "HIP",
+    "ILE",
+    "LEU",
+    "LYS",
+    "MET",
+    "MSE",
+    "PHE",
+    "PRO",
+    "SER",
+    "THR",
+    "TRP",
+    "TYR",
+    "VAL",
 ]
 _SOLVENT = ["HOH", "WAT", "H20", "TIP", "SOL"]
 _NUCLEIC_BACKBONE = [
-    "P", "O3'", "O5'", "C5'", "C4'", "C3'", "OP1", "OP2", "O3*", "O5*", "C5*", "C4*", "C3*",
-    "C2'", "C1'", "O4'", "O2'",
+    "P",
+    "O3'",
+    "O5'",
+    "C5'",
+    "C4'",
+    "C3'",
+    "OP1",
+    "OP2",
+    "O3*",
+    "O5*",
+    "C5*",
+    "C4*",
+    "C3*",
+    "C2'",
+    "C1'",
+    "O4'",
+    "O2'",
 ]
 _PROTEIN_BACKBONE = ["C", "N", "CA", "O"]
 
 
 def _backbone() -> MolQLExpressionT:
     def branch(residues: list[str], atoms: list[str]) -> MolQLExpressionT:
-        return B.struct.modifier.intersect_by({
-            "0": B.struct.generator.atom_groups({
-                "residue-test": B.core.set.has([B.core.type.set(residues), B.ammp("label_comp_id")]),
-            }),
-            "by": B.struct.generator.atom_groups({
-                "atom-test": B.core.set.has([B.core.type.set(atoms), B.ammp("label_atom_id")]),
-            }),
-        })
+        return B.struct.modifier.intersect_by(
+            {
+                "0": B.struct.generator.atom_groups(
+                    {
+                        "residue-test": B.core.set.has([B.core.type.set(residues), B.ammp("label_comp_id")]),
+                    }
+                ),
+                "by": B.struct.generator.atom_groups(
+                    {
+                        "atom-test": B.core.set.has([B.core.type.set(atoms), B.ammp("label_atom_id")]),
+                    }
+                ),
+            }
+        )
 
     return B.struct.combinator.merge([branch(_PROTEIN, _PROTEIN_BACKBONE), branch(_NUCLEIC, _NUCLEIC_BACKBONE)])
 
@@ -190,80 +236,116 @@ def _keyword(name: str) -> MolQLExpressionT:
             {"residue-test": B.core.set.has([B.core.type.set(_NUCLEIC + _PROTEIN), B.ammp("label_comp_id")])}
         )
     if name == "sidechain":
-        return B.struct.modifier.except_by({
-            "0": B.struct.generator.atom_groups(
-                {
-                    "residue-test": B.core.set.has(
-                        [B.core.type.set(_NUCLEIC + _PROTEIN), B.ammp("label_comp_id")]
-                    )
-                }
-            ),
-            "by": _backbone(),
-        })
-    if name == "bonded":
-        return B.struct.generator.atom_groups({
-            "atom-test": B.core.rel.gr([
-                B.struct.atom_property.core.bond_count(
-                    {"flags": B.struct.type.bond_flags(["covalent", "metallic", "sulfide"])}
+        return B.struct.modifier.except_by(
+            {
+                "0": B.struct.generator.atom_groups(
+                    {"residue-test": B.core.set.has([B.core.type.set(_NUCLEIC + _PROTEIN), B.ammp("label_comp_id")])}
                 ),
-                0,
-            ])
-        })
-    if name == "organic":
-        return _as_atoms(B.struct.modifier.expand_property({
-            "0": B.struct.modifier.union([
-                B.struct.generator.query_in_selection({
-                    "0": B.struct.generator.atom_groups({
-                        "residue-test": B.core.logic.not_(
-                            [B.core.set.has([B.core.type.set(_NUCLEIC + _PROTEIN), B.ammp("label_comp_id")])]
-                        )
-                    }),
-                    "query": B.struct.generator.atom_groups(
-                        {"atom-test": B.core.rel.eq([B.es("C"), B.acp("element_symbol")])}
-                    ),
-                })
-            ]),
-            "property": B.ammp("residue_key"),
-        }))
-    if name == "inorganic":
-        return _as_atoms(B.struct.modifier.expand_property({
-            "0": B.struct.modifier.union([
-                B.struct.filter.pick({
-                    "0": B.struct.generator.atom_groups({
-                        "residue-test": B.core.logic.not_(
-                            [
-                                B.core.set.has(
-                                    [
-                                        B.core.type.set(_NUCLEIC + _PROTEIN + _SOLVENT),
-                                        B.ammp("label_comp_id"),
-                                    ]
-                                )
-                            ]
+                "by": _backbone(),
+            }
+        )
+    if name == "bonded":
+        return B.struct.generator.atom_groups(
+            {
+                "atom-test": B.core.rel.gr(
+                    [
+                        B.struct.atom_property.core.bond_count(
+                            {"flags": B.struct.type.bond_flags(["covalent", "metallic", "sulfide"])}
                         ),
-                        "group-by": B.ammp("residue_key"),
-                    }),
-                    "test": B.core.logic.not_(
-                        [B.core.set.has([B.struct.atom_set.property_set([B.acp("element_symbol")]), B.es("C")])]
+                        0,
+                    ]
+                )
+            }
+        )
+    if name == "organic":
+        return _as_atoms(
+            B.struct.modifier.expand_property(
+                {
+                    "0": B.struct.modifier.union(
+                        [
+                            B.struct.generator.query_in_selection(
+                                {
+                                    "0": B.struct.generator.atom_groups(
+                                        {
+                                            "residue-test": B.core.logic.not_(
+                                                [
+                                                    B.core.set.has(
+                                                        [B.core.type.set(_NUCLEIC + _PROTEIN), B.ammp("label_comp_id")]
+                                                    )
+                                                ]
+                                            )
+                                        }
+                                    ),
+                                    "query": B.struct.generator.atom_groups(
+                                        {"atom-test": B.core.rel.eq([B.es("C"), B.acp("element_symbol")])}
+                                    ),
+                                }
+                            )
+                        ]
                     ),
-                })
-            ]),
-            "property": B.ammp("residue_key"),
-        }))
+                    "property": B.ammp("residue_key"),
+                }
+            )
+        )
+    if name == "inorganic":
+        return _as_atoms(
+            B.struct.modifier.expand_property(
+                {
+                    "0": B.struct.modifier.union(
+                        [
+                            B.struct.filter.pick(
+                                {
+                                    "0": B.struct.generator.atom_groups(
+                                        {
+                                            "residue-test": B.core.logic.not_(
+                                                [
+                                                    B.core.set.has(
+                                                        [
+                                                            B.core.type.set(_NUCLEIC + _PROTEIN + _SOLVENT),
+                                                            B.ammp("label_comp_id"),
+                                                        ]
+                                                    )
+                                                ]
+                                            ),
+                                            "group-by": B.ammp("residue_key"),
+                                        }
+                                    ),
+                                    "test": B.core.logic.not_(
+                                        [
+                                            B.core.set.has(
+                                                [B.struct.atom_set.property_set([B.acp("element_symbol")]), B.es("C")]
+                                            )
+                                        ]
+                                    ),
+                                }
+                            )
+                        ]
+                    ),
+                    "property": B.ammp("residue_key"),
+                }
+            )
+        )
     if name == "solvent":
         return B.struct.generator.atom_groups(
             {"residue-test": B.core.set.has([B.core.type.set(_SOLVENT), B.ammp("label_comp_id")])}
         )
     if name == "guide":
-        return B.struct.combinator.merge([
-            B.struct.generator.atom_groups({
-                "atom-test": B.core.rel.eq([B.atom_name("CA"), B.ammp("label_atom_id")]),
-                "residue-test": B.core.set.has([B.core.type.set(_PROTEIN), B.ammp("label_comp_id")]),
-            }),
-            B.struct.generator.atom_groups({
-                "atom-test": B.core.set.has([_atom_name_set(["C4*", "C4'"]), B.ammp("label_atom_id")]),
-                "residue-test": B.core.set.has([B.core.type.set(_NUCLEIC), B.ammp("label_comp_id")]),
-            }),
-        ])
+        return B.struct.combinator.merge(
+            [
+                B.struct.generator.atom_groups(
+                    {
+                        "atom-test": B.core.rel.eq([B.atom_name("CA"), B.ammp("label_atom_id")]),
+                        "residue-test": B.core.set.has([B.core.type.set(_PROTEIN), B.ammp("label_comp_id")]),
+                    }
+                ),
+                B.struct.generator.atom_groups(
+                    {
+                        "atom-test": B.core.set.has([_atom_name_set(["C4*", "C4'"]), B.ammp("label_atom_id")]),
+                        "residue-test": B.core.set.has([B.core.type.set(_NUCLEIC), B.ammp("label_comp_id")]),
+                    }
+                ),
+            ]
+        )
     if name == "backbone":
         return _backbone()
     if name == "polymer.protein":
@@ -278,15 +360,32 @@ def _keyword(name: str) -> MolQLExpressionT:
 
 
 _KEYWORDS: dict[str, tuple[str, ...]] = {
-    "all": ("all", "*"), "none": ("none",), "hydrogens": ("hydrogens", "hydro", "h."),
-    "hetatm": ("hetatm", "het"), "visible": ("visible", "v."), "polymer": ("polymer", "pol."),
-    "sidechain": ("sidechain", "sc."), "present": ("present", "pr."), "center": ("center",),
-    "origin": ("origin",), "enabled": ("enabled",), "masked": ("masked", "msk."),
-    "protected": ("protected", "pr."), "bonded": ("bonded",), "donors": ("donors", "don."),
-    "acceptors": ("acceptors", "acc."), "fixed": ("fixed", "fxd."), "restrained": ("restrained", "rst."),
-    "organic": ("organic", "org."), "inorganic": ("inorganic", "ino."), "solvent": ("solvent", "sol."),
-    "guide": ("guide",), "metals": ("metals",), "backbone": ("backbone", "bb."),
-    "polymer.protein": ("polymer.protein",), "polymer.nucleic": ("polymer.nucleic",),
+    "all": ("all", "*"),
+    "none": ("none",),
+    "hydrogens": ("hydrogens", "hydro", "h."),
+    "hetatm": ("hetatm", "het"),
+    "visible": ("visible", "v."),
+    "polymer": ("polymer", "pol."),
+    "sidechain": ("sidechain", "sc."),
+    "present": ("present", "pr."),
+    "center": ("center",),
+    "origin": ("origin",),
+    "enabled": ("enabled",),
+    "masked": ("masked", "msk."),
+    "protected": ("protected", "pr."),
+    "bonded": ("bonded",),
+    "donors": ("donors", "don."),
+    "acceptors": ("acceptors", "acc."),
+    "fixed": ("fixed", "fxd."),
+    "restrained": ("restrained", "rst."),
+    "organic": ("organic", "org."),
+    "inorganic": ("inorganic", "ino."),
+    "solvent": ("solvent", "sol."),
+    "guide": ("guide",),
+    "metals": ("metals",),
+    "backbone": ("backbone", "bb."),
+    "polymer.protein": ("polymer.protein",),
+    "polymer.nucleic": ("polymer.nucleic",),
 }
 _KEYWORD_NAMES = sorted(
     [(alias, name) for name, aliases in _KEYWORDS.items() for alias in aliases],
@@ -297,11 +396,27 @@ _KEYWORD_NAMES = sorted(
 
 OperatorKind = Literal["prefix", "postfix", "binary"]
 _OPERATORS: list[tuple[str, OperatorKind]] = [
-    ("not", "prefix"), ("and", "binary"), ("or", "binary"), ("in", "binary"), ("like", "binary"),
-    ("gap", "postfix"), ("around", "postfix"), ("expand", "postfix"), ("within", "binary"),
-    ("near_to", "binary"), ("beyond", "binary"), ("byresidue", "prefix"), ("bycalpha", "prefix"),
-    ("bymolecule", "prefix"), ("byfragment", "prefix"), ("bysegment", "prefix"), ("byobject", "prefix"),
-    ("bycell", "prefix"), ("byring", "prefix"), ("neighbor", "prefix"), ("bound_to", "prefix"),
+    ("not", "prefix"),
+    ("and", "binary"),
+    ("or", "binary"),
+    ("in", "binary"),
+    ("like", "binary"),
+    ("gap", "postfix"),
+    ("around", "postfix"),
+    ("expand", "postfix"),
+    ("within", "binary"),
+    ("near_to", "binary"),
+    ("beyond", "binary"),
+    ("byresidue", "prefix"),
+    ("bycalpha", "prefix"),
+    ("bymolecule", "prefix"),
+    ("byfragment", "prefix"),
+    ("bysegment", "prefix"),
+    ("byobject", "prefix"),
+    ("bycell", "prefix"),
+    ("byring", "prefix"),
+    ("neighbor", "prefix"),
+    ("bound_to", "prefix"),
     ("extend", "postfix"),
 ]
 
@@ -456,11 +571,20 @@ class _Parser:
     def _operator(self, name: str) -> Any | None:
         self._ws()
         patterns: dict[str, str] = {
-            "not": r"NOT(?=\s)|!", "and": r"AND|&", "or": r"OR|\|", "in": r"IN", "like": r"LIKE|l\.",
-            "byresidue": r"BYRESIDUE|byresi|byres|br\.", "bycalpha": r"BYCALPHA|bca\.",
-            "bymolecule": r"BYMOLECULE|bymol|bm\.", "byfragment": r"BYFRAGMENT|byfrag|bf\.",
-            "bysegment": r"BYSEGMENT|bysegi|byseg|bs\.", "byobject": r"BYOBJECT|byobj|bo\.",
-            "bycell": r"BYCELL", "byring": r"BYRING", "neighbor": r"NEIGHBOR|nbr\.",
+            "not": r"NOT(?=\s)|!",
+            "and": r"AND|&",
+            "or": r"OR|\|",
+            "in": r"IN",
+            "like": r"LIKE|l\.",
+            "byresidue": r"BYRESIDUE|byresi|byres|br\.",
+            "bycalpha": r"BYCALPHA|bca\.",
+            "bymolecule": r"BYMOLECULE|bymol|bm\.",
+            "byfragment": r"BYFRAGMENT|byfrag|bf\.",
+            "bysegment": r"BYSEGMENT|bysegi|byseg|bs\.",
+            "byobject": r"BYOBJECT|byobj|bo\.",
+            "bycell": r"BYCELL",
+            "byring": r"BYRING",
+            "neighbor": r"NEIGHBOR|nbr\.",
             "bound_to": r"BOUND_TO|bto\.",
         }
         if name in patterns:
@@ -489,14 +613,16 @@ class _Parser:
                 )
             )
         if name == "bycalpha":
-            return B.struct.generator.query_in_selection({
-                "0": B.struct.modifier.expand_property(
-                    {"0": B.struct.modifier.union({"0": selection}), "property": B.ammp("residue_key")}
-                ),
-                "query": B.struct.generator.atom_groups(
-                    {"atom-test": B.core.rel.eq([B.atom_name("CA"), B.ammp("label_atom_id")])}
-                ),
-            })
+            return B.struct.generator.query_in_selection(
+                {
+                    "0": B.struct.modifier.expand_property(
+                        {"0": B.struct.modifier.union({"0": selection}), "property": B.ammp("residue_key")}
+                    ),
+                    "query": B.struct.generator.atom_groups(
+                        {"atom-test": B.core.rel.eq([B.atom_name("CA"), B.ammp("label_atom_id")])}
+                    ),
+                }
+            )
         if name == "bysegment":
             return _as_atoms(
                 B.struct.modifier.expand_property(
@@ -504,25 +630,35 @@ class _Parser:
                 )
             )
         if name == "byring":
-            return _as_atoms(B.struct.modifier.intersect_by({
-                "0": B.struct.filter.pick({
-                    "0": B.struct.generator.rings(),
-                    "test": B.core.logic.and_([
-                        B.core.rel.lte([B.struct.atom_set.atom_count(), 7]),
-                        B.core.rel.gr([B.struct.atom_set.count_query([selection]), 1]),
-                    ]),
-                }),
-                "by": selection,
-            }))
+            return _as_atoms(
+                B.struct.modifier.intersect_by(
+                    {
+                        "0": B.struct.filter.pick(
+                            {
+                                "0": B.struct.generator.rings(),
+                                "test": B.core.logic.and_(
+                                    [
+                                        B.core.rel.lte([B.struct.atom_set.atom_count(), 7]),
+                                        B.core.rel.gr([B.struct.atom_set.count_query([selection]), 1]),
+                                    ]
+                                ),
+                            }
+                        ),
+                        "by": selection,
+                    }
+                )
+            )
         if name == "neighbor":
-            return B.struct.modifier.except_by({
-                "0": _as_atoms(
-                    B.struct.modifier.include_connected(
-                        {"0": B.struct.modifier.union({"0": selection}), "bond-test": True}
-                    )
-                ),
-                "by": selection,
-            })
+            return B.struct.modifier.except_by(
+                {
+                    "0": _as_atoms(
+                        B.struct.modifier.include_connected(
+                            {"0": B.struct.modifier.union({"0": selection}), "bond-test": True}
+                        )
+                    ),
+                    "by": selection,
+                }
+            )
         if name == "bound_to":
             return _as_atoms(B.struct.modifier.include_connected({"0": B.struct.modifier.union({"0": selection})}))
         raise PyMOLParseError(f"PyMOL operator '{name}' is not supported")
@@ -567,18 +703,29 @@ class _Parser:
         if name == "or":
             return B.struct.combinator.merge([left, right])
         if name == "in":
-            return B.struct.filter.with_same_atom_properties({
-                "0": left, "source": right,
-                "property": B.core.type.composite_key([
-                    B.ammp("label_atom_id"), B.ammp("label_seq_id"), B.ammp("label_comp_id"),
-                    B.ammp("auth_asym_id"), B.ammp("label_asym_id"),
-                ]),
-            })
+            return B.struct.filter.with_same_atom_properties(
+                {
+                    "0": left,
+                    "source": right,
+                    "property": B.core.type.composite_key(
+                        [
+                            B.ammp("label_atom_id"),
+                            B.ammp("label_seq_id"),
+                            B.ammp("label_comp_id"),
+                            B.ammp("auth_asym_id"),
+                            B.ammp("label_asym_id"),
+                        ]
+                    ),
+                }
+            )
         if name == "like":
-            return B.struct.filter.with_same_atom_properties({
-                "0": left, "source": right,
-                "property": B.core.type.composite_key([B.ammp("label_atom_id"), B.ammp("label_seq_id")]),
-            })
+            return B.struct.filter.with_same_atom_properties(
+                {
+                    "0": left,
+                    "source": right,
+                    "property": B.core.type.composite_key([B.ammp("label_atom_id"), B.ammp("label_seq_id")]),
+                }
+            )
         if name == "within":
             return B.struct.filter.within({"0": left, "target": right, "max-radius": value})
         if name == "near_to":
@@ -588,9 +735,7 @@ class _Parser:
         if name == "beyond":
             return B.struct.modifier.except_by(
                 {
-                    "0": B.struct.filter.within(
-                        {"0": left, "target": right, "max-radius": value, "invert": True}
-                    ),
+                    "0": B.struct.filter.within({"0": left, "target": right, "max-radius": value, "invert": True}),
                     "by": right,
                 }
             )

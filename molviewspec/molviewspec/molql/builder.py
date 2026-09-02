@@ -9,8 +9,7 @@ import re
 from typing import Literal, TypeAlias
 
 from molviewspec.molql.expression import MolQLExpressionT
-from molviewspec.molql.language import AtomGroupsArgsT, core, struct
-
+from molviewspec.molql.language import core, struct
 
 AtomCorePropertyT: TypeAlias = Literal[
     "elementSymbol",

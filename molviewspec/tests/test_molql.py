@@ -23,11 +23,7 @@ from molviewspec.nodes import ComponentInlineParams
 class TestMolQLBuilder(unittest.TestCase):
     def test_atom_groups_uses_canonical_named_arguments(self):
         ligand = molql.struct.generator.atom_groups(
-            {
-                "chain-test": molql.core.rel.eq(
-                    [molql.struct.atom_property.macromolecular.label_asym_id(), "G"]
-                )
-            }
+            {"chain-test": molql.core.rel.eq([molql.struct.atom_property.macromolecular.label_asym_id(), "G"])}
         )
 
         self.assertEqual(ligand["head"]["name"], "structure-query.generator.atom-groups")
@@ -62,11 +58,7 @@ class TestMolQLBuilder(unittest.TestCase):
 
     def test_canonical_module_namespace_and_wrapper_factories(self):
         expression = molql.struct.generator.atom_groups(
-            {
-                "atom-test": molql.core.rel.eq(
-                    [molql.struct.atom_property.macromolecular.label_atom_id(), "CA"]
-                )
-            }
+            {"atom-test": molql.core.rel.eq([molql.struct.atom_property.macromolecular.label_atom_id(), "CA"])}
         )
 
         self.assertIs(molql.core, MS.core)
@@ -85,11 +77,7 @@ class TestPyMOLTranspiler(unittest.TestCase):
                 "0": MS.struct.modifier.intersect_by(
                     {
                         "0": MS.struct.generator.atom_groups(
-                            {
-                                "chain-test": MS.core.rel.eq(
-                                    [MS.struct.atom_property.macromolecular.auth_asym_id(), "A"]
-                                )
-                            }
+                            {"chain-test": MS.core.rel.eq([MS.struct.atom_property.macromolecular.auth_asym_id(), "A"])}
                         ),
                         "by": MS.struct.generator.atom_groups(
                             {
@@ -121,7 +109,7 @@ class TestPyMOLTranspiler(unittest.TestCase):
             "A/100-180/CA",
             "byres polymer within 5 of resn STI",
             "solvent beyond 4 of (name O and not solvent)",
-            "alt A+\"\"",
+            'alt A+""',
             "symbol O+N",
         )
         for query in queries:
@@ -164,14 +152,8 @@ class TestMolQLMVSIntegration(unittest.TestCase):
         selector = molql.selector(self.query)
         position = molql.position(self.query, structure_ref="structure")
         builder = create_builder()
-        structure = (
-            builder.download(url="structure.cif")
-            .parse(format="mmcif")
-            .model_structure(ref="structure")
-        )
-        structure.component(selector=selector).representation(type="cartoon").color(
-            color="red", selector=selector
-        )
+        structure = builder.download(url="structure.cif").parse(format="mmcif").model_structure(ref="structure")
+        structure.component(selector=selector).representation(type="cartoon").color(color="red", selector=selector)
         structure.primitives().tube(start=position, end=position)
 
         serialized = json.loads(MVSJ(data=builder.get_state()).dumps())

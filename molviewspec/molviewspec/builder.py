@@ -63,15 +63,14 @@ from molviewspec.nodes import (
     PrimitivePositionT,
     PrimitivesFromUriParams,
     PrimitivesParams,
-    RefT,
-    PuttyParams,
     PuttySizeThemeT,
+    RefT,
     RepresentationTypeParams,
     RepresentationTypeT,
     SchemaFormatT,
+    SchemaT,
     SelectorT,
     ShapeParams,
-    SchemaT,
     Snapshot,
     SnapshotMetadata,
     State,
@@ -450,7 +449,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
     ) -> Snapshot:
         """
         Return a snapshot of the current state, which can be used to build multi-state views.
-        
+
         :param title: optional title of the scene
         :param description: optional detailed description of the scene
         :param description_format: format of the description
