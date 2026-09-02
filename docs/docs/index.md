@@ -141,6 +141,7 @@ Example: [1ht9.mvsx](./files/1h9t.mvsx)
 
 -   [MVS tree schema](./tree-schema.md)
 -   [Selectors](./selectors.md)
+-   [MolQL selectors](./molql.md)
 -   [Annotations](./annotations.md)
 -   [Camera settings](./camera-settings.md)
 -   [Primitives](./primitives.md)
