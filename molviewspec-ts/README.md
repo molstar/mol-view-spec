@@ -30,6 +30,34 @@ deno jupyter --install
 uvx --from jupyter-core jupyter lab test-data/notebooks-ts/01_kras_structure_visualization.ipynb
 ```
 
+## MolQL selectors
+
+Import the canonical `molql` namespace to build base MolQL expressions. Selection-language transpilers use independent package entry points, so applications only include the parsers they import. The MVS state stores only the resulting JSON expression tree.
+
+```typescript
+import { createBuilder, molql } from "@molstar/molviewspec";
+import * as pymol from "@molstar/molviewspec/molql/pymol";
+
+const ligand = molql.struct.generator.atomGroups({
+  "chain-test": molql.core.rel.eq([
+    molql.struct.atomProperty.macromolecular.label_asym_id(),
+    "G",
+  ]),
+});
+const pocket = pymol.transpile("byres polymer within 5 of resn STI");
+
+const builder = createBuilder();
+const structure = builder
+  .download({ url: "https://files.wwpdb.org/download/1iep.cif" })
+  .parse({ format: "mmcif" })
+  .assemblyStructure();
+
+structure.component({ selector: molql.selector(ligand) });
+structure.component({ selector: molql.selector(pocket) });
+```
+
+`molql.position(expression, structureRef?)` creates the corresponding wrapper for structure-aware primitive positions. Future selection-language transpilers can follow the same independent-subpath pattern without adding their parsers to the base MolQL bundle.
+
 ## Development
 
 ```bash
