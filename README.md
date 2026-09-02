@@ -272,10 +272,30 @@ Find the package at: https://pypi.org/project/molviewspec/
 
 ### Setting up the environment
 
+The root Conda environment includes both the Python package tooling and Node.js:
+
 ```
 micromamba env create -f ./environment.yaml
 micromamba activate mol-view-spec-dev
 ```
+
+As a lighter alternative for Python package development, use uv from the package directory:
+
+```shell
+cd molviewspec
+uv sync  # or: make setup-uv
+```
+
+Run existing Make targets without activating the environment:
+
+```shell
+uv run make format
+uv run make mypy
+uv run make test-units
+```
+
+The target names remain unchanged; no `uv:`-prefixed targets are required. Alternatively, activate `.venv` once and
+use `make format`, `make mypy`, and the other targets directly.
 
 ### Running the server
 

@@ -1,3 +1,8 @@
+.PHONY: setup-uv format mypy serve start-server stop-server test-server test-units test
+
+setup-uv:
+	uv sync
+
 format:
 	autoflake --remove-all-unused-imports --remove-unused-variables --ignore-init-module-imports -ir .
 	isort .
