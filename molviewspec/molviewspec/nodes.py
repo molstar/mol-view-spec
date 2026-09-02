@@ -15,8 +15,10 @@ from datetime import datetime, timezone
 from typing import Any, Literal, Mapping, Optional, Type, TypeVar, cast
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictStr
 
+from molviewspec.molql.expression import validate_expression
+from molviewspec.molql.language import KNOWN_SYMBOLS
 from molviewspec.utils import get_major_version_tag, get_model_fields
 
 KindT = Literal[
@@ -608,10 +610,28 @@ class VolumeParams(BaseModel):
 ComponentSelectorT = Literal["all", "polymer", "protein", "nucleic", "branched", "ligand", "ion", "water", "coarse"]
 
 
+class MolQLExpression(BaseModel):
+    """A serialized base MolQL query used as an MVS selector."""
+
+    molql: Any = Field(description="A base MolQL application serialized as JSON.")
+
+    class Config:
+        extra = "forbid"
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
+        validate_expression(self.molql, require_application=True, known_symbols=KNOWN_SYMBOLS)
+
+
 class ComponentExpression(BaseModel):
     """
     Component expressions are used to make selections.
     """
+
+    def __init__(self, **data: Any):
+        if "molql" in data or "structure_ref" in data:
+            raise ValueError("MolQL wrappers and primitive structure_ref positions are not component expressions")
+        super().__init__(**data)
 
     label_entity_id: Optional[str] = Field(None, description="Select an entity by its identifier")
     label_asym_id: Optional[str] = Field(
@@ -655,6 +675,9 @@ class ComponentExpression(BaseModel):
         None,
         description="Instance identifier to distinguish instances of the same chain created by applying different symmetry operators, like 'ASM-X0-1' for assemblies or '1_555' for crystals",
     )
+
+
+SelectorT = ComponentSelectorT | MolQLExpression | ComponentExpression | list[ComponentExpression]
 
 
 RepresentationTypeT = Literal["ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate", "putty"]
@@ -1299,7 +1322,7 @@ class ComponentInlineParams(BaseModel):
     Selection based on function arguments.
     """
 
-    selector: Optional[ComponentSelectorT | ComponentExpression | list[ComponentExpression]] = Field(
+    selector: Optional[SelectorT] = Field(
         None, description="Describes one or more selections or one of the enumerated selectors."
     )
 
@@ -1344,7 +1367,7 @@ class ColorFromUriParams(_DataFromUriParams):
     """
 
     palette: Optional[PaletteT] = Field(None, description="Customize mapping of annotation values to colors.")
-    selector: Optional[ComponentSelectorT | ComponentExpression | list[ComponentExpression]] = Field(
+    selector: Optional[SelectorT] = Field(
         None, description="Defines to what part of the representation this coloring should be applied."
     )
 
@@ -1355,7 +1378,7 @@ class ColorFromSourceParams(_DataFromSourceParams):
     """
 
     palette: Optional[PaletteT] = Field(None, description="Customize mapping of annotation values to colors.")
-    selector: Optional[ComponentSelectorT | ComponentExpression | list[ComponentExpression]] = Field(
+    selector: Optional[SelectorT] = Field(
         None, description="Defines to what part of the representation this coloring should be applied."
     )
 
@@ -1503,9 +1526,18 @@ class PrimitiveComponentExpressions(BaseModel):
     expressions: list[ComponentExpression] = Field(description="Expression refencing elements froms the structure_ref.")
 
 
+class PrimitiveMolQLExpression(MolQLExpression):
+    """A MolQL primitive position, optionally resolved against a referenced structure."""
+
+    structure_ref: Optional[StrictStr] = Field(
+        None,
+        description="Reference to a structure node. If omitted, the structure is inferred from the tree.",
+    )
+
+
 # TODO: Consider supporting a list of PrimitiveComponentExpressions too to enable things like
 #       boundings boxes around docked ligands that contains surrounding residues
-PrimitivePositionT = Vec3[float] | ComponentExpression | PrimitiveComponentExpressions
+PrimitivePositionT = Vec3[float] | PrimitiveMolQLExpression | ComponentExpression | PrimitiveComponentExpressions
 """
 Positions of primitives can be defined by 3D vector, by providing a selection expressions, or by providing
 a list of expressions within a specific structure.

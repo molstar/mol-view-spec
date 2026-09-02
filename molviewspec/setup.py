@@ -1,6 +1,6 @@
 import re
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 name = "molviewspec"
 
@@ -16,7 +16,7 @@ if not version:
 
 setup(
     name=name,
-    packages=[name],
+    packages=find_packages(include=[name, f"{name}.*"]),
     version=version,
     license="MIT",
     description="Generate Mol* views using this simple Python library, which allows you to compose complex scenes in a "
@@ -36,6 +36,7 @@ setup(
         "Mol*",
     ],
     install_requires=["pydantic>=1,<3"],
+    python_requires=">=3.10",
     classifiers=[
         "Development Status :: 3 - Alpha",
         # "Development Status :: 4 - Beta",

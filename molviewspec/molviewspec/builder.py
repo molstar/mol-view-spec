@@ -28,11 +28,9 @@ from molviewspec.nodes import (
     ColorFromUriParams,
     ColorInlineParams,
     ColorT,
-    ComponentExpression,
     ComponentFromSourceParams,
     ComponentFromUriParams,
     ComponentInlineParams,
-    ComponentSelectorT,
     ContinuousPalette,
     CoordinatesParams,
     CustomT,
@@ -71,6 +69,7 @@ from molviewspec.nodes import (
     RepresentationTypeParams,
     RepresentationTypeT,
     SchemaFormatT,
+    SelectorT,
     ShapeParams,
     SchemaT,
     Snapshot,
@@ -850,7 +849,7 @@ class Structure(_Base, _PrimitivesMixin, _TransformMixin):
     def component(
         self,
         *,
-        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] = "all",
+        selector: SelectorT = "all",
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Component:
@@ -1331,7 +1330,7 @@ class Representation(_Base, _ClipMixin):
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
         palette: PaletteT | None = None,
-        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
+        selector: SelectorT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -1366,7 +1365,7 @@ class Representation(_Base, _ClipMixin):
         field_name: str | None = None,
         field_remapping: dict[str, str | None] | None = None,
         palette: PaletteT | None = None,
-        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
+        selector: SelectorT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -1395,7 +1394,7 @@ class Representation(_Base, _ClipMixin):
         self,
         *,
         color: ColorT | None = None,
-        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
+        selector: SelectorT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> Representation:
@@ -1560,7 +1559,7 @@ class VolumeRepresentation(_Base, _FocusMixin, _ClipMixin):
         self,
         *,
         color: ColorT | None = None,
-        selector: ComponentSelectorT | ComponentExpression | list[ComponentExpression] | None = None,
+        selector: SelectorT | None = None,
         custom: CustomT = None,
         ref: RefT = None,
     ) -> VolumeRepresentation:

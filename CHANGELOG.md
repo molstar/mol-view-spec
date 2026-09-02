@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file, following t
 
 ## [Unreleased]
 
+- Add Python support for serialized MolQL selectors, a base-language expression builder, and PyMOL transpilation
 - add molviewspec-ts, a typescript implementation of mol-view-spec
 - Add `putty` representation type with `size_theme` parameter (`"uniform"` for constant radius scaled by `size_factor`, `"uncertainty"` for B-factor/RMSF-driven radius)
 - `color_from_uri` and `color_from_source` take `selector` parameter

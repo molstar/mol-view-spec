@@ -11,6 +11,7 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 
 from app.config import settings
+from molviewspec import molql
 from molviewspec.builder import Representation, create_builder
 from molviewspec.nodes import (
     MVSJ,
@@ -115,6 +116,66 @@ async def component_example() -> MVSResponse:
     ).representation(type="ball_and_stick").color(color="yellow")
 
     return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/molql")
+async def molql_example() -> MVSResponse:
+    """Build, transpile, and use MolQL component, color, and primitive selectors."""
+    builder = create_builder()
+    structure = (
+        builder.download(url=_url_for_mmcif("1iep"))
+        .parse(format="mmcif")
+        .assembly_structure(ref="structure")
+    )
+
+    imatinib = molql.struct.generator.atom_groups(
+        {
+            "chain-test": molql.core.rel.eq(
+                [molql.struct.atom_property.macromolecular.label_asym_id(), "G"]
+            )
+        }
+    )
+    imatinib_n13 = molql.struct.generator.atom_groups(
+        {
+            "chain-test": molql.core.rel.eq(
+                [molql.struct.atom_property.macromolecular.label_asym_id(), "G"]
+            ),
+            "atom-test": molql.core.rel.eq(
+                [molql.struct.atom_property.macromolecular.label_atom_id(), "N13"]
+            ),
+        }
+    )
+    binding_pocket = molql.from_pymol("byres polymer within 5 of resn STI")
+    thr315_og1 = molql.from_pymol("chain A and resi 315 and name OG1")
+
+    polymer = structure.component(selector="polymer").representation(type="cartoon")
+    polymer.color(color="#8AA6C1")
+    polymer.color(color="#B8497A", selector=molql.selector(binding_pocket))
+
+    structure.component(selector=molql.selector(imatinib)).representation(
+        type="ball_and_stick"
+    ).color(color="#F08A4B")
+    pocket = structure.component(selector=molql.selector(binding_pocket))
+    pocket.representation(type="ball_and_stick").color(color="#B8497A")
+    pocket.label(text="PyMOL binding-pocket selection")
+    pocket.tooltip(text="Polymer residues within 5 Å of imatinib (STI).")
+
+    structure.primitives().distance(
+        start=molql.position(imatinib_n13),
+        end=molql.position(thr315_og1),
+        color="#F08A4B",
+        radius=0.12,
+        dash_length=0.2,
+        label_template="Imatinib N13–Thr315 OG1: {{distance}}",
+        label_color="#F08A4B",
+    )
+
+    return JSONResponse(
+        builder.get_state(
+            title="MolQL selectors",
+            description="Programmatic base MolQL and eagerly transpiled PyMOL selections.",
+        ).to_dict()
+    )
 
 
 @router.get("/symmetry-mates")

@@ -2,6 +2,7 @@
 
 __version__ = "1.8.1"
 
+from molviewspec import molql
 from molviewspec.builder import create_builder
 from molviewspec.molstar_widgets import molstar_html, molstar_notebook, molstar_streamlit
 from molviewspec.mvsx_converter import mvsj_to_mvsx
@@ -14,10 +15,18 @@ from molviewspec.nodes import (
     DiscretePalette,
     GlobalMetadata,
     MVSData,
+    MolQLExpression,
     PrimitiveComponentExpressions,
+    PrimitiveMolQLExpression,
+    SelectorT,
     Snapshot,
     SnapshotMetadata,
     State,
     States,
     validate_state_tree,
 )
+
+# Bind these after ``nodes`` is initialized; the molql factories import them lazily
+# to avoid a package initialization cycle.
+molql.MolQLExpression = MolQLExpression
+molql.PrimitiveMolQLExpression = PrimitiveMolQLExpression
