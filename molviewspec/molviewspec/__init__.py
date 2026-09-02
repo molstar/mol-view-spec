@@ -25,8 +25,3 @@ from molviewspec.nodes import (
     States,
     validate_state_tree,
 )
-
-# Bind these after ``nodes`` is initialized; the molql factories import them lazily
-# to avoid a package initialization cycle.
-molql.MolQLExpression = MolQLExpression
-molql.PrimitiveMolQLExpression = PrimitiveMolQLExpression

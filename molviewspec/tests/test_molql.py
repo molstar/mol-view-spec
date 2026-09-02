@@ -63,6 +63,8 @@ class TestMolQLBuilder(unittest.TestCase):
 
         self.assertIs(molql.core, MS.core)
         self.assertIs(molql.struct, MS.struct)
+        self.assertFalse(hasattr(molql, "MolQLExpression"))
+        self.assertFalse(hasattr(molql, "PrimitiveMolQLExpression"))
         self.assertEqual(molql.selector(expression), MolQLExpression(molql=expression))
         self.assertEqual(
             molql.position(expression, structure_ref="structure"),
