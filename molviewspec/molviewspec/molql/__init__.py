@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from molviewspec.molql.builder import (
     MS,
     AtomCorePropertyT,
-    AtomGroupsArgsT,
     AtomMacromolecularPropertyT,
     AtomTopologyPropertyT,
     MolScriptBuilder,
@@ -26,7 +25,7 @@ from molviewspec.molql.expression import (
     symbol,
     validate_expression,
 )
-from molviewspec.molql.language import core, struct
+from molviewspec.molql.language import AtomGroupsArgsT, core, struct
 from molviewspec.molql.transpile import LanguageT, from_pymol, transpile
 
 if TYPE_CHECKING:
