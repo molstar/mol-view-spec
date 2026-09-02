@@ -4,6 +4,7 @@
 
 import type {
   AnimationKindT,
+  CameraTransitionTrajectoryT,
   ColorDictNameT,
   ColorListNameT,
   ColorT,
@@ -17,19 +18,19 @@ import type {
   Mat3,
   Mat4,
   ParseFormatT,
-  PrimitivePositionT,
+  PrimitiveVectorPositionT,
+  PuttySizeThemeT,
   RefT,
   RepresentationTypeT,
   SchemaFormatT,
   SchemaT,
   StateTreeT,
   StructureTypeT,
-  PuttySizeThemeT,
   SurfaceTypeT,
   Vec3,
   VolumeRepresentationTypeT,
-  CameraTransitionTrajectoryT,
 } from "./types.ts";
+import type { MolQLExpression, PrimitiveMolQLExpression } from "./molql/mod.ts";
 import { generateUUID, getTimestamp, VERSION } from "./utils.ts";
 
 /**
@@ -189,11 +190,32 @@ export interface ComponentExpression {
   instance_id?: string;
 }
 
+/** A component expression used as a primitive position, optionally against another structure. */
+export interface PrimitiveComponentExpression extends ComponentExpression {
+  structure_ref?: string;
+  expression_schema?: SchemaT;
+  expressions?: ComponentExpression[];
+}
+
+/** Selector values accepted by component and color nodes. */
+export type SelectorT =
+  | ComponentSelectorT
+  | ComponentExpression
+  | ComponentExpression[]
+  | MolQLExpression;
+
+/** Position values accepted by structure-aware primitives. */
+export type PrimitivePositionT =
+  | PrimitiveVectorPositionT
+  | ComponentExpression
+  | PrimitiveComponentExpression
+  | PrimitiveMolQLExpression;
+
 /**
  * Component inline parameters.
  */
 export interface ComponentInlineParams {
-  selector?: ComponentSelectorT | ComponentExpression | ComponentExpression[];
+  selector?: SelectorT;
 }
 
 /**
@@ -399,6 +421,7 @@ export type ClipTypeParams = ClipPlaneParams | ClipSphereParams | ClipBoxParams;
 export interface ColorInlineParams {
   color?: ColorT;
   palette?: Palette;
+  selector?: SelectorT;
 }
 
 /**
@@ -414,7 +437,7 @@ export interface ColorFromUriParams {
   block_index?: number;
   field_remapping?: Record<string, string | null>;
   palette?: Palette;
-  selector?: ComponentSelectorT | ComponentExpression | ComponentExpression[];
+  selector?: SelectorT;
 }
 
 /**
@@ -428,7 +451,7 @@ export interface ColorFromSourceParams {
   schema?: SchemaT;
   field_remapping?: Record<string, string | null>;
   palette?: Palette;
-  selector?: ComponentSelectorT | ComponentExpression | ComponentExpression[];
+  selector?: SelectorT;
 }
 
 /**

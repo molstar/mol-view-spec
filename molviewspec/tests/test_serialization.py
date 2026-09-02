@@ -4,7 +4,7 @@ import logging
 import unittest
 
 from molviewspec.builder import create_builder
-from molviewspec.nodes import MVSJ, ContinuousPalette
+from molviewspec.nodes import MVSJ
 
 # Set up logging for tests
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")

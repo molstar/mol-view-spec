@@ -11,6 +11,7 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 
 from app.config import settings
+from molviewspec import molql
 from molviewspec.builder import Representation, create_builder
 from molviewspec.nodes import (
     MVSJ,
@@ -115,6 +116,52 @@ async def component_example() -> MVSResponse:
     ).representation(type="ball_and_stick").color(color="yellow")
 
     return JSONResponse(builder.get_state().to_dict())
+
+
+@router.get("/molql")
+async def molql_example() -> MVSResponse:
+    """Build, transpile, and use MolQL component, color, and primitive selectors."""
+    builder = create_builder()
+    structure = builder.download(url=_url_for_mmcif("1iep")).parse(format="mmcif").assembly_structure(ref="structure")
+
+    imatinib = molql.struct.generator.atom_groups(
+        {"chain-test": molql.core.rel.eq([molql.struct.atom_property.macromolecular.label_asym_id(), "G"])}
+    )
+    imatinib_n13 = molql.struct.generator.atom_groups(
+        {
+            "chain-test": molql.core.rel.eq([molql.struct.atom_property.macromolecular.label_asym_id(), "G"]),
+            "atom-test": molql.core.rel.eq([molql.struct.atom_property.macromolecular.label_atom_id(), "N13"]),
+        }
+    )
+    binding_pocket = molql.from_pymol("byres polymer within 5 of resn STI")
+    thr315_og1 = molql.from_pymol("chain A and resi 315 and name OG1")
+
+    polymer = structure.component(selector="polymer").representation(type="cartoon")
+    polymer.color(color="#8AA6C1")
+    polymer.color(color="#B8497A", selector=molql.selector(binding_pocket))
+
+    structure.component(selector=molql.selector(imatinib)).representation(type="ball_and_stick").color(color="#F08A4B")
+    pocket = structure.component(selector=molql.selector(binding_pocket))
+    pocket.representation(type="ball_and_stick").color(color="#B8497A")
+    pocket.label(text="PyMOL binding-pocket selection")
+    pocket.tooltip(text="Polymer residues within 5 Å of imatinib (STI).")
+
+    structure.primitives().distance(
+        start=molql.position(imatinib_n13),
+        end=molql.position(thr315_og1),
+        color="#F08A4B",
+        radius=0.12,
+        dash_length=0.2,
+        label_template="Imatinib N13–Thr315 OG1: {{distance}}",
+        label_color="#F08A4B",
+    )
+
+    return JSONResponse(
+        builder.get_state(
+            title="MolQL selectors",
+            description="Programmatic base MolQL and eagerly transpiled PyMOL selections.",
+        ).to_dict()
+    )
 
 
 @router.get("/symmetry-mates")
@@ -313,7 +360,11 @@ async def multiple_states_alignment() -> MVSResponse:
         make_snapshot(key="G", description="# Party!!!", duration=250, camera=camera1, show=["protein1", "ligand2"]),
         make_snapshot(key="H", description="", duration=500, camera=camera1),
         make_snapshot(
-            key="I", description="### Thanks for watching", transition_duration=10_000, duration=10_000, camera=camera_far
+            key="I",
+            description="### Thanks for watching",
+            transition_duration=10_000,
+            duration=10_000,
+            camera=camera_far,
         ),
     ]
     metadata = GlobalMetadata(description="test")
@@ -363,7 +414,14 @@ async def multiple_states_alignment_focus() -> MVSResponse:
             focus="ligand",
             orient=orient2,
         ),
-        make_snapshot(key="E", description=f"### What now? {index}", transition_duration=1000, duration=2000, focus="protein", orient=orient1),
+        make_snapshot(
+            key="E",
+            description=f"### What now? {index}",
+            transition_duration=1000,
+            duration=2000,
+            focus="protein",
+            orient=orient1,
+        ),
         *itertools.chain(
             *[
                 [
@@ -518,21 +576,20 @@ def make_snapshot(
 @router.get("/multiple-states-camera-transitions")
 async def multiple_states_camera_transitions() -> MVSResponse:
     """Example of multi-state with customized camera transitions"""
+
     def make_focused(title: str, focus_res: int | list[int] | None, trajectory: str, easing: str):
         builder = create_builder()
         snapshot_duration = 1250
         transition_duration = 1000
 
         struct = (
-            builder
-            .download(url="https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif")
+            builder.download(url="https://www.ebi.ac.uk/pdbe/entry-files/download/1tqn_updated.cif")
             .parse(format="mmcif")
             .model_structure()
         )
 
         (
-            struct
-            .component()
+            struct.component()
             .representation()
             .color(color="#ffffff", ref="color")
             .color(selector=ComponentExpression(label_seq_id=7), color="#3050F8")
@@ -559,7 +616,11 @@ async def multiple_states_camera_transitions() -> MVSResponse:
 
         builder.transition(duration_ms=transition_duration, trajectory=trajectory, easing=easing)
 
-        zoom_desc = f"Residues {focus_res[0]}-{focus_res[1]}" if isinstance(focus_res, list) else f"Residue {focus_res}" if isinstance(focus_res, int) else "Whole structure"
+        zoom_desc = (
+            f"Residues {focus_res[0]}-{focus_res[1]}"
+            if isinstance(focus_res, list)
+            else f"Residue {focus_res}" if isinstance(focus_res, int) else "Whole structure"
+        )
         description = f"### *{trajectory}* transition with *{easing}* easing \n\n{zoom_desc}"
         return builder.get_snapshot(key=title, title=title, description=description, duration_ms=snapshot_duration)
 
@@ -2351,7 +2412,7 @@ async def testing_labels_formatted_example() -> MVSResponse:
         schema="all_atomic",
         category_name="atom_site",
         text_format="{label_asym_id} {label_comp_id} {label_seq_id}",
-        group_by_fields=['label_asym_id', 'label_seq_id'],
+        group_by_fields=["label_asym_id", "label_seq_id"],
     )
     structure.label_from_source(
         schema="all_atomic",

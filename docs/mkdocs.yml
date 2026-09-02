@@ -30,6 +30,7 @@ nav:
   - Introduction: 'index.md'
   - Tree Schema: 'tree-schema.md'
   - Selectors: 'selectors.md'
+  - MolQL: 'molql.md'
   - Annotations: 'annotations.md'
   - Camera Settings: 'camera-settings.md'
   - Primitives: 'primitives.md'

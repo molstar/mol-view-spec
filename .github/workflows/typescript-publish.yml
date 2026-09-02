@@ -34,5 +34,5 @@ jobs:
         working-directory: molviewspec-ts
 
       - name: Publish to JSR
-        run: deno publish
+        run: deno publish --allow-slow-types
         working-directory: molviewspec-ts

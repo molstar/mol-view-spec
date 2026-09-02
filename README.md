@@ -233,6 +233,34 @@ Nodes can have 0 or more nodes as children. It is, for example, possible to crea
 particular `structure` node to create different representations for different types of molecules.
 
 
+## MolQL selectors
+
+Use the `molql` namespace when constructing a query programmatically. Canonical named arguments are dictionaries whose keys keep MolQL's hyphenated spelling:
+
+```python
+from molviewspec import molql
+
+ligand = molql.struct.generator.atom_groups({
+    "chain-test": molql.core.rel.eq([
+        molql.struct.atom_property.macromolecular.label_asym_id(),
+        "G",
+    ]),
+})
+structure.component(selector=molql.selector(ligand))
+```
+
+PyMOL selections can be eagerly transpiled to the same JSON-native base MolQL tree:
+
+```python
+from molviewspec import molql
+
+pocket = molql.from_pymol("byres polymer within 5 of resn STI")
+same_query = molql.transpile("byres polymer within 5 of resn STI", language="pymol")
+structure.component(selector=molql.selector(pocket))
+```
+
+Primitive positions use `molql.position(expression, structure_ref=...)`; `structure_ref` is optional. The generated MVS state contains only the `{"molql": ...}` expression wrapper; PyMOL source text is not stored or parsed by the viewer. `MS` remains available from `molviewspec.molql` as the compact Mol*-style builder alias.
+
 ### Development
 
 ### Install from PyPI
@@ -244,10 +272,30 @@ Find the package at: https://pypi.org/project/molviewspec/
 
 ### Setting up the environment
 
+The root Conda environment includes both the Python package tooling and Node.js:
+
 ```
 micromamba env create -f ./environment.yaml
 micromamba activate mol-view-spec-dev
 ```
+
+As a lighter alternative for Python package development, use uv from the package directory:
+
+```shell
+cd molviewspec
+uv sync  # or: make setup-uv
+```
+
+Run existing Make targets without activating the environment:
+
+```shell
+uv run make format
+uv run make mypy
+uv run make test-units
+```
+
+The target names remain unchanged; no `uv:`-prefixed targets are required. Alternatively, activate `.venv` once and
+use `make format`, `make mypy`, and the other targets directly.
 
 ### Running the server
 
