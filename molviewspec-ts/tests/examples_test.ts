@@ -170,11 +170,9 @@ Deno.test("examples - geometrical.mvsj primitives", async () => {
   const primitiveNodes = findNodesByKind(data.root, "primitive");
   assertEquals(primitiveNodes.length > 0, true);
 
-  // Check for different primitive types
-  const primitiveTypes = primitiveNodes.map(
-    (node) => (node.params as any)?.primitive_type,
-  );
-  assertEquals(primitiveTypes.length > 0, true);
+  // Check that every primitive carries the canonical parameter discriminant.
+  const primitiveKinds = primitiveNodes.map((node) => node.params?.kind);
+  assertEquals(primitiveKinds.every((kind) => typeof kind === "string"), true);
 });
 
 Deno.test("examples - labels.mvsj label nodes", async () => {

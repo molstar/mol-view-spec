@@ -22,7 +22,7 @@ Deno.test("serialization - box primitive", () => {
   assertExists(state.root.children![0].children);
   assertEquals(state.root.children![0].children![0].kind, "primitive");
   assertEquals(
-    state.root.children![0].children![0].params?.primitive_type,
+    state.root.children![0].children![0].params?.kind,
     "box",
   );
 
@@ -52,6 +52,7 @@ Deno.test("serialization - mesh primitive", () => {
 
   assertExists(state.root.children);
   assertEquals(state.root.children![0].kind, "primitives");
+  assertEquals(state.root.children![0].children![0].params?.kind, "mesh");
   assertEquals(stateJson.includes("mesh"), true);
   assertEquals(stateJson.includes("positions"), true);
   assertEquals(stateJson.includes("indices"), true);
@@ -68,8 +69,8 @@ Deno.test("serialization - sphere primitive", () => {
   assertExists(state.root.children![0].children);
   assertEquals(state.root.children![0].children![0].kind, "primitive");
   assertEquals(
-    state.root.children![0].children![0].params?.primitive_type,
-    "sphere",
+    state.root.children![0].children![0].params?.kind,
+    "ellipsoid",
   );
   assertEquals(
     state.root.children![0].children![0].params?.center,
@@ -93,7 +94,7 @@ Deno.test("serialization - tube primitive", () => {
   assertExists(state.root.children![0].children);
   assertEquals(state.root.children![0].children![0].kind, "primitive");
   assertEquals(
-    state.root.children![0].children![0].params?.primitive_type,
+    state.root.children![0].children![0].params?.kind,
     "tube",
   );
 });
@@ -110,6 +111,7 @@ Deno.test("serialization - label primitive", () => {
 
   assertExists(state.root.children);
   assertEquals(state.root.children![0].kind, "primitives");
+  assertEquals(state.root.children![0].children![0].params?.kind, "label");
   assertEquals(stateJson.includes("label"), true);
   assertEquals(stateJson.includes("Test Label"), true);
 });
@@ -128,8 +130,8 @@ Deno.test("serialization - distance measurement primitive", () => {
   assertExists(state.root.children![0].children);
   assertEquals(state.root.children![0].children![0].kind, "primitive");
   assertEquals(
-    state.root.children![0].children![0].params?.primitive_type,
-    "distance",
+    state.root.children![0].children![0].params?.kind,
+    "distance_measurement",
   );
 });
 

@@ -13,7 +13,6 @@ import type {
   Mat3,
   Mat4,
   ParseFormatT,
-  PrimitivePositionT,
   RefT,
   RepresentationTypeT,
   SchemaFormatT,
@@ -58,6 +57,7 @@ import type {
   Palette,
   ParseParams,
   PrimitiveLabelParams,
+  PrimitivePositionT,
   PrimitivesFromUriParams,
   PrimitivesParams,
   PuttyParams,
@@ -2064,7 +2064,7 @@ export class Primitives extends Base {
   mesh(params: MeshParams, custom?: CustomT, ref?: RefT): Primitives {
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...params, primitive_type: "mesh" }),
+      params: makeParams({ ...params, kind: "mesh" }),
       custom,
       ref,
     };
@@ -2078,7 +2078,7 @@ export class Primitives extends Base {
   tube(params: TubeParams, custom?: CustomT, ref?: RefT): Primitives {
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...params, primitive_type: "tube" }),
+      params: makeParams({ ...params, kind: "tube" }),
       custom,
       ref,
     };
@@ -2097,7 +2097,7 @@ export class Primitives extends Base {
   ): Primitives {
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ center, radius, primitive_type: "sphere" }),
+      params: makeParams({ center, radius, kind: "ellipsoid" }),
       custom,
       ref,
     };
@@ -2111,7 +2111,7 @@ export class Primitives extends Base {
   box(params: BoxParams, custom?: CustomT, ref?: RefT): Primitives {
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...params, primitive_type: "box" }),
+      params: makeParams({ ...params, kind: "box" }),
       custom,
       ref,
     };
@@ -2129,7 +2129,7 @@ export class Primitives extends Base {
   ): Primitives {
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...params, primitive_type: "distance" }),
+      params: makeParams({ ...params, kind: "distance_measurement" }),
       custom,
       ref,
     };
@@ -2147,7 +2147,7 @@ export class Primitives extends Base {
   ): Primitives {
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...params, primitive_type: "label" }),
+      params: makeParams({ ...params, kind: "label" }),
       custom,
       ref,
     };
@@ -2190,7 +2190,7 @@ export class Primitives extends Base {
     const { custom, ref, ...rest } = params;
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...rest, primitive_type: "ellipsoid" }),
+      params: makeParams({ ...rest, kind: "ellipsoid" }),
       custom,
       ref,
     };
@@ -2231,7 +2231,7 @@ export class Primitives extends Base {
     const { custom, ref, ...rest } = params;
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...rest, primitive_type: "lines" }),
+      params: makeParams({ ...rest, kind: "lines" }),
       custom,
       ref,
     };
@@ -2273,7 +2273,7 @@ export class Primitives extends Base {
     const { custom, ref, ...rest } = params;
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...rest, primitive_type: "arrow" }),
+      params: makeParams({ ...rest, kind: "arrow" }),
       custom,
       ref,
     };
@@ -2319,7 +2319,7 @@ export class Primitives extends Base {
     const { custom, ref, ...rest } = params;
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...rest, primitive_type: "ellipse" }),
+      params: makeParams({ ...rest, kind: "ellipse" }),
       custom,
       ref,
     };
@@ -2361,7 +2361,7 @@ export class Primitives extends Base {
     const { custom, ref, ...rest } = params;
     const node: Node = {
       kind: "primitive",
-      params: makeParams({ ...rest, primitive_type: "angle_measurement" }),
+      params: makeParams({ ...rest, kind: "angle_measurement" }),
       custom,
       ref,
     };

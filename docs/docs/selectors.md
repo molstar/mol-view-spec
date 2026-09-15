@@ -2,7 +2,7 @@
 
 Selectors are used in MVS to define substructures (components) and apply colors, labels, or tooltips to them. MVS nodes that take a `selector` parameter are `component` (creates a component from the parent `structure` node) and `color` (applies coloring to a part of the parent `representation` node).
 
-There are three kinds of selectors:
+There are four kinds of selectors:
 
 -   **Static selector** is a string that selects a part of the structure based on entity type. The supported static selectors are these:
 
@@ -53,6 +53,8 @@ There are three kinds of selectors:
     // Select residues up to 100 (inclusive) in chain A plus all magnesium atoms
     selector: [{ label_asym_id: 'A', end_label_seq_id: 100 }, { type_symbol: 'MG' }];
     ```
+
+-   **MolQL expression** is a serialized query in the base [MolQL](./molql.md) language. It supports more complex selections and can be built programmatically or eagerly transpiled from PyMOL selection text.
 
 ### `instance_id`
 

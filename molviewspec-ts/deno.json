@@ -1,7 +1,11 @@
 {
   "name": "@molstar/molviewspec",
   "version": "1.8.1",
-  "exports": "./mod.ts",
+  "exports": {
+    ".": "./mod.ts",
+    "./molql": "./molviewspec/molql/mod.ts",
+    "./molql/pymol": "./molviewspec/molql/transpilers/pymol/mod.ts"
+  },
   "publish": {
     "exclude": ["tests/", "*.mvsj", "*.mvsx"]
   },
@@ -9,8 +13,8 @@
     "test": "deno test --allow-read --allow-write",
     "fmt": "deno fmt",
     "lint": "deno lint",
-    "check": "deno check mod.ts",
-    "publish:dry": "deno publish --dry-run"
+    "check": "deno check mod.ts molviewspec/molql/transpilers/pymol/mod.ts",
+    "publish:dry": "deno publish --dry-run --allow-slow-types"
   },
   "fmt": {
     "useTabs": false,

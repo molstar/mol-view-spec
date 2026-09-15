@@ -127,14 +127,14 @@ export function displayHTML(html: string): {
  *
  * const state = builder.getState({ title: "My Structure" });
  *
- * // Display in notebook - just return this value in a cell
- * molstarNotebook(state);
+ * // Display in a notebook cell
+ * await molstarNotebook(state);
  * ```
  *
  * @example
  * ```typescript
  * // With custom options
- * molstarNotebook(state, {
+ * await molstarNotebook(state, {
  *   width: 800,
  *   height: 600,
  *   downloadFilename: "my_structure",

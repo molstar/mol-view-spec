@@ -29,6 +29,7 @@
  *
  * ## Features
  * - Type-safe builder API for creating molecular visualizations
+ * - Programmatic MolQL expressions and independently importable transpilers
  * - Support for MVSJ (JSON) and MVSX (ZIP archive) formats
  * - Integration with Deno Jupyter notebooks
  * - Export to standalone HTML with embedded Mol* viewer
@@ -38,6 +39,9 @@
 
 // Export builder - main entry point
 export { createBuilder } from "./molviewspec/builder.ts";
+
+// Export JSON-native MolQL builders. Transpilers use separate package subpaths.
+export * as molql from "./molviewspec/molql/mod.ts";
 
 // Export display utilities
 export {

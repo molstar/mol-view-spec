@@ -375,7 +375,7 @@ export type LabelAttachmentT =
   | "top-right";
 
 // Primitive Types
-export type PrimitivePositionT = [number, number, number];
+export type PrimitiveVectorPositionT = [number, number, number];
 
 // Clip Types
 export type ClipTypeT = "plane" | "sphere" | "box";
