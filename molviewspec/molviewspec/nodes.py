@@ -11,8 +11,9 @@ import urllib
 import urllib.parse
 import urllib.request
 import zipfile
+from collections.abc import Mapping
 from datetime import datetime, timezone
-from typing import Any, Literal, Mapping, Optional, Type, TypeVar, cast
+from typing import Any, Literal, Optional, TypeVar, cast
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, StrictStr
@@ -112,7 +113,7 @@ class AnimationNode(Node):
     Base impl of animation state tree nodes.
     """
 
-    kind: AnimationKindT = Field(description="The type of this node.")
+    kind: AnimationKindT = Field(description="The type of this node.")  # type: ignore
 
 
 DescriptionFormatT = Literal["markdown", "plaintext"]
@@ -684,7 +685,7 @@ SelectorT = ComponentSelectorT | MolQLExpression | ComponentExpression | list[Co
 
 
 RepresentationTypeT = Literal[
-    "ball_and_stick", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate", "putty"
+    "backbone", "ball_and_stick", "line", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate", "putty"
 ]
 VolumeRepresentationTypeT = Literal["isosurface", "grid_slice"]
 ColorNamesT = Literal[
@@ -1053,7 +1054,9 @@ class RepresentationParams(BaseModel):
     Representation node, describing how to represent a component.
     """
 
-    type: RepresentationTypeT = Field(description="Representation type, i.e. cartoon, ball_and_stick, etc.")
+    type: RepresentationTypeT | VolumeRepresentationTypeT = Field(
+        description="Representation type, i.e. cartoon, ball_and_stick, etc."
+    )
 
 
 class CartoonParams(RepresentationParams):
@@ -1122,7 +1125,7 @@ class SurfaceParams(RepresentationParams):
 
 
 RepresentationTypeParams = {
-    get_model_fields(cast(Type[RepresentationParams], t))["type"].default: t
+    get_model_fields(cast(type[RepresentationParams], t))["type"].default: t
     for t in (
         CartoonParams,
         BackboneParams,
@@ -1500,9 +1503,7 @@ class CameraParams(BaseModel):
 
     target: Vec3[float] = Field(description="What to look at")
     position: Vec3[float] = Field(description="The position of the camera")
-    up: Vec3[float] = Field(
-        description="Controls the rotation around the vector between target and position", required=True
-    )
+    up: Vec3[float] = Field(description="Controls the rotation around the vector between target and position")
     near: Optional[float] = Field(None, description="Near clipping plane distance from the position")
 
 
@@ -1949,7 +1950,7 @@ class _InterpolationFrequencyParamsMixin(BaseModel):
     )
 
 
-InterpolationKindT = Literal["scalar", "vec3", "rotation_matrix"]
+InterpolationKindT = Literal["scalar", "vec3", "rotation_matrix", "color", "transform_matrix"]
 
 
 class InterpolationParams(BaseModel):
@@ -2059,7 +2060,7 @@ class TransformationMatrixInterpolationParams(InterpolationParams, _CommonInterp
 
 
 InterpolationKindParams = {
-    get_model_fields(cast(Type[InterpolationParams], t))["kind"].default: t
+    get_model_fields(cast(type[InterpolationParams], t))["kind"].default: t
     for t in (
         ScalarInterpolationParams,
         Vec3InterpolationParams,

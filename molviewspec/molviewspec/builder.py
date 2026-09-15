@@ -8,7 +8,8 @@ from __future__ import annotations
 import math
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Literal, Sequence, overload
+from collections.abc import Sequence
+from typing import Any, Literal, overload
 
 from pydantic import BaseModel, PrivateAttr
 from typing_extensions import Self
@@ -476,7 +477,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         title: str | None = None,
         description: str | None = None,
         description_format: DescriptionFormatT | None = None,
-    ) -> State:
+    ) -> State | States:
         """
         Return single-state MVSJ State object. Can be enriched with metadata.
         :param title: optional title of the scene
@@ -516,9 +517,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         :param description_format: format of the description
         :param indent: control format by specifying if and how to indent attributes
         """
-        state = self.get_state(
-            title=title, description=description, description_format=description_format, indent=indent
-        )
+        state = self.get_state(title=title, description=description, description_format=description_format)
 
         if hasattr(state, "model_dump_json"):
             data = state.model_dump_json(exclude_none=True, indent=indent)
@@ -641,7 +640,7 @@ class Root(_Base, _PrimitivesMixin, _FocusMixin, MolstarWidgetsMixin):
         if self._animation is not None:
             return self._animation
 
-        params = make_params(AnimationParams, locals())
+        params: AnimationParams = make_params(AnimationParams, locals())  # type: ignore
         self._animation = Animation(params=params)
         return self._animation
 
@@ -1493,6 +1492,7 @@ class Volume(_Base, _FocusMixin, _TransformMixin):
 
     @overload
     def representation(
+        self,
         *,
         type: Literal["grid_slice"],
         dimension: Literal["x", "y", "z"],

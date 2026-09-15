@@ -25,7 +25,7 @@ if __name__ == "__main__":
     skipped = 0
 
     for route in router.routes:
-        if isinstance(route, APIRoute) and "GET" in route.methods:
+        if isinstance(route, APIRoute) and route.methods is not None and "GET" in route.methods:
             try:
                 path = app.url_path_for(route.name)
             except NoMatchFound:

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Mapping, Sequence, TypeAlias, TypeGuard
+from collections.abc import Mapping, Sequence
+from typing import Any, TypeAlias, TypeGuard
 
 MolQLLiteralT: TypeAlias = str | int | float | bool
 MolQLSymbolT: TypeAlias = dict[str, str]

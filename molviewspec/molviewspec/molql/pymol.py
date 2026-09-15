@@ -11,8 +11,9 @@ Koya Sakuma, and David Sehnal.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Literal
+from typing import Any, Literal, NoReturn
 
 from molviewspec.molql.builder import MolScriptBuilder as B
 from molviewspec.molql.expression import MolQLExpressionT
@@ -525,8 +526,8 @@ class _Parser:
             test = _test_expr(prop.property, prop.map_value(raw))  # type: ignore[arg-type]
             tests.setdefault(prop.level, []).append(test)
         return B.struct.generator.atom_groups(
-            {level: _and_expr(values) for level, values in tests.items()}
-        )  # type: ignore[arg-type]
+            {level: _and_expr(values) for level, values in tests.items()}  # type: ignore[arg-type]
+        )
 
     def _named_property(self) -> MolQLExpressionT | None:
         self._ws()
@@ -554,9 +555,7 @@ class _Parser:
                 value = prop.map_value(raw)
             if prop.unsupported or prop.property is None:
                 raise PyMOLParseError(f"PyMOL property '{prop.names[0]}' is not supported")
-            return B.struct.generator.atom_groups(
-                {prop.level: _test_expr(prop.property, value)}
-            )  # type: ignore[arg-type]
+            return B.struct.generator.atom_groups({prop.level: _test_expr(prop.property, value)})  # type: ignore
         return None
 
     def _named_keyword(self) -> MolQLExpressionT | None:
@@ -759,7 +758,7 @@ class _Parser:
         while self.pos < len(self.source) and self.source[self.pos].isspace():
             self.pos += 1
 
-    def _error(self, message: str) -> None:
+    def _error(self, message: str) -> NoReturn:
         raise PyMOLParseError(f"{message} at position {self.pos}: {self.source[self.pos:self.pos + 20]!r}")
 
 
