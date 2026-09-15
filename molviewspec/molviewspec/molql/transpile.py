@@ -10,12 +10,16 @@ LanguageT = Literal["pymol"]
 
 
 def from_pymol(source: str) -> MolQLExpressionT:
+    """Eagerly transpile PyMOL selection text to a base MolQL expression."""
+
     from molviewspec.molql.pymol import parse
 
     return parse(source)
 
 
 def transpile(source: str, *, language: LanguageT) -> MolQLExpressionT:
+    """Eagerly transpile selection text from a supported language to base MolQL."""
+
     if language == "pymol":
         return from_pymol(source)
     raise ValueError(f"Unsupported MolQL source language: {language}")
