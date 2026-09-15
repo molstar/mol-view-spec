@@ -4,8 +4,8 @@ channels:
 dependencies:
   - python >=3.10
   - pip
-  - fastapi==0.115.11
-  - uvicorn==0.32.0
+  - fastapi==0.141.1
+  - uvicorn==0.52.4
   - requests
   - types-requests
   - pydantic >=2.0.0, <3.0.0a
@@ -16,4 +16,4 @@ dependencies:
   - autoflake
   - isort
   - black
-  - mypy==1.1.1
+  - mypy==1.19.1

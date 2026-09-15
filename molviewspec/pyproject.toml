@@ -45,13 +45,13 @@ Changelog = "https://github.com/molstar/mol-view-spec/blob/master/CHANGELOG.md"
 dev = [
     "autoflake",
     "black",
-    "fastapi==0.115.11",
+    "fastapi==0.141.1",
     "isort",
-    "mypy==1.1.1",
+    "mypy==1.19.1",
     "pydantic-settings>=2,<3",
     "requests",
     "types-requests",
-    "uvicorn==0.32.0",
+    "uvicorn==0.52.4",
 ]
 
 [tool.setuptools.dynamic]
