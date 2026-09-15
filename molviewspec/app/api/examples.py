@@ -4,7 +4,8 @@ A collection of MolViewSpec examples that showcase common visualization tasks th
 
 import itertools
 import math
-from typing import Literal, Mapping, TypeAlias, Union
+from collections.abc import Mapping
+from typing import Any, Literal, TypeAlias, Union
 
 import requests
 from fastapi import APIRouter
@@ -15,10 +16,12 @@ from molviewspec import molql
 from molviewspec.builder import Representation, create_builder
 from molviewspec.nodes import (
     MVSJ,
+    CameraTransitionTrajectoryT,
     CategoricalPalette,
     ComponentExpression,
     ContinuousPalette,
     DiscretePalette,
+    EasingKindT,
     GlobalMetadata,
     LabelAttachmentT,
     PrimitiveComponentExpressions,
@@ -577,7 +580,12 @@ def make_snapshot(
 async def multiple_states_camera_transitions() -> MVSResponse:
     """Example of multi-state with customized camera transitions"""
 
-    def make_focused(title: str, focus_res: int | list[int] | None, trajectory: str, easing: str):
+    def make_focused(
+        title: str,
+        focus_res: int | list[int] | None,
+        trajectory: CameraTransitionTrajectoryT,
+        easing: EasingKindT,
+    ) -> Snapshot:
         builder = create_builder()
         snapshot_duration = 1250
         transition_duration = 1000
@@ -603,13 +611,13 @@ async def multiple_states_camera_transitions() -> MVSResponse:
                 selector=ComponentExpression(beg_label_seq_id=focus_res[0], end_label_seq_id=focus_res[1])
             ).focus()
         elif isinstance(focus_res, int):
-            focus_params = {}
+            focus_params: dict[str, Any] = {}
             if focus_res == 7:
-                focus_params = {"direction": [0, -1, -0.1], "up": [-0.1, 1, 0]}
+                focus_params = {"direction": (0, -1, -0.1), "up": (-0.1, 1, 0)}
             elif focus_res == 275:
-                focus_params = {"direction": [0, 0, -1], "up": [-0.3, 1, 0]}
+                focus_params = {"direction": (0, 0, -1), "up": (-0.3, 1, 0)}
             elif focus_res == 145:
-                focus_params = {"direction": [0, 1, -0.1], "up": [0.1, 1, 0]}
+                focus_params = {"direction": (0, 1, -0.1), "up": (0.1, 1, 0)}
 
             component = struct.component(selector=ComponentExpression(label_seq_id=focus_res))
             component.focus(**focus_params)
@@ -625,14 +633,16 @@ async def multiple_states_camera_transitions() -> MVSResponse:
         return builder.get_snapshot(key=title, title=title, description=description, duration_ms=snapshot_duration)
 
     snapshots: list[Snapshot] = []
-    for trajectory in ["linear", "linear-relative", "leap", "leap-relative"]:
+    trajectories: tuple[CameraTransitionTrajectoryT, ...] = ("linear", "linear-relative", "leap", "leap-relative")
+    for trajectory in trajectories:
         snapshots.append(make_focused(f"{trajectory} All", None, trajectory, "linear"))
         snapshots.append(make_focused(f"{trajectory} Blue", 7, trajectory, "linear"))
         snapshots.append(make_focused(f"{trajectory} Green", 275, trajectory, "linear"))
         snapshots.append(make_focused(f"{trajectory} Red", 145, trajectory, "linear"))
         snapshots.append(make_focused(f"{trajectory} Pink", [125, 145], trajectory, "linear"))
 
-    for ease in ["linear", "sin-in-out", "quad-in-out", "cubic-in-out"]:
+    easings: tuple[EasingKindT, ...] = ("linear", "sin-in-out", "quad-in-out", "cubic-in-out")
+    for ease in easings:
         snapshots.append(make_focused(f"Easing {ease} All", None, "linear", ease))
         snapshots.append(make_focused(f"Easing {ease} Blue", 7, "linear", ease))
         snapshots.append(make_focused(f"Easing {ease} Green", 275, "linear", ease))
@@ -1213,7 +1223,7 @@ async def volume_map_example() -> MVSResponse:
 
 
 @router.get("/volume/slices")
-async def volume_map_example() -> MVSResponse:
+async def volume_slices_example() -> MVSResponse:
     """
     Renders a volume in MAP format
     """
@@ -2717,7 +2727,7 @@ async def animation_testing_example() -> MVSResponse:
     builder = create_builder()
     structure = builder.download(url=_url_for_mmcif("1cbs")).parse(format="mmcif").model_structure()
     structure.component(selector="polymer").representation(type="cartoon").clip(
-        ref="clip", type="plane", point=[22, 13, 0], normal=[0, 0, 1]
+        ref="clip", type="plane", point=(22, 13, 0), normal=(0, 0, 1)
     ).color(ref="polymer-color", color="white")
 
     (
@@ -2735,7 +2745,7 @@ async def animation_testing_example() -> MVSResponse:
     primitives1 = builder.primitives(
         ref="primitives-xform",
         instances=[
-            [
+            (
                 1,
                 0,
                 0,
@@ -2752,11 +2762,11 @@ async def animation_testing_example() -> MVSResponse:
                 0,
                 0,
                 1,
-            ]
+            )
         ],
     )
 
-    primitives1.ellipsoid(center=[0, 0, 0], radius=[2, 3, 2.5], color="red")
+    primitives1.ellipsoid(center=(0, 0, 0), radius=(2, 3, 2.5), color="red")
 
     builder.primitives().lines(
         ref="lines1",
@@ -2832,18 +2842,19 @@ async def animation_testing_example() -> MVSResponse:
         property="color",
         duration_ms=2000,
         frequency=3,
-        palette={"kind": "continuous", "colors": ["white", "purple", "white"]},
+        palette=ContinuousPalette(colors=["white", "purple", "white"]),
     )
 
+    instance_property: list[str | int] = ["instances", 0]
     anim.interpolate(
         kind="transform_matrix",
         target_ref="primitives-xform",
-        property=["instances", 0],
-        translation_start=[20.24, 29.64, 14.85],
-        translation_end=[21.84, 21.71, 27.04],
-        pivot=[0, 0, 0],
+        property=instance_property,
+        translation_start=(20.24, 29.64, 14.85),
+        translation_end=(21.84, 21.71, 27.04),
+        pivot=(0, 0, 0),
         rotation_noise_magnitude=0.2,
-        scale_end=[0.01, 0.01, 0.01],
+        scale_end=(0.01, 0.01, 0.01),
         duration_ms=1000,
     )
 

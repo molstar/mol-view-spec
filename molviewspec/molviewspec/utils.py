@@ -1,4 +1,5 @@
-from typing import Any, Mapping, Type, TypeVar
+from collections.abc import Mapping
+from typing import Any, TypeVar
 
 from pydantic import BaseModel
 
@@ -17,7 +18,7 @@ def get_model_fields(model_type: Any) -> dict[str, Any]:
     return model_type.__fields__
 
 
-def make_params(params_type: Type[TParams], values=None, /, **more_values: object) -> Mapping[str, Any]:
+def make_params(params_type: type[TParams], values=None, /, **more_values: object) -> Mapping[str, Any]:
     if params_type is None:
         raise ValueError("Param type couldn't be resolved to a concrete class -- did you misspell the value of `type`?")
 
