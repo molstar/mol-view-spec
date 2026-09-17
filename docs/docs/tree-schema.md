@@ -38,7 +38,7 @@ Parent: `download`
 
 Params:
 
-- **`format: `**`"mmcif" | "bcif" | "pdb" | "pdbqt" | "gro" | "xyz" | "mol" | "sdf" | "mol2" | "lammpstrj" | "xtc" | "nctraj" | "dcd" | "trr" | "psf" | "prmtop" | "top" | "map" | "dx" | "dxbin"`
+- **`format: `**`"mmcif" | "bcif" | "pdb" | "pdbqt" | "gro" | "xyz" | "mol" | "sdf" | "mol2" | "lammpstrj" | "xtc" | "nctraj" | "dcd" | "trr" | "psf" | "prmtop" | "top" | "map" | "dx" | "dxbin" | "vtp" | "ply" | "obj"`
 
   Format of the input data resource.
 
@@ -114,7 +114,7 @@ Params:
 
 This node instructs to rotate and/or translate coordinates OR provide a transformation matrix.
 
-Parent: `structure` or `component` or `volume`
+Parent: `structure` or `component` or `volume` or `shape`
 
 Params:
 
@@ -146,7 +146,7 @@ Params:
 
 This node allows instantiation using the provided transformation parameters.
 
-Parent: `structure` or `component` or `volume`
+Parent: `structure` or `component` or `volume` or `shape`
 
 Params:
 
@@ -182,7 +182,7 @@ Parent: `structure`
 
 Params:
 
-- **`selector: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }>`
+- **`selector: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | ComponentExpression | Array<ComponentExpression> | MolQLExpression`
 
   Defines what part of the parent structure should be included in this component.
 
@@ -494,21 +494,29 @@ Params:
 
     Default: `null`
 
+## `shape`
+
+This node instructs to create a mesh from a parsed 3D geometry resource (VTP, PLY, or OBJ). Color is applied via child `color` nodes; format-specific options (e.g. coloring a VTP by one of its data arrays) are carried as prefixed custom properties.
+
+Parent: `parse`
+
+Params:
+
 ## `color`
 
 This node instructs to apply color to a visual representation.
 
-Parent: `representation` or `volume_representation`
+Parent: `representation` or `volume_representation` or `shape`
 
 Params:
 
-- **`color?: `**`ColorName | HexColor`
+- **`color?: `**`ColorT`
 
   Color to apply to the representation. Can be either an X11 color name (e.g. `"red"`) or a hexadecimal code (e.g. `"#FF0011"`).
 
   Default: `"white"`
 
-- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }>`
+- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | ComponentExpression | Array<ComponentExpression> | MolQLExpression`
 
   Defines to what part of the representation this color should be applied.
 
@@ -564,13 +572,13 @@ Params:
 
   Default: `{}`
 
-- **`palette?: `**`{ kind: "categorical", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | ("ElementSymbol" | "ResidueName" | "ResidueProperties" | "SecondaryStructure") | Array<(ColorName | HexColor)> | { [K in string]: (ColorName | HexColor) }), repeat_color_list?: boolean, sort?: ("none" | "lexical" | "numeric"), sort_direction?: ("ascending" | "descending"), case_insensitive?: boolean, missing_color?: (ColorName | HexColor | null) } | { kind: "discrete", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<(ColorName | HexColor)> | Array<[(ColorName | HexColor), number]> | Array<[(ColorName | HexColor | null), (number | null), (number | null)]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)] } | { kind: "continuous", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<(ColorName | HexColor)> | Array<[(ColorName | HexColor), number]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)], underflow_color?: ("auto" | ColorName | HexColor | null), overflow_color?: ("auto" | ColorName | HexColor | null) } | null`
+- **`palette?: `**`{ kind: "categorical", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | ("ElementSymbol" | "ResidueName" | "ResidueProperties" | "SecondaryStructure" | "CarbohydrateSymbol") | Array<ColorT> | { [K in string]: ColorT }), repeat_color_list?: boolean, sort?: ("none" | "lexical" | "numeric"), sort_direction?: ("ascending" | "descending"), case_insensitive?: boolean, missing_color?: (ColorT | null) } | { kind: "discrete", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<ColorT> | Array<[ColorT, number]> | Array<[(ColorT | null), (number | null), (number | null)]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)] } | { kind: "continuous", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<ColorT> | Array<[ColorT, number]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)], underflow_color?: ("auto" | ColorT | null), overflow_color?: ("auto" | ColorT | null) } | null`
 
   Customize mapping of annotation values to colors.
 
   Default: `null`
 
-- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }>`
+- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | ComponentExpression | Array<ComponentExpression> | MolQLExpression`
 
   Defines to what part of the representation this coloring should be applied.
 
@@ -618,13 +626,13 @@ Params:
 
   Default: `{}`
 
-- **`palette?: `**`{ kind: "categorical", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | ("ElementSymbol" | "ResidueName" | "ResidueProperties" | "SecondaryStructure") | Array<(ColorName | HexColor)> | { [K in string]: (ColorName | HexColor) }), repeat_color_list?: boolean, sort?: ("none" | "lexical" | "numeric"), sort_direction?: ("ascending" | "descending"), case_insensitive?: boolean, missing_color?: (ColorName | HexColor | null) } | { kind: "discrete", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<(ColorName | HexColor)> | Array<[(ColorName | HexColor), number]> | Array<[(ColorName | HexColor | null), (number | null), (number | null)]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)] } | { kind: "continuous", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<(ColorName | HexColor)> | Array<[(ColorName | HexColor), number]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)], underflow_color?: ("auto" | ColorName | HexColor | null), overflow_color?: ("auto" | ColorName | HexColor | null) } | null`
+- **`palette?: `**`{ kind: "categorical", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | ("ElementSymbol" | "ResidueName" | "ResidueProperties" | "SecondaryStructure" | "CarbohydrateSymbol") | Array<ColorT> | { [K in string]: ColorT }), repeat_color_list?: boolean, sort?: ("none" | "lexical" | "numeric"), sort_direction?: ("ascending" | "descending"), case_insensitive?: boolean, missing_color?: (ColorT | null) } | { kind: "discrete", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<ColorT> | Array<[ColorT, number]> | Array<[(ColorT | null), (number | null), (number | null)]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)] } | { kind: "continuous", colors?: (("Reds" | "Oranges" | "Greens" | "Blues" | "Purples" | "Greys" | "OrRd" | "BuGn" | "PuBuGn" | "GnBu" | "PuBu" | "BuPu" | "RdPu" | "PuRd" | "YlOrRd" | "YlOrBr" | "YlGn" | "YlGnBu" | "Magma" | "Inferno" | "Plasma" | "Viridis" | "Cividis" | "Turbo" | "Warm" | "Cool" | "CubehelixDefault" | "Rainbow" | "Sinebow" | "RdBu" | "RdGy" | "PiYG" | "BrBG" | "PRGn" | "PuOr" | "RdYlGn" | "RdYlBu" | "Spectral" | "Category10" | "Observable10" | "Tableau10" | "Set1" | "Set2" | "Set3" | "Pastel1" | "Pastel2" | "Dark2" | "Paired" | "Accent" | "Chainbow") | Array<ColorT> | Array<[ColorT, number]>), reverse?: boolean, mode?: ("normalized" | "absolute"), value_domain?: [(number | null), (number | null)], underflow_color?: ("auto" | ColorT | null), overflow_color?: ("auto" | ColorT | null) } | null`
 
   Customize mapping of annotation values to colors.
 
   Default: `null`
 
-- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }>`
+- **`selector?: `**`("all" | "polymer" | "protein" | "nucleic" | "branched" | "ligand" | "ion" | "water" | "coarse") | ComponentExpression | Array<ComponentExpression> | MolQLExpression`
 
   Defines to what part of the representation this coloring should be applied.
 
@@ -634,7 +642,7 @@ Params:
 
 This node instructs to apply clipping to a visual representation.
 
-Parent: `representation` or `volume_representation` or `primitives` or `primitives_from_uri`
+Parent: `representation` or `volume_representation` or `primitives` or `primitives_from_uri` or `shape`
 
 Params:
 
@@ -742,7 +750,7 @@ Params:
 
 This node instructs to apply opacity/transparency to a visual representation.
 
-Parent: `representation` or `volume_representation`
+Parent: `representation` or `volume_representation` or `shape`
 
 Params:
 
@@ -998,7 +1006,7 @@ Params:
 
 This node instructs to set the camera focus to a component (zoom in).
 
-Parent: `root` or `component` or `component_from_uri` or `component_from_source` or `primitives` or `primitives_from_uri` or `volume` or `volume_representation`
+Parent: `root` or `component` or `component_from_uri` or `component_from_source` or `primitives` or `primitives_from_uri` or `volume` or `volume_representation` or `shape`
 
 Params:
 
@@ -1040,13 +1048,13 @@ Parent: `structure` or `root`
 
 Params:
 
-- **`color?: `**`ColorName | HexColor`
+- **`color?: `**`ColorT`
 
   Default color for primitives in this group.
 
   Default: `"white"`
 
-- **`label_color?: `**`ColorName | HexColor`
+- **`label_color?: `**`ColorT`
 
   Default label color for primitives in this group.
 
@@ -1088,7 +1096,7 @@ Params:
 
   Default: `"middle-center"`
 
-- **`label_background_color?: `**`ColorName | HexColor | null`
+- **`label_background_color?: `**`ColorT | null`
 
   Background color of the label. Defaults to none/transparent.
 
@@ -1158,7 +1166,7 @@ Params:
 
     Default: `null`
 
-  - **`group_colors?: `**`{ [K in Integer]: (ColorName | HexColor) }`
+  - **`group_colors?: `**`{ [K in Integer]: ColorT }`
 
     Assign a color to each group. Where not assigned, uses `color`.
 
@@ -1170,7 +1178,7 @@ Params:
 
     Default: `{}`
 
-  - **`color?: `**`ColorName | HexColor | null`
+  - **`color?: `**`ColorT | null`
 
     Color of the triangles and wireframe. Can be overwritten by `group_colors`. If not specified, uses the parent primitives group `color`.
 
@@ -1200,7 +1208,7 @@ Params:
 
     Default: `1`
 
-  - **`wireframe_color?: `**`ColorName | HexColor | null`
+  - **`wireframe_color?: `**`ColorT | null`
 
     Wireframe color. If not specified, uses `group_colors`.
 
@@ -1222,7 +1230,7 @@ Params:
 
     Default: `null`
 
-  - **`group_colors?: `**`{ [K in Integer]: (ColorName | HexColor) }`
+  - **`group_colors?: `**`{ [K in Integer]: ColorT }`
 
     Assign a color to each group. Where not assigned, uses `color`.
 
@@ -1240,7 +1248,7 @@ Params:
 
     Default: `{}`
 
-  - **`color?: `**`ColorName | HexColor | null`
+  - **`color?: `**`ColorT | null`
 
     Color of the lines. Can be overwritten by `group_colors`. If not specified, uses the parent primitives group `color`.
 
@@ -1260,11 +1268,11 @@ Params:
 
   **Case `kind: "tube"`:**
 
-  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`start: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     Start point of the tube.
 
-  - **`end: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`end: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     End point of the tube.
 
@@ -1280,7 +1288,7 @@ Params:
 
     Default: `null`
 
-  - **`color?: `**`ColorName | HexColor | null`
+  - **`color?: `**`ColorT | null`
 
     Color of the tube. If not specified, uses the parent primitives group `color`.
 
@@ -1294,11 +1302,11 @@ Params:
 
   **Case `kind: "arrow"`:**
 
-  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`start: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     Start point of the arrow.
 
-  - **`end?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
+  - **`end?: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression | null`
 
     End point of the arrow.
 
@@ -1370,7 +1378,7 @@ Params:
 
     Default: `null`
 
-  - **`color?: `**`ColorName | HexColor | null`
+  - **`color?: `**`ColorT | null`
 
     Color of the tube. If not specified, uses the parent primitives group `color`.
 
@@ -1384,11 +1392,11 @@ Params:
 
   **Case `kind: "distance_measurement"`:**
 
-  - **`start: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`start: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     Start point of the tube.
 
-  - **`end: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`end: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     End point of the tube.
 
@@ -1404,7 +1412,7 @@ Params:
 
     Default: `null`
 
-  - **`color?: `**`ColorName | HexColor | null`
+  - **`color?: `**`ColorT | null`
 
     Color of the tube. If not specified, uses the parent primitives group `color`.
 
@@ -1434,7 +1442,7 @@ Params:
 
     Default: `0`
 
-  - **`label_color?: `**`ColorName | HexColor | null`
+  - **`label_color?: `**`ColorT | null`
 
     Color of the label. If not specified, uses the parent primitives group `label_color`.
 
@@ -1442,15 +1450,15 @@ Params:
 
   **Case `kind: "angle_measurement"`:**
 
-  - **`a: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`a: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     Point A.
 
-  - **`b: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`b: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     Point B.
 
-  - **`c: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`c: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     Point C.
 
@@ -1478,7 +1486,7 @@ Params:
 
     Default: `0`
 
-  - **`label_color?: `**`ColorName | HexColor | null`
+  - **`label_color?: `**`ColorT | null`
 
     Color of the label. If not specified, uses the parent primitives group `label_color`.
 
@@ -1490,7 +1498,7 @@ Params:
 
     Default: `true`
 
-  - **`vector_color?: `**`ColorName | HexColor | null`
+  - **`vector_color?: `**`ColorT | null`
 
     Color of the vectors.
 
@@ -1508,7 +1516,7 @@ Params:
 
     Default: `true`
 
-  - **`section_color?: `**`ColorName | HexColor | null`
+  - **`section_color?: `**`ColorT | null`
 
     Color of the angle section. If not specified, the primitives group color is used.
 
@@ -1528,7 +1536,7 @@ Params:
 
   **Case `kind: "label"`:**
 
-  - **`position: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`position: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     Position of this label.
 
@@ -1542,7 +1550,7 @@ Params:
 
     Default: `1`
 
-  - **`label_color?: `**`ColorName | HexColor | null`
+  - **`label_color?: `**`ColorT | null`
 
     Color of the label. If not specified, uses the parent primitives group `label_color`.
 
@@ -1556,7 +1564,7 @@ Params:
 
   **Case `kind: "ellipse"`:**
 
-  - **`color?: `**`ColorName | HexColor | null`
+  - **`color?: `**`ColorT | null`
 
     Color of the ellipse. If not specified, uses the parent primitives group `color`.
 
@@ -1568,7 +1576,7 @@ Params:
 
     Default: `false`
 
-  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`center: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     The center of the ellipse.
 
@@ -1584,13 +1592,13 @@ Params:
 
     Default: `null`
 
-  - **`major_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
+  - **`major_axis_endpoint?: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression | null`
 
     Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center.
 
     Default: `null`
 
-  - **`minor_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
+  - **`minor_axis_endpoint?: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression | null`
 
     Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center.
 
@@ -1628,13 +1636,13 @@ Params:
 
   **Case `kind: "ellipsoid"`:**
 
-  - **`color?: `**`ColorName | HexColor | null`
+  - **`color?: `**`ColorT | null`
 
     Color of the ellipsoid. If not specified, uses the parent primitives group `color`.
 
     Default: `null`
 
-  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`center: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     The center of the ellipsoid.
 
@@ -1650,13 +1658,13 @@ Params:
 
     Default: `null`
 
-  - **`major_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
+  - **`major_axis_endpoint?: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression | null`
 
     Major axis endpoint. If specified, overrides major axis to be major_axis_endpoint - center.
 
     Default: `null`
 
-  - **`minor_axis_endpoint?: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> } | null`
+  - **`minor_axis_endpoint?: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression | null`
 
     Minor axis endpoint. If specified, overrides minor axis to be minor_axis_endpoint - center.
 
@@ -1682,7 +1690,7 @@ Params:
 
   **Case `kind: "box"`:**
 
-  - **`center: `**`[number, number, number] | { label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string } | { structure_ref?: string, expression_schema?: ("whole_structure" | "entity" | "chain" | "auth_chain" | "residue" | "auth_residue" | "residue_range" | "auth_residue_range" | "atom" | "auth_atom" | "all_atomic"), expressions?: Array<{ label_entity_id?: string, label_asym_id?: string, auth_asym_id?: string, label_seq_id?: Integer, auth_seq_id?: Integer, pdbx_PDB_ins_code?: string, beg_label_seq_id?: Integer, end_label_seq_id?: Integer, beg_auth_seq_id?: Integer, end_auth_seq_id?: Integer, label_comp_id?: string, auth_comp_id?: string, residue_index?: Integer, label_atom_id?: string, auth_atom_id?: string, type_symbol?: string, atom_id?: Integer, atom_index?: Integer, instance_id?: string }> }`
+  - **`center: `**`[number, number, number] | PrimitiveComponentExpression | ComponentExpression | PrimitiveMolQLExpression`
 
     The center of the box.
 
@@ -1698,7 +1706,7 @@ Params:
 
     Default: `true`
 
-  - **`face_color?: `**`ColorName | HexColor | null`
+  - **`face_color?: `**`ColorT | null`
 
     Color of the box faces.
 
@@ -1716,7 +1724,7 @@ Params:
 
     Default: `0.1`
 
-  - **`edge_color?: `**`ColorName | HexColor | null`
+  - **`edge_color?: `**`ColorT | null`
 
     Color of the edges.
 
@@ -1764,7 +1772,7 @@ Parent: `root`
 
 Params:
 
-- **`background_color?: `**`ColorName | HexColor`
+- **`background_color?: `**`ColorT`
 
   Color of the canvas background. Can be either an X11 color name (e.g. `"red"`) or a hexadecimal code (e.g. `"#FF0011"`). Defaults to white.
 
