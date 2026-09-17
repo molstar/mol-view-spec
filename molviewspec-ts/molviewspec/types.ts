@@ -292,7 +292,9 @@ export type ColorNamesT =
 
 // HexColorT represents hex color codes like '#f0f0f0'
 export type HexColorT = string;
-export type ColorT = ColorNamesT | HexColorT;
+// SplitColorT represents split color like 'red/white', '#f0f0f0/#808080'
+export type SplitColorT = string;
+export type ColorT = ColorNamesT | HexColorT | SplitColorT;
 
 // Named color palette types (for categorical palettes)
 export type ColorListNameT =
@@ -342,7 +344,8 @@ export type ColorDictNameT =
   | "ElementSymbol"
   | "ResidueName"
   | "ResidueProperties"
-  | "SecondaryStructure";
+  | "SecondaryStructure"
+  | "CarbohydrateSymbol";
 
 // Schema Types
 export type SchemaFormatT = "json" | "cif" | "bcif";

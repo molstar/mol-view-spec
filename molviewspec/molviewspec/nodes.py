@@ -687,7 +687,9 @@ SelectorT = ComponentSelectorT | MolQLExpression | ComponentExpression | list[Co
 RepresentationTypeT = Literal[
     "backbone", "ball_and_stick", "line", "spacefill", "cartoon", "surface", "isosurface", "carbohydrate", "putty"
 ]
+
 VolumeRepresentationTypeT = Literal["isosurface", "grid_slice"]
+
 ColorNamesT = Literal[
     "aliceblue",
     "antiquewhite",
@@ -837,8 +839,14 @@ ColorNamesT = Literal[
     "yellow",
     "yellowgreen",
 ]
-HexColorT = str  # hexadecimal color code, e.g. '#f0f0f0'; str represents hex colors for now
-ColorT = ColorNamesT | HexColorT
+
+HexColorT = str
+"""Hexadecimal color code, e.g. '#f0f0f0'. Typed as `str` for now."""
+
+SplitColorT = str
+"""String with primary and secondary color, separated by slash , e.g. 'red/white', '#f0f0f0/#808080'."""
+
+ColorT = ColorNamesT | HexColorT | SplitColorT
 
 ColorListNameT = Literal[
     # Color lists from https://observablehq.com/@d3/color-schemes (definitions: https://colorbrewer2.org/export/colorbrewer.js)
@@ -905,6 +913,7 @@ ColorDictNameT = Literal[
     "ResidueName",
     "ResidueProperties",
     "SecondaryStructure",
+    "CarbohydrateSymbol",
 ]
 
 
